@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { UploadCloud, CheckCircle2, AlertCircle, FileText, Loader2, Camera, ShieldCheck, History, Trash2, Zap, ZapOff, Search, Sun, Moon, Copy, Download, Check, AlertTriangle, Printer } from 'lucide-react';
+import { UploadCloud, CheckCircle2, AlertCircle, FileText, Loader2, ShieldCheck, History, Trash2, Zap, ZapOff, Search, Sun, Moon, Copy, Download, Check, AlertTriangle, Printer } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import imageCompression from 'browser-image-compression';
 import { jsPDF } from 'jspdf';
@@ -39,20 +39,7 @@ export default function App() {
   const [data, setData] = useState<PassportData | null>(null);
   const [error, setError] = useState<string | null>(null);
   
-  // Camera state
-  const [isCameraOpen, setIsCameraOpen] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  const overlayRef = useRef<HTMLDivElement>(null);
 
-  const [zoom, setZoom] = useState(1);
-  const [minZoom, setMinZoom] = useState(1);
-  const [maxZoom, setMaxZoom] = useState(1);
-  const [hasZoom, setHasZoom] = useState(false);
-
-  const [hasTorch, setHasTorch] = useState(false);
-  const [isTorchOn, setIsTorchOn] = useState(false);
   
   // History state initialize from localStorage
   const [history, setHistory] = useState<HistoryItem[]>(() => {
@@ -246,149 +233,7 @@ export default function App() {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const startCamera = async () => {
-    setIsCameraOpen(true);
-    setError(null);
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'environment' } 
-      });
-      streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
 
-      const track = stream.getVideoTracks()[0];
-      if (track && track.getCapabilities) {
-        const capabilities: any = track.getCapabilities();
-
-        // Check torch
-        if ('torch' in capabilities) {
-          setHasTorch(true);
-        } else {
-          setHasTorch(false);
-        }
-
-        // Check zoom
-        if ('zoom' in capabilities) {
-          setHasZoom(true);
-          setMinZoom(capabilities.zoom.min || 1);
-          setMaxZoom(capabilities.zoom.max || 2);
-          setZoom(capabilities.zoom.min || 1);
-        } else {
-          setHasZoom(false);
-        }
-      }
-    } catch (err) {
-      setError('Could not access the camera. Please ensure permissions are granted.');
-      setIsCameraOpen(false);
-    }
-  };
-
-  const stopCamera = () => {
-    if (streamRef.current) {
-      const track = streamRef.current.getVideoTracks()[0];
-      if (track && isTorchOn) {
-        try {
-          // Attempt to turn off torch before stopping
-          track.applyConstraints({ advanced: [{ torch: false }] as any });
-        } catch(e) {}
-      }
-      streamRef.current.getTracks().forEach(t => t.stop());
-      streamRef.current = null;
-    }
-    setIsCameraOpen(false);
-    setIsTorchOn(false);
-  };
-
-  const toggleTorch = async () => {
-    if (!streamRef.current) return;
-    const track = streamRef.current.getVideoTracks()[0];
-    if (track) {
-      try {
-        await track.applyConstraints({
-          advanced: [{ torch: !isTorchOn }] as any
-        });
-        setIsTorchOn(!isTorchOn);
-      } catch (err) {
-        // Torch not supported by applyConstraints
-      }
-    }
-  };
-
-  const handleZoomChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newZoom = Number(e.target.value);
-    setZoom(newZoom);
-    if (!streamRef.current) return;
-    const track = streamRef.current.getVideoTracks()[0];
-    if (track) {
-      try {
-        await track.applyConstraints({
-          advanced: [{ zoom: newZoom }] as any
-        });
-      } catch (err) { }
-    }
-  };
-
-  const capturePhoto = () => {
-    if (videoRef.current && canvasRef.current && overlayRef.current) {
-      const video = videoRef.current;
-      const canvas = canvasRef.current;
-      const overlay = overlayRef.current;
-      
-      const videoWidth = video.videoWidth;
-      const videoHeight = video.videoHeight;
-      const vw = video.offsetWidth;
-      const vh = video.offsetHeight;
-
-      // Object fit is cover, so we need to account for what part of the video is visible
-      const scale = Math.max(vw / videoWidth, vh / videoHeight);
-      
-      // Calculate how much is cropped
-      const xOffset = (videoWidth * scale - vw) / 2;
-      const yOffset = (videoHeight * scale - vh) / 2;
-
-      // Overlay bounding box
-      const overlayRect = overlay.getBoundingClientRect();
-      const videoRect = video.getBoundingClientRect();
-
-      // Position relative to the video element
-      const overlayLeft = overlayRect.left - videoRect.left;
-      const overlayTop = overlayRect.top - videoRect.top;
-      const overlayWidth = overlayRect.width;
-      const overlayHeight = overlayRect.height;
-      
-      // Map to video natural coordinates
-      const cropX = (overlayLeft + xOffset) / scale;
-      const cropY = (overlayTop + yOffset) / scale;
-      const cropWidth = overlayWidth / scale;
-      const cropHeight = overlayHeight / scale;
-      
-      canvas.width = cropWidth;
-      canvas.height = cropHeight;
-      
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, canvas.width, canvas.height); // white bg in case of out of bounds
-        ctx.drawImage(video, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
-        canvas.toBlob((blob) => {
-          if (blob) {
-            const capturedFile = new File([blob], "captured_passport.jpg", { type: "image/jpeg" });
-            processFile(capturedFile);
-            stopCamera();
-          }
-        }, 'image/jpeg', 0.9);
-      }
-    }
-  };
-
-  // Cleanup camera on unmount
-  useEffect(() => {
-    return () => {
-      stopCamera();
-    };
-  }, []);
 
   const getPresentAddress = (itemData: PassportData | null) => {
     if (!itemData) return "House 12, Road 5, Dhanmondi, Dhaka-1209";
@@ -889,7 +734,7 @@ Office Address (Permanent): ${localBizAddr}
         <div className="flex gap-3">
           <div className="flex flex-col items-center gap-2">
             <div className="bg-blue-600 text-white p-2 rounded-xl shadow-inner border border-blue-500/20">
-              <Camera className="w-6 h-6" />
+              <FileText className="w-6 h-6" />
             </div>
             <img src={ExtractorLogo} alt="Extractor Logo" className="w-8 h-8 rounded shadow-sm object-cover" />
           </div>
@@ -971,17 +816,6 @@ Office Address (Permanent): ${localBizAddr}
                       </div>
                       <p className="font-semibold text-slate-700 dark:text-zinc-200">Click to upload or drag and drop</p>
                       <p className="text-xs text-slate-500 dark:text-zinc-400 mt-2">JPEG, PNG, WEBP (Max 20MB)</p>
-                    </div>
-                    <div className="absolute bottom-4 mx-auto bg-slate-200/50 dark:bg-zinc-900/50 rounded-lg p-1 border border-slate-300 dark:border-zinc-700">
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          startCamera();
-                        }}
-                        className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-zinc-800 rounded-md shadow-sm text-sm font-medium dark:text-zinc-200 hover:bg-blue-50 dark:hover:bg-zinc-700 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
-                      >
-                        <Camera className="w-4 h-4" /> Use Camera
-                      </button>
                     </div>
                   </div>
                 </>
@@ -1151,40 +985,40 @@ Office Address (Permanent): ${localBizAddr}
                     </div>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-5 pb-4 border-b border-slate-100 dark:border-zinc-800/50 gap-4 print:hidden">
+                  <div className="flex flex-col xl:flex-row xl:items-center justify-between mb-5 pb-4 border-b border-slate-100 dark:border-zinc-800/50 gap-4 print:hidden">
                     <div>
                       <h2 className="text-xl font-bold flex items-center gap-2 text-slate-800 dark:text-zinc-100">
                         <CheckCircle2 className="w-6 h-6 text-emerald-500" />
                         Passport Data
                       </h2>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto xl:justify-end">
                       <button 
                         onClick={handleCopyAll}
-                        className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 text-sm font-medium rounded-lg transition-colors border border-transparent dark:border-zinc-700"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 text-xs sm:text-sm font-medium rounded-lg transition-colors border border-transparent dark:border-zinc-700 cursor-pointer"
                       >
-                        {isCopied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+                        {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
                         {isCopied ? "Copied" : "Copy All"}
                       </button>
                       <button 
                         onClick={handleDownloadText}
-                        className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-400 text-sm font-medium rounded-lg transition-colors border border-blue-200 dark:border-blue-800/50"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-400 text-xs sm:text-sm font-medium rounded-lg transition-colors border border-blue-200 dark:border-blue-800/50 cursor-pointer"
                       >
-                        <Download className="w-4 h-4" />
+                        <Download className="w-3.5 h-3.5" />
                         Download TXT
                       </button>
                       <button 
                         onClick={handleDownloadPDF}
-                        className="flex items-center gap-2 px-3.5 py-1.5 bg-[#FF8006] hover:bg-[#FF8006]/90 text-white text-sm font-semibold rounded-lg transition-all shadow-sm active:scale-95 duration-100 cursor-pointer"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-[#FF8006] hover:bg-[#FF8006]/90 text-white text-xs sm:text-sm font-semibold rounded-lg transition-all shadow-sm active:scale-95 duration-100 cursor-pointer"
                       >
-                        <FileText className="w-4 h-4" />
+                        <FileText className="w-3.5 h-3.5" />
                         Download PDF Summary
                       </button>
                       <button 
                         onClick={() => window.print()}
-                        className="flex items-center gap-2 px-3.5 py-1.5 bg-[#0C8493] hover:bg-[#0C8493]/90 text-white text-sm font-semibold rounded-lg transition-all shadow-sm active:scale-95 duration-100 cursor-pointer"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0C8493] hover:bg-[#0C8493]/90 text-white text-xs sm:text-sm font-semibold rounded-lg transition-all shadow-sm active:scale-95 duration-100 cursor-pointer"
                       >
-                        <Printer className="w-4 h-4" />
+                        <Printer className="w-3.5 h-3.5" />
                         Print Report
                       </button>
                     </div>
@@ -1267,97 +1101,7 @@ Office Address (Permanent): ${localBizAddr}
         </div>
       </main>
 
-      {/* FULL SCREEN CAMERA OVERLAY */}
-      <AnimatePresence>
-        {isCameraOpen && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black flex flex-col"
-          >
-            {hasTorch && (
-              <button 
-                onClick={toggleTorch}
-                className="absolute top-8 right-6 z-20 w-12 h-12 bg-black/50 backdrop-blur rounded-full flex items-center justify-center text-white border border-white/20 shadow-lg"
-              >
-                {isTorchOn ? <Zap className="w-6 h-6 text-yellow-400 fill-yellow-400" /> : <ZapOff className="w-6 h-6" />}
-              </button>
-            )}
 
-            <div className="flex-1 relative flex items-center justify-center overflow-hidden">
-              <video 
-                ref={videoRef} 
-                autoPlay 
-                playsInline 
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-              
-              {/* Optional UI guides for passport */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none p-6">
-                <div 
-                  ref={overlayRef} 
-                  className="w-full max-w-sm aspect-[3/4] border-2 border-white/20 rounded-xl shadow-[0_0_0_9999px_rgba(0,0,0,0.65)] relative overflow-hidden"
-                >
-                  {/* Corner brackets */}
-                  <div className="absolute top-0 left-0 w-12 h-12 border-t-4 border-l-4 border-blue-500 rounded-tl-xl"></div>
-                  <div className="absolute top-0 right-0 w-12 h-12 border-t-4 border-r-4 border-blue-500 rounded-tr-xl"></div>
-                  <div className="absolute bottom-0 left-0 w-12 h-12 border-b-4 border-l-4 border-blue-500 rounded-bl-xl"></div>
-                  <div className="absolute bottom-0 right-0 w-12 h-12 border-b-4 border-r-4 border-blue-500 rounded-br-xl"></div>
-                  
-                  {/* Scanning line animation */}
-                  <motion.div 
-                    initial={{ top: 0 }}
-                    animate={{ top: "100%" }}
-                    transition={{ duration: 2.5, repeat: Infinity, repeatType: "reverse", ease: "linear" }}
-                    className="absolute left-0 right-0 h-0.5 bg-blue-400 shadow-[0_0_12px_2px_rgba(96,165,250,0.8)] z-10"
-                  />
-
-                  <div className="absolute top-1/2 left-0 right-0 text-center -translate-y-1/2 hidden md:block">
-                    <p className="text-white text-xl font-bold drop-shadow-md">Align Passport Here</p>
-                    <p className="text-white/90 text-sm drop-shadow-md mt-1">Ensure good lighting and readability</p>
-                  </div>
-                </div>
-              </div>
-              <div className="absolute top-12 left-0 right-0 text-center pointer-events-none md:hidden z-10 px-4">
-                <p className="text-white text-lg font-bold drop-shadow-md">Position passport within frame</p>
-              </div>
-
-              {hasZoom && (
-                <div className="absolute bottom-8 left-8 right-8 z-20 flex items-center gap-3 bg-black/50 backdrop-blur rounded-full px-4 py-2 border border-white/20 shadow-lg max-w-sm mx-auto">
-                  <span className="text-white font-mono text-xs font-bold w-8 text-right">{Number(zoom).toFixed(1)}x</span>
-                  <input 
-                    type="range" 
-                    min={minZoom} 
-                    max={maxZoom} 
-                    step="0.1" 
-                    value={zoom}
-                    onChange={handleZoomChange}
-                    className="flex-1 h-2 bg-white/30 rounded-lg appearance-none cursor-pointer accent-blue-500"
-                  />
-                </div>
-              )}
-
-              <canvas ref={canvasRef} className="hidden" />
-            </div>
-
-            <div className="h-32 bg-black pb-safe-area flex items-center justify-center gap-8 px-8 border-t border-white/10 z-20">
-              <button 
-                onClick={stopCamera}
-                className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white text-base font-semibold rounded-xl transition-colors min-w-[120px]"
-              >
-                Cancel
-              </button>
-              <button 
-                onClick={capturePhoto}
-                className="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white text-base font-bold rounded-xl shadow-[0_0_20px_rgba(37,99,235,0.4)] flex items-center gap-2 transition-all active:scale-95"
-              >
-                <Camera className="w-5 h-5" /> Capture Profile
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Delete Confirmation Modal */}
       <AnimatePresence>
