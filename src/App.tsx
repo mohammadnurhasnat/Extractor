@@ -20,6 +20,7 @@ import { HistorySidebar } from './components/HistorySidebar';
 // Utilities
 import {
   getPresentAddress,
+  getPermanentAddress,
   getDistrictFromAddress,
   getGeneratedEmail,
   getProprietorBusinessName,
@@ -442,6 +443,7 @@ export default function App() {
   };
 
   const presentAddr = getPresentAddress(data);
+  const permanentAddr = getPermanentAddress(data);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 font-sans text-slate-900 dark:text-zinc-50 pb-12 selection:bg-blue-100 dark:selection:bg-blue-900/50 transition-colors">
@@ -858,7 +860,7 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-x-3 gap-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-3">
                     <DataField label="EMAIL" value={getGeneratedEmail(data)} highlight onValueChange={(val) => updateDataField('email', val)} />
                     <DataField label="DOB" value={data.dob} onValueChange={(val) => updateDataField('dob', val)} />
                     <DataField label="Surname" value={data.surname} onValueChange={(val) => updateDataField('surname', val)} />
@@ -870,16 +872,16 @@ export default function App() {
                     <DataField label="Date of Issue" value={data.issueDate} onValueChange={(val) => updateDataField('issueDate', val)} />
                     <DataField label="Date of Expiry" value={data.expiryDate} onValueChange={(val) => updateDataField('expiryDate', val)} />
                     
-                    <div className="col-span-2 pt-2 border-t border-slate-100 dark:border-zinc-800/50"></div>
+                    <div className="col-span-1 sm:col-span-2 pt-2 border-t border-slate-100 dark:border-zinc-800/50"></div>
                     
-                    <div className="col-span-2">
+                    <div className="col-span-1 sm:col-span-2">
                        <DataField label="PRESENT ADDRESS" value={presentAddr} onValueChange={(val) => updateDataField('presentAddress', val)} />
                     </div>
-                    <div className="col-span-2">
-                       <DataField label="PERMANENT ADDRESS" value={data.permanentAddress} onValueChange={(val) => updateDataField('permanentAddress', val)} />
+                    <div className="col-span-1 sm:col-span-2">
+                       <DataField label="PERMANENT ADDRESS" value={permanentAddr} onValueChange={(val) => updateDataField('permanentAddress', val)} />
                     </div>
 
-                    <div className="col-span-2 pt-3 border-t border-slate-100 dark:border-zinc-800/50 mt-2">
+                    <div className="col-span-1 sm:col-span-2 pt-3 border-t border-slate-100 dark:border-zinc-800/50 mt-2">
                       <h4 className="text-xs font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider mb-2.5">Additional Information</h4>
                     </div>
                     
@@ -887,13 +889,13 @@ export default function App() {
                     <DataField label="Mother's Name" value={data.motherName} onValueChange={(val) => updateDataField('motherName', val)} />
                     <DataField label="Spouse's Name" value={data.spouseName || "N/A"} onValueChange={(val) => updateDataField('spouseName', val)} />
                     <DataField label="Mobile Number" value={data.mobileNumber ? data.mobileNumber.replace(/^\+88\s*/, '') : ''} onValueChange={(val) => updateDataField('mobileNumber', val)} />
-                    <DataField label="Town/City of birth/BIRTH PLACE" value={getDistrictFromAddress(data.permanentAddress, data)} onValueChange={(val) => updateDataField('birthPlaceDistrict', val)} />
+                    <DataField label="Town/City of birth/BIRTH PLACE" value={getDistrictFromAddress(permanentAddr, data)} onValueChange={(val) => updateDataField('birthPlaceDistrict', val)} />
 
-                    <div className="col-span-2 pt-3 border-t border-slate-100 dark:border-zinc-800/50 mt-2">
+                    <div className="col-span-1 sm:col-span-2 pt-3 border-t border-slate-100 dark:border-zinc-800/50 mt-2">
                       <h4 className="text-xs font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider mb-2.5">Business & Profession Details</h4>
                     </div>
                     
-                    <div className="col-span-2 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                    <div className="col-span-1 sm:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                       {/* Proprietorship */}
                       <div className="space-y-3 bg-slate-50/50 dark:bg-black/30 p-4 rounded-xl border border-slate-100 dark:border-zinc-800/50">
                         <h5 className="text-sm font-semibold text-slate-700 dark:text-zinc-300 border-b border-slate-200 dark:border-zinc-800/50 pb-2 mb-1">Business (Proprietorship)</h5>
@@ -903,7 +905,7 @@ export default function App() {
                           <DataField label="Business Address (Present)" value={getBusinessAddressDhaka(presentAddr, data)} onValueChange={(val) => updateDataField('businessAddressDhaka', val)} />
                         </div>
                         <div className="pt-2">
-                          <DataField label="Business Address (Permanent)" value={getBusinessAddressLocal(data.permanentAddress, data)} onValueChange={(val) => updateDataField('businessAddressLocal', val)} />
+                          <DataField label="Business Address (Permanent)" value={getBusinessAddressLocal(permanentAddr, data)} onValueChange={(val) => updateDataField('businessAddressLocal', val)} />
                         </div>
                       </div>
 
@@ -916,7 +918,7 @@ export default function App() {
                           <DataField label="Office Address (Present)" value={getOfficeAddressDhaka(presentAddr, data)} onValueChange={(val) => updateDataField('officeAddressDhaka', val)} />
                         </div>
                         <div className="pt-2">
-                          <DataField label="Office Address (Permanent)" value={getBusinessAddressLocal(data.permanentAddress, data)} onValueChange={(val) => updateDataField('businessAddressLocal', val)} />
+                          <DataField label="Office Address (Permanent)" value={getBusinessAddressLocal(permanentAddr, data)} onValueChange={(val) => updateDataField('businessAddressLocal', val)} />
                         </div>
                       </div>
                     </div>

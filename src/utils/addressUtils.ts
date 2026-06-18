@@ -67,12 +67,19 @@ export const generateBangladeshiAddress = (
 
     if (formatIndex === 0) {
       // Form 1: House 14, Road 6, Block C, Banani, Dhaka-1213
+      // OR Form 1b: House 45, Road 12, Sector 10, Uttara, Dhaka-1230
       const h = houseNums[seed % houseNums.length];
       const r = roadNums[(seed + 1) % roadNums.length];
-      const b = blocks[(seed + 2) % blocks.length];
-      const a = bananis[(seed + 3) % bananis.length];
-      const pc = getPostCode(a);
-      return `House ${h}, Road ${r}, Block ${b}, ${a}, ${districtProper}-${pc}`;
+      if (seed % 2 === 0) {
+        const sec = (seed % 14) + 1;
+        const pc = "1230"; // Uttara postcode
+        return `House ${h}, Road ${r}, Sector ${sec}, Uttara, ${districtProper}-${pc}`;
+      } else {
+        const b = blocks[(seed + 2) % blocks.length];
+        const a = bananis[(seed + 3) % bananis.length];
+        const pc = getPostCode(a);
+        return `House ${h}, Road ${r}, Block ${b}, ${a}, ${districtProper}-${pc}`;
+      }
       
     } else if (formatIndex === 1) {
       // Form 2: 3B, 45/2 Mirpur Road, Dhanmondi, Dhaka-1209
@@ -289,13 +296,93 @@ export const getBusinessAddressLocal = (permanentAddress: string, itemData?: Pas
   return generateBangladeshiAddress(district, seedStr, 'local');
 };
 
+export const generatePermanentAddressForDistrict = (district: string, seedString: string): string => {
+  const normDistrict = (district || 'Munshiganj')
+    .trim()
+    .replace(/(district|zilla|zilla\s+of)/i, '')
+    .trim();
+  const districtUpper = normDistrict.toUpperCase() || 'MUNSHIGANJ';
+  
+  const seed = seedString.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  
+  // Real Thanas & Post Offices & Villages per District for realism
+  const db: Record<string, { thana: string; po: string; pc: string; villages: string[] }[]> = {
+    'MUNSHIGANJ': [
+      { thana: "SREENAGAR", po: "SREENAGAR", pc: "1550", villages: ["HARPARA", "KUKUTIA", "BAGHRA", "BHAGYAKUL"] },
+      { thana: "LOUHAJANG", po: "LOUHAJANG", pc: "1530", villages: ["MEDINIMANDAL", "KALTIA", "GANDHARBAPUR"] },
+      { thana: "SIRAJDIKHAN", po: "SIRAJDIKHAN", pc: "1540", villages: ["BALUSHUR", "CHHATIANTAL", "RUSHIDIA"] }
+    ],
+    'GOPALGANJ': [
+      { thana: "MUKSUDPUR", po: "MAJHIGATI", pc: "8131", villages: ["MAJHIGATI", "NANIKHIAL", "RAGHURAMPUR"] },
+      { thana: "MUKSUDPUR", po: "BONOGRAM", pc: "8151", villages: ["MALIGRAM", "BONOGRAM", "CHARPRASANNAPUR"] },
+      { thana: "TUNGIPARA", po: "TUNGIPARA", pc: "8120", villages: ["GIMADANGA", "PATGATI", "KARCHALIA"] },
+      { thana: "KOTALIPARA", po: "KOTALIPARA", pc: "8110", villages: ["PINJURI", "SUKHAIL", "RAMSHIL"] }
+    ],
+    'DHAKA': [
+      { thana: "SAVAR", po: "SAVAR", pc: "1340", villages: ["BANKTOWN", "REJUPUR", "NIDHIN"] },
+      { thana: "KERANIGANJ", po: "KERANIGANJ", pc: "1310", villages: ["ZINZIRA", "KALATIA", "ROHITPUR"] },
+      { thana: "DHAMRAI", po: "DHAMRAI", pc: "1350", villages: ["SUAPUR", "KUSHURA", "SUTIPARA"] }
+    ],
+    'COMILLA': [
+      { thana: "LAKSHAM", po: "LAKSHAM", pc: "3570", villages: ["GABTALI", "HEMAMPUR", "KANDIRPAR"] },
+      { thana: "CHAUDDAGRAM", po: "CHAUDDAGRAM", pc: "3510", villages: ["ALIPUR", "BATISA", "JAGANNATHPUR"] }
+    ],
+    'CUMILLA': [
+      { thana: "LAKSHAM", po: "LAKSHAM", pc: "3570", villages: ["GABTALI", "HEMAMPUR", "KANDIRPAR"] },
+      { thana: "CHAUDDAGRAM", po: "CHAUDDAGRAM", pc: "3510", villages: ["ALIPUR", "BATISA", "JAGANNATHPUR"] }
+    ],
+    'RANGPUR': [
+      { thana: "MITHAPUKUR", po: "MITHAPUKUR", pc: "5460", villages: ["SHALTI", "BALUA", "RAMNATHPUR"] },
+      { thana: "PIRGANJ", po: "PIRGANJ", pc: "5470", villages: ["KHALISPUR", "LALDIGHI", "DAUDPRASAD"] }
+    ],
+    'GAZIPUR': [
+      { thana: "KALIGANJ", po: "KALIGANJ", pc: "1720", villages: ["BALIGAON", "JANGALIA", "TUMILIA"] },
+      { thana: "SREEPUR", po: "SREEPUR", pc: "1740", villages: ["MAWNA", "BARMI", "TELIATI"] }
+    ]
+  };
+  
+  // Choose standard fallback if no key matched
+  const options = db[districtUpper] || [
+    { 
+      thana: `${districtUpper} SADAR`, 
+      po: `${districtUpper} SADAR`, 
+      pc: (1000 + (seed % 8000)).toString(), 
+      villages: ["HARIPUR", "ROYPUR", "KRISHNAPUR", "SUNDARPUR", "UTTARPARA", "SOUTHPARA"] 
+    }
+  ];
+  
+  const chosenArea = options[seed % options.length];
+  const chosenVillage = chosenArea.villages[(seed + 3) % chosenArea.villages.length];
+  
+  // Format strictly like: HARPARA, SREENAGAR, SREENAGAR - 1550, MUNSHIGANJ
+  return `${chosenVillage}, ${chosenArea.po}, ${chosenArea.thana} - ${chosenArea.pc}, ${districtUpper}`;
+};
+
+export const getPermanentAddress = (itemData: PassportData | null): string => {
+  if (!itemData) return "HARPARA, SREENAGAR, SREENAGAR - 1550, MUNSHIGANJ";
+  
+  if (itemData.permanentAddress) {
+    const commaCount = (itemData.permanentAddress.match(/,/g) || []).length;
+    if (commaCount >= 2) {
+      return itemData.permanentAddress;
+    }
+    // If it has permanentAddress but not in a clean 3+ part format, reformat it
+    const dist = getDistrictFromAddress(itemData.permanentAddress, itemData) || "Munshiganj";
+    return generatePermanentAddressForDistrict(dist, itemData.passportNumber || itemData.givenName || 'seeder_perm');
+  }
+
+  const dist = getDistrictFromAddress(itemData.presentAddress, itemData) || itemData.birthPlaceDistrict || itemData.birthPlace || "Munshiganj";
+  return generatePermanentAddressForDistrict(dist, itemData.passportNumber || itemData.givenName || 'seeder_perm');
+};
+
 export const generateDataText = (itemData: PassportData | null): string => {
   if (!itemData) return '';
   
   const presentAddr = getPresentAddress(itemData);
+  const permanentAddr = getPermanentAddress(itemData);
   const dhakaBizAddr = getBusinessAddressDhaka(presentAddr, itemData);
   const officeAddr = getOfficeAddressDhaka(presentAddr, itemData);
-  const localBizAddr = getBusinessAddressLocal(itemData.permanentAddress, itemData);
+  const localBizAddr = getBusinessAddressLocal(permanentAddr, itemData);
 
   return `=== PASSPORT DATA ===
 EMAIL: ${getGeneratedEmail(itemData)}
@@ -312,14 +399,14 @@ Place of Issue: ${itemData.placeOfIssue || "DHAKA"}
 
 === ADDRESS ===
 PRESENT ADDRESS: ${presentAddr}
-PERMANENT ADDRESS: ${itemData.permanentAddress}
+PERMANENT ADDRESS: ${permanentAddr}
 
 === ADDITIONAL INFORMATION ===
 Father's Name: ${itemData.fatherName}
 Mother's Name: ${itemData.motherName}
 Spouse's Name: ${itemData.spouseName || "N/A"}
 Mobile Number: ${itemData.mobileNumber ? itemData.mobileNumber.replace(/^\+88\s*/, '') : ''}
-Town/City of birth/BIRTH PLACE: ${getDistrictFromAddress(itemData.permanentAddress, itemData)}
+Town/City of birth/BIRTH PLACE: ${getDistrictFromAddress(permanentAddr, itemData)}
 
 === BUSINESS DETAILS (PROPRIETORSHIP) ===
 Business Name: ${getProprietorBusinessName(itemData)}
