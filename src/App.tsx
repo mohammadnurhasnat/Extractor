@@ -38,10 +38,36 @@ import ExtractorLogo from './assets/images/extractor_logo_1779343193402.png';
 
 export default function App() {
   const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [preview, setPreview] = useState<string | null>(() => {
+    return localStorage.getItem('passport_active_preview') || null;
+  });
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<PassportData | null>(null);
+  const [data, setData] = useState<PassportData | null>(() => {
+    try {
+      const saved = localStorage.getItem('passport_active_data');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.error("Failed to load active data", e);
+    }
+    return null;
+  });
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (data) {
+      localStorage.setItem('passport_active_data', JSON.stringify(data));
+    } else {
+      localStorage.removeItem('passport_active_data');
+    }
+  }, [data]);
+
+  useEffect(() => {
+    if (preview) {
+      localStorage.setItem('passport_active_preview', preview);
+    } else {
+      localStorage.removeItem('passport_active_preview');
+    }
+  }, [preview]);
   
   // Batch queue states
   const [queue, setQueue] = useState<QueueItem[]>([]);
@@ -91,12 +117,69 @@ export default function App() {
 
   const [isOnline, setIsOnline] = useState(typeof window !== 'undefined' ? window.navigator.onLine : true);
 
-  const [resultsTab, setResultsTab] = useState<'profile' | 'undertaking'>('profile');
-  const [utPurpose, setUtPurpose] = useState('');
-  const [utFromDate, setUtFromDate] = useState('');
-  const [utToDate, setUtToDate] = useState('');
-  const [utReturnCountry, setUtReturnCountry] = useState('Bangladesh');
-  const [undertakingData, setUndertakingData] = useState<UndertakingFormData | null>(null);
+  const [resultsTab, setResultsTab] = useState<'profile' | 'undertaking'>(() => {
+    return (localStorage.getItem('passport_active_results_tab') as 'profile' | 'undertaking') || 'profile';
+  });
+  const [utPurpose, setUtPurpose] = useState(() => {
+    return localStorage.getItem('ut_purpose') || '';
+  });
+  const [utFromDate, setUtFromDate] = useState(() => {
+    return localStorage.getItem('ut_from_date') || '';
+  });
+  const [utToDate, setUtToDate] = useState(() => {
+    return localStorage.getItem('ut_to_date') || '';
+  });
+  const [utReturnCountry, setUtReturnCountry] = useState(() => {
+    return localStorage.getItem('ut_return_country') || 'Bangladesh';
+  });
+  const [undertakingData, setUndertakingData] = useState<UndertakingFormData | null>(() => {
+    try {
+      const saved = localStorage.getItem('active_undertaking_data');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.error(e);
+    }
+    return null;
+  });
+  const [isUndertakingEditable, setIsUndertakingEditable] = useState(() => {
+    return localStorage.getItem('is_undertaking_editable') !== 'false';
+  });
+
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);
+
+  // Sync basic states to localStorage
+  useEffect(() => {
+    localStorage.setItem('passport_active_results_tab', resultsTab);
+  }, [resultsTab]);
+
+  useEffect(() => {
+    localStorage.setItem('ut_purpose', utPurpose);
+    localStorage.setItem('ut_from_date', utFromDate);
+    localStorage.setItem('ut_to_date', utToDate);
+    localStorage.setItem('ut_return_country', utReturnCountry);
+  }, [utPurpose, utFromDate, utToDate, utReturnCountry]);
+
+  useEffect(() => {
+    localStorage.setItem('is_undertaking_editable', String(isUndertakingEditable));
+  }, [isUndertakingEditable]);
+
+  useEffect(() => {
+    if (undertakingData) {
+      localStorage.setItem('active_undertaking_data', JSON.stringify(undertakingData));
+    } else {
+      localStorage.removeItem('active_undertaking_data');
+    }
+  }, [undertakingData]);
+
+  // Toast auto-dismiss effect
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => {
+        setToast(null);
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
 
   const isUndertakingConfigured = !!(utPurpose || utFromDate || utToDate);
 
@@ -115,19 +198,69 @@ export default function App() {
       
       const todayStr = new Date().toLocaleDateString('en-GB');
 
-      setUndertakingData({
-        fullName: `${data.givenName || ''} ${data.surname || ''}`.trim().toUpperCase(),
-        passportNumber: data.passportNumber || '',
-        nationality: 'Bangladeshi',
-        dob: data.dob || '',
-        address: getPresentAddress(data) || '',
-        purpose: utPurpose || '',
-        travelFrom: utFromDate ? new Date(utFromDate).toLocaleDateString('en-GB') : '',
-        travelTo: utToDate ? new Date(utToDate).toLocaleDateString('en-GB') : '',
-        duration: durationStr,
-        returnCountry: utReturnCountry || 'Bangladesh',
-        date: todayStr
-      });
+      // Check if we have loaded or saved undertaking data in localStorage for this passport
+      let savedData: UndertakingFormData | null = null;
+      try {
+        const saved = localStorage.getItem('active_undertaking_data');
+        if (saved) {
+          const parsed = JSON.parse(saved) as UndertakingFormData;
+          if (parsed && parsed.passportNumber === (data.passportNumber || '')) {
+            savedData = parsed;
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load saved undertaking data", e);
+      }
+
+      if (savedData) {
+        // We have saved data. Check if date option settings changed to sync them, otherwise preserve custom user inputs
+        const updatedTravelFrom = utFromDate ? new Date(utFromDate).toLocaleDateString('en-GB') : '';
+        const updatedTravelTo = utToDate ? new Date(utToDate).toLocaleDateString('en-GB') : '';
+        
+        let hasConfigChanges = false;
+        const merged = { ...savedData };
+
+        if (utPurpose && merged.purpose !== utPurpose) {
+          merged.purpose = utPurpose;
+          hasConfigChanges = true;
+        }
+        if (updatedTravelFrom && merged.travelFrom !== updatedTravelFrom) {
+          merged.travelFrom = updatedTravelFrom;
+          hasConfigChanges = true;
+        }
+        if (updatedTravelTo && merged.travelTo !== updatedTravelTo) {
+          merged.travelTo = updatedTravelTo;
+          hasConfigChanges = true;
+        }
+        if (durationStr && merged.duration !== durationStr) {
+          merged.duration = durationStr;
+          hasConfigChanges = true;
+        }
+        if (utReturnCountry && merged.returnCountry !== utReturnCountry) {
+          merged.returnCountry = utReturnCountry;
+          hasConfigChanges = true;
+        }
+
+        if (hasConfigChanges) {
+          setUndertakingData(merged);
+        } else {
+          setUndertakingData(savedData);
+        }
+      } else {
+        setUndertakingData({
+          fullName: `${data.givenName || ''} ${data.surname || ''}`.trim().toUpperCase(),
+          passportNumber: data.passportNumber || '',
+          nationality: 'Bangladeshi',
+          dob: data.dob || '',
+          address: getPresentAddress(data) || '',
+          purpose: utPurpose || '',
+          travelFrom: utFromDate ? new Date(utFromDate).toLocaleDateString('en-GB') : '',
+          travelTo: utToDate ? new Date(utToDate).toLocaleDateString('en-GB') : '',
+          duration: durationStr,
+          returnCountry: utReturnCountry || 'Bangladesh',
+          date: todayStr
+        });
+      }
     } else {
       setUndertakingData(null);
     }
@@ -292,6 +425,38 @@ export default function App() {
         ...prev,
         [field]: value
       } : null);
+    }
+  };
+
+  const handleDownloadUndertaking = async () => {
+    if (!undertakingData) {
+      setToast({
+        message: "No undertaking data available. Please select a passport and configure the options on the left.",
+        type: "error"
+      });
+      return;
+    }
+
+    setToast({
+      message: "Generating Visa Undertaking PDF... Please wait, downloading will start momentarily.",
+      type: "info"
+    });
+
+    // Short graceful pause to allow user to see the "Generating..." notification
+    await new Promise(resolve => setTimeout(resolve, 850));
+
+    try {
+      generateUndertakingPDF(undertakingData);
+      setToast({
+        message: "Success! Visa Undertaking PDF downloaded successfully.",
+        type: "success"
+      });
+    } catch (err: any) {
+      console.error(err);
+      setToast({
+        message: "Error generating the document. Please try again.",
+        type: "error"
+      });
     }
   };
 
@@ -1087,17 +1252,51 @@ export default function App() {
                         <div>
                           <h2 className="text-lg font-bold flex items-center gap-2 text-slate-800 dark:text-zinc-100">
                             <FileText className="w-5 h-5 text-teal-600" />
-                            Edit Visa Undertaking Document
+                            {isUndertakingEditable ? "Edit Visa Undertaking Document" : "Preview Visa Undertaking Document"}
                           </h2>
-                          <p className="text-xs text-slate-400 dark:text-zinc-500 font-medium">Click on any text or blank line below to edit before downloading.</p>
+                          <p className="text-xs text-slate-400 dark:text-zinc-500 font-medium font-sans">
+                            {isUndertakingEditable 
+                              ? "Click on any text or blank line below to edit before downloading." 
+                              : "This is an elegant read-only live preview of your final undertaking document."
+                            }
+                          </p>
                         </div>
-                        <button
-                          onClick={() => generateUndertakingPDF(undertakingData)}
-                          className="flex items-center gap-1.5 px-4 py-2 bg-[#FF8006] hover:bg-[#FF8006]/90 text-white text-xs sm:text-sm font-bold rounded-lg transition-all shadow-sm active:scale-95 duration-100 cursor-pointer self-start sm:self-auto"
-                        >
-                          <Download className="w-4 h-4" />
-                          Download Undertaking PDF
-                        </button>
+
+                        <div className="flex flex-wrap items-center gap-3">
+                          {/* Toggle Switch */}
+                          <div className="bg-slate-100 dark:bg-zinc-800/50 p-1 rounded-lg flex items-center gap-1 text-xs border border-slate-200 dark:border-zinc-700/60 print:hidden">
+                            <button
+                              onClick={() => setIsUndertakingEditable(false)}
+                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-bold transition-all cursor-pointer ${
+                                !isUndertakingEditable
+                                  ? 'bg-white dark:bg-zinc-900 shadow-sm text-teal-650 dark:text-teal-400 font-extrabold border border-slate-205 dark:border-zinc-800'
+                                  : 'text-slate-500 hover:text-slate-700 dark:text-zinc-400 dark:hover:text-zinc-350'
+                              }`}
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                              Read-Only Preview
+                            </button>
+                            <button
+                              onClick={() => setIsUndertakingEditable(true)}
+                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-bold transition-all cursor-pointer ${
+                                isUndertakingEditable
+                                  ? 'bg-white dark:bg-zinc-900 shadow-sm text-teal-650 dark:text-teal-400 font-extrabold border border-slate-205 dark:border-zinc-800'
+                                  : 'text-slate-500 hover:text-slate-700 dark:text-zinc-400 dark:hover:text-zinc-350'
+                              }`}
+                            >
+                              <Settings className="w-3.5 h-3.5" />
+                              Editable Mode
+                            </button>
+                          </div>
+
+                          <button
+                            onClick={handleDownloadUndertaking}
+                            className="flex items-center gap-1.5 px-4 py-2 bg-[#FF8006] hover:bg-[#FF8006]/90 text-white text-xs sm:text-sm font-bold rounded-lg transition-all shadow-sm active:scale-95 duration-100 cursor-pointer self-start sm:self-auto"
+                          >
+                            <Download className="w-4 h-4" />
+                            Download Undertaking PDF
+                          </button>
+                        </div>
                       </div>
 
                       <div className="bg-white dark:bg-zinc-950 p-6 sm:p-12 border border-slate-200 dark:border-zinc-800 rounded-xl shadow-inner font-serif text-slate-900 dark:text-zinc-100 text-xs sm:text-sm space-y-6 leading-relaxed relative print:border-none print:shadow-none print:p-0">
@@ -1108,53 +1307,75 @@ export default function App() {
                         <div className="space-y-4 pt-2">
                           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                             <span>I,</span>
-                            <input 
-                              type="text" 
-                              value={undertakingData.fullName}
-                              onChange={(e) => handleUpdateUndertakingField('fullName', e.target.value)}
-                              className="min-w-[200px] flex-1 max-w-[400px] bg-slate-50 dark:bg-zinc-900 border-b border-dashed border-slate-400 dark:border-zinc-700 px-2 py-0.5 font-bold text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500"
-                              placeholder="[Full Name]"
-                            />
+                            {isUndertakingEditable ? (
+                              <input 
+                                type="text" 
+                                value={undertakingData.fullName}
+                                onChange={(e) => handleUpdateUndertakingField('fullName', e.target.value)}
+                                className="min-w-[200px] flex-1 max-w-[400px] bg-slate-50 dark:bg-zinc-900 border-b border-dashed border-slate-400 dark:border-zinc-700 px-2 py-0.5 font-bold text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500"
+                                placeholder="[Full Name]"
+                              />
+                            ) : (
+                              <span className="font-bold border-b border-slate-300 dark:border-zinc-700 px-2 min-w-[150px] text-teal-600 dark:text-teal-400 inline-block">{undertakingData.fullName || '______________________'}</span>
+                            )}
                             <span>, bearing Passport No.</span>
-                            <input 
-                              type="text" 
-                              value={undertakingData.passportNumber}
-                              onChange={(e) => handleUpdateUndertakingField('passportNumber', e.target.value)}
-                              className="min-w-[120px] bg-slate-50 dark:bg-zinc-900 border-b border-dashed border-slate-400 dark:border-zinc-700 px-2 py-0.5 text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500 font-semibold"
-                              placeholder="[Passport Number]"
-                            />
+                            {isUndertakingEditable ? (
+                              <input 
+                                type="text" 
+                                value={undertakingData.passportNumber}
+                                onChange={(e) => handleUpdateUndertakingField('passportNumber', e.target.value)}
+                                className="min-w-[120px] bg-slate-50 dark:bg-zinc-900 border-b border-dashed border-slate-400 dark:border-zinc-700 px-2 py-0.5 text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500 font-semibold"
+                                placeholder="[Passport Number]"
+                              />
+                            ) : (
+                              <span className="font-semibold underline decoration-dashed decoration-slate-400 px-2 text-slate-900 dark:text-zinc-100">{undertakingData.passportNumber || '___________'}</span>
+                            )}
                             <span>,</span>
                           </div>
 
                           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                             <span>Nationality</span>
-                            <input 
-                              type="text" 
-                              value={undertakingData.nationality}
-                              onChange={(e) => handleUpdateUndertakingField('nationality', e.target.value)}
-                              className="min-w-[100px] bg-slate-50 dark:bg-zinc-900 border-b border-dashed border-slate-400 dark:border-zinc-700 px-2 py-0.5 text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500"
-                              placeholder="[Nationality]"
-                            />
+                            {isUndertakingEditable ? (
+                              <input 
+                                type="text" 
+                                value={undertakingData.nationality}
+                                onChange={(e) => handleUpdateUndertakingField('nationality', e.target.value)}
+                                className="min-w-[100px] bg-slate-50 dark:bg-zinc-900 border-b border-dashed border-slate-400 dark:border-zinc-700 px-2 py-0.5 text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500"
+                                placeholder="[Nationality]"
+                              />
+                            ) : (
+                              <span className="underline decoration-dashed decoration-slate-400 px-2 text-slate-900 dark:text-zinc-100">{undertakingData.nationality || '_______'}</span>
+                            )}
                             <span>, Date of Birth</span>
-                            <input 
-                              type="text" 
-                              value={undertakingData.dob}
-                              onChange={(e) => handleUpdateUndertakingField('dob', e.target.value)}
-                              className="min-w-[110px] bg-slate-50 dark:bg-zinc-900 border-b border-dashed border-slate-400 dark:border-zinc-700 px-2 py-0.5 text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500"
-                              placeholder="[DD/MM/YYYY]"
-                            />
+                            {isUndertakingEditable ? (
+                              <input 
+                                type="text" 
+                                value={undertakingData.dob}
+                                onChange={(e) => handleUpdateUndertakingField('dob', e.target.value)}
+                                className="min-w-[110px] bg-slate-50 dark:bg-zinc-900 border-b border-dashed border-slate-400 dark:border-zinc-700 px-2 py-0.5 text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500"
+                                placeholder="[DD/MM/YYYY]"
+                              />
+                            ) : (
+                              <span className="underline decoration-dashed decoration-slate-400 px-2 text-slate-900 dark:text-zinc-100">{undertakingData.dob || '__________'}</span>
+                            )}
                             <span>,</span>
                           </div>
 
                           <div className="flex flex-col sm:flex-row items-start gap-1">
                             <span className="shrink-0">Resident at (Address):</span>
-                            <textarea 
-                              rows={2}
-                              value={undertakingData.address}
-                              onChange={(e) => handleUpdateUndertakingField('address', e.target.value)}
-                              className="w-full bg-slate-50 dark:bg-zinc-900 border border-dashed border-slate-350 dark:border-zinc-700 rounded p-1.5 text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500 resize-none font-serif leading-relaxed"
-                              placeholder="[Full Address]"
-                            />
+                            {isUndertakingEditable ? (
+                              <textarea 
+                                rows={2}
+                                value={undertakingData.address}
+                                onChange={(e) => handleUpdateUndertakingField('address', e.target.value)}
+                                className="w-full bg-slate-50 dark:bg-zinc-900 border border-dashed border-slate-350 dark:border-zinc-700 rounded p-1.5 text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500 resize-none font-serif leading-relaxed"
+                                placeholder="[Full Address]"
+                              />
+                            ) : (
+                              <div className="w-full underline decoration-dashed decoration-slate-400 px-2 text-slate-900 dark:text-zinc-100 font-serif leading-relaxed whitespace-pre-wrap">
+                                {undertakingData.address || '____________________________________________________________________'}
+                              </div>
+                            )}
                           </div>
 
                           <div className="pt-2">
@@ -1165,57 +1386,77 @@ export default function App() {
                         <div className="space-y-4 pt-2">
                           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                             <span>1. My Purpose of Visit to India is</span>
-                            <select
-                              value={undertakingData.purpose}
-                              onChange={(e) => handleUpdateUndertakingField('purpose', e.target.value)}
-                              className="min-w-[150px] bg-slate-50 dark:bg-zinc-900 border-b border-dashed border-slate-400 dark:border-zinc-700 px-2 py-0.5 text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500 cursor-pointer font-semibold"
-                            >
-                              <option value="Tourism">Tourism</option>
-                              <option value="Business">Business</option>
-                              <option value="Medical Treatment - Patient">Medical Treatment - Patient</option>
-                              <option value="Medical Treatment - Attendance">Medical Treatment - Attendance</option>
-                              <option value="Double Entry">Double Entry</option>
-                            </select>
+                            {isUndertakingEditable ? (
+                              <select
+                                value={undertakingData.purpose}
+                                onChange={(e) => handleUpdateUndertakingField('purpose', e.target.value)}
+                                className="min-w-[150px] bg-slate-50 dark:bg-zinc-900 border-b border-dashed border-slate-400 dark:border-zinc-700 px-2 py-0.5 text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500 cursor-pointer font-semibold"
+                              >
+                                <option value="Tourism">Tourism</option>
+                                <option value="Business">Business</option>
+                                <option value="Medical Treatment - Patient">Medical Treatment - Patient</option>
+                                <option value="Medical Treatment - Attendance">Medical Treatment - Attendance</option>
+                                <option value="Double Entry">Double Entry</option>
+                              </select>
+                            ) : (
+                              <span className="font-bold underline decoration-dashed decoration-slate-400 px-2 text-slate-900 dark:text-zinc-100">{undertakingData.purpose || '_______________'}</span>
+                            )}
                             <span>.</span>
                           </div>
 
                           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                             <span>2. I intend to stay in India for a duration of</span>
-                            <input 
-                              type="text" 
-                              value={undertakingData.duration}
-                              onChange={(e) => handleUpdateUndertakingField('duration', e.target.value)}
-                              className="min-w-[80px] text-center bg-slate-50 dark:bg-zinc-900 border-b border-dashed border-slate-400 dark:border-zinc-700 px-2 py-0.5 font-bold text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500"
-                              placeholder="[Duration]"
-                            />
+                            {isUndertakingEditable ? (
+                              <input 
+                                type="text" 
+                                value={undertakingData.duration}
+                                onChange={(e) => handleUpdateUndertakingField('duration', e.target.value)}
+                                className="min-w-[80px] text-center bg-slate-50 dark:bg-zinc-900 border-b border-dashed border-slate-400 dark:border-zinc-700 px-2 py-0.5 font-bold text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500"
+                                placeholder="[Duration]"
+                              />
+                            ) : (
+                              <span className="font-bold underline decoration-dashed decoration-slate-400 px-2 text-slate-900 dark:text-zinc-100">{undertakingData.duration || '_______'}</span>
+                            )}
                             <span>starting from</span>
-                            <input 
-                              type="text" 
-                              value={undertakingData.travelFrom}
-                              onChange={(e) => handleUpdateUndertakingField('travelFrom', e.target.value)}
-                              className="min-w-[100px] text-center bg-slate-50 dark:bg-zinc-900 border-b border-dashed border-slate-400 dark:border-zinc-700 px-2 py-0.5 text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500"
-                              placeholder="[From Date]"
-                            />
+                            {isUndertakingEditable ? (
+                              <input 
+                                type="text" 
+                                value={undertakingData.travelFrom}
+                                onChange={(e) => handleUpdateUndertakingField('travelFrom', e.target.value)}
+                                className="min-w-[100px] text-center bg-slate-50 dark:bg-zinc-900 border-b border-dashed border-slate-400 dark:border-zinc-700 px-2 py-0.5 text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500"
+                                placeholder="[From Date]"
+                              />
+                            ) : (
+                              <span className="underline decoration-dashed decoration-slate-400 px-2 text-slate-900 dark:text-zinc-100">{undertakingData.travelFrom || '__________'}</span>
+                            )}
                             <span>to</span>
-                            <input 
-                              type="text" 
-                              value={undertakingData.travelTo}
-                              onChange={(e) => handleUpdateUndertakingField('travelTo', e.target.value)}
-                              className="min-w-[100px] text-center bg-slate-50 dark:bg-zinc-900 border-b border-dashed border-slate-400 dark:border-zinc-700 px-2 py-0.5 text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500"
-                              placeholder="[To Date]"
-                            />
+                            {isUndertakingEditable ? (
+                              <input 
+                                type="text" 
+                                value={undertakingData.travelTo}
+                                onChange={(e) => handleUpdateUndertakingField('travelTo', e.target.value)}
+                                className="min-w-[100px] text-center bg-slate-50 dark:bg-zinc-900 border-b border-dashed border-slate-400 dark:border-zinc-700 px-2 py-0.5 text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500"
+                                placeholder="[To Date]"
+                              />
+                            ) : (
+                              <span className="underline decoration-dashed decoration-slate-400 px-2 text-slate-900 dark:text-zinc-100">{undertakingData.travelTo || '__________'}</span>
+                            )}
                             <span>.</span>
                           </div>
 
                           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                             <span>3. I swear to return to my home country</span>
-                            <input 
-                              type="text" 
-                              value={undertakingData.returnCountry}
-                              onChange={(e) => handleUpdateUndertakingField('returnCountry', e.target.value)}
-                              className="min-w-[110px] bg-slate-50 dark:bg-zinc-900 border-b border-dashed border-slate-400 dark:border-zinc-700 px-2 py-0.5 text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500 font-semibold"
-                              placeholder="[Return Country]"
-                            />
+                            {isUndertakingEditable ? (
+                              <input 
+                                type="text" 
+                                value={undertakingData.returnCountry}
+                                onChange={(e) => handleUpdateUndertakingField('returnCountry', e.target.value)}
+                                className="min-w-[110px] bg-slate-50 dark:bg-zinc-900 border-b border-dashed border-slate-400 dark:border-zinc-700 px-2 py-0.5 text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500 font-semibold"
+                                placeholder="[Return Country]"
+                              />
+                            ) : (
+                              <span className="underline decoration-dashed decoration-slate-400 px-2 text-slate-900 dark:text-zinc-100 font-semibold">{undertakingData.returnCountry || '___________'}</span>
+                            )}
                             <span>upon completion of my authorized stay.</span>
                           </div>
 
@@ -1224,19 +1465,23 @@ export default function App() {
                           </div>
                         </div>
 
-                        <div className="pt-8 border-t border-slate-100 dark:border-zinc-805/50 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6">
-                          <div className="space-y-1.0">
-                            <div className="font-bold">Signature of Applicant:</div>
-                            <div className="text-[10px] text-slate-400 dark:text-zinc-500 italic mt-1 font-sans">(Physical Signature required on printed copy)</div>
+                        <div className="pt-8 border-t border-slate-100 dark:border-zinc-805/50 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 font-sans">
+                          <div className="space-y-1">
+                            <div className="font-bold text-slate-900 dark:text-zinc-100 font-serif">Signature of Applicant:</div>
+                            <div className="text-[10px] text-slate-400 dark:text-zinc-500 italic mt-1">(Physical Signature required on printed copy)</div>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="font-bold">Date:</span>
-                            <input 
-                              type="text" 
-                              value={undertakingData.date}
-                              onChange={(e) => handleUpdateUndertakingField('date', e.target.value)}
-                              className="min-w-[100px] text-center bg-slate-50 dark:bg-zinc-900 border-b border-dashed border-slate-400 dark:border-zinc-700 px-2 py-0.5 text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500 font-bold"
-                            />
+                            <span className="font-bold text-slate-900 dark:text-zinc-100 font-serif">Date:</span>
+                            {isUndertakingEditable ? (
+                              <input 
+                                type="text" 
+                                value={undertakingData.date}
+                                onChange={(e) => handleUpdateUndertakingField('date', e.target.value)}
+                                className="min-w-[100px] text-center bg-slate-50 dark:bg-zinc-900 border-b border-dashed border-slate-400 dark:border-zinc-700 px-2 py-0.5 text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500 font-bold"
+                              />
+                            ) : (
+                              <span className="font-bold underline decoration-dashed decoration-slate-400 px-2 text-slate-900 dark:text-zinc-100 font-serif">{undertakingData.date || '__________'}</span>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -1298,6 +1543,58 @@ export default function App() {
               </div>
             </motion.div>
           </>
+        )}
+      </AnimatePresence>
+
+      {/* Dynamic elegant Toast Notification */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: 30, scale: 0.92 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 15, scale: 0.95 }}
+            className={`fixed bottom-6 right-6 z-[100] w-[90%] max-w-md bg-white dark:bg-zinc-900 border ${
+              toast.type === 'success' 
+                ? 'border-emerald-200 dark:border-emerald-800/60 shadow-lg shadow-emerald-500/5' 
+                : toast.type === 'error'
+                ? 'border-rose-200 dark:border-rose-800/60 shadow-lg shadow-rose-500/5'
+                : 'border-blue-200 dark:border-blue-800/60 shadow-lg shadow-blue-500/5'
+            } rounded-xl shadow-xl flex items-start gap-3 p-4`}
+          >
+            <div className="shrink-0 mt-0.5">
+              {toast.type === 'success' && (
+                <div className="bg-emerald-50 dark:bg-emerald-900/30 p-1.5 rounded-lg">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                </div>
+              )}
+              {toast.type === 'error' && (
+                <div className="bg-rose-50 dark:bg-rose-900/30 p-1.5 rounded-lg">
+                  <AlertCircle className="w-5 h-5 text-rose-600 dark:text-rose-400" />
+                </div>
+              )}
+              {toast.type === 'info' && (
+                <div className="bg-blue-50 dark:bg-blue-900/30 p-1.5 rounded-lg flex items-center justify-center">
+                  <Loader2 className="w-4 h-4 text-blue-600 dark:text-blue-400 animate-spin" />
+                </div>
+              )}
+            </div>
+            
+            <div className="flex-1 space-y-1">
+              <h4 className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-widered font-sans">
+                {toast.type === 'success' ? 'Ready for print' : toast.type === 'error' ? 'Failed' : 'Document Engine'}
+              </h4>
+              <p className="text-sm font-semibold text-slate-800 dark:text-zinc-200 leading-tight">
+                {toast.message}
+              </p>
+            </div>
+
+            <button
+              onClick={() => setToast(null)}
+              className="shrink-0 text-slate-400 hover:text-slate-600 dark:text-zinc-500 dark:hover:text-zinc-300 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </motion.div>
         )}
       </AnimatePresence>
 
