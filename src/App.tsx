@@ -121,7 +121,7 @@ export default function App() {
         nationality: 'Bangladeshi',
         dob: data.dob || '',
         address: getPresentAddress(data) || '',
-        purpose: utPurpose ? (utPurpose === 'tourism' ? 'tourism' : utPurpose === 'business' ? 'business' : utPurpose) : '',
+        purpose: utPurpose || '',
         travelFrom: utFromDate ? new Date(utFromDate).toLocaleDateString('en-GB') : '',
         travelTo: utToDate ? new Date(utToDate).toLocaleDateString('en-GB') : '',
         duration: durationStr,
@@ -664,12 +664,11 @@ export default function App() {
                           className="w-full text-xs font-semibold px-2.5 py-2 rounded-lg bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
                         >
                           <option value="">-- Select Purpose (Optional) --</option>
-                          <option value="tourism">tourism</option>
-                          <option value="business">business</option>
-                          <option value="medical treatment">medical treatment</option>
-                          <option value="Patient">Patient</option>
-                          <option value="attendance">attendance</option>
-                          <option value="double entry">double entry</option>
+                          <option value="Tourism">Tourism</option>
+                          <option value="Business">Business</option>
+                          <option value="Medical Treatment - Patient">Medical Treatment - Patient</option>
+                          <option value="Medical Treatment - Attendance">Medical Treatment - Attendance</option>
+                          <option value="Double Entry">Double Entry</option>
                         </select>
                       </div>
 
@@ -1171,12 +1170,11 @@ export default function App() {
                               onChange={(e) => handleUpdateUndertakingField('purpose', e.target.value)}
                               className="min-w-[150px] bg-slate-50 dark:bg-zinc-900 border-b border-dashed border-slate-400 dark:border-zinc-700 px-2 py-0.5 text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500 cursor-pointer font-semibold"
                             >
-                              <option value="tourism">tourism</option>
-                              <option value="business">business</option>
-                              <option value="medical treatment">medical treatment</option>
-                              <option value="Patient">Patient</option>
-                              <option value="attendance">attendance</option>
-                              <option value="double entry">double entry</option>
+                              <option value="Tourism">Tourism</option>
+                              <option value="Business">Business</option>
+                              <option value="Medical Treatment - Patient">Medical Treatment - Patient</option>
+                              <option value="Medical Treatment - Attendance">Medical Treatment - Attendance</option>
+                              <option value="Double Entry">Double Entry</option>
                             </select>
                             <span>.</span>
                           </div>
