@@ -333,48 +333,42 @@ export default function App() {
     // Seed for generating pseudo-random details based on the address string
     const seed = presentAddress.length + (presentAddress.charCodeAt(0) || 0);
     const shopNum = (seed % 150) + 1;
-    const floorNum = (seed % 6) + 1;
-    const suffix = floorNum === 1 ? 'st' : floorNum === 2 ? 'nd' : floorNum === 3 ? 'rd' : 'th';
-    const building = `Shop ${shopNum}, ${floorNum}${suffix} Floor`;
-
+    
     const areas = [
-      { key: "uttara", match: "Uttara", road: "Sonargaon Janapath Road", sector: "Sector 11", zip: "1230" },
-      { key: "dhanmondi", match: "Dhanmondi", road: "Satmasjid Road", sector: "Road 27", zip: "1209" },
-      { key: "mirpur", match: "Mirpur", road: "Mirpur 10 Circle", sector: "Block D", zip: "1216" },
-      { key: "gulshan", match: "Gulshan", road: "Gulshan Avenue", sector: "Gulshan 1", zip: "1212" },
-      { key: "banani", match: "Banani", road: "Kemal Ataturk Avenue", sector: "Block F", zip: "1213" },
-      { key: "bashundhara", match: "Bashundhara", road: "Bashundhara Main Rd", sector: "Block C", zip: "1229" },
-      { key: "mohammadpur", match: "Mohammadpur", road: "Ring Road", sector: "Tajmahal Rd", zip: "1207" },
-      { key: "motijheel", match: "Motijheel", road: "Toyenbee Circular Rd", sector: "Commercial Area", zip: "1000" },
-      { key: "badda", match: "Badda", road: "Pragati Sarani", sector: "Middle Badda", zip: "1212" },
-      { key: "ramna", match: "Ramna", road: "Bailey Road", sector: "New Baily Road", zip: "1000" }
+      { key: "uttara", match: "Uttara", zip: "1230" },
+      { key: "dhanmondi", match: "Dhanmondi", zip: "1209" },
+      { key: "mirpur", match: "Mirpur", zip: "1216" },
+      { key: "gulshan", match: "Gulshan", zip: "1212" },
+      { key: "banani", match: "Banani", zip: "1213" },
+      { key: "bashundhara", match: "Bashundhara", zip: "1229" },
+      { key: "mohammadpur", match: "Mohammadpur", zip: "1207" },
+      { key: "motijheel", match: "Motijheel", zip: "1000" },
+      { key: "badda", match: "Badda", zip: "1212" },
+      { key: "ramna", match: "Ramna", zip: "1000" }
     ];
 
     const matchedArea = areas.find(a => presentLower.includes(a.key));
-    
     const getFormat = seed % 3;
     
     if (matchedArea) {
       if (getFormat === 0) {
-        return `${building}, ${matchedArea.sector}, ${matchedArea.road}, ${matchedArea.match}, Dhaka-${matchedArea.zip}`;
+        return `Shop ${shopNum}, ${matchedArea.match}, Dhaka-${matchedArea.zip}`;
       } else if (getFormat === 1) {
-        return `Plot ${shopNum + 10}, Block ${String.fromCharCode(65 + (seed % 5))}, ${matchedArea.road}, ${matchedArea.match}, Dhaka-${matchedArea.zip}`;
+        return `Plot ${shopNum + 10}, ${matchedArea.match}, Dhaka-${matchedArea.zip}`;
       } else {
-        return `House ${shopNum}, Road ${(seed % 15) + 1}, ${matchedArea.sector}, ${matchedArea.match}, Dhaka-${matchedArea.zip}`;
+        return `House ${shopNum}, Rd ${(seed % 12) + 1}, ${matchedArea.match}, Dhaka`;
       }
     }
     
     // Generic fallback that looks more realistic if no specific area match
     const districtMatch = presentAddress.split(',').slice(-1)[0]?.trim() || "Dhaka";
-    const genericRoads = ["Station Road", "College Road", "Main Road", "Bazar Road", "VIP Road"];
-    const randomRoad = genericRoads[seed % genericRoads.length];
     
     if (getFormat === 0) {
-      return `${building}, ${randomRoad}, City Center, ${districtMatch}`;
+      return `Shop ${shopNum}, City Center, ${districtMatch}`;
     } else if (getFormat === 1) {
-      return `Holding No. ${shopNum * 2}, ${randomRoad}, ${districtMatch}`;
+      return `Holding No. ${shopNum * 2}, ${districtMatch}`;
     } else {
-      return `House ${shopNum}, Lane ${(seed % 7) + 1}, ${randomRoad}, ${districtMatch}`;
+      return `House ${shopNum}, Main Road, ${districtMatch}`;
     }
   };
 
@@ -385,50 +379,46 @@ export default function App() {
     const seed = presentAddress.length + (presentAddress.charCodeAt(1) || 0) + 5; 
     const suiteNum = (seed % 500) + 100;
     const floorNum = Math.floor(suiteNum / 100);
-    const suffix = floorNum === 1 ? 'st' : floorNum === 2 ? 'nd' : floorNum === 3 ? 'rd' : 'th';
-    const building = `Suite ${suiteNum}, ${floorNum}${suffix} Floor`;
 
     const towers = ["Navana Tower", "City Center", "Trade Center", "ABC Tower", "Rupayan Tower"];
     const randomTower = towers[seed % towers.length];
 
     const areas = [
-      { key: "uttara", match: "Uttara", road: "Sonargaon Janapath Road", sector: "Sector 11", zip: "1230", tower: "Zamzam Tower" },
-      { key: "dhanmondi", match: "Dhanmondi", road: "Satmasjid Road", sector: "Road 27", zip: "1209", tower: "Rapa Plaza" },
-      { key: "mirpur", match: "Mirpur", road: "Mirpur 10 Circle", sector: "Block D", zip: "1216", tower: "Shah Ali Plaza" },
-      { key: "gulshan", match: "Gulshan", road: "Gulshan Avenue", sector: "Gulshan 1", zip: "1212", tower: "Shoppers World Tower" },
-      { key: "banani", match: "Banani", road: "Kemal Ataturk Avenue", sector: "Block F", zip: "1213", tower: "Awal Centre" },
-      { key: "bashundhara", match: "Bashundhara", road: "Bashundhara Main Rd", sector: "Block C", zip: "1229", tower: "Grameenphone Center" },
-      { key: "mohammadpur", match: "Mohammadpur", road: "Ring Road", sector: "Tajmahal Rd", zip: "1207", tower: "Tokyo Square" },
-      { key: "motijheel", match: "Motijheel", road: "Toyenbee Circular Rd", sector: "Commercial Area", zip: "1000", tower: "City Centre" },
-      { key: "badda", match: "Badda", road: "Pragati Sarani", sector: "Middle Badda", zip: "1212", tower: "Hossain Market Tower" },
-      { key: "ramna", match: "Ramna", road: "Bailey Road", sector: "New Baily Road", zip: "1000", tower: "Baily Tower" }
+      { key: "uttara", match: "Uttara", zip: "1230", tower: "Zamzam Tower" },
+      { key: "dhanmondi", match: "Dhanmondi", zip: "1209", tower: "Rapa Plaza" },
+      { key: "mirpur", match: "Mirpur", zip: "1216", tower: "Shah Ali Plaza" },
+      { key: "gulshan", match: "Gulshan", zip: "1212", tower: "Shoppers World" },
+      { key: "banani", match: "Banani", zip: "1213", tower: "Awal Centre" },
+      { key: "bashundhara", match: "Bashundhara", zip: "1229", tower: "GP Center" },
+      { key: "mohammadpur", match: "Mohammadpur", zip: "1207", tower: "Tokyo Square" },
+      { key: "motijheel", match: "Motijheel", zip: "1000", tower: "City Centre" },
+      { key: "badda", match: "Badda", zip: "1212", tower: "Hossain Tower" },
+      { key: "ramna", match: "Ramna", zip: "1000", tower: "Baily Tower" }
     ];
 
     const matchedArea = areas.find(a => presentLower.includes(a.key));
-    
     const getFormat = seed % 3;
 
     if (matchedArea) {
+      const towerName = matchedArea.tower || randomTower;
       if (getFormat === 0) {
-        return `${building}, ${matchedArea.tower || randomTower}, ${matchedArea.sector}, ${matchedArea.road}, ${matchedArea.match}, Dhaka-${matchedArea.zip}`;
+        return `${towerName}, ${matchedArea.match}, Dhaka`;
       } else if (getFormat === 1) {
-        return `Level ${floorNum}, ${matchedArea.tower || randomTower}, Plot ${suiteNum - 100}, ${matchedArea.road}, ${matchedArea.match}, Dhaka-${matchedArea.zip}`;
+        return `Level ${floorNum}, ${towerName}, ${matchedArea.match}, Dhaka`;
       } else {
-        return `Office ${suiteNum}, ${matchedArea.tower || randomTower}, ${matchedArea.sector}, ${matchedArea.match}, Dhaka-${matchedArea.zip}`;
+        return `Office ${suiteNum}, ${towerName}, ${matchedArea.match}, Dhaka`;
       }
     }
     
     // Generic fallback that looks more realistic if no specific area match
     const districtMatch = presentAddress.split(',').slice(-1)[0]?.trim() || "Dhaka";
-    const genericRoads = ["Commercial Road", "Corporate Avenue", "Main Road", "Business District"];
-    const randomRoad = genericRoads[seed % genericRoads.length];
     
     if (getFormat === 0) {
-      return `${building}, ${randomTower}, ${randomRoad}, ${districtMatch}`;
+      return `${randomTower}, ${districtMatch}`;
     } else if (getFormat === 1) {
-      return `Office ${suiteNum}, Level ${floorNum}, ${randomTower}, ${randomRoad}, ${districtMatch}`;
+      return `Office ${suiteNum}, ${randomTower}, ${districtMatch}`;
     } else {
-      return `Holding ${suiteNum}, ${randomTower}, ${randomRoad}, ${districtMatch}`;
+      return `Holding ${suiteNum}, ${randomTower}, ${districtMatch}`;
     }
   };
 
@@ -439,23 +429,19 @@ export default function App() {
     
     const properDistrict = district.charAt(0).toUpperCase() + district.slice(1).toLowerCase();
     const seed = permanentAddress.length + (permanentAddress.charCodeAt(0) || 0);
-    const shopNum = (seed % 200) + 1;
-    const floorNum = (seed % 3) + 1;
-    const suffix = floorNum === 1 ? 'st' : floorNum === 2 ? 'nd' : 'rd';
+    const shopNum = (seed % 100) + 1;
     
-    const markets = ["Super Market", "City Center", "Municipal Market", "Trade Center", "Plaza"];
+    const markets = ["Bazar", "Super Market", "Municipal Market", "Trade Center", "Chowrasta"];
     const randomMarket = markets[seed % markets.length];
-    const roads = ["Station Road", "Main Road", "Sadar Road", "Hospital Road"];
-    const randomRoad = roads[seed % roads.length];
     
     const getFormat = seed % 3;
     
     if (getFormat === 0) {
-      return `Shop ${shopNum}, ${floorNum}${suffix} Floor, ${properDistrict} ${randomMarket}, ${randomRoad}, ${properDistrict} Sadar, ${properDistrict}`;
+      return `Shop ${shopNum}, ${properDistrict} ${randomMarket}`;
     } else if (getFormat === 1) {
-      return `Holding No. ${shopNum + 10}, ${randomRoad}, Near ${randomMarket}, ${properDistrict} Sadar, ${properDistrict}`;
+      return `Holding No. ${shopNum + 10}, ${properDistrict} Sadar`;
     } else {
-      return `Plot ${shopNum}, Block ${String.fromCharCode(65 + (seed % 4))}, ${randomMarket}, ${properDistrict} Sadar, ${properDistrict}`;
+      return `Plot ${shopNum}, ${properDistrict} ${randomMarket}`;
     }
   };
 
