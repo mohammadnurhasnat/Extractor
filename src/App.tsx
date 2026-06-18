@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import imageCompression from 'browser-image-compression';
+import JSZip from 'jszip';
 
 // Types
 import { PassportData, HistoryItem, QueueItem } from './types';
@@ -26,7 +27,7 @@ import {
   getBusinessAddressLocal,
   generateDataText
 } from './utils/addressUtils';
-import { generatePDF } from './utils/pdfGenerator';
+import { generatePDF, getPDFDocument } from './utils/pdfGenerator';
 
 // @ts-ignore
 import ExtractorLogo from './assets/images/extractor_logo_1779343193402.png';
@@ -42,6 +43,7 @@ export default function App() {
   const [queue, setQueue] = useState<QueueItem[]>([]);
   const [activeQueueId, setActiveQueueId] = useState<string | null>(null);
   const [isBatchProcessing, setIsBatchProcessing] = useState(false);
+  const [isZipping, setIsZipping] = useState(false);
   
   // History state initialize from localStorage
   const [history, setHistory] = useState<HistoryItem[]>(() => {
@@ -344,6 +346,52 @@ export default function App() {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
+  const handleDownloadAllZIP = async () => {
+    const completedItems = queue.filter(q => q.status === 'completed' && q.data);
+    if (completedItems.length === 0) return;
+
+    setIsZipping(true);
+    try {
+      const zip = new JSZip();
+      
+      for (let i = 0; i < completedItems.length; i++) {
+        const item = completedItems[i];
+        const itemData = item.data!;
+        
+        // Clean up the name to generate safe filename
+        const safeGivenName = (itemData.givenName || 'Extracted').trim().replace(/[^a-zA-Z0-9_-]/g, '_');
+        const safeSurname = (itemData.surname || '').trim().replace(/[^a-zA-Z0-9_-]/g, '_');
+        const passportNum = (itemData.passportNumber || `Doc_${i + 1}`).trim().replace(/[^a-zA-Z0-9_-]/g, '_');
+        
+        const baseFileName = `${i + 1}_${safeGivenName}_${safeSurname}_${passportNum}`;
+        
+        // 1. Add Text Report
+        const textContent = generateDataText(itemData);
+        zip.file(`${baseFileName}.txt`, textContent);
+        
+        // 2. Add PDF Report using our refactored getPDFDocument
+        const doc = getPDFDocument(itemData);
+        const pdfArrayBuffer = doc.output('arraybuffer');
+        zip.file(`${baseFileName}.pdf`, pdfArrayBuffer);
+      }
+      
+      const content = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(content);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Batch_Extracted_Passports_${Date.now()}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("ZIP Generation failed:", err);
+      setError("Failed to create ZIP file. Please try again.");
+    } finally {
+      setIsZipping(false);
+    }
+  };
+
   const handleCopyAll = async () => {
     if (!data) return;
     const text = generateDataText(data);
@@ -565,16 +613,38 @@ export default function App() {
                       )}
                     </div>
                     
-                    {queue.some(q => q.status === 'queued' || q.status === 'failed') && (
-                      <button
-                        onClick={processEntireQueue}
-                        disabled={isBatchProcessing || !isOnline}
-                        className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-1 bg-blue-50 dark:bg-blue-900/10 px-2.5 py-1.5 rounded-lg border border-blue-100 dark:border-blue-900/30 transition-all disabled:opacity-50 shrink-0 cursor-pointer"
-                      >
-                        <Play className="w-3.5 h-3.5" />
-                        Extract All
-                      </button>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {queue.some(q => q.status === 'queued' || q.status === 'failed') && (
+                        <button
+                          onClick={processEntireQueue}
+                          disabled={isBatchProcessing || !isOnline}
+                          className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-1 bg-blue-50 dark:bg-blue-900/10 px-2.5 py-1.5 rounded-lg border border-blue-100 dark:border-blue-900/30 transition-all disabled:opacity-50 shrink-0 cursor-pointer"
+                        >
+                          <Play className="w-3.5 h-3.5" />
+                          Extract All
+                        </button>
+                      )}
+
+                      {queue.some(q => q.status === 'completed' && q.data) && (
+                        <button
+                          onClick={handleDownloadAllZIP}
+                          disabled={isZipping}
+                          className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 flex items-center gap-1 bg-emerald-50 dark:bg-emerald-900/10 px-2.5 py-1.5 rounded-lg border border-emerald-100 dark:border-emerald-900/30 transition-all disabled:opacity-50 shrink-0 cursor-pointer"
+                        >
+                          {isZipping ? (
+                            <>
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              Zipping...
+                            </>
+                          ) : (
+                            <>
+                              <Download className="w-3.5 h-3.5" />
+                              Download All
+                            </>
+                          )}
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   {/* Batch Process Progress Bar */}

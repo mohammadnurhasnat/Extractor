@@ -11,7 +11,7 @@ import {
   getJobRole
 } from './addressUtils';
 
-export const generatePDF = (data: PassportData): void => {
+export const getPDFDocument = (data: PassportData): jsPDF => {
   // Create new PDF layout (A4 size: 210mm x 297mm)
   const doc = new jsPDF('p', 'mm', 'a4');
   let y = 15;
@@ -190,6 +190,10 @@ export const generatePDF = (data: PassportData): void => {
     doc.text(`Page ${i} of ${pageCount}`, 195, 287, { align: 'right' });
   }
 
-  // Save document
+  return doc;
+};
+
+export const generatePDF = (data: PassportData): void => {
+  const doc = getPDFDocument(data);
   doc.save(`Passport_Report_${data.givenName || 'Summary'}.pdf`);
 };
