@@ -32,3 +32,14 @@ export interface HistoryItem {
   timestamp: number;
   data: PassportData;
 }
+
+export interface QueueItem {
+  id: string;
+  file: File;
+  preview: string;
+  loading: boolean;
+  error: string | null;
+  status: 'queued' | 'extracting' | 'completed' | 'failed';
+  data?: PassportData;
+}
+

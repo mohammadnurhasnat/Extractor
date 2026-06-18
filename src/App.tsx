@@ -2,13 +2,13 @@ import React, { useState, useRef, useEffect } from 'react';
 import { 
   UploadCloud, CheckCircle2, AlertCircle, FileText, Loader2, ShieldCheck, 
   History, Trash2, ZapOff, Search, Sun, Moon, Copy, Download, Check, 
-  AlertTriangle, Printer 
+  AlertTriangle, Printer, Play, X, Clock
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import imageCompression from 'browser-image-compression';
 
 // Types
-import { PassportData, HistoryItem } from './types';
+import { PassportData, HistoryItem, QueueItem } from './types';
 
 // Components
 import { DataField } from './components/DataField';
@@ -37,6 +37,11 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<PassportData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  
+  // Batch queue states
+  const [queue, setQueue] = useState<QueueItem[]>([]);
+  const [activeQueueId, setActiveQueueId] = useState<string | null>(null);
+  const [isBatchProcessing, setIsBatchProcessing] = useState(false);
   
   // History state initialize from localStorage
   const [history, setHistory] = useState<HistoryItem[]>(() => {
@@ -97,27 +102,80 @@ export default function App() {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      processFile(e.dataTransfer.files[0]);
+      processFiles(e.dataTransfer.files);
     }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      processFile(e.target.files[0]);
+      processFiles(e.target.files);
     }
   };
 
-  const processFile = (selectedFile: File) => {
-    if (!selectedFile.type.startsWith('image/')) {
-      setError('Please upload a valid image file (JPEG, PNG).');
+  const processFiles = (fileList: FileList | File[]) => {
+    const filesArray = Array.from(fileList);
+    const validImageFiles = filesArray.filter(f => f.type.startsWith('image/'));
+    
+    if (validImageFiles.length === 0) {
+      setError('Please upload at least one valid image file (JPEG, PNG).');
       return;
     }
-    
-    setFile(selectedFile);
+
+    const newQueueItems: QueueItem[] = validImageFiles.map(file => {
+      const id = 'q_' + Date.now().toString() + Math.random().toString(36).substring(2);
+      return {
+        id,
+        file,
+        preview: URL.createObjectURL(file),
+        loading: false,
+        error: null,
+        status: 'queued'
+      };
+    });
+
+    setQueue(prev => {
+      const updated = [...prev, ...newQueueItems];
+      if (prev.length === 0) {
+        const activeItem = newQueueItems[0];
+        setActiveQueueId(activeItem.id);
+        setFile(activeItem.file);
+        setPreview(activeItem.preview);
+        setData(null);
+        setError(null);
+      }
+      return updated;
+    });
     setError(null);
-    setData(null);
-    const objectUrl = URL.createObjectURL(selectedFile);
-    setPreview(objectUrl);
+  };
+
+  const selectQueueItem = (item: QueueItem) => {
+    setActiveQueueId(item.id);
+    setFile(item.file);
+    setPreview(item.preview);
+    setData(item.data || null);
+    setError(item.error);
+    setLoading(item.loading || item.status === 'extracting');
+  };
+
+  const removeFromQueue = (e: React.MouseEvent, itemId: string) => {
+    e.stopPropagation();
+    setQueue(prev => {
+      const updated = prev.filter(q => q.id !== itemId);
+      if (activeQueueId === itemId) {
+        if (updated.length > 0) {
+          setTimeout(() => {
+            selectQueueItem(updated[0]);
+          }, 0);
+        } else {
+          setFile(null);
+          setPreview(null);
+          setData(null);
+          setError(null);
+          setActiveQueueId(null);
+        }
+      }
+      return updated;
+    });
   };
 
   const addToHistory = (newData: PassportData) => {
@@ -134,6 +192,20 @@ export default function App() {
     setPreview(null);
     setFile(null);
     setError(null);
+    // Create a temporary single queue item if history loaded
+    const id = 'hist_' + Date.now();
+    const mockFileObj = new File([], `Scanned_${item.data.passportNumber || 'Passport'}.jpg`, { type: 'image/jpeg' });
+    const mockQueueItem: QueueItem = {
+      id,
+      file: mockFileObj,
+      preview: '',
+      loading: false,
+      error: null,
+      status: 'completed',
+      data: item.data
+    };
+    setQueue([mockQueueItem]);
+    setActiveQueueId(id);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -141,6 +213,11 @@ export default function App() {
     if (!data) return;
     const updated = { ...data, [field]: newValue };
     setData(updated);
+    
+    // Also update in the browser-side batch storage queue
+    if (activeQueueId) {
+      setQueue(prev => prev.map(q => q.id === activeQueueId ? { ...q, data: updated } : q));
+    }
     
     // Also sync to active history item (if exists) so corrections persist in local database
     setHistory(prev => prev.map(item => {
@@ -169,66 +246,92 @@ export default function App() {
     setItemToDelete(null);
   };
 
-  const extractData = async () => {
-    if (!isOnline) {
-      setError("Cannot extract data while offline. Please restore your internet connection and try again.");
-      return;
-    }
-    if (!file) return;
+  const extractSingleItem = async (itemId: string): Promise<PassportData | null> => {
+    const item = queue.find(q => q.id === itemId);
+    if (!item) return null;
 
-    setLoading(true);
-    setError(null);
+    setQueue(prev => prev.map(q => q.id === itemId ? { ...q, loading: true, status: 'extracting', error: null } : q));
+    if (activeQueueId === itemId) {
+      setLoading(true);
+      setError(null);
+    }
 
     try {
-      // BROWSER-SIDE COMPRESSION: Optimize image before sending
       const options = {
         maxSizeMB: 1.5,
         maxWidthOrHeight: 2048,
         useWebWorker: true,
       };
       
-      const compressedFile = await imageCompression(file, options);
+      const compressedFile = await imageCompression(item.file, options);
 
-      // Convert to Base64
-      const reader = new FileReader();
-      reader.readAsDataURL(compressedFile);
+      const base64String = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(compressedFile);
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = () => reject(new Error('Failed to read file'));
+      });
+
+      const res = await fetch('/api/extract-passport', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          imageBase64: base64String,
+          mimeType: item.file.type
+        }),
+      });
       
-      reader.onload = async () => {
-        const base64String = reader.result as string;
+      const result = await res.json();
+      
+      if (res.ok && result.success) {
+        setQueue(prev => prev.map(q => q.id === itemId ? { ...q, loading: false, status: 'completed', error: null, data: result.data } : q));
+        addToHistory(result.data);
         
-        try {
-          const res = await fetch('/api/extract-passport', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              imageBase64: base64String,
-              mimeType: file.type
-            }),
-          });
-          
-          const result = await res.json();
-          
-          if (res.ok && result.success) {
-            setData(result.data);
-            addToHistory(result.data);
-          } else {
-            setError(result.error || 'Failed to extract data.');
-          }
-        } catch (err) {
-          setError('Network error: Could not reach the server.');
-        } finally {
+        if (activeQueueId === itemId) {
+          setData(result.data);
           setLoading(false);
         }
-      };
-      
-      reader.onerror = () => {
-        setError('Failed to read the file.');
-        setLoading(false);
-      };
+        return result.data;
+      } else {
+        const errMsg = result.error || 'Failed to extract data.';
+        setQueue(prev => prev.map(q => q.id === itemId ? { ...q, loading: false, status: 'failed', error: errMsg } : q));
+        if (activeQueueId === itemId) {
+          setError(errMsg);
+          setLoading(false);
+        }
+        return null;
+      }
     } catch (err) {
-      setError('An unexpected error occurred.');
-      setLoading(false);
+      const errMsg = 'Network error: Could not reach the server.';
+      setQueue(prev => prev.map(q => q.id === itemId ? { ...q, loading: false, status: 'failed', error: errMsg } : q));
+      if (activeQueueId === itemId) {
+        setError(errMsg);
+        setLoading(false);
+      }
+      return null;
     }
+  };
+
+  const extractData = async () => {
+    if (!isOnline) {
+      setError("Cannot extract data while offline. Please restore your internet connection and try again.");
+      return;
+    }
+    if (!activeQueueId) return;
+    await extractSingleItem(activeQueueId);
+  };
+
+  const processEntireQueue = async () => {
+    if (!isOnline) {
+      setError("Cannot extract data while offline. Please restore your internet connection and try again.");
+      return;
+    }
+    setIsBatchProcessing(true);
+    const pendingItems = queue.filter(q => q.status === 'queued' || q.status === 'failed');
+    for (const item of pendingItems) {
+      await extractSingleItem(item.id);
+    }
+    setIsBatchProcessing(false);
   };
 
   const clearAll = () => {
@@ -236,6 +339,8 @@ export default function App() {
     setPreview(null);
     setData(null);
     setError(null);
+    setQueue([]);
+    setActiveQueueId(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -348,15 +453,13 @@ export default function App() {
             <div className="bg-white/70 dark:bg-zinc-900/70 backdrop-blur-md p-6 rounded-2xl shadow-sm border border-slate-200/60 dark:border-zinc-800/60 transition-colors">
               <h2 className="text-lg font-semibold mb-1 flex items-center gap-2 dark:text-zinc-100">
                 <FileText className="w-5 h-5 text-blue-500" />
-                Upload Document
+                Upload Documents
               </h2>
-              <p className="text-sm text-slate-500 dark:text-zinc-400 mb-6">Upload a clear photo of the passport data page.</p>
+              <p className="text-sm text-slate-500 dark:text-zinc-400 mb-6 font-medium">Select one or multiple passport images to process in a session.</p>
               
               {!preview ? (
                 <div 
                   className="border-2 border-dashed border-slate-300 dark:border-zinc-700 rounded-xl bg-slate-50 dark:bg-black/50 hover:bg-slate-100 dark:hover:bg-zinc-800/80 transition-colors group flex flex-col items-center justify-center text-center h-64 relative"
-                  onDragOver={handleDragOver}
-                  onDrop={handleDrop}
                 >
                   <input 
                     type="file" 
@@ -364,35 +467,62 @@ export default function App() {
                     className="hidden" 
                     accept="image/jpeg, image/png, image/webp" 
                     onChange={handleFileChange}
+                    multiple
                   />
-                  <div className="flex flex-col items-center justify-center cursor-pointer p-6" onClick={() => fileInputRef.current?.click()}>
+                  <div className="flex flex-col items-center justify-center cursor-pointer p-6 w-full h-full" onClick={() => fileInputRef.current?.click()}>
                     <div className="w-14 h-14 bg-white dark:bg-zinc-900 rounded-full shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                       <UploadCloud className="w-7 h-7 text-blue-500 dark:text-blue-400" />
                     </div>
                     <p className="font-semibold text-slate-700 dark:text-zinc-200">Click to upload or drag and drop</p>
-                    <p className="text-xs text-slate-500 dark:text-zinc-400 mt-2">JPEG, PNG, WEBP (Max 20MB)</p>
+                    <p className="text-xs text-slate-500 dark:text-zinc-400 mt-2">JPEG, PNG, WEBP (Supports multiple files)</p>
                   </div>
                 </div>
               ) : (
                 <div className="flex flex-col gap-4">
+                  {/* Compact additive uploader for queuing more images */}
+                  <div 
+                    className="border border-dashed border-slate-300 dark:border-zinc-800 rounded-xl bg-slate-50 dark:bg-black/30 hover:bg-slate-100 dark:hover:bg-zinc-800/40 transition-colors group flex items-center gap-3 p-3.5 cursor-pointer"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <input 
+                      type="file" 
+                      ref={fileInputRef} 
+                      className="hidden" 
+                      accept="image/jpeg, image/png, image/webp" 
+                      onChange={handleFileChange}
+                      multiple
+                    />
+                    <div className="w-8 h-8 bg-white dark:bg-zinc-900 rounded-lg shadow-sm flex items-center justify-center shrink-0">
+                      <UploadCloud className="w-4.5 h-4.5 text-blue-500 dark:text-blue-400" />
+                    </div>
+                    <div className="text-left min-w-0 flex-1">
+                      <p className="text-xs font-semibold text-slate-700 dark:text-zinc-200">Add more passport images...</p>
+                      <p className="text-[10px] text-slate-400 dark:text-zinc-500 font-medium">Select multiple images to append to the queue</p>
+                    </div>
+                  </div>
+
                   <div className="relative rounded-xl overflow-hidden border border-slate-200 dark:border-zinc-800 bg-slate-100 dark:bg-black aspect-[4/3] flex items-center justify-center">
-                    <img src={preview} alt="Passport Preview" className="max-w-full max-h-full object-contain" />
+                    {preview ? (
+                      <img src={preview} alt="Passport Preview" className="max-w-full max-h-full object-contain" />
+                    ) : (
+                      <div className="text-slate-400 text-xs">No preview available</div>
+                    )}
                     <div className="absolute inset-0 ring-1 ring-inset ring-black/10 dark:ring-white/10 rounded-xl" />
                   </div>
                   
                   <div className="flex gap-3">
                     <button 
                       onClick={clearAll}
-                      disabled={loading}
+                      disabled={loading || isBatchProcessing}
                       className="flex-1 py-2.5 px-4 rounded-lg font-medium text-slate-600 dark:text-zinc-300 bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50"
                     >
-                      Clear
+                      Clear All
                     </button>
                     {!data && (
                       <div className="flex-[2] flex flex-col gap-2">
                         <button 
                           onClick={extractData}
-                          disabled={loading || !isOnline}
+                          disabled={loading || !isOnline || isBatchProcessing}
                           className={`w-full py-2.5 px-4 rounded-lg font-medium text-white transition-all flex items-center justify-center gap-2 shadow-sm border border-transparent ${
                             !isOnline 
                               ? 'bg-slate-200 dark:bg-zinc-800 text-slate-400 dark:text-zinc-500 cursor-not-allowed' 
@@ -408,7 +538,7 @@ export default function App() {
                               <ZapOff className="w-5 h-5 text-red-500" /> Offline: Disabled
                             </>
                           ) : (
-                            'Extract Data'
+                            'Extract Active'
                           )}
                         </button>
                         {!isOnline && (
@@ -418,6 +548,126 @@ export default function App() {
                         )}
                       </div>
                     )}
+                  </div>
+                </div>
+              )}
+
+              {/* BATCH QUEUE SECTION */}
+              {queue.length > 0 && (
+                <div className="mt-6 border-t border-slate-200/50 dark:border-zinc-800/50 pt-5">
+                  <div className="flex items-center justify-between mb-3.5">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <h3 className="text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider shrink-0">
+                        Session Queue ({queue.length})
+                      </h3>
+                      {queue.some(q => q.status === 'extracting') && (
+                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-ping shrink-0" />
+                      )}
+                    </div>
+                    
+                    {queue.some(q => q.status === 'queued' || q.status === 'failed') && (
+                      <button
+                        onClick={processEntireQueue}
+                        disabled={isBatchProcessing || !isOnline}
+                        className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-1 bg-blue-50 dark:bg-blue-900/10 px-2.5 py-1.5 rounded-lg border border-blue-100 dark:border-blue-900/30 transition-all disabled:opacity-50 shrink-0 cursor-pointer"
+                      >
+                        <Play className="w-3.5 h-3.5" />
+                        Extract All
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1 scrollbar-thin">
+                    {queue.map((item, index) => {
+                      const isActive = item.id === activeQueueId;
+                      const isPending = item.status === 'queued';
+                      const isExtracting = item.status === 'extracting';
+                      const isCompleted = item.status === 'completed';
+                      const isFailed = item.status === 'failed';
+                      
+                      return (
+                        <div
+                          key={item.id}
+                          onClick={() => !isBatchProcessing && selectQueueItem(item)}
+                          className={`group/item flex items-center justify-between p-2.5 rounded-xl border transition-all ${
+                            isBatchProcessing ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'
+                          } ${
+                            isActive
+                              ? 'bg-blue-50/50 dark:bg-zinc-800/40 border-blue-300 dark:border-zinc-700 ring-1 ring-blue-200 dark:ring-zinc-800/30'
+                              : 'bg-white dark:bg-black border-slate-200/60 dark:border-zinc-800/60 hover:border-slate-300 dark:hover:border-zinc-700'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                            <span className="text-[11px] font-bold font-mono text-slate-400 min-w-[16px] text-center shrink-0">
+                              #{index + 1}
+                            </span>
+                            
+                            <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-zinc-900 border border-slate-200/60 dark:border-zinc-800/60 flex items-center justify-center overflow-hidden shrink-0">
+                              {item.preview ? (
+                                <img src={item.preview} className="w-full h-full object-cover" alt="Thumb" />
+                              ) : (
+                                <FileText className="w-5 h-5 text-slate-400" />
+                              )}
+                            </div>
+
+                            <div className="flex flex-col min-w-0">
+                              <span className="text-xs font-semibold text-slate-700 dark:text-zinc-200 truncate pr-2">
+                                {item.file.name}
+                              </span>
+                              <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-medium mt-0.5">
+                                {item.file.size > 0 ? `${(item.file.size / (1024 * 1024)).toFixed(2)} MB` : 'History scan'}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                            {isPending && (
+                              <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider bg-slate-50 dark:bg-zinc-900/50 px-2 py-0.5 rounded border border-slate-200/50 dark:border-zinc-800/50">
+                                <Clock className="w-3 h-3" /> Queued
+                              </span>
+                            )}
+                            {isExtracting && (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-500 uppercase tracking-wider bg-blue-50 dark:bg-blue-900/10 px-2 py-0.5 rounded border border-blue-100 dark:border-blue-900/20">
+                                <Loader2 className="w-3 h-3 animate-spin" /> Processing
+                              </span>
+                            )}
+                            {isCompleted && (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-500 uppercase tracking-wider bg-emerald-50 dark:bg-emerald-900/15 px-2 py-0.5 rounded border border-emerald-100/50 dark:border-emerald-900/30">
+                                <Check className="w-3 h-3 text-emerald-500" /> Extracted
+                              </span>
+                            )}
+                            {isFailed && (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-red-500 uppercase tracking-wider bg-red-50 dark:bg-red-950/20 px-2 py-0.5 rounded border border-red-100 dark:border-red-900/30" title={item.error || 'Extraction Failed'}>
+                                <AlertCircle className="w-3 h-3 text-red-500" /> Fail
+                              </span>
+                            )}
+
+                            {(isPending || isFailed) && !isBatchProcessing && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  extractSingleItem(item.id);
+                                }}
+                                disabled={!isOnline}
+                                className="p-1 rounded bg-slate-50 hover:bg-slate-100 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-slate-600 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700 transition cursor-pointer"
+                                title="Extract Data"
+                              >
+                                <Play className="w-3 h-3" />
+                              </button>
+                            )}
+
+                            <button
+                              onClick={(e) => removeFromQueue(e, item.id)}
+                              disabled={isExtracting || isBatchProcessing}
+                              className="p-1 rounded text-slate-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-rose-50 dark:hover:bg-zinc-800 transition disabled:opacity-30 cursor-pointer"
+                              title="Remove from queue"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
