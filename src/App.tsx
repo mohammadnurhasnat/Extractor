@@ -9,7 +9,7 @@ import imageCompression from 'browser-image-compression';
 import JSZip from 'jszip';
 
 // Types
-import { PassportData, HistoryItem, QueueItem } from './types';
+import { PassportData, HistoryItem, QueueItem, UndertakingFormData } from './types';
 
 // Components
 import { DataField } from './components/DataField';
@@ -31,7 +31,7 @@ import {
   getBusinessAddressLocal,
   generateDataText
 } from './utils/addressUtils';
-import { generatePDF, getPDFDocument } from './utils/pdfGenerator';
+import { generatePDF, getPDFDocument, generateUndertakingPDF } from './utils/pdfGenerator';
 
 // @ts-ignore
 import ExtractorLogo from './assets/images/extractor_logo_1779343193402.png';
@@ -90,6 +90,48 @@ export default function App() {
   }, [isDarkMode]);
 
   const [isOnline, setIsOnline] = useState(typeof window !== 'undefined' ? window.navigator.onLine : true);
+
+  const [resultsTab, setResultsTab] = useState<'profile' | 'undertaking'>('profile');
+  const [utPurpose, setUtPurpose] = useState('');
+  const [utFromDate, setUtFromDate] = useState('');
+  const [utToDate, setUtToDate] = useState('');
+  const [utReturnCountry, setUtReturnCountry] = useState('Bangladesh');
+  const [undertakingData, setUndertakingData] = useState<UndertakingFormData | null>(null);
+
+  const isUndertakingConfigured = !!(utPurpose || utFromDate || utToDate);
+
+  useEffect(() => {
+    if (data && isUndertakingConfigured) {
+      let durationStr = '';
+      if (utFromDate && utToDate) {
+        const from = new Date(utFromDate);
+        const to = new Date(utToDate);
+        const diffTime = to.getTime() - from.getTime();
+        if (diffTime >= 0) {
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // inclusive
+          durationStr = `${diffDays} days`;
+        }
+      }
+      
+      const todayStr = new Date().toLocaleDateString('en-GB');
+
+      setUndertakingData({
+        fullName: `${data.givenName || ''} ${data.surname || ''}`.trim().toUpperCase(),
+        passportNumber: data.passportNumber || '',
+        nationality: 'Bangladeshi',
+        dob: data.dob || '',
+        address: getPresentAddress(data) || '',
+        purpose: utPurpose ? (utPurpose === 'tourism' ? 'tourism' : utPurpose === 'business' ? 'business' : utPurpose) : '',
+        travelFrom: utFromDate ? new Date(utFromDate).toLocaleDateString('en-GB') : '',
+        travelTo: utToDate ? new Date(utToDate).toLocaleDateString('en-GB') : '',
+        duration: durationStr,
+        returnCountry: utReturnCountry || 'Bangladesh',
+        date: todayStr
+      });
+    } else {
+      setUndertakingData(null);
+    }
+  }, [data, utPurpose, utFromDate, utToDate, utReturnCountry, isUndertakingConfigured]);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -242,6 +284,15 @@ export default function App() {
       }
       return item;
     }));
+  };
+
+  const handleUpdateUndertakingField = (field: keyof UndertakingFormData, value: string) => {
+    if (undertakingData) {
+      setUndertakingData(prev => prev ? {
+        ...prev,
+        [field]: value
+      } : null);
+    }
   };
 
   const confirmDelete = (e: React.MouseEvent, id: string) => {
@@ -586,6 +637,84 @@ export default function App() {
                     <div className="absolute inset-0 ring-1 ring-inset ring-black/10 dark:ring-white/10 rounded-xl" />
                   </div>
                   
+                  
+                  {/* UNDERTAKING CONFIGURATION (OPTIONAL) */}
+                  <div className="bg-slate-50 dark:bg-zinc-900/40 border border-slate-200/80 dark:border-zinc-800/80 rounded-xl p-4 space-y-3 shadow-sm text-left">
+                    <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-zinc-800/50 pb-2">
+                      <span className="text-xs font-bold text-slate-700 dark:text-zinc-300 uppercase tracking-wider flex items-center gap-1.5">
+                        <FileText className="w-4 h-4 text-blue-500" />
+                        Under Taking Option (Optional)
+                      </span>
+                      {isUndertakingConfigured && (
+                        <span className="text-[10px] bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 font-bold px-2 py-0.5 rounded-full">
+                          Active
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="space-y-3">
+                      {/* 1. Purpose of Visit */}
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wide mb-1">
+                          Purpose of Visit
+                        </label>
+                        <select
+                          value={utPurpose}
+                          onChange={(e) => setUtPurpose(e.target.value)}
+                          className="w-full text-xs font-semibold px-2.5 py-2 rounded-lg bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
+                        >
+                          <option value="">-- Select Purpose (Optional) --</option>
+                          <option value="tourism">tourism</option>
+                          <option value="business">business</option>
+                          <option value="medical treatment">medical treatment</option>
+                          <option value="Patient">Patient</option>
+                          <option value="attendance">attendance</option>
+                          <option value="double entry">double entry</option>
+                        </select>
+                      </div>
+
+                      {/* 2. Duration of Stay */}
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wide mb-1">
+                            India Jabo (From)
+                          </label>
+                          <input
+                            type="date"
+                            value={utFromDate}
+                            onChange={(e) => setUtFromDate(e.target.value)}
+                            className="w-full text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wide mb-1">
+                            Ferot Asbo (To)
+                          </label>
+                          <input
+                            type="date"
+                            value={utToDate}
+                            onChange={(e) => setUtToDate(e.target.value)}
+                            className="w-full text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
+                          />
+                        </div>
+                      </div>
+
+                      {/* 3. Return to Home Country */}
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wide mb-1">
+                          Return to Home Country
+                        </label>
+                        <select
+                          disabled
+                          value={utReturnCountry}
+                          className="w-full text-xs font-semibold px-2.5 py-2 rounded-lg bg-slate-100 dark:bg-zinc-850 border border-slate-200 dark:border-zinc-800 text-slate-500 dark:text-zinc-400 cursor-not-allowed text-left"
+                        >
+                          <option value="Bangladesh">Bangladesh (Always)</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="flex gap-3">
                     <button 
                       onClick={clearAll}
@@ -821,108 +950,300 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div className="flex flex-col xl:flex-row xl:items-center justify-between mb-5 pb-4 border-b border-slate-100 dark:border-zinc-800/50 gap-4 print:hidden">
-                    <div>
-                      <h2 className="text-xl font-bold flex items-center gap-2 text-slate-800 dark:text-zinc-100">
-                        <CheckCircle2 className="w-6 h-6 text-emerald-500" />
-                        Passport Data
-                      </h2>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto xl:justify-end">
-                      <button 
-                        onClick={handleCopyAll}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 text-xs sm:text-sm font-medium rounded-lg transition-colors border border-transparent dark:border-zinc-700 cursor-pointer"
+                  {/* TABS SELECTOR */}
+                  {isUndertakingConfigured && undertakingData && (
+                    <div className="flex border-b border-slate-100 dark:border-zinc-800/50 mb-6 print:hidden">
+                      <button
+                        onClick={() => setResultsTab('profile')}
+                        className={`px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 transition-all cursor-pointer ${
+                          resultsTab === 'profile'
+                            ? 'border-[#0C8493] text-[#0C8493]'
+                            : 'border-transparent text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-400'
+                        }`}
                       >
-                        {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
-                        {isCopied ? "Copied" : "Copy All"}
+                        Passport Profile
                       </button>
-                      <button 
-                        onClick={handleDownloadText}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-400 text-xs sm:text-sm font-medium rounded-lg transition-colors border border-blue-200 dark:border-blue-800/50 cursor-pointer"
+                      <button
+                        onClick={() => setResultsTab('undertaking')}
+                        className={`px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 transition-all cursor-pointer ${
+                          resultsTab === 'undertaking'
+                            ? 'border-[#0C8493] text-[#0C8493]'
+                            : 'border-transparent text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-400'
+                        }`}
                       >
-                        <Download className="w-3.5 h-3.5" />
-                        Download TXT
-                      </button>
-                      <button 
-                        onClick={handleDownloadPDF}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-[#FF8006] hover:bg-[#FF8006]/90 text-white text-xs sm:text-sm font-semibold rounded-lg transition-all shadow-sm active:scale-95 duration-100 cursor-pointer"
-                      >
-                        <FileText className="w-3.5 h-3.5" />
-                        Download PDF Summary
-                      </button>
-                      <button 
-                        onClick={() => window.print()}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0C8493] hover:bg-[#0C8493]/90 text-white text-xs sm:text-sm font-semibold rounded-lg transition-all shadow-sm active:scale-95 duration-100 cursor-pointer"
-                      >
-                        <Printer className="w-3.5 h-3.5" />
-                        Print Report
+                        Indian Visa Undertaking Form (অঙ্গীকারনামা)
                       </button>
                     </div>
-                  </div>
+                  )}
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-3">
-                    <DataField label="EMAIL" value={getGeneratedEmail(data)} highlight onValueChange={(val) => updateDataField('email', val)} />
-                    <DataField label="DOB" value={data.dob} onValueChange={(val) => updateDataField('dob', val)} />
-                    <DataField label="Surname" value={data.surname} onValueChange={(val) => updateDataField('surname', val)} />
-                    <DataField label="Given Name" value={data.givenName} onValueChange={(val) => updateDataField('givenName', val)} />
-                    <DataField label="Town/City of birth/BIRTH PLACE" value={data.birthPlace} onValueChange={(val) => updateDataField('birthPlace', val)} />
-                    <DataField label="National Id No/BIRTH CERTIFICATE NO" value={data.nidOrBirthCertNumber} onValueChange={(val) => updateDataField('nidOrBirthCertNumber', val)} />
-                    <DataField label="Passport Number" value={data.passportNumber} highlight onValueChange={(val) => updateDataField('passportNumber', val)} />
-                    <DataField label="Place of Issue" value={data.placeOfIssue || "DHAKA"} onValueChange={(val) => updateDataField('placeOfIssue', val)} />
-                    <DataField label="Date of Issue" value={data.issueDate} onValueChange={(val) => updateDataField('issueDate', val)} />
-                    <DataField label="Date of Expiry" value={data.expiryDate} onValueChange={(val) => updateDataField('expiryDate', val)} />
-                    
-                    <div className="col-span-1 sm:col-span-2 pt-2 border-t border-slate-100 dark:border-zinc-800/50"></div>
-                    
-                    <div className="col-span-1 sm:col-span-2">
-                       <DataField label="PRESENT ADDRESS" value={presentAddr} onValueChange={(val) => updateDataField('presentAddress', val)} />
-                    </div>
-                    <div className="col-span-1 sm:col-span-2">
-                       <DataField label="PERMANENT ADDRESS" value={permanentAddr} onValueChange={(val) => updateDataField('permanentAddress', val)} />
-                    </div>
-
-                    <div className="col-span-1 sm:col-span-2 pt-3 border-t border-slate-100 dark:border-zinc-800/50 mt-2">
-                      <h4 className="text-xs font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider mb-2.5">Additional Information</h4>
-                    </div>
-                    
-                    <DataField label="Father's Name" value={data.fatherName} onValueChange={(val) => updateDataField('fatherName', val)} />
-                    <DataField label="Mother's Name" value={data.motherName} onValueChange={(val) => updateDataField('motherName', val)} />
-                    <DataField label="Spouse's Name" value={data.spouseName || "N/A"} onValueChange={(val) => updateDataField('spouseName', val)} />
-                    <DataField label="Mobile Number" value={data.mobileNumber ? data.mobileNumber.replace(/^\+88\s*/, '') : ''} onValueChange={(val) => updateDataField('mobileNumber', val)} />
-                    <DataField label="Town/City of birth/BIRTH PLACE" value={getDistrictFromAddress(permanentAddr, data)} onValueChange={(val) => updateDataField('birthPlaceDistrict', val)} />
-
-                    <div className="col-span-1 sm:col-span-2 pt-3 border-t border-slate-100 dark:border-zinc-800/50 mt-2">
-                      <h4 className="text-xs font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider mb-2.5">Business & Profession Details</h4>
-                    </div>
-                    
-                    <div className="col-span-1 sm:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                      {/* Proprietorship */}
-                      <div className="space-y-3 bg-slate-50/50 dark:bg-black/30 p-4 rounded-xl border border-slate-100 dark:border-zinc-800/50">
-                        <h5 className="text-sm font-semibold text-slate-700 dark:text-zinc-300 border-b border-slate-200 dark:border-zinc-800/50 pb-2 mb-1">Business (Proprietorship)</h5>
-                        <DataField label="Business Name" value={getProprietorBusinessName(data)} onValueChange={(val) => updateDataField('proprietorBusinessName', val)} />
-                        <DataField label="Designation" value="Proprietor" />
-                        <div className="pt-2">
-                          <DataField label="Business Address (Present)" value={getBusinessAddressDhaka(presentAddr, data)} onValueChange={(val) => updateDataField('businessAddressDhaka', val)} />
+                  {(resultsTab === 'profile' || !isUndertakingConfigured || !undertakingData) ? (
+                    <>
+                      <div className="flex flex-col xl:flex-row xl:items-center justify-between mb-5 pb-4 border-b border-slate-100 dark:border-zinc-800/50 gap-4 print:hidden">
+                        <div>
+                          <h2 className="text-xl font-bold flex items-center gap-2 text-slate-800 dark:text-zinc-100">
+                            <CheckCircle2 className="w-6 h-6 text-emerald-500" />
+                            Passport Data
+                          </h2>
                         </div>
-                        <div className="pt-2">
-                          <DataField label="Business Address (Permanent)" value={getBusinessAddressLocal(permanentAddr, data)} onValueChange={(val) => updateDataField('businessAddressLocal', val)} />
+                        <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto xl:justify-end">
+                          <button 
+                            onClick={handleCopyAll}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 text-xs sm:text-sm font-medium rounded-lg transition-colors border border-transparent dark:border-zinc-700 cursor-pointer"
+                          >
+                            {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+                            {isCopied ? "Copied" : "Copy All"}
+                          </button>
+                          <button 
+                            onClick={handleDownloadText}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-400 text-xs sm:text-sm font-medium rounded-lg transition-colors border border-blue-200 dark:border-blue-800/50 cursor-pointer"
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                            Download TXT
+                          </button>
+                          <button 
+                            onClick={handleDownloadPDF}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#FF8006] hover:bg-[#FF8006]/90 text-white text-xs sm:text-sm font-semibold rounded-lg transition-all shadow-sm active:scale-95 duration-100 cursor-pointer"
+                          >
+                            <FileText className="w-3.5 h-3.5" />
+                            Download PDF Summary
+                          </button>
+                          <button 
+                            onClick={() => window.print()}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0C8493] hover:bg-[#0C8493]/90 text-white text-xs sm:text-sm font-semibold rounded-lg transition-all shadow-sm active:scale-95 duration-100 cursor-pointer"
+                          >
+                            <Printer className="w-3.5 h-3.5" />
+                            Print Report
+                          </button>
                         </div>
                       </div>
 
-                      {/* Private Service / Job */}
-                      <div className="space-y-3 bg-slate-50/50 dark:bg-black/30 p-4 rounded-xl border border-slate-100 dark:border-zinc-800/50">
-                        <h5 className="text-sm font-semibold text-slate-700 dark:text-zinc-300 border-b border-slate-200 dark:border-zinc-800/50 pb-2 mb-1">Private Service / Job</h5>
-                        <DataField label="Company Name" value={getJobCompanyName(data)} onValueChange={(val) => updateDataField('jobCompanyName', val)} />
-                        <DataField label="Designation" value={getJobRole(data)} onValueChange={(val) => updateDataField('jobRole', val)} />
-                        <div className="pt-2">
-                          <DataField label="Office Address (Present)" value={getOfficeAddressDhaka(presentAddr, data)} onValueChange={(val) => updateDataField('officeAddressDhaka', val)} />
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-3">
+                        <DataField label="EMAIL" value={getGeneratedEmail(data)} highlight onValueChange={(val) => updateDataField('email', val)} />
+                        <DataField label="DOB" value={data.dob} onValueChange={(val) => updateDataField('dob', val)} />
+                        <DataField label="Surname" value={data.surname} onValueChange={(val) => updateDataField('surname', val)} />
+                        <DataField label="Given Name" value={data.givenName} onValueChange={(val) => updateDataField('givenName', val)} />
+                        <DataField label="Town/City of birth/BIRTH PLACE" value={data.birthPlace} onValueChange={(val) => updateDataField('birthPlace', val)} />
+                        <DataField label="National Id No/BIRTH CERTIFICATE NO" value={data.nidOrBirthCertNumber} onValueChange={(val) => updateDataField('nidOrBirthCertNumber', val)} />
+                        <DataField label="Passport Number" value={data.passportNumber} highlight onValueChange={(val) => updateDataField('passportNumber', val)} />
+                        <DataField label="Place of Issue" value={data.placeOfIssue || "DHAKA"} onValueChange={(val) => updateDataField('placeOfIssue', val)} />
+                        <DataField label="Date of Issue" value={data.issueDate} onValueChange={(val) => updateDataField('issueDate', val)} />
+                        <DataField label="Date of Expiry" value={data.expiryDate} onValueChange={(val) => updateDataField('expiryDate', val)} />
+                        
+                        <div className="col-span-1 sm:col-span-2 pt-2 border-t border-slate-100 dark:border-zinc-800/50"></div>
+                        
+                        <div className="col-span-1 sm:col-span-2">
+                           <DataField label="PRESENT ADDRESS" value={presentAddr} onValueChange={(val) => updateDataField('presentAddress', val)} />
                         </div>
-                        <div className="pt-2">
-                          <DataField label="Office Address (Permanent)" value={getBusinessAddressLocal(permanentAddr, data)} onValueChange={(val) => updateDataField('businessAddressLocal', val)} />
+                        <div className="col-span-1 sm:col-span-2">
+                           <DataField label="PERMANENT ADDRESS" value={permanentAddr} onValueChange={(val) => updateDataField('permanentAddress', val)} />
+                        </div>
+
+                        <div className="col-span-1 sm:col-span-2 pt-3 border-t border-slate-100 dark:border-zinc-800/50 mt-2">
+                          <h4 className="text-xs font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider mb-2.5">Additional Information</h4>
+                        </div>
+                        
+                        <DataField label="Father's Name" value={data.fatherName} onValueChange={(val) => updateDataField('fatherName', val)} />
+                        <DataField label="Mother's Name" value={data.motherName} onValueChange={(val) => updateDataField('motherName', val)} />
+                        <DataField label="Spouse's Name" value={data.spouseName || "N/A"} onValueChange={(val) => updateDataField('spouseName', val)} />
+                        <DataField label="Mobile Number" value={data.mobileNumber ? data.mobileNumber.replace(/^\+88\s*/, '') : ''} onValueChange={(val) => updateDataField('mobileNumber', val)} />
+                        <DataField label="Town/City of birth/BIRTH PLACE" value={getDistrictFromAddress(permanentAddr, data)} onValueChange={(val) => updateDataField('birthPlaceDistrict', val)} />
+
+                        <div className="col-span-1 sm:col-span-2 pt-3 border-t border-slate-100 dark:border-zinc-800/50 mt-2">
+                          <h4 className="text-xs font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider mb-2.5">Business & Profession Details</h4>
+                        </div>
+                        
+                        <div className="col-span-1 sm:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                          {/* Proprietorship */}
+                          <div className="space-y-3 bg-slate-50/50 dark:bg-black/30 p-4 rounded-xl border border-slate-100 dark:border-zinc-800/50">
+                            <h5 className="text-sm font-semibold text-slate-700 dark:text-zinc-300 border-b border-slate-200 dark:border-zinc-800/50 pb-2 mb-1">Business (Proprietorship)</h5>
+                            <DataField label="Business Name" value={getProprietorBusinessName(data)} onValueChange={(val) => updateDataField('proprietorBusinessName', val)} />
+                            <DataField label="Designation" value="Proprietor" />
+                            <div className="pt-2">
+                              <DataField label="Business Address (Present)" value={getBusinessAddressDhaka(presentAddr, data)} onValueChange={(val) => updateDataField('businessAddressDhaka', val)} />
+                            </div>
+                            <div className="pt-2">
+                              <DataField label="Business Address (Permanent)" value={getBusinessAddressLocal(permanentAddr, data)} onValueChange={(val) => updateDataField('businessAddressLocal', val)} />
+                            </div>
+                          </div>
+
+                          {/* Private Service / Job */}
+                          <div className="space-y-3 bg-slate-50/50 dark:bg-black/30 p-4 rounded-xl border border-slate-100 dark:border-zinc-800/50">
+                            <h5 className="text-sm font-semibold text-slate-700 dark:text-zinc-300 border-b border-slate-200 dark:border-zinc-800/50 pb-2 mb-1">Private Service / Job</h5>
+                            <DataField label="Company Name" value={getJobCompanyName(data)} onValueChange={(val) => updateDataField('jobCompanyName', val)} />
+                            <DataField label="Designation" value={getJobRole(data)} onValueChange={(val) => updateDataField('jobRole', val)} />
+                            <div className="pt-2">
+                              <DataField label="Office Address (Present)" value={getOfficeAddressDhaka(presentAddr, data)} onValueChange={(val) => updateDataField('officeAddressDhaka', val)} />
+                            </div>
+                            <div className="pt-2">
+                              <DataField label="Office Address (Permanent)" value={getBusinessAddressLocal(permanentAddr, data)} onValueChange={(val) => updateDataField('businessAddressLocal', val)} />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    /* EDITABLE UNDERTAKING PREVIEW */
+                    <div className="flex flex-col gap-6 text-left">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 dark:border-zinc-800/50 gap-4 print:hidden">
+                        <div>
+                          <h2 className="text-lg font-bold flex items-center gap-2 text-slate-800 dark:text-zinc-100">
+                            <FileText className="w-5 h-5 text-teal-600" />
+                            Edit Visa Undertaking Document
+                          </h2>
+                          <p className="text-xs text-slate-400 dark:text-zinc-500 font-medium">Click on any text or blank line below to edit before downloading.</p>
+                        </div>
+                        <button
+                          onClick={() => generateUndertakingPDF(undertakingData)}
+                          className="flex items-center gap-1.5 px-4 py-2 bg-[#FF8006] hover:bg-[#FF8006]/90 text-white text-xs sm:text-sm font-bold rounded-lg transition-all shadow-sm active:scale-95 duration-100 cursor-pointer self-start sm:self-auto"
+                        >
+                          <Download className="w-4 h-4" />
+                          Download Undertaking PDF
+                        </button>
+                      </div>
+
+                      <div className="bg-white dark:bg-zinc-950 p-6 sm:p-12 border border-slate-200 dark:border-zinc-800 rounded-xl shadow-inner font-serif text-slate-900 dark:text-zinc-100 text-xs sm:text-sm space-y-6 leading-relaxed relative print:border-none print:shadow-none print:p-0">
+                        <div className="text-center font-bold text-base sm:text-lg uppercase tracking-wide border-b border-zinc-200 dark:border-zinc-800 pb-3 mb-6">
+                          UNDERTAKING
+                        </div>
+
+                        <div className="space-y-4 pt-2">
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                            <span>I,</span>
+                            <input 
+                              type="text" 
+                              value={undertakingData.fullName}
+                              onChange={(e) => handleUpdateUndertakingField('fullName', e.target.value)}
+                              className="min-w-[200px] flex-1 max-w-[400px] bg-slate-50 dark:bg-zinc-900 border-b border-dashed border-slate-400 dark:border-zinc-700 px-2 py-0.5 font-bold text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500"
+                              placeholder="[Full Name]"
+                            />
+                            <span>, bearing Passport No.</span>
+                            <input 
+                              type="text" 
+                              value={undertakingData.passportNumber}
+                              onChange={(e) => handleUpdateUndertakingField('passportNumber', e.target.value)}
+                              className="min-w-[120px] bg-slate-50 dark:bg-zinc-900 border-b border-dashed border-slate-400 dark:border-zinc-700 px-2 py-0.5 text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500 font-semibold"
+                              placeholder="[Passport Number]"
+                            />
+                            <span>,</span>
+                          </div>
+
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                            <span>Nationality</span>
+                            <input 
+                              type="text" 
+                              value={undertakingData.nationality}
+                              onChange={(e) => handleUpdateUndertakingField('nationality', e.target.value)}
+                              className="min-w-[100px] bg-slate-50 dark:bg-zinc-900 border-b border-dashed border-slate-400 dark:border-zinc-700 px-2 py-0.5 text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500"
+                              placeholder="[Nationality]"
+                            />
+                            <span>, Date of Birth</span>
+                            <input 
+                              type="text" 
+                              value={undertakingData.dob}
+                              onChange={(e) => handleUpdateUndertakingField('dob', e.target.value)}
+                              className="min-w-[110px] bg-slate-50 dark:bg-zinc-900 border-b border-dashed border-slate-400 dark:border-zinc-700 px-2 py-0.5 text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500"
+                              placeholder="[DD/MM/YYYY]"
+                            />
+                            <span>,</span>
+                          </div>
+
+                          <div className="flex flex-col sm:flex-row items-start gap-1">
+                            <span className="shrink-0">Resident at (Address):</span>
+                            <textarea 
+                              rows={2}
+                              value={undertakingData.address}
+                              onChange={(e) => handleUpdateUndertakingField('address', e.target.value)}
+                              className="w-full bg-slate-50 dark:bg-zinc-900 border border-dashed border-slate-350 dark:border-zinc-700 rounded p-1.5 text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500 resize-none font-serif leading-relaxed"
+                              placeholder="[Full Address]"
+                            />
+                          </div>
+
+                          <div className="pt-2">
+                            hereby solemnly declare and undertake as follows:
+                          </div>
+                        </div>
+
+                        <div className="space-y-4 pt-2">
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                            <span>1. My Purpose of Visit to India is</span>
+                            <select
+                              value={undertakingData.purpose}
+                              onChange={(e) => handleUpdateUndertakingField('purpose', e.target.value)}
+                              className="min-w-[150px] bg-slate-50 dark:bg-zinc-900 border-b border-dashed border-slate-400 dark:border-zinc-700 px-2 py-0.5 text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500 cursor-pointer font-semibold"
+                            >
+                              <option value="tourism">tourism</option>
+                              <option value="business">business</option>
+                              <option value="medical treatment">medical treatment</option>
+                              <option value="Patient">Patient</option>
+                              <option value="attendance">attendance</option>
+                              <option value="double entry">double entry</option>
+                            </select>
+                            <span>.</span>
+                          </div>
+
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                            <span>2. I intend to stay in India for a duration of</span>
+                            <input 
+                              type="text" 
+                              value={undertakingData.duration}
+                              onChange={(e) => handleUpdateUndertakingField('duration', e.target.value)}
+                              className="min-w-[80px] text-center bg-slate-50 dark:bg-zinc-900 border-b border-dashed border-slate-400 dark:border-zinc-700 px-2 py-0.5 font-bold text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500"
+                              placeholder="[Duration]"
+                            />
+                            <span>starting from</span>
+                            <input 
+                              type="text" 
+                              value={undertakingData.travelFrom}
+                              onChange={(e) => handleUpdateUndertakingField('travelFrom', e.target.value)}
+                              className="min-w-[100px] text-center bg-slate-50 dark:bg-zinc-900 border-b border-dashed border-slate-400 dark:border-zinc-700 px-2 py-0.5 text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500"
+                              placeholder="[From Date]"
+                            />
+                            <span>to</span>
+                            <input 
+                              type="text" 
+                              value={undertakingData.travelTo}
+                              onChange={(e) => handleUpdateUndertakingField('travelTo', e.target.value)}
+                              className="min-w-[100px] text-center bg-slate-50 dark:bg-zinc-900 border-b border-dashed border-slate-400 dark:border-zinc-700 px-2 py-0.5 text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500"
+                              placeholder="[To Date]"
+                            />
+                            <span>.</span>
+                          </div>
+
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                            <span>3. I swear to return to my home country</span>
+                            <input 
+                              type="text" 
+                              value={undertakingData.returnCountry}
+                              onChange={(e) => handleUpdateUndertakingField('returnCountry', e.target.value)}
+                              className="min-w-[110px] bg-slate-50 dark:bg-zinc-900 border-b border-dashed border-slate-400 dark:border-zinc-700 px-2 py-0.5 text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500 font-semibold"
+                              placeholder="[Return Country]"
+                            />
+                            <span>upon completion of my authorized stay.</span>
+                          </div>
+
+                          <div className="text-justify leading-relaxed font-serif text-slate-600 dark:text-zinc-400">
+                            I also declare that the details provided here are absolutely true and complete. I will adhere entirely to the rules, regulations, and timelines stipulated by the Embassy and appropriate authorities, and understand that any violations may hold me legally accountable.
+                          </div>
+                        </div>
+
+                        <div className="pt-8 border-t border-slate-100 dark:border-zinc-805/50 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6">
+                          <div className="space-y-1.0">
+                            <div className="font-bold">Signature of Applicant:</div>
+                            <div className="text-[10px] text-slate-400 dark:text-zinc-500 italic mt-1 font-sans">(Physical Signature required on printed copy)</div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold">Date:</span>
+                            <input 
+                              type="text" 
+                              value={undertakingData.date}
+                              onChange={(e) => handleUpdateUndertakingField('date', e.target.value)}
+                              className="min-w-[100px] text-center bg-slate-50 dark:bg-zinc-900 border-b border-dashed border-slate-400 dark:border-zinc-700 px-2 py-0.5 text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500 font-bold"
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                 </motion.div>
               </div>
             ) : (

@@ -33,6 +33,20 @@ export interface HistoryItem {
   data: PassportData;
 }
 
+export interface UndertakingFormData {
+  fullName: string;
+  passportNumber: string;
+  nationality: string;
+  dob: string;
+  address: string;
+  purpose: string;
+  travelFrom: string;
+  travelTo: string;
+  duration: string;
+  returnCountry: string;
+  date: string;
+}
+
 export interface QueueItem {
   id: string;
   file: File;

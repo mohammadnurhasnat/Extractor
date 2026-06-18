@@ -1,6 +1,6 @@
 {
   "name": "CTO Architect AI",
-  "description": "An expert AI coding assistant modeled as a CTO, System Architect, and Ruthless Mentor.",
+  "description": "An expert AI passport extractor and Indian visa undertaking form editor/generator.",
   "requestFramePermissions": [
     "camera"
   ],

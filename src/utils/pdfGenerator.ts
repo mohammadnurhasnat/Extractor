@@ -1,5 +1,5 @@
 import { jsPDF } from 'jspdf';
-import { PassportData } from '../types';
+import { PassportData, UndertakingFormData } from '../types';
 import {
   getPresentAddress,
   getPermanentAddress,
@@ -198,4 +198,162 @@ export const getPDFDocument = (data: PassportData): jsPDF => {
 export const generatePDF = (data: PassportData): void => {
   const doc = getPDFDocument(data);
   doc.save(`Passport_Report_${data.givenName || 'Summary'}.pdf`);
+};
+
+export const getUndertakingPDFDocument = (formData: UndertakingFormData): jsPDF => {
+  const doc = new jsPDF('p', 'mm', 'a4');
+  let y = 25;
+  const leftMargin = 20;
+  const contentWidth = 170;
+
+  // Set Times font - elegant and formal
+  doc.setFont('times', 'bold');
+  doc.setFontSize(14);
+  doc.text('VISA UNDERTAKING FORM', 105, y, { align: 'center' });
+  y += 12;
+
+  doc.setFont('times', 'normal');
+  doc.setFontSize(11);
+  
+  const introText = 'I, the undersigned, hereby submit this undertaking in support of my application for an Indian visa.';
+  const splitIntro = doc.splitTextToSize(introText, contentWidth);
+  splitIntro.forEach((line: string) => {
+    doc.text(line, leftMargin, y);
+    y += 6.5;
+  });
+  y += 4;
+
+  // 1. Personal Details
+  doc.setFont('times', 'bold');
+  doc.text('1. Personal Details', leftMargin, y);
+  y += 6.5;
+
+  doc.setFont('times', 'normal');
+  
+  const details = [
+    { label: 'Full Name:', value: formData.fullName || '______________________' },
+    { label: 'Passport Number:', value: formData.passportNumber || '______________________' },
+    { label: 'Nationality:', value: formData.nationality || '______________________' },
+    { label: 'Date of Birth:', value: formData.dob || '______________________' },
+    { label: 'Address:', value: formData.address || '______________________' }
+  ];
+
+  details.forEach((item) => {
+    doc.setFont('times', 'bold');
+    doc.text(item.label, leftMargin + 4, y);
+    doc.setFont('times', 'normal');
+    
+    if (item.label === 'Address:') {
+      const splitAddr = doc.splitTextToSize(item.value, contentWidth - 35);
+      splitAddr.forEach((line: string, index: number) => {
+        doc.text(line, leftMargin + 35, y);
+        if (index < splitAddr.length - 1) {
+          y += 5.5;
+        }
+      });
+    } else {
+      doc.text(item.value, leftMargin + 35, y);
+    }
+    y += 6.5;
+  });
+  y += 1.5;
+
+  // 2. Purpose of Visit
+  doc.setFont('times', 'bold');
+  doc.text('2. Purpose of Visit', leftMargin, y);
+  y += 6.5;
+
+  doc.setFont('times', 'normal');
+  const purposeText = `I wish to visit India for the purpose of ${formData.purpose || '____________________________________________'}.`;
+  const splitPurpose = doc.splitTextToSize(purposeText, contentWidth);
+  splitPurpose.forEach((line: string) => {
+    doc.text(line, leftMargin + 4, y);
+    y += 6.5;
+  });
+  y += 1.5;
+
+  // 3. Duration of Stay
+  doc.setFont('times', 'bold');
+  doc.text('3. Duration of Stay', leftMargin, y);
+  y += 6.5;
+
+  doc.setFont('times', 'normal');
+  const durationText = `I intend to stay in India from ${formData.travelFrom || '______________________'} to ${formData.travelTo || '______________________'}, for a total period of ${formData.duration || '______________________'}.`;
+  const splitDuration = doc.splitTextToSize(durationText, contentWidth);
+  splitDuration.forEach((line: string) => {
+    doc.text(line, leftMargin + 4, y);
+    y += 6.5;
+  });
+  y += 1.5;
+
+  // 4. Return to Home Country
+  doc.setFont('times', 'bold');
+  doc.text('4. Return to Home Country', leftMargin, y);
+  y += 6.5;
+
+  doc.setFont('times', 'normal');
+  const returnText = `I undertake to return to my home country immediately upon the completion of my visit, and I confirm that I have no intention of overstaying my visa in India. I will return to ${formData.returnCountry || '______________________'}.`;
+  const splitReturn = doc.splitTextToSize(returnText, contentWidth);
+  splitReturn.forEach((line: string) => {
+    doc.text(line, leftMargin + 4, y);
+    y += 6.5;
+  });
+  y += 1.5;
+
+  // 5. Compliance with Indian Laws
+  doc.setFont('times', 'bold');
+  doc.text('5. Compliance with Indian Laws', leftMargin, y);
+  y += 6.5;
+
+  doc.setFont('times', 'normal');
+  const complianceText1 = `I hereby pledge to fully comply with the laws, regulations, and customs of India during my stay.`;
+  const complianceText2 = `I acknowledge that I will not engage in any activity that is prohibited under Indian law and will respect the local customs and culture.`;
+  
+  const splitComp1 = doc.splitTextToSize(complianceText1, contentWidth);
+  splitComp1.forEach((line: string) => {
+    doc.text(line, leftMargin + 4, y);
+    y += 5.5;
+  });
+  const splitComp2 = doc.splitTextToSize(complianceText2, contentWidth);
+  splitComp2.forEach((line: string) => {
+    doc.text(line, leftMargin + 4, y);
+    y += 5.5;
+  });
+  y += 1.5;
+
+  // 6. Acknowledgment and Declaration
+  doc.setFont('times', 'bold');
+  doc.text('6. Acknowledgment and Declaration', leftMargin, y);
+  y += 6.5;
+
+  doc.setFont('times', 'normal');
+  const declarTexts = [
+    `I understand that any violation of Indian laws or regulations may lead to the cancellation of my visa and may affect my future eligibility for a visa to India.`,
+    `I declare that all information provided in my visa application is accurate and truthful to the best of my knowledge. I understand that providing false or misleading information may result in the denial of my visa application.`,
+    `I undertake to adhere to all the terms and conditions of my visa and will ensure that I leave India before the expiration of my authorized stay.`
+  ];
+
+  declarTexts.forEach((text) => {
+    const splitText = doc.splitTextToSize(text, contentWidth);
+    splitText.forEach((line: string) => {
+      doc.text(line, leftMargin + 4, y);
+      y += 5.5;
+    });
+    y += 1.5;
+  });
+
+  y += 6;
+
+  // Signature Block & Date
+  doc.setFont('times', 'bold');
+  doc.text('Signature of Applicant: __________________________', leftMargin, y);
+  y += 8;
+  doc.text(`Date: ${formData.date || '__________________________'}`, leftMargin, y);
+
+  return doc;
+};
+
+export const generateUndertakingPDF = (formData: UndertakingFormData): void => {
+  const doc = getUndertakingPDFDocument(formData);
+  doc.save(`Indian_Visa_Undertaking_${formData.fullName.replace(/\s+/g, '_') || 'Applicant'}.pdf`);
 };
