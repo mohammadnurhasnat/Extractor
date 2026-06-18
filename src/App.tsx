@@ -13,6 +13,9 @@ import { PassportData, HistoryItem, QueueItem } from './types';
 
 // Components
 import { DataField } from './components/DataField';
+import { ApiSettingsModal } from './components/ApiSettingsModal';
+import { BatchProgressBar } from './components/BatchProgressBar';
+import { HistorySidebar } from './components/HistorySidebar';
 
 // Utilities
 import {
@@ -438,17 +441,6 @@ export default function App() {
     generatePDF(data);
   };
 
-  const filteredHistory = history.filter(item => {
-    const searchLower = searchTerm.toLowerCase();
-    const fullName = `${item.data.givenName || ''} ${item.data.surname || ''}`.toLowerCase();
-    const passportNumber = (item.data.passportNumber || '').toLowerCase();
-    const email = getGeneratedEmail(item.data).toLowerCase();
-    
-    return fullName.includes(searchLower) || 
-           passportNumber.includes(searchLower) || 
-           email.includes(searchLower);
-  });
-
   const presentAddr = getPresentAddress(data);
 
   return (
@@ -680,75 +672,7 @@ export default function App() {
                   </div>
 
                   {/* Batch Process Progress Bar */}
-                  {(() => {
-                    const totalItemsAvailable = queue.length;
-                    const completedCount = queue.filter(q => q.status === 'completed').length;
-                    const failedCount = queue.filter(q => q.status === 'failed').length;
-                    const processedCount = completedCount + failedCount;
-                    const progressPercentage = totalItemsAvailable > 0 ? Math.round((processedCount / totalItemsAvailable) * 100) : 0;
-
-                    return (
-                      <div className="bg-slate-50/80 dark:bg-black/40 border border-slate-200/50 dark:border-zinc-800/60 rounded-xl p-3 mb-4 transition-colors">
-                        <div className="flex items-center justify-between text-xs mb-1.5">
-                          <span className="font-semibold text-slate-600 dark:text-zinc-400">
-                            {isBatchProcessing ? (
-                              <span className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-bold">
-                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                Batch extracting...
-                              </span>
-                            ) : progressPercentage === 100 ? (
-                              <span className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
-                                <Check className="w-3.5 h-3.5" /> All processed!
-                              </span>
-                            ) : (
-                              <span className="text-slate-500 dark:text-zinc-500 font-medium">Batch Progress</span>
-                            )}
-                          </span>
-                          <span className="font-mono text-[11px] font-bold text-slate-700 dark:text-zinc-300">
-                            {progressPercentage}% ({processedCount}/{totalItemsAvailable})
-                          </span>
-                        </div>
-                        
-                        <div className="w-full h-2 bg-slate-200 dark:bg-zinc-800 rounded-full overflow-hidden relative">
-                          <motion.div 
-                            className={`h-full rounded-full ${
-                              failedCount > 0 
-                                ? 'bg-amber-500' 
-                                : 'bg-gradient-to-r from-blue-500 to-emerald-500'
-                            }`}
-                            initial={{ width: 0 }}
-                            animate={{ width: `${progressPercentage}%` }}
-                            transition={{ duration: 0.35, ease: "easeOut" }}
-                          />
-                        </div>
-                        
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2.5 text-[10px] font-bold text-slate-500 dark:text-zinc-500 uppercase tracking-wider">
-                          <span className="flex items-center gap-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                            Queued: {queue.filter(q => q.status === 'queued').length}
-                          </span>
-                          {queue.some(q => q.status === 'extracting') && (
-                            <span className="flex items-center gap-1 text-blue-500">
-                              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-                              Extracting: {queue.filter(q => q.status === 'extracting').length}
-                            </span>
-                          )}
-                          {completedCount > 0 && (
-                            <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-500">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                              Success: {completedCount}
-                            </span>
-                          )}
-                          {failedCount > 0 && (
-                            <span className="flex items-center gap-1 text-amber-600 dark:text-amber-500">
-                              <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                              Failed: {failedCount}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })()}
+                  <BatchProgressBar isBatchProcessing={isBatchProcessing} queue={queue} />
 
                   <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1 scrollbar-thin">
                     {queue.map((item, index) => {
@@ -861,83 +785,14 @@ export default function App() {
             </div>
             
             {/* HISTORY SECTION */}
-            <div className="bg-white/70 dark:bg-zinc-900/70 backdrop-blur-md p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200/60 dark:border-zinc-800/60 min-h-[300px] flex flex-col transition-colors">
-              <div className="flex flex-col xl:flex-row xl:items-center justify-between mb-6 pb-4 border-b border-slate-100 dark:border-zinc-800/50 gap-4">
-                <div>
-                  <h3 className="font-bold text-xl flex items-center gap-2 text-slate-800 dark:text-zinc-100">
-                    <History className="w-6 h-6 text-blue-500" /> Recent Extractions
-                  </h3>
-                  <p className="text-sm text-slate-500 dark:text-zinc-400 mt-1">Access scanned passports.</p>
-                </div>
-                
-                <div className="flex z-10 items-center justify-between xl:justify-end gap-3 w-full xl:w-auto">
-                  <div className="relative flex-1 xl:w-[150px]">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Search className="h-4 w-4 text-slate-400 dark:text-zinc-500" />
-                    </div>
-                    <input
-                      type="text"
-                      placeholder="Search..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="block w-full pl-9 pr-3 py-2 border border-slate-200 dark:border-zinc-700 rounded-lg text-sm bg-slate-50 dark:bg-black/50 focus:bg-white dark:focus:bg-black focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-zinc-100 transition-colors placeholder-slate-400 dark:placeholder-zinc-500"
-                    />
-                  </div>
-
-                  {history.length > 0 && (
-                    <button 
-                      onClick={() => setHistory([])}
-                      className="text-sm text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 font-semibold px-2 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors shrink-0 border border-transparent whitespace-nowrap"
-                    >
-                      Clear
-                    </button>
-                  )}
-                </div>
-              </div>
-              
-              {history.length === 0 ? (
-                <div className="flex flex-col items-center justify-center text-center opacity-50 flex-1 py-8">
-                  <History className="w-10 h-10 text-slate-300 dark:text-zinc-600 mb-4" />
-                  <p className="text-base font-medium text-slate-600 dark:text-zinc-300">No history yet</p>
-                </div>
-              ) : filteredHistory.length === 0 ? (
-                <div className="flex flex-col items-center justify-center text-center opacity-50 flex-1 py-8">
-                  <Search className="w-10 h-10 text-slate-300 dark:text-zinc-600 mb-4" />
-                  <p className="text-base font-medium text-slate-600 dark:text-zinc-300">No matching results</p>
-                </div>
-              ) : (
-                <div className="overflow-y-auto pr-2 space-y-3 pb-2 scrollbar-thin max-h-[300px]">
-                  {filteredHistory.map(item => (
-                    <div 
-                      key={item.id} 
-                      onClick={() => loadFromHistory(item)}
-                      className="cursor-pointer group relative flex items-center justify-between p-4 rounded-xl border border-slate-100 dark:border-zinc-800/50 bg-slate-50 dark:bg-black/50 hover:bg-blue-50 dark:hover:bg-zinc-800/50 hover:border-blue-200 dark:hover:border-zinc-700 transition-colors"
-                    >
-                      <div className="flex flex-col mr-6 overflow-hidden">
-                        <span className="font-bold text-[15px] leading-tight text-slate-800 dark:text-zinc-100 group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors truncate">
-                          {item.data.givenName} {item.data.surname}
-                        </span>
-                        <div className="flex items-center gap-2 mt-2 flex-wrap">
-                          <span className="text-[11px] font-semibold px-2 py-0.5 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-300 rounded">
-                            {item.data.passportNumber || "Unknown ID"}
-                          </span>
-                          <span className="text-[11px] text-slate-500 dark:text-zinc-400 font-medium bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 px-2 py-0.5 rounded truncate max-w-[150px]">
-                            {getGeneratedEmail(item.data)}
-                          </span>
-                        </div>
-                      </div>
-                      <button 
-                        onClick={(e) => confirmDelete(e, item.id)}
-                        className="opacity-0 group-hover:opacity-100 absolute right-4 p-2 text-slate-400 dark:text-zinc-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-white dark:hover:bg-zinc-800 rounded-lg transition-all shadow-sm border border-transparent hover:border-slate-200 dark:hover:border-zinc-700 shrink-0"
-                        title="Delete from history"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <HistorySidebar
+              history={history}
+              searchTerm={searchTerm}
+              onSearchTermChange={setSearchTerm}
+              onClearHistory={() => setHistory([])}
+              onLoadItem={loadFromHistory}
+              onConfirmDelete={confirmDelete}
+            />
           </div>
 
           {/* RESULTS SECTION (Right side on large screens) */}
@@ -1124,110 +979,19 @@ export default function App() {
       </AnimatePresence>
 
       {/* Gemini API Key Settings Modal */}
-      <AnimatePresence>
-        {showApiSettings && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm z-50"
-              onClick={() => setShowApiSettings(false)}
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800/80 rounded-2xl shadow-2xl z-50 overflow-hidden"
-            >
-              <div className="p-6">
-                <div className="flex justify-between items-center mb-4 pb-2 border-b border-slate-100 dark:border-zinc-800">
-                  <div className="flex items-center gap-2">
-                    <Key className="w-5 h-5 text-amber-500" />
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100">Configure Gemini API Key</h3>
-                  </div>
-                  <button 
-                    onClick={() => setShowApiSettings(false)}
-                    className="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-400 dark:text-zinc-500 cursor-pointer"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-                
-                <p className="text-xs text-slate-500 dark:text-zinc-400 mb-4 leading-relaxed">
-                  Render Deployment এ API Key Error এড়াতে আপনি আপনার নিজস্ব <strong>Google Gemini API Key</strong> নিচে সেভ করতে পারেন। এটি আপনার ব্রাউজারের <strong>localStorage</strong> এ সম্পুর্ন নিরাপদে সংরক্ষিত থাকবে এবং প্রতিটা রিকুয়েস্টে সার্ভার হেডার হিসেবে পাস হবে।
-                </p>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
-                      Gemini API Key
-                    </label>
-                    <div className="relative">
-                      <input
-                        type={showApiKeyChars ? 'text' : 'password'}
-                        value={tempApiKey}
-                        onChange={(e) => setTempApiKey(e.target.value)}
-                        placeholder="AIzaSy..."
-                        className="w-full pl-3 pr-10 py-2.5 bg-slate-50 dark:bg-black border border-slate-200 dark:border-zinc-800 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-slate-800 dark:text-zinc-100 transition-all placeholder:text-slate-300 dark:placeholder:text-zinc-700"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowApiKeyChars(!showApiKeyChars)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-400 cursor-pointer"
-                      >
-                        {showApiKeyChars ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="p-3 bg-blue-50/50 dark:bg-blue-950/10 rounded-xl border border-blue-100/30 dark:border-blue-900/20 text-[11px] text-blue-600 dark:text-blue-400 leading-relaxed font-semibold">
-                    🔑 <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" className="underline hover:text-blue-700 dark:hover:text-blue-300">Google AI Studio (aistudio.google.com)</a> থেকে একদম ফ্রিতে আপনার ব্যক্তিগত Gemini API Key তৈরি করে আনতে পারেন।
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-slate-50 dark:bg-zinc-900/30 px-6 py-4 flex items-center justify-between gap-3 border-t border-slate-100 dark:border-zinc-800">
-                <button
-                  onClick={() => {
-                    localStorage.removeItem('gemini_api_key');
-                    setUserApiKey('');
-                    setTempApiKey('');
-                    setShowApiSettings(false);
-                  }}
-                  className="px-4 py-2 text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg transition-colors cursor-pointer"
-                >
-                  Clear Key
-                </button>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setShowApiSettings(false)}
-                    className="px-4 py-2 text-xs font-bold text-slate-600 dark:text-zinc-400 hover:bg-slate-200 dark:hover:bg-zinc-800/50 rounded-lg transition-colors cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={() => {
-                      const finalKey = tempApiKey.trim();
-                      if (finalKey) {
-                        localStorage.setItem('gemini_api_key', finalKey);
-                        setUserApiKey(finalKey);
-                      } else {
-                        localStorage.removeItem('gemini_api_key');
-                        setUserApiKey('');
-                      }
-                      setShowApiSettings(false);
-                    }}
-                    className="px-4 py-2 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors shadow-sm cursor-pointer"
-                  >
-                    Save Changes
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+      <ApiSettingsModal
+        isOpen={showApiSettings}
+        userApiKey={userApiKey}
+        onClose={() => setShowApiSettings(false)}
+        onSave={(key) => {
+          localStorage.setItem('gemini_api_key', key);
+          setUserApiKey(key);
+        }}
+        onClear={() => {
+          localStorage.removeItem('gemini_api_key');
+          setUserApiKey('');
+        }}
+      />
     </div>
   );
 }
