@@ -132,6 +132,15 @@ export default function App() {
   const [utReturnCountry, setUtReturnCountry] = useState(() => {
     return localStorage.getItem('ut_return_country') || 'Bangladesh';
   });
+  const [utHospitalName, setUtHospitalName] = useState(() => {
+    return localStorage.getItem('ut_hospital_name') || 'Apollo Hospital, Chennai';
+  });
+  const [utDoctorName, setUtDoctorName] = useState(() => {
+    return localStorage.getItem('ut_doctor_name') || 'Dr. K. S. Murthy';
+  });
+  const [utEmbassyCity, setUtEmbassyCity] = useState(() => {
+    return localStorage.getItem('ut_embassy_city') || 'Delhi';
+  });
   const [undertakingData, setUndertakingData] = useState<UndertakingFormData | null>(() => {
     try {
       const saved = localStorage.getItem('active_undertaking_data');
@@ -158,6 +167,12 @@ export default function App() {
     localStorage.setItem('ut_to_date', utToDate);
     localStorage.setItem('ut_return_country', utReturnCountry);
   }, [utPurpose, utFromDate, utToDate, utReturnCountry]);
+
+  useEffect(() => {
+    localStorage.setItem('ut_hospital_name', utHospitalName);
+    localStorage.setItem('ut_doctor_name', utDoctorName);
+    localStorage.setItem('ut_embassy_city', utEmbassyCity);
+  }, [utHospitalName, utDoctorName, utEmbassyCity]);
 
   useEffect(() => {
     localStorage.setItem('is_undertaking_editable', String(isUndertakingEditable));
@@ -240,6 +255,18 @@ export default function App() {
           merged.returnCountry = utReturnCountry;
           hasConfigChanges = true;
         }
+        if (utHospitalName && merged.hospitalName !== utHospitalName) {
+          merged.hospitalName = utHospitalName;
+          hasConfigChanges = true;
+        }
+        if (utDoctorName && merged.doctorName !== utDoctorName) {
+          merged.doctorName = utDoctorName;
+          hasConfigChanges = true;
+        }
+        if (utEmbassyCity && merged.embassyCity !== utEmbassyCity) {
+          merged.embassyCity = utEmbassyCity;
+          hasConfigChanges = true;
+        }
 
         if (hasConfigChanges) {
           setUndertakingData(merged);
@@ -258,13 +285,16 @@ export default function App() {
           travelTo: utToDate ? new Date(utToDate).toLocaleDateString('en-GB') : '',
           duration: durationStr,
           returnCountry: utReturnCountry || 'Bangladesh',
-          date: todayStr
+          date: todayStr,
+          hospitalName: utHospitalName,
+          doctorName: utDoctorName,
+          embassyCity: utEmbassyCity
         });
       }
     } else {
       setUndertakingData(null);
     }
-  }, [data, utPurpose, utFromDate, utToDate, utReturnCountry, isUndertakingConfigured]);
+  }, [data, utPurpose, utFromDate, utToDate, utReturnCountry, isUndertakingConfigured, utHospitalName, utDoctorName, utEmbassyCity]);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -837,6 +867,84 @@ export default function App() {
                         </select>
                       </div>
 
+                      {/* Conditional Medical / Double Entry Sub-fields */}
+                      <AnimatePresence mode="popLayout">
+                        {(utPurpose === 'Medical Treatment - Patient' || utPurpose === 'Medical Treatment - Attendance') && (
+                          <motion.div
+                            key="medical-fields"
+                            initial={{ opacity: 0, height: 0, y: -10 }}
+                            animate={{ opacity: 1, height: 'auto', y: 0 }}
+                            exit={{ opacity: 0, height: 0, y: -10 }}
+                            transition={{ duration: 0.2 }}
+                            className="space-y-2 pt-2 border-t border-slate-200/50 dark:border-zinc-800/50 overflow-hidden"
+                          >
+                            <div>
+                              <label className="block text-[10px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wide mb-1">
+                                Medical Facility / Hospital Name
+                              </label>
+                              <input
+                                type="text"
+                                value={utHospitalName}
+                                onChange={(e) => {
+                                  setUtHospitalName(e.target.value);
+                                  if (undertakingData) {
+                                    setUndertakingData({ ...undertakingData, hospitalName: e.target.value });
+                                  }
+                                }}
+                                placeholder="e.g. Apollo Hospital, Chennai"
+                                className="w-full text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 text-emerald-600 dark:text-emerald-400 focus:outline-none focus:ring-1 focus:ring-blue-500 font-sans"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wide mb-1">
+                                Doctor Name / Specialist
+                              </label>
+                              <input
+                                type="text"
+                                value={utDoctorName}
+                                onChange={(e) => {
+                                  setUtDoctorName(e.target.value);
+                                  if (undertakingData) {
+                                    setUndertakingData({ ...undertakingData, doctorName: e.target.value });
+                                  }
+                                }}
+                                placeholder="e.g. Dr. K. S. Murthy"
+                                className="w-full text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 text-emerald-600 dark:text-emerald-400 focus:outline-none focus:ring-1 focus:ring-blue-500 font-sans"
+                              />
+                            </div>
+                          </motion.div>
+                        )}
+
+                        {utPurpose === 'Double Entry' && (
+                          <motion.div
+                            key="double-entry-fields"
+                            initial={{ opacity: 0, height: 0, y: -10 }}
+                            animate={{ opacity: 1, height: 'auto', y: 0 }}
+                            exit={{ opacity: 0, height: 0, y: -10 }}
+                            transition={{ duration: 0.2 }}
+                            className="space-y-2 pt-2 border-t border-slate-200/50 dark:border-zinc-800/50 overflow-hidden"
+                          >
+                            <div>
+                              <label className="block text-[10px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wide mb-1">
+                                Embassy City (Presenting Location)
+                              </label>
+                              <input
+                                type="text"
+                                value={utEmbassyCity}
+                                onChange={(e) => {
+                                  setUtEmbassyCity(e.target.value);
+                                  if (undertakingData) {
+                                    setUndertakingData({ ...undertakingData, embassyCity: e.target.value });
+                                  }
+                                }}
+                                placeholder="Delhi"
+                                className="w-full text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 text-emerald-600 dark:text-emerald-400 focus:outline-none focus:ring-1 focus:ring-blue-500 font-sans"
+                              />
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
                       {/* 2. Duration of Stay */}
                       <div className="grid grid-cols-2 gap-2">
                         <div>
@@ -1384,24 +1492,111 @@ export default function App() {
                         </div>
 
                         <div className="space-y-4 pt-2">
-                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                            <span>1. My Purpose of Visit to India is</span>
-                            {isUndertakingEditable ? (
-                              <select
-                                value={undertakingData.purpose}
-                                onChange={(e) => handleUpdateUndertakingField('purpose', e.target.value)}
-                                className="min-w-[150px] bg-slate-50 dark:bg-zinc-900 border-b border-dashed border-slate-400 dark:border-zinc-700 px-2 py-0.5 text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500 cursor-pointer font-semibold"
-                              >
-                                <option value="Tourism">Tourism</option>
-                                <option value="Business">Business</option>
-                                <option value="Medical Treatment - Patient">Medical Treatment - Patient</option>
-                                <option value="Medical Treatment - Attendance">Medical Treatment - Attendance</option>
-                                <option value="Double Entry">Double Entry</option>
-                              </select>
-                            ) : (
-                              <span className="font-bold underline decoration-dashed decoration-slate-400 px-2 text-slate-900 dark:text-zinc-100">{undertakingData.purpose || '_______________'}</span>
+                          <div className="space-y-1">
+                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                              <span>1. My Purpose of Visit to India is</span>
+                              {isUndertakingEditable ? (
+                                <select
+                                  value={undertakingData.purpose}
+                                  onChange={(e) => handleUpdateUndertakingField('purpose', e.target.value)}
+                                  className="min-w-[150px] bg-slate-50 dark:bg-zinc-900 border-b border-dashed border-slate-400 dark:border-zinc-700 px-2 py-0.5 text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500 cursor-pointer font-semibold"
+                                >
+                                  <option value="Tourism">Tourism</option>
+                                  <option value="Business">Business</option>
+                                  <option value="Medical Treatment - Patient">Medical Treatment - Patient</option>
+                                  <option value="Medical Treatment - Attendance">Medical Treatment - Attendance</option>
+                                  <option value="Double Entry">Double Entry</option>
+                                </select>
+                              ) : (
+                                <span className="font-bold underline decoration-dashed decoration-slate-400 px-2 text-slate-900 dark:text-zinc-100">{undertakingData.purpose || '_______________'}</span>
+                              )}
+                              <span>.</span>
+                            </div>
+
+                            {/* Dynamic purpose-specific expanded clause */}
+                            {undertakingData.purpose === 'Medical Treatment - Patient' && (
+                              <div className="mt-2 text-xs font-serif leading-relaxed text-slate-650 dark:text-zinc-350 pl-4 border-l-2 border-emerald-500 bg-emerald-500/5 dark:bg-emerald-500/10 py-1.5 rounded max-w-2xl">
+                                I will be visiting a specific medical facility, namely{' '}
+                                {isUndertakingEditable ? (
+                                  <input
+                                    type="text"
+                                    value={undertakingData.hospitalName || ''}
+                                    onChange={(e) => handleUpdateUndertakingField('hospitalName', e.target.value)}
+                                    className="bg-transparent border-b border-dashed border-emerald-400 px-1 font-bold text-emerald-600 dark:text-emerald-400 focus:outline-none min-w-[200px]"
+                                    placeholder="Hospital Name"
+                                  />
+                                ) : (
+                                  <span className="font-bold text-emerald-600 dark:text-emerald-400 underline decoration-dotted">{undertakingData.hospitalName || 'Apollo Hospital'}</span>
+                                )}{' '}
+                                and receiving treatment there. The appointment was made at that specific hospital, where I will see the doctor{' '}
+                                {isUndertakingEditable ? (
+                                  <input
+                                    type="text"
+                                    value={undertakingData.doctorName || ''}
+                                    onChange={(e) => handleUpdateUndertakingField('doctorName', e.target.value)}
+                                    className="bg-transparent border-b border-dashed border-emerald-400 px-1 font-bold text-emerald-600 dark:text-emerald-400 focus:outline-none min-w-[150px]"
+                                    placeholder="Doctor Name"
+                                  />
+                                ) : (
+                                  <span className="font-bold text-emerald-600 dark:text-emerald-400 underline decoration-dotted">{undertakingData.doctorName || 'Dr. K. S. Murthy'}</span>
+                                )}{' '}
+                                and will not go to any other hospital.
+                              </div>
                             )}
-                            <span>.</span>
+
+                            {undertakingData.purpose === 'Medical Treatment - Attendance' && (
+                              <div className="mt-2 text-xs font-serif leading-relaxed text-slate-650 dark:text-zinc-350 pl-4 border-l-2 border-emerald-500 bg-emerald-500/5 dark:bg-emerald-500/10 py-1.5 rounded max-w-2xl">
+                                I will be visiting a specific medical facility, namely{' '}
+                                {isUndertakingEditable ? (
+                                  <input
+                                    type="text"
+                                    value={undertakingData.hospitalName || ''}
+                                    onChange={(e) => handleUpdateUndertakingField('hospitalName', e.target.value)}
+                                    className="bg-transparent border-b border-dashed border-emerald-400 px-1 font-bold text-emerald-600 dark:text-emerald-400 focus:outline-none min-w-[200px]"
+                                    placeholder="Hospital Name"
+                                  />
+                                ) : (
+                                  <span className="font-bold text-emerald-600 dark:text-emerald-400 underline decoration-dotted">{undertakingData.hospitalName || 'Apollo Hospital'}</span>
+                                )}{' '}
+                                and attending to a patient receiving treatment there. The appointment was made at that specific hospital, where we will see the doctor{' '}
+                                {isUndertakingEditable ? (
+                                  <input
+                                    type="text"
+                                    value={undertakingData.doctorName || ''}
+                                    onChange={(e) => handleUpdateUndertakingField('doctorName', e.target.value)}
+                                    className="bg-transparent border-b border-dashed border-emerald-400 px-1 font-bold text-emerald-600 dark:text-emerald-400 focus:outline-none min-w-[150px]"
+                                    placeholder="Doctor Name"
+                                  />
+                                ) : (
+                                  <span className="font-bold text-emerald-600 dark:text-emerald-400 underline decoration-dotted">{undertakingData.doctorName || 'Dr. K. S. Murthy'}</span>
+                                )}{' '}
+                                and will not go to any other hospital.
+                              </div>
+                            )}
+
+                            {undertakingData.purpose === 'Double Entry' && (
+                              <div className="mt-2 text-xs font-serif leading-relaxed text-slate-650 dark:text-zinc-350 pl-4 border-l-2 border-emerald-500 bg-emerald-500/5 dark:bg-emerald-500/10 py-1.5 rounded max-w-2xl">
+                                I will go to{' '}
+                                {isUndertakingEditable ? (
+                                  <input
+                                    type="text"
+                                    value={undertakingData.embassyCity || ''}
+                                    onChange={(e) => handleUpdateUndertakingField('embassyCity', e.target.value)}
+                                    className="bg-transparent border-b border-dashed border-emerald-400 px-1 font-bold text-emerald-600 dark:text-emerald-400 focus:outline-none min-w-[100px]"
+                                    placeholder="Embassy City"
+                                  />
+                                ) : (
+                                  <span className="font-bold text-emerald-600 dark:text-emerald-400 underline decoration-dotted">{undertakingData.embassyCity || 'Delhi'}</span>
+                                )}{' '}
+                                to present the embassy. After presenting the embassy, I will return to Bangladesh.
+                              </div>
+                            )}
+
+                            {undertakingData.purpose === 'Business' && (
+                              <div className="mt-2 text-xs font-serif leading-relaxed text-slate-650 dark:text-zinc-350 pl-4 border-l-2 border-emerald-500 bg-emerald-500/5 dark:bg-emerald-500/10 py-1.5 rounded max-w-2xl">
+                                I further clarify that I am going to India for business purposes, and after completing the business transactions, I will return to Bangladesh.
+                              </div>
+                            )}
                           </div>
 
                           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">

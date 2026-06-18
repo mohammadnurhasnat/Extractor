@@ -45,6 +45,9 @@ export interface UndertakingFormData {
   duration: string;
   returnCountry: string;
   date: string;
+  hospitalName?: string;
+  doctorName?: string;
+  embassyCity?: string;
 }
 
 export interface QueueItem {

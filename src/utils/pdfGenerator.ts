@@ -261,42 +261,58 @@ export const getUndertakingPDFDocument = (formData: UndertakingFormData): jsPDF 
   // 2. Purpose of Visit
   doc.setFont('times', 'bold');
   doc.text('2. Purpose of Visit', leftMargin, y);
-  y += 6.5;
+  y += 6.0;
 
   doc.setFont('times', 'normal');
-  const purposeText = `I wish to visit India for the purpose of ${formData.purpose || '____________________________________________'}.`;
+  const purpose = formData.purpose || '';
+  const hospital = formData.hospitalName || '______________________';
+  const doctor = formData.doctorName || '______________________';
+  const embassyCity = formData.embassyCity || 'Delhi';
+
+  let purposeText = `I wish to visit India for the purpose of ${purpose || '____________________________________________'}.`;
+
+  if (purpose === 'Medical Treatment - Patient') {
+    purposeText = `I wish to visit India for the purpose of Medical Treatment as a Patient. I will be visiting a specific medical facility, namely ${hospital}, and receiving treatment there. The appointment was made at that specific hospital, where I will see the doctor ${doctor} and will not go to any other hospital.`;
+  } else if (purpose === 'Medical Treatment - Attendance') {
+    purposeText = `I wish to visit India for the purpose of Medical Treatment as an Attendant. I will be visiting a specific medical facility, namely ${hospital}, and attending to a patient receiving treatment there. The appointment was made at that specific hospital, where we will see the doctor ${doctor} and will not go to any other hospital.`;
+  } else if (purpose === 'Double Entry') {
+    purposeText = `I wish to visit India for the purpose of Double Entry. I will go to ${embassyCity} to present the embassy. After presenting the embassy, I will return to Bangladesh.`;
+  } else if (purpose === 'Business') {
+    purposeText = `I wish to visit India for the purpose of Business. I further clarify that I am going to India for business purposes, and after completing the business transactions, I will return to Bangladesh.`;
+  }
+
   const splitPurpose = doc.splitTextToSize(purposeText, contentWidth);
   splitPurpose.forEach((line: string) => {
     doc.text(line, leftMargin + 4, y);
-    y += 6.5;
+    y += 5.2;
   });
   y += 1.5;
 
   // 3. Duration of Stay
   doc.setFont('times', 'bold');
   doc.text('3. Duration of Stay', leftMargin, y);
-  y += 6.5;
+  y += 6.0;
 
   doc.setFont('times', 'normal');
   const durationText = `I intend to stay in India from ${formData.travelFrom || '______________________'} to ${formData.travelTo || '______________________'}, for a total period of ${formData.duration || '______________________'}.`;
   const splitDuration = doc.splitTextToSize(durationText, contentWidth);
   splitDuration.forEach((line: string) => {
     doc.text(line, leftMargin + 4, y);
-    y += 6.5;
+    y += 5.2;
   });
   y += 1.5;
 
   // 4. Return to Home Country
   doc.setFont('times', 'bold');
   doc.text('4. Return to Home Country', leftMargin, y);
-  y += 6.5;
+  y += 6.0;
 
   doc.setFont('times', 'normal');
   const returnText = `I undertake to return to my home country immediately upon the completion of my visit, and I confirm that I have no intention of overstaying my visa in India. I will return to ${formData.returnCountry || '______________________'}.`;
   const splitReturn = doc.splitTextToSize(returnText, contentWidth);
   splitReturn.forEach((line: string) => {
     doc.text(line, leftMargin + 4, y);
-    y += 6.5;
+    y += 5.2;
   });
   y += 1.5;
 
