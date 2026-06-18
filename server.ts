@@ -15,14 +15,16 @@ async function startServer() {
     try {
       const { imageBase64, mimeType } = req.body;
 
-      if (!process.env.GEMINI_API_KEY) {
-        return res.status(500).json({ 
+      const clientApiKey = req.headers['x-api-key']?.toString() || process.env.GEMINI_API_KEY;
+
+      if (!clientApiKey) {
+        return res.status(400).json({ 
           success: false,
-          error: 'GEMINI_API_KEY is missing in your server environment variables. Please go to your Render Dashboard -> Environment tab, and add GEMINI_API_KEY with your API key from Google AI Studio.' 
+          error: 'GEMINI_API_KEY is missing. Please set it in your Render Dashboard Environment variables, OR configure it directly in the Extractor UI Settings (gear icon in the top-right of your screen).' 
         });
       }
 
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const ai = new GoogleGenAI({ apiKey: clientApiKey });
 
       if (!imageBase64 || !mimeType) {
         return res.status(400).json({ error: 'Image data and mimeType are required' });
