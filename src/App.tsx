@@ -1,36 +1,35 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { UploadCloud, CheckCircle2, AlertCircle, FileText, Loader2, ShieldCheck, History, Trash2, Zap, ZapOff, Search, Sun, Moon, Copy, Download, Check, AlertTriangle, Printer } from 'lucide-react';
+import { 
+  UploadCloud, CheckCircle2, AlertCircle, FileText, Loader2, ShieldCheck, 
+  History, Trash2, ZapOff, Search, Sun, Moon, Copy, Download, Check, 
+  AlertTriangle, Printer 
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import imageCompression from 'browser-image-compression';
-import { jsPDF } from 'jspdf';
+
+// Types
+import { PassportData, HistoryItem } from './types';
+
+// Components
+import { DataField } from './components/DataField';
+
+// Utilities
+import {
+  getPresentAddress,
+  getDistrictFromAddress,
+  getGeneratedEmail,
+  getProprietorBusinessName,
+  getJobCompanyName,
+  getJobRole,
+  getBusinessAddressDhaka,
+  getOfficeAddressDhaka,
+  getBusinessAddressLocal,
+  generateDataText
+} from './utils/addressUtils';
+import { generatePDF } from './utils/pdfGenerator';
+
 // @ts-ignore
 import ExtractorLogo from './assets/images/extractor_logo_1779343193402.png';
-
-// Interface matching the backend schema
-interface PassportData {
-  givenName: string;
-  surname: string;
-  gender: string;
-  dob: string;
-  birthPlace: string;
-  permanentAddress: string;
-  presentAddress?: string;
-  emergencyContactAddress?: string;
-  fatherName: string;
-  motherName: string;
-  spouseName: string;
-  passportNumber: string;
-  nidOrBirthCertNumber: string;
-  issueDate: string;
-  expiryDate: string;
-  mobileNumber: string;
-}
-
-interface HistoryItem {
-  id: string;
-  timestamp: number;
-  data: PassportData;
-}
 
 export default function App() {
   const [file, setFile] = useState<File | null>(null);
@@ -38,8 +37,6 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<PassportData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  
-
   
   // History state initialize from localStorage
   const [history, setHistory] = useState<HistoryItem[]>(() => {
@@ -74,12 +71,8 @@ export default function App() {
   const [isOnline, setIsOnline] = useState(typeof window !== 'undefined' ? window.navigator.onLine : true);
 
   useEffect(() => {
-    const handleOnline = () => {
-      setIsOnline(true);
-    };
-    const handleOffline = () => {
-      setIsOnline(false);
-    };
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
@@ -120,7 +113,6 @@ export default function App() {
       return;
     }
     
-    // For preview only, not what we send to backend yet
     setFile(selectedFile);
     setError(null);
     setData(null);
@@ -143,6 +135,20 @@ export default function App() {
     setFile(null);
     setError(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const updateDataField = (field: keyof PassportData, newValue: string) => {
+    if (!data) return;
+    const updated = { ...data, [field]: newValue };
+    setData(updated);
+    
+    // Also sync to active history item (if exists) so corrections persist in local database
+    setHistory(prev => prev.map(item => {
+      if (item.data.passportNumber === data.passportNumber) {
+        return { ...item, data: updated };
+      }
+      return item;
+    }));
   };
 
   const confirmDelete = (e: React.MouseEvent, id: string) => {
@@ -174,9 +180,9 @@ export default function App() {
     setError(null);
 
     try {
-      // ⚡️ BROWSER-SIDE COMPRESSION: Optimize image before sending
+      // BROWSER-SIDE COMPRESSION: Optimize image before sending
       const options = {
-        maxSizeMB: 1.5, // Force under 1.5MB to save bandwidth and compute
+        maxSizeMB: 1.5,
         maxWidthOrHeight: 2048,
         useWebWorker: true,
       };
@@ -233,263 +239,6 @@ export default function App() {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-
-
-  const getPresentAddress = (itemData: PassportData | null) => {
-    if (!itemData) return "House 12, Road 5, Dhanmondi, Dhaka-1209";
-
-    const permLower = (itemData.permanentAddress || "").toLowerCase();
-    const presLower = (itemData.presentAddress || "").toLowerCase();
-    const emergLower = (itemData.emergencyContactAddress || "").toLowerCase();
-
-    const isDhaka = (addr: string) => addr.includes("dhaka") || addr.includes("savar") || addr.includes("keraniganj") || addr.includes("dohar") || addr.includes("nawabganj") || addr.includes("dhamrai");
-
-    if (itemData.presentAddress && isDhaka(presLower)) return itemData.presentAddress;
-    if (itemData.emergencyContactAddress && isDhaka(emergLower)) return itemData.emergencyContactAddress;
-    if (itemData.permanentAddress && isDhaka(permLower)) return itemData.permanentAddress;
-
-    const dhakaAddresses = [
-      "House 45, Road 12, Sector 10, Uttara, Dhaka-1230",
-      "House 12, Road 5, Dhanmondi, Dhaka-1209",
-      "House 28, Road 2, Block C, Mirpur-2, Dhaka-1216",
-      "House 8, Road 14, Gulshan-1, Dhaka-1212",
-      "House 33, Road 7, Block F, Banani, Dhaka-1213"
-    ];
-    const hashStr = itemData.permanentAddress || "fallback_dhaka";
-    const hash = hashStr.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return dhakaAddresses[hash % dhakaAddresses.length];
-  };
-
-  const getDistrictFromAddress = (address: string | undefined | null) => {
-    if (!address) return '';
-    const parts = address.split(/[,\-]/).map(s => s.trim()).filter(Boolean);
-    const textParts = parts.filter(p => !/^\d+$/.test(p));
-    if (textParts.length > 0) {
-      return textParts[textParts.length - 1].replace(/(district|zilla)/i, '').trim().toUpperCase();
-    }
-    return '';
-  };
-
-  const getGeneratedEmail = (itemData: PassportData | null) => {
-    if (!itemData) return '';
-    const nameStr = ((itemData.givenName || '') + (itemData.surname || '')).replace(/[^a-zA-Z]/g, '').toLowerCase();
-    const dobStr = itemData.dob || '';
-    const yearMatch = dobStr.match(/\d{4}/);
-    const year = yearMatch ? yearMatch[0] : '';
-    if (!nameStr) return '';
-    return `${nameStr}${year}@gmail.com`;
-  };
-
-  const isHinduName = (name: string) => {
-    const lowerName = name.toLowerCase();
-    const hinduKeywords = ['das', 'ghosh', 'sen', 'bose', 'datta', 'dutta', 'nandi', 'pal', 'paul', 'raha', 'roy', 'saha', 'shill', 'sil', 'sarkar', 'majumder', 'nath', 'barman', 'karmakar', 'deb', 'bhowmik', 'poddar', 'banik', 'dev', 'guha', 'bhattacharya', 'mukherjee', 'banerjee', 'chatterjee', 'ganguly', 'ray', 'biswas', 'haldar', 'mandal', 'bera', 'mitra', 'sharma', 'chandra', 'kumar', 'mondal', 'shil', 'chakraborty'];
-    return hinduKeywords.some(keyword => lowerName.includes(keyword));
-  };
-
-  const generateRandomEnterpriseName = (name: string, isJob = false) => {
-    const firstName = name.split(' ').filter(p => p.length > 2)[0] || name.split(' ')[0] || 'Unknown';
-    const capitalizedName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
-    
-    if (isHinduName(name)) {
-      const hinduSuffixes = isJob ? ['Jewellers', 'Sweetmeat', 'Mistanno Vandar', 'Bastraloy'] : ['Hair Cutting Salon', 'Mistanno Vandar', 'Sweet Store', 'Jewellers', 'Bastraloy', 'Mishti Ghor'];
-      const suffix = hinduSuffixes[name.length % hinduSuffixes.length];
-      const prefix = name.length % 2 === 0 ? 'MS ' : '';
-      return `${prefix}${capitalizedName} ${suffix}`.trim();
-    }
-    
-    const suffixes = isJob ? ['Enterprise', 'Traders', 'Corporation', 'Agency', 'Trading', 'Group'] : ['Enterprise', 'Traders', 'Telecom', 'Motors', 'Fabrics', 'Electronics'];
-    const suffix = suffixes[name.length % suffixes.length];
-    
-    const prefixes = ['MS ', '', ''];
-    const prefix = prefixes[name.length % prefixes.length];
-    
-    return `${prefix}${capitalizedName} ${suffix}`.trim();
-  };
-
-  const getProprietorBusinessName = (itemData: PassportData | null) => {
-    if (!itemData) return '';
-    const nameToUse = itemData.givenName || itemData.surname || itemData.fatherName || itemData.motherName || 'Unknown';
-    const fullName = `${itemData.givenName || ''} ${itemData.surname || ''} ${itemData.fatherName || ''} ${itemData.motherName || ''}`;
-    return generateRandomEnterpriseName(isHinduName(fullName) ? fullName : nameToUse);
-  };
-
-  const getJobCompanyName = (itemData: PassportData | null) => {
-    if (!itemData) return '';
-    const nameToUse = itemData.fatherName || itemData.motherName || itemData.surname || 'Unknown';
-    const fullName = `${itemData.givenName || ''} ${itemData.surname || ''} ${itemData.fatherName || ''} ${itemData.motherName || ''}`;
-    return generateRandomEnterpriseName(isHinduName(fullName) ? fullName : nameToUse, true);
-  };
-
-  const getJobRole = (itemData: PassportData | null) => {
-    if (!itemData) return '';
-    const nameLen = (itemData.givenName || itemData.surname || 'a').length;
-    const roles = ['Manager', 'Assistant Manager', 'Office Assistant', 'Salesman', 'Executive'];
-    return roles[nameLen % roles.length];
-  };
-
-  const getBusinessAddressDhaka = (presentAddress: string) => {
-    const presentLower = presentAddress.toLowerCase();
-    
-    // Seed for generating pseudo-random details based on the address string
-    const seed = presentAddress.length + (presentAddress.charCodeAt(0) || 0);
-    const shopNum = (seed % 150) + 1;
-    
-    const areas = [
-      { key: "uttara", match: "Uttara", zip: "1230" },
-      { key: "dhanmondi", match: "Dhanmondi", zip: "1209" },
-      { key: "mirpur", match: "Mirpur", zip: "1216" },
-      { key: "gulshan", match: "Gulshan", zip: "1212" },
-      { key: "banani", match: "Banani", zip: "1213" },
-      { key: "bashundhara", match: "Bashundhara", zip: "1229" },
-      { key: "mohammadpur", match: "Mohammadpur", zip: "1207" },
-      { key: "motijheel", match: "Motijheel", zip: "1000" },
-      { key: "badda", match: "Badda", zip: "1212" },
-      { key: "ramna", match: "Ramna", zip: "1000" }
-    ];
-
-    const matchedArea = areas.find(a => presentLower.includes(a.key));
-    const getFormat = seed % 3;
-    
-    if (matchedArea) {
-      if (getFormat === 0) {
-        return `Shop ${shopNum}, ${matchedArea.match}, Dhaka-${matchedArea.zip}`;
-      } else if (getFormat === 1) {
-        return `Plot ${shopNum + 10}, ${matchedArea.match}, Dhaka-${matchedArea.zip}`;
-      } else {
-        return `House ${shopNum}, Rd ${(seed % 12) + 1}, ${matchedArea.match}, Dhaka`;
-      }
-    }
-    
-    // Generic fallback that looks more realistic if no specific area match
-    const districtMatch = presentAddress.split(',').slice(-1)[0]?.trim() || "Dhaka";
-    
-    if (getFormat === 0) {
-      return `Shop ${shopNum}, City Center, ${districtMatch}`;
-    } else if (getFormat === 1) {
-      return `Holding No. ${shopNum * 2}, ${districtMatch}`;
-    } else {
-      return `House ${shopNum}, Main Road, ${districtMatch}`;
-    }
-  };
-
-  const getOfficeAddressDhaka = (presentAddress: string) => {
-    const presentLower = presentAddress.toLowerCase();
-    
-    // Seed for generating pseudo-random details based on the address string
-    const seed = presentAddress.length + (presentAddress.charCodeAt(1) || 0) + 5; 
-    const suiteNum = (seed % 500) + 100;
-    const floorNum = Math.floor(suiteNum / 100);
-
-    const towers = ["Navana Tower", "City Center", "Trade Center", "ABC Tower", "Rupayan Tower"];
-    const randomTower = towers[seed % towers.length];
-
-    const areas = [
-      { key: "uttara", match: "Uttara", zip: "1230", tower: "Zamzam Tower" },
-      { key: "dhanmondi", match: "Dhanmondi", zip: "1209", tower: "Rapa Plaza" },
-      { key: "mirpur", match: "Mirpur", zip: "1216", tower: "Shah Ali Plaza" },
-      { key: "gulshan", match: "Gulshan", zip: "1212", tower: "Shoppers World" },
-      { key: "banani", match: "Banani", zip: "1213", tower: "Awal Centre" },
-      { key: "bashundhara", match: "Bashundhara", zip: "1229", tower: "GP Center" },
-      { key: "mohammadpur", match: "Mohammadpur", zip: "1207", tower: "Tokyo Square" },
-      { key: "motijheel", match: "Motijheel", zip: "1000", tower: "City Centre" },
-      { key: "badda", match: "Badda", zip: "1212", tower: "Hossain Tower" },
-      { key: "ramna", match: "Ramna", zip: "1000", tower: "Baily Tower" }
-    ];
-
-    const matchedArea = areas.find(a => presentLower.includes(a.key));
-    const getFormat = seed % 3;
-
-    if (matchedArea) {
-      const towerName = matchedArea.tower || randomTower;
-      if (getFormat === 0) {
-        return `${towerName}, ${matchedArea.match}, Dhaka`;
-      } else if (getFormat === 1) {
-        return `Level ${floorNum}, ${towerName}, ${matchedArea.match}, Dhaka`;
-      } else {
-        return `Office ${suiteNum}, ${towerName}, ${matchedArea.match}, Dhaka`;
-      }
-    }
-    
-    // Generic fallback that looks more realistic if no specific area match
-    const districtMatch = presentAddress.split(',').slice(-1)[0]?.trim() || "Dhaka";
-    
-    if (getFormat === 0) {
-      return `${randomTower}, ${districtMatch}`;
-    } else if (getFormat === 1) {
-      return `Office ${suiteNum}, ${randomTower}, ${districtMatch}`;
-    } else {
-      return `Holding ${suiteNum}, ${randomTower}, ${districtMatch}`;
-    }
-  };
-
-  const getBusinessAddressLocal = (permanentAddress: string) => {
-    if (!permanentAddress) return '';
-    const district = getDistrictFromAddress(permanentAddress);
-    if (!district) return permanentAddress;
-    
-    const properDistrict = district.charAt(0).toUpperCase() + district.slice(1).toLowerCase();
-    const seed = permanentAddress.length + (permanentAddress.charCodeAt(0) || 0);
-    const shopNum = (seed % 100) + 1;
-    
-    const markets = ["Bazar", "Super Market", "Municipal Market", "Trade Center", "Chowrasta"];
-    const randomMarket = markets[seed % markets.length];
-    
-    const getFormat = seed % 3;
-    
-    if (getFormat === 0) {
-      return `Shop ${shopNum}, ${properDistrict} ${randomMarket}`;
-    } else if (getFormat === 1) {
-      return `Holding No. ${shopNum + 10}, ${properDistrict} Sadar`;
-    } else {
-      return `Plot ${shopNum}, ${properDistrict} ${randomMarket}`;
-    }
-  };
-
-  const generateDataText = (itemData: PassportData | null) => {
-    if (!itemData) return '';
-    
-    const presentAddr = getPresentAddress(itemData);
-    const dhakaBizAddr = getBusinessAddressDhaka(presentAddr);
-    const officeAddr = getOfficeAddressDhaka(presentAddr);
-    const localBizAddr = getBusinessAddressLocal(itemData.permanentAddress);
-
-    return `=== PASSPORT DATA ===
-EMAIL: ${getGeneratedEmail(itemData)}
-DOB: ${itemData.dob}
-Surname: ${itemData.surname}
-Given Name: ${itemData.givenName}
-Town/City of birth/BIRTH PLACE: ${itemData.birthPlace}
-National Id No/BIRTH CERTIFICATE NO: ${itemData.nidOrBirthCertNumber}
-Gender: ${itemData.gender}
-Blood Group: Unknown
-Date of Issue: ${itemData.issueDate}
-Date of Expiry: ${itemData.expiryDate}
-
-=== ADDRESS ===
-PRESENT ADDRESS: ${presentAddr}
-PERMANENT ADDRESS: ${itemData.permanentAddress}
-
-=== ADDITIONAL INFORMATION ===
-Father's Name: ${itemData.fatherName}
-Mother's Name: ${itemData.motherName}
-Spouse's Name: ${itemData.spouseName || "N/A"}
-Mobile Number: ${itemData.mobileNumber ? itemData.mobileNumber.replace(/^\+88\s*/, '') : ''}
-Town/City of birth/BIRTH PLACE: ${getDistrictFromAddress(itemData.permanentAddress)}
-
-=== BUSINESS DETAILS (PROPRIETORSHIP) ===
-Business Name: ${getProprietorBusinessName(itemData)}
-Role: Proprietor
-Business Address (Present): ${dhakaBizAddr}
-Business Address (Permanent): ${localBizAddr}
-
-=== PRIVATE SERVICE / JOB ===
-Company Name: ${getJobCompanyName(itemData)}
-Role: ${getJobRole(itemData)}
-Office Address (Present): ${officeAddr}
-Office Address (Permanent): ${localBizAddr}
-`;
-  };
-
   const handleCopyAll = async () => {
     if (!data) return;
     const text = generateDataText(data);
@@ -518,189 +267,8 @@ Office Address (Permanent): ${localBizAddr}
 
   const handleDownloadPDF = () => {
     if (!data) return;
-    
-    // Create new PDF layout (A4 size: 210mm x 297mm)
-    const doc = new jsPDF('p', 'mm', 'a4');
-    let y = 15;
-
-    // Preventive Page-Break Guard
-    const checkPageBreak = (neededHeight: number) => {
-      if (y + neededHeight > 270) {
-        doc.addPage();
-        y = 20;
-        
-        // Render running header on subsequent pages
-        doc.setFont('helvetica', 'italic');
-        doc.setFontSize(8);
-        doc.setTextColor(150, 150, 150);
-        doc.text('Passport Data Summary (Continued)', 15, 12);
-        
-        doc.setDrawColor(200, 220, 220);
-        doc.setLineWidth(0.3);
-        doc.line(15, 14, 195, 14);
-      }
-    };
-
-    // Beautiful Structured Side-Accent Sections
-    const drawSectionHeading = (title: string) => {
-      checkPageBreak(25);
-      doc.setFillColor(233, 255, 252); // #E9FFFC (Soft Brand Pastel)
-      doc.rect(15, y, 180, 8, 'F');
-      
-      doc.setDrawColor(12, 132, 147); // #0C8493 (Brand Accent Side Rail)
-      doc.setLineWidth(1.5);
-      doc.line(15, y, 15, y + 8);
-
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(10);
-      doc.setTextColor(12, 132, 147); // #0C8493
-      doc.text(title, 20, y + 5.5);
-      y += 14;
-    };
-
-    // Column Data Field Drawer with Custom Auto-Wrap Engine
-    const drawField = (label: string, value: string, x: number, width: number) => {
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(8);
-      doc.setTextColor(120, 120, 120); // Muted Label Color
-      doc.text(label, x, y);
-      
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9.5);
-      doc.setTextColor(30, 30, 30); // Rich text color
-      
-      const lines = doc.splitTextToSize(value || 'N/A', width);
-      let currentY = y + 4.5;
-      lines.forEach((line: string) => {
-        doc.text(line, x, currentY);
-        currentY += 4.5;
-      });
-      
-      return currentY - y;
-    };
-
-    // Row layout grid helper (Double column)
-    const drawRow = (leftLabel: string, leftVal: string, rightLabel: string, rightVal: string) => {
-      checkPageBreak(18);
-      const heightLeft = drawField(leftLabel, leftVal, 15, 85);
-      const heightRight = drawField(rightLabel, rightVal, 110, 85);
-      const maxHeight = Math.max(heightLeft, heightRight);
-      y += maxHeight + 3; // Keep compact padding
-    };
-
-    // Full Width Paragraph Drawer for Addresses
-    const drawFullWidthField = (label: string, value: string) => {
-      checkPageBreak(20);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(8);
-      doc.setTextColor(120, 120, 120);
-      doc.text(label, 15, y);
-      
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9.5);
-      doc.setTextColor(30, 30, 30);
-      
-      const lines = doc.splitTextToSize(value || 'N/A', 180);
-      let currentY = y + 4.5;
-      lines.forEach((line: string) => {
-        doc.text(line, 15, currentY);
-        currentY += 4.5;
-      });
-      y = currentY + 3;
-    };
-
-    // Top Brand Accent bar
-    doc.setFillColor(255, 128, 6); // #FF8006 (Brand Primary Highlight)
-    doc.rect(15, y, 180, 4, 'F');
-    y += 12;
-
-    // Header Title
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(20);
-    doc.setTextColor(12, 132, 147); // #0C8493
-    doc.text('PASSPORT DATA REPORT', 15, y);
-    
-    // Meta / Date Information
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    doc.setTextColor(120, 120, 120);
-    const dateStr = new Date().toLocaleDateString('en-GB') + ' ' + new Date().toLocaleTimeString('en-GB');
-    doc.text(`Report Generated: ${dateStr}`, 195, y, { align: 'right' });
-    y += 6;
-
-    // Secondary Accent Line divider
-    doc.setDrawColor(0, 196, 209); // #00C4D1
-    doc.setLineWidth(0.5);
-    doc.line(15, y, 195, y);
-    y += 10;
-
-    // SECTION 1: Personal & Passport Profile
-    drawSectionHeading('1. PERSONAL & PASSPORT PROFILE');
-    drawRow('GIVEN NAME', data.givenName || 'N/A', 'SURNAME', data.surname || 'N/A');
-    drawRow('GENDER', data.gender || 'N/A', 'DATE OF BIRTH', data.dob || 'N/A');
-    drawRow('PASSPORT NUMBER', data.passportNumber || 'N/A', 'NATIONAL ID / BIRTH CERT NO', data.nidOrBirthCertNumber || 'N/A');
-    drawRow('DATE OF ISSUE', data.issueDate || 'N/A', 'DATE OF EXPIRY', data.expiryDate || 'N/A');
-    drawRow('FATHER\'S NAME', data.fatherName || 'N/A', 'MOTHER\'S NAME', data.motherName || 'N/A');
-    drawRow('SPOUSE\'S NAME', data.spouseName || 'N/A', 'EMAIL ADDRESS', getGeneratedEmail(data));
-    drawRow('MOBILE NUMBER', data.mobileNumber ? data.mobileNumber.replace(/^\+88\s*/, '') : 'N/A', 'PLACE OF ISSUE', 'DHAKA');
-    drawRow('PLACE OF BIRTH', data.birthPlace || 'N/A', 'EMERGENCY CONTACT', data.emergencyContactAddress ? 'Available' : 'N/A');
-    y += 4;
-
-    // SECTION 2: Address Information
-    drawSectionHeading('2. ADDRESS INFORMATION');
-    const presentAddr = getPresentAddress(data);
-    drawFullWidthField('PRESENT ADDRESS (DHAKA RESIDENCY)', presentAddr);
-    drawFullWidthField('PERMANENT ADDRESS', data.permanentAddress || 'N/A');
-    if (data.emergencyContactAddress) {
-      drawFullWidthField('EMERGENCY CONTACT ADDRESS', data.emergencyContactAddress);
-    }
-    y += 4;
-
-    // SECTION 3: Business & Professional Details
-    drawSectionHeading('3. BUSINESS & PROFESSIONAL DETAILS');
-    
-    // A. Proprietorship Details
-    checkPageBreak(35);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9.5);
-    doc.setTextColor(255, 128, 6); // #FF8006 (Brand Highlights)
-    doc.text('A. BUSINESS (PROPRIETORSHIP)', 15, y);
-    y += 6;
-    drawRow('BUSINESS NAME', getProprietorBusinessName(data), 'DESIGNATION', 'Proprietor');
-    drawFullWidthField('BUSINESS ADDRESS (DHAKA / PRESENT)', getBusinessAddressDhaka(presentAddr));
-    drawFullWidthField('BUSINESS ADDRESS (LOCAL / PERMANENT)', getBusinessAddressLocal(data.permanentAddress));
-    y += 4;
-
-    // B. Job Details
-    checkPageBreak(35);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9.5);
-    doc.setTextColor(255, 128, 6); // #FF8006 (Brand Highlights)
-    doc.text('B. PRIVATE SERVICE / EMPLOYMENT', 15, y);
-    y += 6;
-    drawRow('COMPANY NAME', getJobCompanyName(data), 'DESIGNATION', getJobRole(data));
-    drawFullWidthField('OFFICE ADDRESS (DHAKA / PRESENT)', getOfficeAddressDhaka(presentAddr));
-    drawFullWidthField('OFFICE ADDRESS (LOCAL / PERMANENT)', getBusinessAddressLocal(data.permanentAddress));
-
-    // Professional Footer decorator loops on all generated pages
-    const pageCount = doc.getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
-      doc.setPage(i);
-      doc.setDrawColor(220, 230, 230);
-      doc.setLineWidth(0.3);
-      doc.line(15, 282, 195, 282);
-      
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8);
-      doc.setTextColor(140, 140, 140);
-      doc.text('Confidential Document - Generated via Auto Passport Data Extractor Platform', 15, 287);
-      doc.text(`Page ${i} of ${pageCount}`, 195, 287, { align: 'right' });
-    }
-
-    // Save and Trigger prompt
-    doc.save(`Passport_Report_${data.givenName || 'Summary'}.pdf`);
+    generatePDF(data);
   };
-
 
   const filteredHistory = history.filter(item => {
     const searchLower = searchTerm.toLowerCase();
@@ -713,10 +281,12 @@ Office Address (Permanent): ${localBizAddr}
            email.includes(searchLower);
   });
 
+  const presentAddr = getPresentAddress(data);
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 font-sans text-slate-900 dark:text-zinc-50 pb-12 selection:bg-blue-100 dark:selection:bg-blue-900/50 transition-colors">
       {/* Header */}
-        <header className="bg-white/60 dark:bg-black/60 backdrop-blur-md border-b border-slate-200/50 dark:border-zinc-800/50 px-6 py-4 shadow-sm sticky top-0 z-10 flex justify-between items-start transition-colors print:hidden">
+      <header className="bg-white/60 dark:bg-black/60 backdrop-blur-md border-b border-slate-200/50 dark:border-zinc-800/50 px-6 py-4 shadow-sm sticky top-0 z-10 flex justify-between items-start transition-colors print:hidden">
         <div className="flex gap-3">
           <div className="flex flex-col items-center gap-2">
             <div className="bg-blue-600 text-white p-2 rounded-xl shadow-inner border border-blue-500/20">
@@ -783,28 +353,26 @@ Office Address (Permanent): ${localBizAddr}
               <p className="text-sm text-slate-500 dark:text-zinc-400 mb-6">Upload a clear photo of the passport data page.</p>
               
               {!preview ? (
-                <>
-                  <div 
-                    className="border-2 border-dashed border-slate-300 dark:border-zinc-700 rounded-xl bg-slate-50 dark:bg-black/50 hover:bg-slate-100 dark:hover:bg-zinc-800/80 transition-colors group flex flex-col items-center justify-center text-center h-64 relative"
-                    onDragOver={handleDragOver}
-                    onDrop={handleDrop}
-                  >
-                    <input 
-                      type="file" 
-                      ref={fileInputRef} 
-                      className="hidden" 
-                      accept="image/jpeg, image/png, image/webp" 
-                      onChange={handleFileChange}
-                    />
-                    <div className="flex flex-col items-center justify-center cursor-pointer p-6" onClick={() => fileInputRef.current?.click()}>
-                      <div className="w-14 h-14 bg-white dark:bg-zinc-900 rounded-full shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                        <UploadCloud className="w-7 h-7 text-blue-500 dark:text-blue-400" />
-                      </div>
-                      <p className="font-semibold text-slate-700 dark:text-zinc-200">Click to upload or drag and drop</p>
-                      <p className="text-xs text-slate-500 dark:text-zinc-400 mt-2">JPEG, PNG, WEBP (Max 20MB)</p>
+                <div 
+                  className="border-2 border-dashed border-slate-300 dark:border-zinc-700 rounded-xl bg-slate-50 dark:bg-black/50 hover:bg-slate-100 dark:hover:bg-zinc-800/80 transition-colors group flex flex-col items-center justify-center text-center h-64 relative"
+                  onDragOver={handleDragOver}
+                  onDrop={handleDrop}
+                >
+                  <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    className="hidden" 
+                    accept="image/jpeg, image/png, image/webp" 
+                    onChange={handleFileChange}
+                  />
+                  <div className="flex flex-col items-center justify-center cursor-pointer p-6" onClick={() => fileInputRef.current?.click()}>
+                    <div className="w-14 h-14 bg-white dark:bg-zinc-900 rounded-full shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                      <UploadCloud className="w-7 h-7 text-blue-500 dark:text-blue-400" />
                     </div>
+                    <p className="font-semibold text-slate-700 dark:text-zinc-200">Click to upload or drag and drop</p>
+                    <p className="text-xs text-slate-500 dark:text-zinc-400 mt-2">JPEG, PNG, WEBP (Max 20MB)</p>
                   </div>
-                </>
+                </div>
               ) : (
                 <div className="flex flex-col gap-4">
                   <div className="relative rounded-xl overflow-hidden border border-slate-200 dark:border-zinc-800 bg-slate-100 dark:bg-black aspect-[4/3] flex items-center justify-center">
@@ -813,7 +381,7 @@ Office Address (Permanent): ${localBizAddr}
                   </div>
                   
                   <div className="flex gap-3">
-                     <button 
+                    <button 
                       onClick={clearAll}
                       disabled={loading}
                       className="flex-1 py-2.5 px-4 rounded-lg font-medium text-slate-600 dark:text-zinc-300 bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50"
@@ -869,14 +437,14 @@ Office Address (Permanent): ${localBizAddr}
               </AnimatePresence>
             </div>
             
-            {/* HISTORY SECTION (Now below upload on left side) */}
+            {/* HISTORY SECTION */}
             <div className="bg-white/70 dark:bg-zinc-900/70 backdrop-blur-md p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200/60 dark:border-zinc-800/60 min-h-[300px] flex flex-col transition-colors">
               <div className="flex flex-col xl:flex-row xl:items-center justify-between mb-6 pb-4 border-b border-slate-100 dark:border-zinc-800/50 gap-4">
                 <div>
                   <h3 className="font-bold text-xl flex items-center gap-2 text-slate-800 dark:text-zinc-100">
                     <History className="w-6 h-6 text-blue-500" /> Recent Extractions
                   </h3>
-                  <p className="text-sm text-slate-500 dark:text-zinc-400 mt-1">Access previously scanned passports.</p>
+                  <p className="text-sm text-slate-500 dark:text-zinc-400 mt-1">Access scanned passports.</p>
                 </div>
                 
                 <div className="flex z-10 items-center justify-between xl:justify-end gap-3 w-full xl:w-auto">
@@ -927,7 +495,7 @@ Office Address (Permanent): ${localBizAddr}
                           {item.data.givenName} {item.data.surname}
                         </span>
                         <div className="flex items-center gap-2 mt-2 flex-wrap">
-                           <span className="text-[11px] font-semibold px-2 py-0.5 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-300 rounded">
+                          <span className="text-[11px] font-semibold px-2 py-0.5 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-300 rounded">
                             {item.data.passportNumber || "Unknown ID"}
                           </span>
                           <span className="text-[11px] text-slate-500 dark:text-zinc-400 font-medium bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 px-2 py-0.5 rounded truncate max-w-[150px]">
@@ -1011,35 +579,35 @@ Office Address (Permanent): ${localBizAddr}
                   </div>
 
                   <div className="grid grid-cols-2 gap-x-3 gap-y-3">
-                    <DataField label="EMAIL" value={getGeneratedEmail(data)} highlight />
-                    <DataField label="DOB" value={data.dob} />
-                    <DataField label="Surname" value={data.surname} />
-                    <DataField label="Given Name" value={data.givenName} />
-                    <DataField label="Town/City of birth/BIRTH PLACE" value={data.birthPlace} />
-                    <DataField label="National Id No/BIRTH CERTIFICATE NO" value={data.nidOrBirthCertNumber} />
-                    <DataField label="Passport Number" value={data.passportNumber} highlight />
-                    <DataField label="Place of Issue" value="DHAKA" />
-                    <DataField label="Date of Issue" value={data.issueDate} />
-                    <DataField label="Date of Expiry" value={data.expiryDate} />
+                    <DataField label="EMAIL" value={getGeneratedEmail(data)} highlight onValueChange={(val) => updateDataField('email', val)} />
+                    <DataField label="DOB" value={data.dob} onValueChange={(val) => updateDataField('dob', val)} />
+                    <DataField label="Surname" value={data.surname} onValueChange={(val) => updateDataField('surname', val)} />
+                    <DataField label="Given Name" value={data.givenName} onValueChange={(val) => updateDataField('givenName', val)} />
+                    <DataField label="Town/City of birth/BIRTH PLACE" value={data.birthPlace} onValueChange={(val) => updateDataField('birthPlace', val)} />
+                    <DataField label="National Id No/BIRTH CERTIFICATE NO" value={data.nidOrBirthCertNumber} onValueChange={(val) => updateDataField('nidOrBirthCertNumber', val)} />
+                    <DataField label="Passport Number" value={data.passportNumber} highlight onValueChange={(val) => updateDataField('passportNumber', val)} />
+                    <DataField label="Place of Issue" value={data.placeOfIssue || "DHAKA"} onValueChange={(val) => updateDataField('placeOfIssue', val)} />
+                    <DataField label="Date of Issue" value={data.issueDate} onValueChange={(val) => updateDataField('issueDate', val)} />
+                    <DataField label="Date of Expiry" value={data.expiryDate} onValueChange={(val) => updateDataField('expiryDate', val)} />
                     
                     <div className="col-span-2 pt-2 border-t border-slate-100 dark:border-zinc-800/50"></div>
                     
                     <div className="col-span-2">
-                       <DataField label="PRESENT ADDRESS" value={getPresentAddress(data)} />
+                       <DataField label="PRESENT ADDRESS" value={presentAddr} onValueChange={(val) => updateDataField('presentAddress', val)} />
                     </div>
                     <div className="col-span-2">
-                      <DataField label="PERMANENT ADDRESS" value={data.permanentAddress} />
+                       <DataField label="PERMANENT ADDRESS" value={data.permanentAddress} onValueChange={(val) => updateDataField('permanentAddress', val)} />
                     </div>
 
                     <div className="col-span-2 pt-3 border-t border-slate-100 dark:border-zinc-800/50 mt-2">
                       <h4 className="text-xs font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider mb-2.5">Additional Information</h4>
                     </div>
                     
-                    <DataField label="Father's Name" value={data.fatherName} />
-                    <DataField label="Mother's Name" value={data.motherName} />
-                    <DataField label="Spouse's Name" value={data.spouseName || "N/A"} />
-                    <DataField label="Mobile Number" value={data.mobileNumber ? data.mobileNumber.replace(/^\+88\s*/, '') : ''} />
-                    <DataField label="Town/City of birth/BIRTH PLACE" value={getDistrictFromAddress(data.permanentAddress)} />
+                    <DataField label="Father's Name" value={data.fatherName} onValueChange={(val) => updateDataField('fatherName', val)} />
+                    <DataField label="Mother's Name" value={data.motherName} onValueChange={(val) => updateDataField('motherName', val)} />
+                    <DataField label="Spouse's Name" value={data.spouseName || "N/A"} onValueChange={(val) => updateDataField('spouseName', val)} />
+                    <DataField label="Mobile Number" value={data.mobileNumber ? data.mobileNumber.replace(/^\+88\s*/, '') : ''} onValueChange={(val) => updateDataField('mobileNumber', val)} />
+                    <DataField label="Town/City of birth/BIRTH PLACE" value={getDistrictFromAddress(data.permanentAddress, data)} onValueChange={(val) => updateDataField('birthPlaceDistrict', val)} />
 
                     <div className="col-span-2 pt-3 border-t border-slate-100 dark:border-zinc-800/50 mt-2">
                       <h4 className="text-xs font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider mb-2.5">Business & Profession Details</h4>
@@ -1049,26 +617,26 @@ Office Address (Permanent): ${localBizAddr}
                       {/* Proprietorship */}
                       <div className="space-y-3 bg-slate-50/50 dark:bg-black/30 p-4 rounded-xl border border-slate-100 dark:border-zinc-800/50">
                         <h5 className="text-sm font-semibold text-slate-700 dark:text-zinc-300 border-b border-slate-200 dark:border-zinc-800/50 pb-2 mb-1">Business (Proprietorship)</h5>
-                        <DataField label="Business Name" value={getProprietorBusinessName(data)} />
+                        <DataField label="Business Name" value={getProprietorBusinessName(data)} onValueChange={(val) => updateDataField('proprietorBusinessName', val)} />
                         <DataField label="Designation" value="Proprietor" />
                         <div className="pt-2">
-                          <DataField label="Business Address (Present)" value={getBusinessAddressDhaka(getPresentAddress(data))} />
+                          <DataField label="Business Address (Present)" value={getBusinessAddressDhaka(presentAddr, data)} onValueChange={(val) => updateDataField('businessAddressDhaka', val)} />
                         </div>
                         <div className="pt-2">
-                          <DataField label="Business Address (Permanent)" value={getBusinessAddressLocal(data.permanentAddress)} />
+                          <DataField label="Business Address (Permanent)" value={getBusinessAddressLocal(data.permanentAddress, data)} onValueChange={(val) => updateDataField('businessAddressLocal', val)} />
                         </div>
                       </div>
 
                       {/* Private Service / Job */}
                       <div className="space-y-3 bg-slate-50/50 dark:bg-black/30 p-4 rounded-xl border border-slate-100 dark:border-zinc-800/50">
                         <h5 className="text-sm font-semibold text-slate-700 dark:text-zinc-300 border-b border-slate-200 dark:border-zinc-800/50 pb-2 mb-1">Private Service / Job</h5>
-                        <DataField label="Company Name" value={getJobCompanyName(data)} />
-                        <DataField label="Designation" value={getJobRole(data)} />
-                         <div className="pt-2">
-                          <DataField label="Office Address (Present)" value={getOfficeAddressDhaka(getPresentAddress(data))} />
+                        <DataField label="Company Name" value={getJobCompanyName(data)} onValueChange={(val) => updateDataField('jobCompanyName', val)} />
+                        <DataField label="Designation" value={getJobRole(data)} onValueChange={(val) => updateDataField('jobRole', val)} />
+                        <div className="pt-2">
+                          <DataField label="Office Address (Present)" value={getOfficeAddressDhaka(presentAddr, data)} onValueChange={(val) => updateDataField('officeAddressDhaka', val)} />
                         </div>
                         <div className="pt-2">
-                          <DataField label="Office Address (Permanent)" value={getBusinessAddressLocal(data.permanentAddress)} />
+                          <DataField label="Office Address (Permanent)" value={getBusinessAddressLocal(data.permanentAddress, data)} onValueChange={(val) => updateDataField('businessAddressLocal', val)} />
                         </div>
                       </div>
                     </div>
@@ -1076,18 +644,16 @@ Office Address (Permanent): ${localBizAddr}
                 </motion.div>
               </div>
             ) : (
-                <div className="bg-white/40 dark:bg-zinc-950/20 backdrop-blur-md border border-slate-200/50 dark:border-zinc-800/50 border-dashed rounded-2xl h-[500px] flex flex-col items-center justify-center text-center p-8 sticky top-6">
-                    <FileText className="w-16 h-16 text-slate-200 dark:text-zinc-700 mb-4" />
-                    <p className="text-lg font-medium text-slate-500 dark:text-zinc-400">No Data Extracted Yet</p>
-                    <p className="text-sm text-slate-400 dark:text-zinc-500 mt-2 max-w-sm">Upload a passport image on the left and click "Extract Data" to see the extracted fields here.</p>
-                </div>
+              <div className="bg-white/40 dark:bg-zinc-950/20 backdrop-blur-md border border-slate-200/50 dark:border-zinc-800/50 border-dashed rounded-2xl h-[500px] flex flex-col items-center justify-center text-center p-8 sticky top-6">
+                <FileText className="w-16 h-16 text-slate-200 dark:text-zinc-700 mb-4" />
+                <p className="text-lg font-medium text-slate-500 dark:text-zinc-400">No Data Extracted Yet</p>
+                <p className="text-sm text-slate-400 dark:text-zinc-500 mt-2 max-w-sm">Upload a passport image on the left and click "Extract Data" to see the extracted fields here.</p>
+              </div>
             )}
           </div>
 
         </div>
       </main>
-
-
 
       {/* Delete Confirmation Modal */}
       <AnimatePresence>
@@ -1136,46 +702,3 @@ Office Address (Permanent): ${localBizAddr}
     </div>
   );
 }
-
-// Component for rendering a single data field
-function DataField({ label, value, highlight = false }: { label: string, value: string, highlight?: boolean }) {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!value) return;
-    navigator.clipboard.writeText(value);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  return (
-    <div className="flex flex-col group/field">
-      <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wide mb-1">{label}</span>
-      <div className={`
-        relative px-3.5 py-2 rounded-lg text-sm font-medium border transition-colors flex items-start justify-between gap-2 overflow-hidden
-        ${highlight 
-          ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800/50 text-blue-900 dark:text-blue-100 shadow-inner' 
-          : 'bg-slate-50 dark:bg-black border-slate-200 dark:border-zinc-800 text-slate-800 dark:text-zinc-100'}
-        ${!value ? 'italic opacity-60' : ''}
-      `}>
-        <span className="break-words whitespace-normal pt-0.5 text-left flex-1 w-full" title={value || ''}>{value || 'Not Found'}</span>
-        {value && (
-          <button
-            onClick={handleCopy}
-            className={`
-              p-1.5 rounded-md transition-all shrink-0
-              ${copied 
-                ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/20' 
-                : 'text-slate-400 opacity-100 sm:opacity-0 group-hover/field:opacity-100 hover:text-slate-600 hover:bg-slate-200 dark:hover:text-zinc-300 dark:hover:bg-zinc-800'}
-            `}
-            title="Copy"
-          >
-            {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
-          </button>
-        )}
-      </div>
-    </div>
-  );
-}
-
