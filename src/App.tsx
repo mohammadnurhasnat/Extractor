@@ -446,47 +446,49 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 font-sans text-slate-900 dark:text-zinc-50 pb-12 selection:bg-blue-100 dark:selection:bg-blue-900/50 transition-colors">
       {/* Header */}
-      <header className="bg-white/60 dark:bg-black/60 backdrop-blur-md border-b border-slate-200/50 dark:border-zinc-800/50 px-6 py-4 shadow-sm sticky top-0 z-10 flex justify-between items-start transition-colors print:hidden">
-        <div className="flex gap-3">
-          <div className="flex flex-col items-center gap-2">
-            <div className="bg-blue-600 text-white p-2 rounded-xl shadow-inner border border-blue-500/20">
-              <FileText className="w-6 h-6" />
+      <header className="bg-white/60 dark:bg-black/60 backdrop-blur-md border-b border-slate-200/50 dark:border-zinc-800/50 sticky top-0 z-10 py-3 transition-colors print:hidden shadow-sm">
+        <div className="max-w-5xl mx-auto px-6 w-full flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <div className="bg-blue-600 text-white p-1.5 rounded-lg shadow-inner border border-blue-500/20">
+                <FileText className="w-5 h-5" />
+              </div>
+              <img src={ExtractorLogo} alt="Extractor Logo" className="w-7 h-7 rounded shadow-sm object-cover" />
             </div>
-            <img src={ExtractorLogo} alt="Extractor Logo" className="w-8 h-8 rounded shadow-sm object-cover" />
+            <div>
+              <h1 className="text-lg font-bold tracking-tight text-slate-800 dark:text-zinc-100 flex items-center gap-1.5 leading-none">Extractor</h1>
+              <p className="text-[10px] text-slate-500 dark:text-zinc-400 font-medium">Smart Identity Extraction System</p>
+            </div>
           </div>
-          <div className="pt-1">
-            <h1 className="text-xl font-bold tracking-tight text-slate-800 dark:text-zinc-100">Extractor</h1>
-            <p className="text-xs text-slate-500 dark:text-zinc-400 font-medium">Smart Identity Extraction System</p>
+          <div className="flex items-center gap-2">
+            <div className="hidden sm:flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800">
+              <ShieldCheck className="w-3.5 h-3.5" /> Secure & In-Memory Processing
+            </div>
+            <button
+              onClick={() => {
+                setTempApiKey(userApiKey);
+                setShowApiSettings(true);
+              }}
+              className="p-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 dark:bg-zinc-900 dark:hover:bg-zinc-800 dark:text-zinc-300 transition-colors relative cursor-pointer"
+              aria-label="API Settings"
+              title="Configure Gemini API Key"
+            >
+              <Settings className="w-4 h-4" />
+              {!userApiKey && (
+                <>
+                  <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-amber-500 rounded-full animate-ping" />
+                  <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-amber-500 rounded-full" />
+                </>
+              )}
+            </button>
+            <button
+              onClick={() => setIsDarkMode(!isDarkMode)}
+              className="p-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 dark:bg-zinc-900 dark:hover:bg-zinc-800 dark:text-zinc-300 transition-colors cursor-pointer"
+              aria-label="Toggle dark mode"
+            >
+              {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
           </div>
-        </div>
-        <div className="flex items-center gap-2 pt-1">
-          <div className="hidden sm:flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800">
-            <ShieldCheck className="w-4 h-4" /> Secure & In-Memory Processing
-          </div>
-          <button
-            onClick={() => {
-              setTempApiKey(userApiKey);
-              setShowApiSettings(true);
-            }}
-            className="p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 dark:bg-zinc-900 dark:hover:bg-zinc-800 dark:text-zinc-300 transition-colors relative cursor-pointer"
-            aria-label="API Settings"
-            title="Configure Gemini API Key"
-          >
-            <Settings className="w-5 h-5" />
-            {!userApiKey && (
-              <>
-                <span className="absolute top-0.5 right-0.5 w-2.5 h-2.5 bg-amber-500 rounded-full animate-ping" />
-                <span className="absolute top-0.5 right-0.5 w-2.5 h-2.5 bg-amber-500 rounded-full" />
-              </>
-            )}
-          </button>
-          <button
-            onClick={() => setIsDarkMode(!isDarkMode)}
-            className="p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 dark:bg-zinc-900 dark:hover:bg-zinc-800 dark:text-zinc-300 transition-colors cursor-pointer"
-            aria-label="Toggle dark mode"
-          >
-            {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-          </button>
         </div>
       </header>
 

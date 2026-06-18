@@ -1,11 +1,163 @@
 import { PassportData } from '../types';
 
+export const generateBangladeshiAddress = (
+  districtName: string, 
+  seedString: string, 
+  type: 'present' | 'office' | 'business' | 'local'
+): string => {
+  const normDistrict = (districtName || 'Dhaka')
+    .trim()
+    .replace(/(district|zilla|zilla\s+of)/i, '')
+    .trim();
+  const districtUpper = normDistrict.toUpperCase() || 'DHAKA';
+  const districtProper = districtUpper.charAt(0).toUpperCase() + districtUpper.slice(1).toLowerCase();
+
+  const seed = seedString.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) + type.length;
+
+  // Pools of realistic address component names to construct deterministic varieties (seed-based)
+  const bananis = ["Banani", "Gulshan", "Mohakhali", "Baridhara", "Dhanmondi"];
+  const dhanmondis = ["Dhanmondi", "Lalmatia", "Tejgaon", "Green Road", "Kalabagan"];
+  const mirpurs = ["Mirpur", "Kallayanpur", "Gabtoli", "Adabor", "Pallabi"];
+  
+  const houseNums = ["14", "25", "12", "8", "90", "5", "102", "33", "88", "42"];
+  const roadNums = ["6", "12", "9", "4", "15/A", "22", "8", "10", "3", "7"];
+  const blocks = ["C", "A", "B", "D", "E", "F"];
+  const flats = ["3B", "4A", "2C", "5D", "1A", "3C", "11B", "8F"];
+  const plots = ["45/2", "12/A", "28/1", "33", "88/B", "41/2", "9/3", "4/2"];
+  const roadNames = ["Mirpur Road", "Station Road", "College Road", "Airport Road", "Kandirpar Road", "Main Road"];
+  const areas = ["Banani", "Dhanmondi", "Mirpur", "Gulshan", "Uttara", "Kandirpar", "Agrabad", "Zindabazar"];
+  const levels = ["4", "7", "2", "9", "1", "5", "8"];
+  const dohsNames = ["Mirpur", "Mohakhali", "Baridhara", "Banani"];
+
+  const getPostCode = (areaName: string): string => {
+    const areaLower = areaName.toLowerCase();
+    if (areaLower.includes("banani")) return "1213";
+    if (areaLower.includes("dhanmondi")) return "1209";
+    if (areaLower.includes("mirpur")) return "1216";
+    if (areaLower.includes("gulshan")) return "1212";
+    if (areaLower.includes("uttara")) return "1230";
+    if (areaLower.includes("savar")) return "1340";
+    if (areaLower.includes("tongi")) return "1710";
+    if (areaLower.includes("rangpur")) return "5400";
+    if (areaLower.includes("gopalganj")) return "8100";
+    if (areaLower.includes("comilla") || areaLower.includes("cumilla")) return "3500";
+    
+    // Fallbacks
+    if (districtUpper === "DHAKA") return "1212";
+    if (districtUpper === "GOPALGANJ") return "8100";
+    if (districtUpper === "RANGPUR") return "5400";
+    if (districtUpper === "GAZIPUR") return "1710";
+    if (districtUpper === "COMILLA" || districtUpper === "CUMILLA") return "3500";
+    if (districtUpper === "BARISAL" || districtUpper === "BARISHAL") return "8200";
+    if (districtUpper === "KHULNA") return "9100";
+    if (districtUpper === "RAJSHAHI") return "6000";
+    return "1000";
+  };
+
+  const isGopalganj = districtUpper.includes("GOPALGANJ");
+
+  if (type === 'present' || type === 'local') {
+    // 5 House/Village Address Formats
+    let formatIndex = seed % 5;
+    
+    // For Gopalganj, strictly cycle rural village address forms to respect the spec
+    if (isGopalganj) {
+      formatIndex = (seed % 2 === 0) ? 3 : 4;
+    }
+
+    if (formatIndex === 0) {
+      // Form 1: House 14, Road 6, Block C, Banani, Dhaka-1213
+      const h = houseNums[seed % houseNums.length];
+      const r = roadNums[(seed + 1) % roadNums.length];
+      const b = blocks[(seed + 2) % blocks.length];
+      const a = bananis[(seed + 3) % bananis.length];
+      const pc = getPostCode(a);
+      return `House ${h}, Road ${r}, Block ${b}, ${a}, ${districtProper}-${pc}`;
+      
+    } else if (formatIndex === 1) {
+      // Form 2: 3B, 45/2 Mirpur Road, Dhanmondi, Dhaka-1209
+      const fl = flats[seed % flats.length];
+      const pl = plots[(seed + 1) % plots.length];
+      const rn = "Mirpur Road";
+      const a = dhanmondis[(seed + 2) % dhanmondis.length];
+      const pc = getPostCode(a);
+      return `${fl}, ${pl} ${rn}, ${a}, ${districtProper}-${pc}`;
+      
+    } else if (formatIndex === 2) {
+      // Form 3: 28 Station Road, Rangpur Sadar, Rangpur-5400
+      const pl = plots[seed % plots.length].split('/')[0] || "28"; 
+      const rn = "Station Road";
+      const pc = getPostCode(districtProper);
+      return `${pl} ${rn}, ${districtProper} Sadar, ${districtProper}-${pc}`;
+      
+    } else if (formatIndex === 3) {
+      // Form 4: Majhigati, Majhigati-8131, Muksudpur, Gopalganj
+      return `Majhigati, Majhigati-8131, Muksudpur, ${districtProper}`;
+      
+    } else {
+      // Form 5: Maligram, Bonogram-8151, Muksudpur, Gopalganj
+      return `Maligram, Bonogram-8151, Muksudpur, ${districtProper}`;
+    }
+  } else {
+    // 5 Office/Business Address Formats
+    const formatIndex = seed % 5;
+
+    if (formatIndex === 0) {
+      // Form 1: House 25, Road 12, Banani, Dhaka-1213
+      const h = houseNums[seed % houseNums.length];
+      const r = roadNums[(seed + 1) % roadNums.length];
+      const a = bananis[(seed + 2) % bananis.length];
+      const pc = getPostCode(a);
+      return `House ${h}, Road ${r}, ${a}, ${districtProper}-${pc}`;
+      
+    } else if (formatIndex === 1) {
+      // Form 2: Level 4, Mirpur DOHS, Mirpur, Dhaka-1216
+      const lvl = levels[seed % levels.length];
+      const dohs = dohsNames[(seed + 1) % dohsNames.length];
+      const a = "Mirpur";
+      const pc = getPostCode(a);
+      return `Level ${lvl}, ${dohs} DOHS, ${a}, ${districtProper}-${pc}`;
+      
+    } else if (formatIndex === 2) {
+      // Form 3: Holding 15, Ward 5, Savar Upazila, Dhaka-1340
+      const hp = (seed % 90) + 10;
+      const wd = (seed % 12) + 1;
+      const dist = (districtProper.toUpperCase() === 'DHAKA' || districtProper.toUpperCase() === 'GOPALGANJ') ? 'Dhaka' : districtProper;
+      const pc = getPostCode('savar');
+      return `Holding ${hp}, Ward ${wd}, Savar Upazila, ${dist}-${pc}`;
+      
+    } else if (formatIndex === 3) {
+      // Form 4: Main Market Road, Tongi Upazila, Gazipur-1710
+      const mr = "Main Market Road";
+      const dist = (districtProper.toUpperCase() === 'DHAKA' || districtProper.toUpperCase() === 'GOPALGANJ') ? 'Gazipur' : districtProper;
+      const pc = getPostCode("tongi");
+      return `${mr}, Tongi Upazila, ${dist}-${pc}`;
+      
+    } else {
+      // Form 5: College Road, Sadar South Upazila, Comilla-3500
+      const cr = "College Road";
+      const dist = (districtProper.toUpperCase() === 'DHAKA' || districtProper.toUpperCase() === 'GOPALGANJ') ? 'Comilla' : districtProper;
+      const pc = getPostCode("comilla");
+      return `${cr}, Sadar South Upazila, ${dist}-${pc}`;
+    }
+  }
+};
+
 export const getPresentAddress = (itemData: PassportData | null): string => {
-  if (!itemData) return "House 12, Road 5, Dhanmondi, Dhaka-1209";
-  if (itemData.presentAddress) return itemData.presentAddress;
+  if (!itemData) return "House 12, Road 5, Dhanmondi Post Office, Dhanmondi Thana, Dhaka";
+  
+  // Check if presentAddress already matches are strict 5-part format (having 4 or more commas)
+  if (itemData.presentAddress) {
+    const commaCount = (itemData.presentAddress.match(/,/g) || []).length;
+    if (commaCount >= 4) {
+      return itemData.presentAddress;
+    }
+    // If it has presentAddress but not in strict format, augment/reformat it
+    const dist = getDistrictFromAddress(itemData.presentAddress, itemData) || "Dhaka";
+    return generateBangladeshiAddress(dist, itemData.passportNumber || itemData.givenName, 'present');
+  }
 
   const permLower = (itemData.permanentAddress || "").toLowerCase();
-  const presLower = (itemData.presentAddress || "").toLowerCase();
   const emergLower = (itemData.emergencyContactAddress || "").toLowerCase();
 
   const isDhaka = (addr: string) => 
@@ -16,20 +168,16 @@ export const getPresentAddress = (itemData: PassportData | null): string => {
     addr.includes("nawabganj") || 
     addr.includes("dhamrai");
 
-  if (itemData.presentAddress && isDhaka(presLower)) return itemData.presentAddress;
-  if (itemData.emergencyContactAddress && isDhaka(emergLower)) return itemData.emergencyContactAddress;
-  if (itemData.permanentAddress && isDhaka(permLower)) return itemData.permanentAddress;
+  let districtToUse = "Dhaka";
+  if (itemData.emergencyContactAddress && isDhaka(emergLower)) {
+    districtToUse = getDistrictFromAddress(itemData.emergencyContactAddress, itemData) || "Dhaka";
+  } else if (itemData.permanentAddress && isDhaka(permLower)) {
+    districtToUse = getDistrictFromAddress(itemData.permanentAddress, itemData) || "Dhaka";
+  } else if (itemData.permanentAddress) {
+    districtToUse = getDistrictFromAddress(itemData.permanentAddress, itemData) || "Dhaka";
+  }
 
-  const dhakaAddresses = [
-    "House 45, Road 12, Sector 10, Uttara, Dhaka-1230",
-    "House 12, Road 5, Dhanmondi, Dhaka-1209",
-    "House 28, Road 2, Block C, Mirpur-2, Dhaka-1216",
-    "House 8, Road 14, Gulshan-1, Dhaka-1212",
-    "House 33, Road 7, Block F, Banani, Dhaka-1213"
-  ];
-  const hashStr = itemData.permanentAddress || "fallback_dhaka";
-  const hash = hashStr.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  return dhakaAddresses[hash % dhakaAddresses.length];
+  return generateBangladeshiAddress(districtToUse, itemData.passportNumber || itemData.givenName, 'present');
 };
 
 export const getDistrictFromAddress = (address: string | undefined | null, itemData?: PassportData | null): string => {
@@ -78,15 +226,19 @@ export const generateRandomEnterpriseName = (name: string, isJob = false): strin
     return `${prefix}${capitalizedName} ${suffix}`.trim();
   }
   
-  const suffixes = isJob 
-    ? ['Enterprise', 'Traders', 'Corporation', 'Agency', 'Trading', 'Group'] 
-    : ['Enterprise', 'Traders', 'Telecom', 'Motors', 'Fabrics', 'Electronics'];
+  const suffixes = suffixesToGet(name, isJob);
   const suffix = suffixes[name.length % suffixes.length];
   
   const prefixes = ['MS ', '', ''];
   const prefix = prefixes[name.length % prefixes.length];
   
   return `${prefix}${capitalizedName} ${suffix}`.trim();
+};
+
+const suffixesToGet = (name: string, isJob: boolean): string[] => {
+  return isJob 
+    ? ['Enterprise', 'Traders', 'Corporation', 'Agency', 'Trading', 'Group'] 
+    : ['Enterprise', 'Traders', 'Telecom', 'Motors', 'Fabrics', 'Electronics'];
 };
 
 export const getProprietorBusinessName = (itemData: PassportData | null): string => {
@@ -115,117 +267,26 @@ export const getJobRole = (itemData: PassportData | null): string => {
 
 export const getBusinessAddressDhaka = (presentAddress: string, itemData?: PassportData | null): string => {
   if (itemData && itemData.businessAddressDhaka) return itemData.businessAddressDhaka;
-  const presentLower = presentAddress.toLowerCase();
-  const seed = presentAddress.length + (presentAddress.charCodeAt(0) || 0);
-  const shopNum = (seed % 150) + 1;
-  
-  const areas = [
-    { key: "uttara", match: "Uttara", zip: "1230" },
-    { key: "dhanmondi", match: "Dhanmondi", zip: "1209" },
-    { key: "mirpur", match: "Mirpur", zip: "1216" },
-    { key: "gulshan", match: "Gulshan", zip: "1212" },
-    { key: "banani", match: "Banani", zip: "1213" },
-    { key: "bashundhara", match: "Bashundhara", zip: "1229" },
-    { key: "mohammadpur", match: "Mohammadpur", zip: "1207" },
-    { key: "motijheel", match: "Motijheel", zip: "1000" },
-    { key: "badda", match: "Badda", zip: "1212" },
-    { key: "ramna", match: "Ramna", zip: "1000" }
-  ];
-
-  const matchedArea = areas.find(a => presentLower.includes(a.key));
-  const getFormat = seed % 3;
-  
-  if (matchedArea) {
-    if (getFormat === 0) {
-      return `Shop ${shopNum}, ${matchedArea.match}, Dhaka-${matchedArea.zip}`;
-    } else if (getFormat === 1) {
-      return `Plot ${shopNum + 10}, ${matchedArea.match}, Dhaka-${matchedArea.zip}`;
-    } else {
-      return `House ${shopNum}, Rd ${(seed % 12) + 1}, ${matchedArea.match}, Dhaka`;
-    }
-  }
-  
-  const districtMatch = presentAddress.split(',').slice(-1)[0]?.trim() || "Dhaka";
-  
-  if (getFormat === 0) {
-    return `Shop ${shopNum}, City Center, ${districtMatch}`;
-  } else if (getFormat === 1) {
-    return `Holding No. ${shopNum * 2}, ${districtMatch}`;
-  } else {
-    return `House ${shopNum}, Main Road, ${districtMatch}`;
-  }
+  const district = getDistrictFromAddress(presentAddress, itemData) || "Dhaka";
+  const seedStr = presentAddress + (itemData?.passportNumber || itemData?.givenName || 'seeder');
+  return generateBangladeshiAddress(district, seedStr, 'business');
 };
 
 export const getOfficeAddressDhaka = (presentAddress: string, itemData?: PassportData | null): string => {
   if (itemData && itemData.officeAddressDhaka) return itemData.officeAddressDhaka;
-  const presentLower = presentAddress.toLowerCase();
-  const seed = presentAddress.length + (presentAddress.charCodeAt(1) || 0) + 5; 
-  const suiteNum = (seed % 500) + 100;
-  const floorNum = Math.floor(suiteNum / 100);
-
-  const towers = ["Navana Tower", "City Center", "Trade Center", "ABC Tower", "Rupayan Tower"];
-  const randomTower = towers[seed % towers.length];
-
-  const areas = [
-    { key: "uttara", match: "Uttara", zip: "1230", tower: "Zamzam Tower" },
-    { key: "dhanmondi", match: "Dhanmondi", zip: "1209", tower: "Rapa Plaza" },
-    { key: "mirpur", match: "Mirpur", zip: "1216", tower: "Shah Ali Plaza" },
-    { key: "gulshan", match: "Gulshan", zip: "1212", tower: "Shoppers World" },
-    { key: "banani", match: "Banani", zip: "1213", tower: "Awal Centre" },
-    { key: "bashundhara", match: "Bashundhara", zip: "1229", tower: "GP Center" },
-    { key: "mohammadpur", match: "Mohammadpur", zip: "1207", tower: "Tokyo Square" },
-    { key: "motijheel", match: "Motijheel", zip: "1000", tower: "City Centre" },
-    { key: "badda", match: "Badda", zip: "1212", tower: "Hossain Tower" },
-    { key: "ramna", match: "Ramna", zip: "1000", tower: "Baily Tower" }
-  ];
-
-  const matchedArea = areas.find(a => presentLower.includes(a.key));
-  const getFormat = seed % 3;
-
-  if (matchedArea) {
-    const towerName = matchedArea.tower || randomTower;
-    if (getFormat === 0) {
-      return `${towerName}, ${matchedArea.match}, Dhaka`;
-    } else if (getFormat === 1) {
-      return `Level ${floorNum}, ${towerName}, ${matchedArea.match}, Dhaka`;
-    } else {
-      return `Office ${suiteNum}, ${towerName}, ${matchedArea.match}, Dhaka`;
-    }
-  }
-  
-  const districtMatch = presentAddress.split(',').slice(-1)[0]?.trim() || "Dhaka";
-  
-  if (getFormat === 0) {
-    return `${randomTower}, ${districtMatch}`;
-  } else if (getFormat === 1) {
-    return `Office ${suiteNum}, ${randomTower}, ${districtMatch}`;
-  } else {
-    return `Holding ${suiteNum}, ${randomTower}, ${districtMatch}`;
-  }
+  const district = getDistrictFromAddress(presentAddress, itemData) || "Dhaka";
+  const seedStr = presentAddress + (itemData?.passportNumber || itemData?.givenName || 'seeder');
+  return generateBangladeshiAddress(district, seedStr, 'office');
 };
 
 export const getBusinessAddressLocal = (permanentAddress: string, itemData?: PassportData | null): string => {
   if (itemData && itemData.businessAddressLocal) return itemData.businessAddressLocal;
-  if (!permanentAddress) return '';
-  const district = getDistrictFromAddress(permanentAddress);
-  if (!district) return permanentAddress;
-  
-  const properDistrict = district.charAt(0).toUpperCase() + district.slice(1).toLowerCase();
-  const seed = permanentAddress.length + (permanentAddress.charCodeAt(0) || 0);
-  const shopNum = (seed % 100) + 1;
-  
-  const markets = ["Bazar", "Super Market", "Municipal Market", "Trade Center", "Chowrasta"];
-  const randomMarket = markets[seed % markets.length];
-  
-  const getFormat = seed % 3;
-  
-  if (getFormat === 0) {
-    return `Shop ${shopNum}, ${properDistrict} ${randomMarket}`;
-  } else if (getFormat === 1) {
-    return `Holding No. ${shopNum + 10}, ${properDistrict} Sadar`;
-  } else {
-    return `Plot ${shopNum}, ${properDistrict} ${randomMarket}`;
+  if (!permanentAddress) {
+    return generateBangladeshiAddress('Gopalganj', 'fallback', 'local');
   }
+  const district = getDistrictFromAddress(permanentAddress, itemData) || "Gopalganj";
+  const seedStr = permanentAddress + (itemData?.passportNumber || itemData?.givenName || 'seeder_local');
+  return generateBangladeshiAddress(district, seedStr, 'local');
 };
 
 export const generateDataText = (itemData: PassportData | null): string => {

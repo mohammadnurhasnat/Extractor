@@ -96,7 +96,7 @@ export function DataField({ label, value, highlight = false, onValueChange }: Da
         ${!value && !isEditing ? 'italic opacity-60' : ''}
       `}>
         {isEditing ? (
-          <form onSubmit={handleSave} className="flex-1 flex items-stretch w-full">
+          <form onSubmit={handleSave} className="flex-1 flex items-stretch w-full min-w-0">
             {isTextArea ? (
               <textarea
                 ref={inputRef as React.Ref<HTMLTextAreaElement>}
@@ -104,7 +104,7 @@ export function DataField({ label, value, highlight = false, onValueChange }: Da
                 onChange={(e) => setEditValue(e.target.value)}
                 onKeyDown={handleKeyDown}
                 rows={2}
-                className="flex-1 px-3.5 py-2 text-sm font-medium bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-600 focus:outline-none resize-none"
+                className="flex-1 w-full min-w-0 px-3.5 py-2 text-sm font-medium bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-600 focus:outline-none resize-none"
               />
             ) : (
               <input
@@ -113,15 +113,15 @@ export function DataField({ label, value, highlight = false, onValueChange }: Da
                 value={editValue}
                 onChange={(e) => setEditValue(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="flex-1 px-3.5 py-2 text-sm font-medium bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-600 focus:outline-none"
+                className="flex-1 w-full min-w-0 px-3.5 py-2 text-sm font-medium bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-600 focus:outline-none"
               />
             )}
             
-            <div className="flex items-center gap-1 px-2 bg-slate-100 dark:bg-zinc-800 border-l border-slate-200 dark:border-zinc-700">
+            <div className="flex items-center gap-1.5 px-2 bg-slate-100/90 dark:bg-zinc-800/90 border-l border-slate-200 dark:border-zinc-700 shrink-0">
               <button
                 type="button"
                 onClick={handleSave}
-                className="p-1 rounded bg-emerald-500 text-white hover:bg-emerald-600 transition-colors"
+                className="p-1 rounded bg-emerald-500 text-white hover:bg-emerald-600 transition-colors cursor-pointer shrink-0"
                 title="Save changes"
               >
                 <Check className="w-4 h-4" />
@@ -129,7 +129,7 @@ export function DataField({ label, value, highlight = false, onValueChange }: Da
               <button
                 type="button"
                 onClick={handleCancel}
-                className="p-1 rounded bg-slate-300 dark:bg-zinc-700 text-slate-700 dark:text-zinc-300 hover:bg-slate-400 dark:hover:bg-zinc-600 transition-colors"
+                className="p-1 rounded bg-slate-300 dark:bg-zinc-700 text-slate-700 dark:text-zinc-300 hover:bg-slate-400 dark:hover:bg-zinc-600 transition-colors cursor-pointer shrink-0"
                 title="Cancel edit"
               >
                 <X className="w-4 h-4" />
