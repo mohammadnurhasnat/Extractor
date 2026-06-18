@@ -10,14 +10,19 @@ async function startServer() {
   // Increase payload limit for large passport images
   app.use(express.json({ limit: '20mb' }));
   
-  // Initialize Gemini AI
-  // API key must be available in environment (added automatically by AI Studio)
-  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-
   // API Route for passport extraction
   app.post('/api/extract-passport', async (req, res) => {
     try {
       const { imageBase64, mimeType } = req.body;
+
+      if (!process.env.GEMINI_API_KEY) {
+        return res.status(500).json({ 
+          success: false,
+          error: 'GEMINI_API_KEY is missing in your server environment variables. Please go to your Render Dashboard -> Environment tab, and add GEMINI_API_KEY with your API key from Google AI Studio.' 
+        });
+      }
+
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
       if (!imageBase64 || !mimeType) {
         return res.status(400).json({ error: 'Image data and mimeType are required' });
