@@ -47,7 +47,9 @@ export default function App() {
   const [data, setData] = useState<PassportData | null>(() => {
     try {
       const saved = localStorage.getItem('passport_active_data');
-      if (saved) return JSON.parse(saved);
+      if (saved && saved !== 'undefined' && saved.trim() !== '') {
+        return JSON.parse(saved);
+      }
     } catch (e) {
       console.error("Failed to load active data", e);
     }
@@ -109,7 +111,7 @@ export default function App() {
   const [savedHospitals, setSavedHospitals] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem('saved_hospital_names');
-      if (saved) return JSON.parse(saved);
+      if (saved && saved !== 'undefined' && saved.trim() !== '') return JSON.parse(saved);
     } catch (e) {
       console.error(e);
     }
@@ -126,7 +128,7 @@ export default function App() {
   const [savedDepartments, setSavedDepartments] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem('saved_department_names');
-      if (saved) {
+      if (saved && saved !== 'undefined' && saved.trim() !== '') {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
           return parsed.filter((d: string) => d !== 'Dr. K. S. Murthy');

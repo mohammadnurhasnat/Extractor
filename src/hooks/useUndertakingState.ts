@@ -22,7 +22,7 @@ export function useUndertakingState(data: PassportData | null) {
   const [undertakingData, setUndertakingData] = useState<UndertakingFormData | null>(() => {
     try {
       const saved = localStorage.getItem('active_undertaking_data');
-      if (saved) return JSON.parse(saved);
+      if (saved && saved !== 'undefined' && saved.trim() !== '') return JSON.parse(saved);
     } catch (e) {
       console.error(e);
     }
@@ -76,7 +76,7 @@ export function useUndertakingState(data: PassportData | null) {
       let savedData: UndertakingFormData | null = null;
       try {
         const saved = localStorage.getItem('active_undertaking_data');
-        if (saved) {
+        if (saved && saved !== 'undefined' && saved.trim() !== '') {
           const parsed = JSON.parse(saved) as UndertakingFormData;
           if (parsed && parsed.passportNumber === (data.passportNumber || '')) {
             if (parsed.doctorName === 'Dr. K. S. Murthy') {

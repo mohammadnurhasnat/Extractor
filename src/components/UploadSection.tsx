@@ -198,7 +198,6 @@ export function UploadSection(props: UploadSectionProps) {
         history={props.history}
         searchTerm={props.searchTerm}
         onSearchTermChange={props.setSearchTerm}
-        onClearHistory={() => props.setHistory([])}
         onLoadItem={props.loadFromHistory}
         onConfirmDelete={props.confirmDelete}
       />

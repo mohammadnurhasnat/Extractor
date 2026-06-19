@@ -29,7 +29,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<MockUser | null>(() => {
     try {
       const savedUser = localStorage.getItem('local_guest_session');
-      if (savedUser) return JSON.parse(savedUser);
+      if (savedUser && savedUser !== 'undefined' && savedUser.trim() !== '') return JSON.parse(savedUser);
     } catch (e) {
       console.error(e);
     }

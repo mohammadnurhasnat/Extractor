@@ -5,7 +5,9 @@ export function usePassportHistory() {
   const [history, setInternalHistory] = useState<HistoryItem[]>(() => {
     try {
       const saved = localStorage.getItem('passport_core_history');
-      if (saved) return JSON.parse(saved);
+      if (saved && saved !== 'undefined' && saved.trim() !== '') {
+        return JSON.parse(saved);
+      }
     } catch (e) {
       console.error("Failed to load history", e);
     }

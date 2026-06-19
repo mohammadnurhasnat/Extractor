@@ -7,7 +7,6 @@ interface HistorySidebarProps {
   history: HistoryItem[];
   searchTerm: string;
   onSearchTermChange: (term: string) => void;
-  onClearHistory: () => void;
   onLoadItem: (item: HistoryItem) => void;
   onConfirmDelete: (e: React.MouseEvent, id: string) => void;
 }
@@ -16,15 +15,15 @@ export function HistorySidebar({
   history,
   searchTerm,
   onSearchTermChange,
-  onClearHistory,
   onLoadItem,
   onConfirmDelete
 }: HistorySidebarProps) {
   const filteredHistory = history.filter(item => {
     const fullName = `${item.data.givenName || ''} ${item.data.surname || ''}`.toLowerCase();
     const passportNo = (item.data.passportNumber || '').toLowerCase();
-    const query = searchTerm.toLowerCase().trim();
-    return fullName.includes(query) || passportNo.includes(query);
+    const queryWords = searchTerm.toLowerCase().trim().split(/\s+/).filter(Boolean);
+    if (queryWords.length === 0) return true;
+    return queryWords.every(word => fullName.includes(word) || passportNo.includes(word));
   });
 
   const now = new Date();
@@ -45,28 +44,19 @@ export function HistorySidebar({
           <p className="text-sm text-slate-500 dark:text-zinc-400 mt-1 font-sans">Access scanned passports.</p>
         </div>
         
-        <div className="flex z-10 items-center justify-between xl:justify-end gap-2 w-full xl:w-auto max-w-full overflow-hidden">
-          <div className="relative flex-1 max-w-[150px] sm:max-w-[180px] xl:w-[130px]">
+        <div className="flex z-10 items-center justify-end gap-2 w-full xl:w-auto max-w-full overflow-hidden">
+          <div className="relative flex-1 max-w-[200px] sm:max-w-[240px] xl:w-[160px]">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Search className="h-4 w-4 text-slate-400 dark:text-zinc-500" />
             </div>
             <input
               type="text"
-              placeholder="Search..."
+              placeholder="Search by name..."
               value={searchTerm}
               onChange={(e) => onSearchTermChange(e.target.value)}
               className="block w-full pl-9 pr-2.5 py-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg text-xs bg-slate-50 dark:bg-black/50 focus:bg-white dark:focus:bg-black focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-zinc-100 transition-colors placeholder-slate-400 dark:placeholder-zinc-500"
             />
           </div>
-
-          {history.length > 0 && (
-            <button 
-              onClick={onClearHistory}
-              className="text-xs text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 font-semibold px-2.5 py-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors shrink-0 border border-transparent whitespace-nowrap cursor-pointer"
-            >
-              Clear
-            </button>
-          )}
         </div>
       </div>
 

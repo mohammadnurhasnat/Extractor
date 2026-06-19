@@ -218,43 +218,56 @@ export const getUndertakingPDFDocument = (formData: UndertakingFormData): jsPDF 
   doc.text('1. Personal Details', leftMargin, y);
   y += 6.5;
 
-  doc.setFont('times', 'normal');
-  
+  const tableX = leftMargin + 4;
+  const col1Width = 45;
+  const col2Width = contentWidth - col1Width - 4;
+
   const details = [
-    { label: '1. Full Name:', value: formData.fullName || '______________________' },
-    { label: '2. Passport Number:', value: formData.passportNumber || '______________________' },
-    { label: '3. Nationality:', value: formData.nationality || '______________________' },
-    { label: '4. Date of Birth:', value: formData.dob || '______________________' },
-    { label: '5. Gender:', value: formData.gender || '______________________' },
-    { label: '6. Address:', value: formData.address || '______________________' }
+    { label: '1. Full Name:', value: formData.fullName || '—' },
+    { label: '2. Passport Number:', value: formData.passportNumber || '—' },
+    { label: '3. Nationality:', value: formData.nationality || '—' },
+    { label: '4. Date of Birth:', value: formData.dob || '—' },
+    { label: '5. Gender:', value: formData.gender || '—' },
+    { label: '6. Address:', value: formData.address || '—' }
   ];
 
-  details.forEach((item) => {
+  const splitAddress = doc.splitTextToSize(formData.address || '—', col2Width - 6);
+
+  // Set draw and fill style
+  doc.setDrawColor(180, 180, 180);
+  doc.setLineWidth(0.2);
+
+  details.forEach((item, index) => {
+    let rHeight = index === 5 ? Math.max(12, splitAddress.length * 5.5 + 4) : 9.5;
+
+    // Draw label cell with soft light grey background
+    doc.setFillColor(245, 247, 248);
+    doc.rect(tableX, y, col1Width, rHeight, 'FD');
+
+    // Draw value cell with white background
+    doc.setFillColor(255, 255, 255);
+    doc.rect(tableX + col1Width, y, col2Width, rHeight, 'FD');
+
+    // Add Label Text
     doc.setFont('times', 'bold');
-    doc.text(item.label, leftMargin + 4, y);
-    
-    // Calculate dynamic coordinates with precisely 5 spacebars gap
-    const labelWidth = doc.getTextWidth(item.label);
-    const fiveSpacesWidth = doc.getTextWidth("     ");
-    const valueX = leftMargin + 4 + labelWidth + fiveSpacesWidth;
-    
+    doc.text(item.label, tableX + 3.5, y + (rHeight / 2) + 1.2);
+
+    // Add Value Text
     doc.setFont('times', 'normal');
-    
-    if (item.label.includes('Address:')) {
-      const maxAddrWidth = contentWidth - (valueX - leftMargin);
-      const splitAddr = doc.splitTextToSize(item.value, maxAddrWidth);
-      splitAddr.forEach((line: string, index: number) => {
-        doc.text(line, valueX, y);
-        if (index < splitAddr.length - 1) {
-          y += 5.5;
-        }
+    if (index === 5) { // Multi-line Address
+      let lineY = y + 4.5;
+      splitAddress.forEach((line: string) => {
+        doc.text(line, tableX + col1Width + 3.5, lineY);
+        lineY += 5.5;
       });
     } else {
-      doc.text(item.value, valueX, y);
+      doc.text(item.value, tableX + col1Width + 3.5, y + (rHeight / 2) + 1.2);
     }
-    y += 6.5;
+
+    y += rHeight;
   });
-  y += 1.5;
+
+  y += 5.5;
 
   // 2. Purpose of Visit
   doc.setFont('times', 'bold');

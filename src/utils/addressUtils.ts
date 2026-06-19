@@ -3,7 +3,8 @@ import { PassportData } from '../types';
 export const getGeneratedEmail = (itemData: PassportData | null): string => {
   if (!itemData) return '';
   if (itemData.email) return itemData.email;
-  const nameStr = ((itemData.givenName || '') + (itemData.surname || '')).replace(/[^a-zA-Z]/g, '').toLowerCase();
+  const mainPart = (itemData.givenName || '').trim().split(/\s+/)[0] || (itemData.surname || '').trim().split(/\s+/)[0] || 'user';
+  const nameStr = mainPart.replace(/[^a-zA-Z]/g, '').toLowerCase();
   const dobStr = itemData.dob || '';
   const yearMatch = dobStr.match(/\d{4}/);
   const year = yearMatch ? yearMatch[0] : '';

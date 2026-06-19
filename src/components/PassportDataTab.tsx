@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckCircle2, Check, Copy, Download, FileText, Printer, Sparkles } from 'lucide-react';
+import { CheckCircle2, Check, Copy, Download, FileText, Printer } from 'lucide-react';
 import { PassportData } from '../types';
 import { DataField } from './DataField';
 import {
@@ -60,7 +60,7 @@ export function PassportDataTab({
             className="flex items-center gap-1.5 px-3 py-1.5 bg-[#FF8006] hover:bg-[#FF8006]/90 text-white text-xs sm:text-sm font-semibold rounded-lg transition-all shadow-sm active:scale-95 duration-100 cursor-pointer"
           >
             <FileText className="w-3.5 h-3.5" />
-            Download PDF Summary
+            Download
           </button>
           <button 
             onClick={() => window.print()}
@@ -90,41 +90,18 @@ export function PassportDataTab({
         
         <div className="col-span-1 sm:col-span-2 flex justify-between items-center pb-1">
           <h4 className="text-xs font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">Address Profile</h4>
-          {onGenerateAddresses && (
-            <button 
-              onClick={onGenerateAddresses}
-              disabled={isGeneratingAddresses || !data.permanentAddress}
-              className="text-xs font-semibold px-2.5 py-1 rounded bg-teal-50 text-teal-600 hover:bg-teal-100 dark:bg-teal-950/40 dark:text-teal-400 border border-teal-200/50 hover:border-teal-300 transition duration-150 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed print:hidden cursor-pointer"
-              title="Auto-generates Present, Business, and Office addresses using Gemini AI based on permanent address categorization."
-            >
-              {isGeneratingAddresses ? (
-                <>
-                  <svg className="animate-spin h-3.5 w-3.5 text-current animate-spin" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Regenerating...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400 animate-pulse" />
-                  Auto-Gen from Permanent Address
-                </>
-              )}
-            </button>
-          )}
         </div>
 
         <div className="col-span-1 sm:col-span-2 space-y-3">
           <DataField 
-            label="Permanent Address (Extracted from Passport)" 
-            value={data.permanentAddress || ''} 
-            onValueChange={(val) => updateDataField('permanentAddress', val)} 
-          />
-          <DataField 
             label="Present Address" 
             value={data.presentAddress || ''} 
             onValueChange={(val) => updateDataField('presentAddress', val)} 
+          />
+          <DataField 
+            label="Permanent Address (Extracted from Passport)" 
+            value={data.permanentAddress || ''} 
+            onValueChange={(val) => updateDataField('permanentAddress', val)} 
           />
         </div>
         
@@ -163,71 +140,6 @@ export function PassportDataTab({
             <DataField label="Office Address (Permanent / Local)" value={data.officeAddressLocal || ''} onValueChange={(val) => updateDataField('officeAddressLocal', val)} />
           </div>
         </div>
-
-        {/* Multi-Agent Collaboration Log Panel */}
-        {data.agentLog && (
-          <div className="col-span-1 sm:col-span-2 mt-6 bg-[#0C8493]/5 dark:bg-[#0C8493]/10 border border-[#0C8493]/20 rounded-2xl p-5 space-y-4 shadow-sm print:hidden">
-            <div className="flex items-center justify-between border-b border-[#0C8493]/25 pb-3">
-              <h4 className="text-sm font-black text-[#0C8493] tracking-wide flex items-center gap-1.5 font-sans">
-                <Sparkles className="w-4 h-4 text-amber-500 animate-pulse" />
-                Multi-Agent System Insights & Conversation Log
-              </h4>
-              {data.discrepancyList && data.discrepancyList.length > 0 ? (
-                <span className="px-2.5 py-1 bg-amber-500/10 text-amber-600 dark:text-[#FF8006] text-[10px] font-black rounded-full uppercase tracking-wider border border-amber-500/20 font-sans">
-                  Warnings Flagged
-                </span>
-              ) : (
-                <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-black rounded-full uppercase tracking-wider border border-emerald-500/20 font-sans">
-                  Perfect Validation
-                </span>
-              )}
-            </div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-              {/* Agent conversation logs */}
-              <div className="bg-white/80 dark:bg-zinc-950/60 p-4 rounded-xl border border-slate-200/50 dark:border-zinc-800/80 shadow-inner flex flex-col">
-                <h5 className="text-[11px] font-black text-slate-400 dark:text-zinc-500 mb-2.5 uppercase tracking-wider font-mono">🤖 Coordinated Sub-Agent Communication:</h5>
-                <div className="text-xs text-slate-600 dark:text-zinc-300 font-sans leading-relaxed whitespace-pre-wrap max-h-64 overflow-y-auto pr-2 custom-scrollbar space-y-2">
-                  {data.agentLog}
-                </div>
-              </div>
-
-              {/* Sub-Agent D Draft & Discrepancies */}
-              <div className="flex flex-col gap-3.5">
-                {data.discrepancyList && data.discrepancyList.length > 0 ? (
-                  <div className="bg-amber-500/5 dark:bg-amber-500/10 p-4 rounded-xl border border-amber-500/20">
-                    <h5 className="text-[11px] font-black text-amber-800 dark:text-amber-400 mb-2 uppercase tracking-wider font-mono flex items-center gap-1">
-                      ⚠️ Mismatch Warnings (QA Agent C):
-                    </h5>
-                    <ul className="text-xs text-amber-700 dark:text-amber-350 list-disc pl-4 space-y-1.5">
-                      {data.discrepancyList.map((item, idx) => (
-                        <li key={idx} className="font-semibold leading-relaxed">{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : (
-                  <div className="bg-emerald-500/5 dark:bg-emerald-500/10 p-4 rounded-xl border border-emerald-500/20">
-                    <h5 className="text-[11px] font-black text-emerald-800 dark:text-emerald-400 mb-1 uppercase tracking-wider font-mono">
-                      ✅ Integrity Verification
-                    </h5>
-                    <p className="text-xs text-slate-500 dark:text-zinc-400 font-sans font-medium leading-relaxed">
-                      Sub-Agent C conducted an interface scan. Zero discrepancies found between visual data and printed Machine Readable Zone (MRZ).
-                    </p>
-                  </div>
-                )}
-
-                {data.customUndertakingDraft && (
-                  <div className="bg-slate-50/50 dark:bg-zinc-900/50 p-4 rounded-xl border border-slate-200/60 dark:border-zinc-800/50 flex-1 flex flex-col">
-                    <h5 className="text-[11px] font-black text-[#0C8493] dark:text-[#0C8493] mb-2 uppercase tracking-wider font-mono">✍️ Custom Draft Declaration (Agent D):</h5>
-                    <p className="text-xs text-slate-600 dark:text-zinc-300 font-serif italic leading-relaxed whitespace-pre-wrap flex-1 scroll-smooth">
-                      "{data.customUndertakingDraft}"
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </>
   );

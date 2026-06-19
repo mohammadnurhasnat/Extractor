@@ -10,6 +10,14 @@ interface DataFieldProps {
 
 export function DataField({ label, value, highlight = false, onValueChange }: DataFieldProps) {
   const [copied, setCopied] = useState(false);
+  const [persistentCopied, setPersistentCopied] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const fieldKey = `${label}_${value}`;
+      (window as any).__copiedFields = (window as any).__copiedFields || [];
+      return (window as any).__copiedFields.includes(fieldKey);
+    }
+    return false;
+  });
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
@@ -35,6 +43,15 @@ export function DataField({ label, value, highlight = false, onValueChange }: Da
     navigator.clipboard.writeText(value);
     setCopied(true);
     setTimeout(() => setCopied(false), 8000);
+
+    if (typeof window !== 'undefined') {
+      const fieldKey = `${label}_${value}`;
+      (window as any).__copiedFields = (window as any).__copiedFields || [];
+      if (!(window as any).__copiedFields.includes(fieldKey)) {
+        (window as any).__copiedFields.push(fieldKey);
+      }
+      setPersistentCopied(true);
+    }
   };
 
   const handleStartEdit = (e: React.MouseEvent) => {
@@ -92,8 +109,8 @@ export function DataField({ label, value, highlight = false, onValueChange }: Da
 
       <div className={`
         relative rounded-lg text-sm font-medium border transition-all duration-300 flex items-stretch overflow-hidden min-h-[40px]
-        ${copied
-          ? 'bg-emerald-50/80 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-800 text-emerald-900 dark:text-emerald-100 shadow-sm'
+        ${copied || persistentCopied
+          ? 'bg-green-100/90 dark:bg-orange-950/40 border-green-500 dark:border-orange-500 text-green-955 dark:text-orange-200 shadow-sm font-semibold'
           : hasValidationError
             ? 'bg-rose-500/5 dark:bg-rose-500/10 border-red-500/70 dark:border-red-500/40 text-red-900 dark:text-red-300 shadow-[0_0_8px_rgba(239,68,68,0.06)]'
             : highlight 
@@ -143,8 +160,8 @@ export function DataField({ label, value, highlight = false, onValueChange }: Da
             </div>
           </form>
         ) : (
-          <div className="flex-1 flex items-start justify-between gap-2 p-3 w-full">
-            <span className={`break-words whitespace-normal text-left flex-1 w-full ${hasValidationError ? 'text-red-800 dark:text-red-400 font-semibold' : ''}`} title={value || ''}>
+          <div className="flex-1 flex items-start justify-between gap-2 p-3 w-full min-w-0">
+            <span className={`break-all whitespace-normal text-left flex-1 min-w-0 w-full ${hasValidationError ? 'text-red-800 dark:text-red-400 font-semibold' : ''}`} title={value || ''}>
               {value || 'Not Found'}
             </span>
             
@@ -163,8 +180,8 @@ export function DataField({ label, value, highlight = false, onValueChange }: Da
                   onClick={handleCopy}
                   className={`
                     p-1.5 rounded-md transition-all
-                    ${copied 
-                      ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/20' 
+                    ${copied || persistentCopied
+                      ? 'text-emerald-700 bg-emerald-100/50 dark:text-orange-350 dark:bg-orange-950/40' 
                       : 'text-slate-400 opacity-100 sm:opacity-0 group-hover/field:opacity-100 hover:text-slate-600 hover:bg-slate-200 dark:hover:text-zinc-300 dark:hover:bg-zinc-800'}
                   `}
                   title="Copy"
