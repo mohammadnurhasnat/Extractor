@@ -24,7 +24,14 @@ async function startServer() {
         });
       }
 
-      const ai = new GoogleGenAI({ apiKey: clientApiKey });
+      const ai = new GoogleGenAI({
+        apiKey: clientApiKey,
+        httpOptions: {
+          headers: {
+            'User-Agent': 'aistudio-build',
+          }
+        }
+      });
 
       if (!imageBase64 || !mimeType) {
         return res.status(400).json({ error: 'Image data and mimeType are required' });
@@ -68,13 +75,14 @@ async function startServer() {
               nidOrBirthCertNumber: { type: Type.STRING, description: "National ID / NID or Personal No." },
               issueDate: { type: Type.STRING, description: "Date of issue (must be formatted as dd/mm/yyyy)" },
               expiryDate: { type: Type.STRING, description: "Date of expiry (must be formatted as dd/mm/yyyy)" },
+              gender: { type: Type.STRING, description: "Gender or Sex (Extract M or F from the image, Male is M, Female is F, then convert to 'Male' or 'Female')" },
               mobileNumber: { type: Type.STRING, description: "Mobile number if visible anywhere, otherwise empty" }
             },
             required: [
               "givenName", "surname", "dob", "birthPlace", 
               "permanentAddress", "fatherName", "motherName", 
               "spouseName", "passportNumber", "nidOrBirthCertNumber", 
-              "issueDate", "expiryDate", "mobileNumber"
+              "issueDate", "expiryDate", "mobileNumber", "gender"
             ]
           }
         }

@@ -7,6 +7,7 @@ import {
   getProprietorBusinessName,
   getBusinessAddressDhaka,
   getBusinessAddressLocal,
+  getOfficeAddressLocal,
   getJobCompanyName,
   getOfficeAddressDhaka,
   getJobRole
@@ -175,7 +176,7 @@ export const getPDFDocument = (data: PassportData): jsPDF => {
   y += 6;
   drawRow('COMPANY NAME', getJobCompanyName(data), 'DESIGNATION', getJobRole(data));
   drawFullWidthField('OFFICE ADDRESS (DHAKA / PRESENT)', getOfficeAddressDhaka(presentAddr, data));
-  drawFullWidthField('OFFICE ADDRESS (LOCAL / PERMANENT)', getBusinessAddressLocal(permanentAddr, data));
+  drawFullWidthField('OFFICE ADDRESS (LOCAL / PERMANENT)', getOfficeAddressLocal(permanentAddr, data));
 
   // Professional Footer decorator loops on all generated pages
   const pageCount = doc.getNumberOfPages();
@@ -209,7 +210,7 @@ export const getUndertakingPDFDocument = (formData: UndertakingFormData): jsPDF 
   // Set Times font - elegant and formal
   doc.setFont('times', 'bold');
   doc.setFontSize(14);
-  doc.text('VISA UNDERTAKING FORM', 105, y, { align: 'center' });
+  doc.text('Undertaking Form', 105, y, { align: 'center' });
   y += 12;
 
   doc.setFont('times', 'normal');
@@ -231,28 +232,36 @@ export const getUndertakingPDFDocument = (formData: UndertakingFormData): jsPDF 
   doc.setFont('times', 'normal');
   
   const details = [
-    { label: 'Full Name:', value: formData.fullName || '______________________' },
-    { label: 'Passport Number:', value: formData.passportNumber || '______________________' },
-    { label: 'Nationality:', value: formData.nationality || '______________________' },
-    { label: 'Date of Birth:', value: formData.dob || '______________________' },
-    { label: 'Address:', value: formData.address || '______________________' }
+    { label: '1. Full Name:', value: formData.fullName || '______________________' },
+    { label: '2. Passport Number:', value: formData.passportNumber || '______________________' },
+    { label: '3. Nationality:', value: formData.nationality || '______________________' },
+    { label: '4. Date of Birth:', value: formData.dob || '______________________' },
+    { label: '5. Gender:', value: formData.gender || '______________________' },
+    { label: '6. Address:', value: formData.address || '______________________' }
   ];
 
   details.forEach((item) => {
     doc.setFont('times', 'bold');
     doc.text(item.label, leftMargin + 4, y);
+    
+    // Calculate dynamic coordinates with precisely 5 spacebars gap
+    const labelWidth = doc.getTextWidth(item.label);
+    const fiveSpacesWidth = doc.getTextWidth("     ");
+    const valueX = leftMargin + 4 + labelWidth + fiveSpacesWidth;
+    
     doc.setFont('times', 'normal');
     
-    if (item.label === 'Address:') {
-      const splitAddr = doc.splitTextToSize(item.value, contentWidth - 35);
+    if (item.label.includes('Address:')) {
+      const maxAddrWidth = contentWidth - (valueX - leftMargin);
+      const splitAddr = doc.splitTextToSize(item.value, maxAddrWidth);
       splitAddr.forEach((line: string, index: number) => {
-        doc.text(line, leftMargin + 35, y);
+        doc.text(line, valueX, y);
         if (index < splitAddr.length - 1) {
           y += 5.5;
         }
       });
     } else {
-      doc.text(item.value, leftMargin + 35, y);
+      doc.text(item.value, valueX, y);
     }
     y += 6.5;
   });
@@ -265,23 +274,45 @@ export const getUndertakingPDFDocument = (formData: UndertakingFormData): jsPDF 
 
   doc.setFont('times', 'normal');
   const purpose = formData.purpose || '';
-  const hospital = formData.hospitalName || '______________________';
-  const doctor = formData.doctorName || '______________________';
+  const hospital = (formData.hospitalName || '').trim();
+  const department = (formData.departmentName || formData.doctorName || '').trim();
   const embassyCity = formData.embassyCity || 'Delhi';
 
-  let purposeText = `I wish to visit India for the purpose of ${purpose || '____________________________________________'}.`;
+  let purposeText = `My purpose of visit to India is ${purpose || '____________________________________________'}.`;
 
   if (purpose === 'Medical Treatment - Patient') {
-    purposeText = `I wish to visit India for the purpose of Medical Treatment as a Patient. I will be visiting a specific medical facility, namely ${hospital}, and receiving treatment there. The appointment was made at that specific hospital, where I will see the doctor ${doctor} and will not go to any other hospital.`;
+    const hasHospital = hospital.length > 0;
+    const hasDept = department.length > 0;
+    
+    if (hasHospital && hasDept) {
+      purposeText = `My purpose of visit to India is Medical Treatment as a Patient. I will be visiting a specific medical facility, namely ${hospital}, and receiving treatment there in the ${department} Department. The appointment was made at that specific hospital, and I will not go to any other hospital.`;
+    } else if (hasHospital) {
+      purposeText = `My purpose of visit to India is Medical Treatment as a Patient. I will be visiting a specific medical facility, namely ${hospital}, and receiving treatment there. The appointment was made at that specific hospital, and I will not go to any other hospital.`;
+    } else if (hasDept) {
+      purposeText = `My purpose of visit to India is Medical Treatment as a Patient. I will be receiving medical treatment in the ${department} Department. The appointment was made at that specific department, and I will not go to any other hospital.`;
+    } else {
+      purposeText = `My purpose of visit to India is Medical Treatment as a Patient.`;
+    }
   } else if (purpose === 'Medical Treatment - Attendance') {
-    purposeText = `I wish to visit India for the purpose of Medical Treatment as an Attendant. I will be visiting a specific medical facility, namely ${hospital}, and attending to a patient receiving treatment there. The appointment was made at that specific hospital, where we will see the doctor ${doctor} and will not go to any other hospital.`;
+    const hasHospital = hospital.length > 0;
+    const hasDept = department.length > 0;
+    
+    if (hasHospital && hasDept) {
+      purposeText = `My purpose of visit to India is Medical Treatment as an Attendant. I will be visiting a specific medical facility, namely ${hospital}, and attending to a patient receiving treatment there in the ${department} Department. The appointment was made at that specific hospital, and we will not go to any other hospital.`;
+    } else if (hasHospital) {
+      purposeText = `My purpose of visit to India is Medical Treatment as an Attendant. I will be visiting a specific medical facility, namely ${hospital}, and attending to a patient receiving treatment there. The appointment was made at that specific hospital, and we will not go to any other hospital.`;
+    } else if (hasDept) {
+      purposeText = `My purpose of visit to India is Medical Treatment as an Attendant. I will be attending to a patient receiving medical treatment in the ${department} Department. The appointment was made at that specific department, and we will not go to any other hospital.`;
+    } else {
+      purposeText = `My purpose of visit to India is Medical Treatment as an Attendant.`;
+    }
   } else if (purpose === 'Double Entry') {
-    purposeText = `I wish to visit India for the purpose of Double Entry. I will go to ${embassyCity} to present the embassy. After presenting the embassy, I will return to Bangladesh.`;
+    purposeText = `My purpose of visit to India is to travel to ${embassyCity} in order to present myself and submit my application at the designated Embassy/High Commission for my scheduled consular appointment. `;
   } else if (purpose === 'Business') {
-    purposeText = `I wish to visit India for the purpose of Business. I further clarify that I am going to India for business purposes, and after completing the business transactions, I will return to Bangladesh.`;
+    purposeText = `My purpose of visit to India is Business. I further clarify that my travel is solely intended for executing authorized commercial activities and business operations.`;
   }
 
-  const splitPurpose = doc.splitTextToSize(purposeText, contentWidth);
+  const splitPurpose = doc.splitTextToSize(purposeText, contentWidth - 4);
   splitPurpose.forEach((line: string) => {
     doc.text(line, leftMargin + 4, y);
     y += 5.2;
@@ -294,8 +325,15 @@ export const getUndertakingPDFDocument = (formData: UndertakingFormData): jsPDF 
   y += 6.0;
 
   doc.setFont('times', 'normal');
-  const durationText = `I intend to stay in India from ${formData.travelFrom || '______________________'} to ${formData.travelTo || '______________________'}, for a total period of ${formData.duration || '______________________'}.`;
-  const splitDuration = doc.splitTextToSize(durationText, contentWidth);
+  let durationText = '';
+  if (purpose.toLowerCase().includes('medical')) {
+    durationText = 'The exact duration and dates of my stay in India will depend entirely upon the medical treatment requirements, progress, and schedule as prescribed and advised by the consulting hospital and medical specialists.';
+  } else if (purpose === 'Double Entry') {
+    durationText = `My scheduled embassy appointment is on ${formData.embassyDate || '______________________'}. I intend to stay in India solely for the period necessary to complete my consular interview and visa formalities.`;
+  } else {
+    durationText = `I intend to stay in India from ${formData.travelFrom || '______________________'} to ${formData.travelTo || '______________________'}, for a total period of ${formData.duration || '______________________'}.`;
+  }
+  const splitDuration = doc.splitTextToSize(durationText, contentWidth - 4);
   splitDuration.forEach((line: string) => {
     doc.text(line, leftMargin + 4, y);
     y += 5.2;
@@ -309,7 +347,7 @@ export const getUndertakingPDFDocument = (formData: UndertakingFormData): jsPDF 
 
   doc.setFont('times', 'normal');
   const returnText = `I undertake to return to my home country immediately upon the completion of my visit, and I confirm that I have no intention of overstaying my visa in India. I will return to ${formData.returnCountry || '______________________'}.`;
-  const splitReturn = doc.splitTextToSize(returnText, contentWidth);
+  const splitReturn = doc.splitTextToSize(returnText, contentWidth - 4);
   splitReturn.forEach((line: string) => {
     doc.text(line, leftMargin + 4, y);
     y += 5.2;
@@ -325,12 +363,12 @@ export const getUndertakingPDFDocument = (formData: UndertakingFormData): jsPDF 
   const complianceText1 = `I hereby pledge to fully comply with the laws, regulations, and customs of India during my stay.`;
   const complianceText2 = `I acknowledge that I will not engage in any activity that is prohibited under Indian law and will respect the local customs and culture.`;
   
-  const splitComp1 = doc.splitTextToSize(complianceText1, contentWidth);
+  const splitComp1 = doc.splitTextToSize(complianceText1, contentWidth - 4);
   splitComp1.forEach((line: string) => {
     doc.text(line, leftMargin + 4, y);
     y += 5.5;
   });
-  const splitComp2 = doc.splitTextToSize(complianceText2, contentWidth);
+  const splitComp2 = doc.splitTextToSize(complianceText2, contentWidth - 4);
   splitComp2.forEach((line: string) => {
     doc.text(line, leftMargin + 4, y);
     y += 5.5;
@@ -350,7 +388,7 @@ export const getUndertakingPDFDocument = (formData: UndertakingFormData): jsPDF 
   ];
 
   declarTexts.forEach((text) => {
-    const splitText = doc.splitTextToSize(text, contentWidth);
+    const splitText = doc.splitTextToSize(text, contentWidth - 4);
     splitText.forEach((line: string) => {
       doc.text(line, leftMargin + 4, y);
       y += 5.5;

@@ -63,6 +63,9 @@ export const generateBangladeshiAddress = (
     // For Gopalganj, strictly cycle rural village address forms to respect the spec
     if (isGopalganj) {
       formatIndex = (seed % 2 === 0) ? 3 : 4;
+    } else if (districtUpper === 'DHAKA') {
+      // For Dhaka, use the urban Dhaka formats
+      formatIndex = seed % 3;
     }
 
     if (formatIndex === 0) {
@@ -98,12 +101,18 @@ export const generateBangladeshiAddress = (
       return `${pl} ${rn}, ${districtProper} Sadar, ${districtProper}-${pc}`;
       
     } else if (formatIndex === 3) {
-      // Form 4: Majhigati, Majhigati-8131, Muksudpur, Gopalganj
-      return `Majhigati, Majhigati-8131, Muksudpur, ${districtProper}`;
+      // Form 4: dynamic village based on seed
+      const villages = ["Kotalipara East", "Tungipara Ghighat", "Kashiani Modhupur", "Majhigati", "Nanikhial"];
+      const v = villages[seed % villages.length];
+      const pc = isGopalganj ? "8100" : getPostCode(districtProper);
+      return `${v}, Post-Office ${v}-${pc}, ${districtProper}`;
       
     } else {
-      // Form 5: Maligram, Bonogram-8151, Muksudpur, Gopalganj
-      return `Maligram, Bonogram-8151, Muksudpur, ${districtProper}`;
+      // Form 5: another dynamic village
+      const villages2 = ["Bonogram Village", "Gopinathpur", "Suktail Uttarpara", "Charprasannapur", "Karamdinga"];
+      const v = villages2[seed % villages2.length];
+      const pc = isGopalganj ? "8100" : getPostCode(districtProper);
+      return `${v}, Post-Office ${v}-${pc}, ${districtProper}`;
     }
   } else {
     // 5 Office/Business Address Formats
@@ -121,9 +130,8 @@ export const generateBangladeshiAddress = (
       // Form 2: Level 4, Mirpur DOHS, Mirpur, Dhaka-1216
       const lvl = levels[seed % levels.length];
       const dohs = dohsNames[(seed + 1) % dohsNames.length];
-      const a = "Mirpur";
-      const pc = getPostCode(a);
-      return `Level ${lvl}, ${dohs} DOHS, ${a}, ${districtProper}-${pc}`;
+      const pc = getPostCode(dohs);
+      return `Level ${lvl}, ${dohs} DOHS, ${dohs}, ${districtProper}-${pc}`;
       
     } else if (formatIndex === 2) {
       // Form 3: Holding 15, Ward 5, Savar Upazila, Dhaka-1340
@@ -141,11 +149,11 @@ export const generateBangladeshiAddress = (
       return `${mr}, Tongi Upazila, ${dist}-${pc}`;
       
     } else {
-      // Form 5: College Road, Sadar South Upazila, Comilla-3500
+      // Form 5: Generic Thana Sadar (Always dynamic, no Comilla reference)
       const cr = "College Road";
-      const dist = (districtProper.toUpperCase() === 'DHAKA' || districtProper.toUpperCase() === 'GOPALGANJ') ? 'Comilla' : districtProper;
-      const pc = getPostCode("comilla");
-      return `${cr}, Sadar South Upazila, ${dist}-${pc}`;
+      const thana = districtProper === 'Dhaka' ? 'Savar' : (districtProper === 'Gopalganj' ? 'Kashiani' : 'Sadar');
+      const pc = getPostCode(thana);
+      return `${cr}, ${thana} Upazila, ${districtProper}-${pc}`;
     }
   }
 };
@@ -153,38 +161,23 @@ export const generateBangladeshiAddress = (
 export const getPresentAddress = (itemData: PassportData | null): string => {
   if (!itemData) return "House 12, Road 5, Dhanmondi Post Office, Dhanmondi Thana, Dhaka";
   
-  // Check if presentAddress already matches are strict 5-part format (having 4 or more commas)
-  if (itemData.presentAddress) {
+  if (itemData.presentAddress && itemData.presentAddress !== itemData.permanentAddress) {
     const commaCount = (itemData.presentAddress.match(/,/g) || []).length;
-    if (commaCount >= 4) {
+    if (commaCount >= 2) {
       return itemData.presentAddress;
     }
-    // If it has presentAddress but not in strict format, augment/reformat it
-    const dist = getDistrictFromAddress(itemData.presentAddress, itemData) || "Dhaka";
-    return generateBangladeshiAddress(dist, itemData.passportNumber || itemData.givenName, 'present');
   }
 
-  const permLower = (itemData.permanentAddress || "").toLowerCase();
-  const emergLower = (itemData.emergencyContactAddress || "").toLowerCase();
-
-  const isDhaka = (addr: string) => 
-    addr.includes("dhaka") || 
-    addr.includes("savar") || 
-    addr.includes("keraniganj") || 
-    addr.includes("dohar") || 
-    addr.includes("nawabganj") || 
-    addr.includes("dhamrai");
-
-  let districtToUse = "Dhaka";
-  if (itemData.emergencyContactAddress && isDhaka(emergLower)) {
-    districtToUse = getDistrictFromAddress(itemData.emergencyContactAddress, itemData) || "Dhaka";
-  } else if (itemData.permanentAddress && isDhaka(permLower)) {
-    districtToUse = getDistrictFromAddress(itemData.permanentAddress, itemData) || "Dhaka";
-  } else if (itemData.permanentAddress) {
-    districtToUse = getDistrictFromAddress(itemData.permanentAddress, itemData) || "Dhaka";
+  const permanentAddr = getPermanentAddress(itemData);
+  const district = getDistrictFromAddress(permanentAddr, itemData);
+  
+  // Rule 1: If permanent address is Dhaka district, present address is same as permanent
+  if (district.toUpperCase() === 'DHAKA') {
+    return permanentAddr;
   }
 
-  return generateBangladeshiAddress(districtToUse, itemData.passportNumber || itemData.givenName, 'present');
+  // Rules 2 & 3: If permanent address is not Dhaka district, present address is random Dhaka address
+  return generateBangladeshiAddress("Dhaka", itemData.passportNumber || itemData.givenName || 'present', 'present');
 };
 
 export const getDistrictFromAddress = (address: string | undefined | null, itemData?: PassportData | null): string => {
@@ -244,7 +237,7 @@ export const generateRandomEnterpriseName = (name: string, isJob = false): strin
 
 const suffixesToGet = (name: string, isJob: boolean): string[] => {
   return isJob 
-    ? ['Enterprise', 'Traders', 'Corporation', 'Agency', 'Trading', 'Group'] 
+    ? ['Enterprise', 'Traders', 'Corporation', 'Agency', 'Trading', 'Limited'] 
     : ['Enterprise', 'Traders', 'Telecom', 'Motors', 'Fabrics', 'Electronics'];
 };
 
@@ -274,26 +267,71 @@ export const getJobRole = (itemData: PassportData | null): string => {
 
 export const getBusinessAddressDhaka = (presentAddress: string, itemData?: PassportData | null): string => {
   if (itemData && itemData.businessAddressDhaka) return itemData.businessAddressDhaka;
-  const district = getDistrictFromAddress(presentAddress, itemData) || "Dhaka";
   const seedStr = presentAddress + (itemData?.passportNumber || itemData?.givenName || 'seeder');
-  return generateBangladeshiAddress(district, seedStr, 'business');
+  return generateBangladeshiAddress("Dhaka", seedStr, 'business');
 };
 
 export const getOfficeAddressDhaka = (presentAddress: string, itemData?: PassportData | null): string => {
   if (itemData && itemData.officeAddressDhaka) return itemData.officeAddressDhaka;
-  const district = getDistrictFromAddress(presentAddress, itemData) || "Dhaka";
   const seedStr = presentAddress + (itemData?.passportNumber || itemData?.givenName || 'seeder');
-  return generateBangladeshiAddress(district, seedStr, 'office');
+  return generateBangladeshiAddress("Dhaka", seedStr, 'office');
+};
+
+export const getThanaSadarAddress = (permanentAddress: string | undefined | null, seed: number): string => {
+  if (!permanentAddress) return "College Road, Sadar Thana, Gopalganj-8100";
+  
+  const cleanAddress = permanentAddress.trim();
+  const rawParts = cleanAddress.split(',').map(s => s.trim()).filter(Boolean);
+  
+  let postcode = '';
+  const pcMatch = cleanAddress.match(/-?\s*(\d{4})/);
+  if (pcMatch) {
+    postcode = pcMatch[1];
+  }
+  
+  const parts = rawParts.map(s => s.replace(/\s*-\s*\d{4}/g, '').replace(/\d{4}/g, '').trim()).filter(Boolean);
+  
+  let thana = 'Sadar';
+  let district = 'Gopalganj';
+  
+  if (parts.length >= 2) {
+    district = parts[parts.length - 1];
+    thana = parts[parts.length - 2];
+  } else if (parts.length === 1) {
+    district = parts[0];
+  }
+  
+  const formatWord = (w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+  const thanaProper = thana.split(/\s+/).map(formatWord).join(' ');
+  const districtProper = district.split(/\s+/).map(formatWord).join(' ');
+  
+  const roads = ["College Road", "Sadar Road", "Hospital Road", "Court Road", "Station Road"];
+  const road = roads[seed % roads.length];
+  
+  const thanaSadar = thanaProper.toLowerCase().includes('sadar') ? thanaProper : `${thanaProper} Sadar`;
+  const postcodeSuffix = postcode ? `-${postcode}` : '';
+  
+  return `${road}, ${thanaSadar}, ${districtProper}${postcodeSuffix}`;
 };
 
 export const getBusinessAddressLocal = (permanentAddress: string, itemData?: PassportData | null): string => {
   if (itemData && itemData.businessAddressLocal) return itemData.businessAddressLocal;
   if (!permanentAddress) {
-    return generateBangladeshiAddress('Gopalganj', 'fallback', 'local');
+    return "College Road, Sadar Thana, Gopalganj-8100";
   }
-  const district = getDistrictFromAddress(permanentAddress, itemData) || "Gopalganj";
-  const seedStr = permanentAddress + (itemData?.passportNumber || itemData?.givenName || 'seeder_local');
-  return generateBangladeshiAddress(district, seedStr, 'local');
+  const seed = (itemData?.passportNumber || itemData?.givenName || 'seeder_local')
+    .split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return getThanaSadarAddress(permanentAddress, seed);
+};
+
+export const getOfficeAddressLocal = (permanentAddress: string, itemData?: PassportData | null): string => {
+  if (itemData && itemData.officeAddressLocal) return itemData.officeAddressLocal;
+  if (!permanentAddress) {
+    return "College Road, Sadar Thana, Gopalganj-8100";
+  }
+  const seed = (itemData?.passportNumber || itemData?.givenName || 'seeder_office_local')
+    .split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) + 17;
+  return getThanaSadarAddress(permanentAddress, seed);
 };
 
 export const generatePermanentAddressForDistrict = (district: string, seedString: string): string => {
@@ -371,8 +409,16 @@ export const getPermanentAddress = (itemData: PassportData | null): string => {
     return generatePermanentAddressForDistrict(dist, itemData.passportNumber || itemData.givenName || 'seeder_perm');
   }
 
-  const dist = getDistrictFromAddress(itemData.presentAddress, itemData) || itemData.birthPlaceDistrict || itemData.birthPlace || "Munshiganj";
+  const dist = itemData.birthPlaceDistrict || itemData.birthPlace || "Munshiganj";
   return generatePermanentAddressForDistrict(dist, itemData.passportNumber || itemData.givenName || 'seeder_perm');
+};
+
+export const normalizeGender = (gender: string | undefined): string => {
+  if (!gender) return '';
+  const lower = gender.toLowerCase().trim();
+  if (lower === 'm' || lower === 'male') return 'MALE';
+  if (lower === 'f' || lower === 'female') return 'FEMALE';
+  return gender.toUpperCase();
 };
 
 export const generateDataText = (itemData: PassportData | null): string => {
@@ -383,6 +429,7 @@ export const generateDataText = (itemData: PassportData | null): string => {
   const dhakaBizAddr = getBusinessAddressDhaka(presentAddr, itemData);
   const officeAddr = getOfficeAddressDhaka(presentAddr, itemData);
   const localBizAddr = getBusinessAddressLocal(permanentAddr, itemData);
+  const normalizedGender = normalizeGender(itemData.gender);
 
   return `=== PASSPORT DATA ===
 EMAIL: ${getGeneratedEmail(itemData)}
@@ -391,7 +438,7 @@ Surname: ${itemData.surname}
 Given Name: ${itemData.givenName}
 Town/City of birth/BIRTH PLACE: ${itemData.birthPlace}
 National Id No/BIRTH CERTIFICATE NO: ${itemData.nidOrBirthCertNumber}
-Gender: ${itemData.gender}
+Gender: ${normalizedGender}
 Blood Group: Unknown
 Date of Issue: ${itemData.issueDate}
 Date of Expiry: ${itemData.expiryDate}

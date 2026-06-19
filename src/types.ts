@@ -23,6 +23,7 @@ export interface PassportData {
   jobCompanyName?: string;
   jobRole?: string;
   officeAddressDhaka?: string;
+  officeAddressLocal?: string;
   placeOfIssue?: string;
   birthPlaceDistrict?: string;
 }
@@ -47,7 +48,10 @@ export interface UndertakingFormData {
   date: string;
   hospitalName?: string;
   doctorName?: string;
+  departmentName?: string;
   embassyCity?: string;
+  gender?: string;
+  embassyDate?: string;
 }
 
 export interface QueueItem {
