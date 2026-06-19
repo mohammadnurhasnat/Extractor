@@ -207,14 +207,17 @@ export const generateBangladeshiAddress = (
   
   const thanaObj = matchedDistrict.thanas[seed % matchedDistrict.thanas.length];
   const houseNum = ((seed % 95) + 1).toString();
+  const plotNum = ((seed % 140) + 12).toString();
   const roadName = thanaObj.roads[(seed + 1) % thanaObj.roads.length];
+  
   // Convert "Dhanmondi R/A" or other variables to simplified readable names
   let areaName = thanaObj.areas[(seed + 2) % thanaObj.areas.length];
   if (areaName === "Dhanmondi R/A") areaName = "Dhanmondi";
   const villageName = thanaObj.villages[(seed + 3) % thanaObj.villages.length];
   
+  const isUrban = matchedDistrict.name === 'Dhaka' || matchedDistrict.name === 'Gazipur';
+  
   if (type === 'present' || type === 'local') {
-    const isUrban = matchedDistrict.name === 'Dhaka';
     if (isUrban) {
       if (seed % 2 === 0) {
         return `House ${houseNum}, ${roadName}, ${areaName}, ${matchedDistrict.name}-${thanaObj.postcode}`;
@@ -224,16 +227,20 @@ export const generateBangladeshiAddress = (
         return `House-${houseNum}, ${subArea}${areaName}, ${matchedDistrict.name}-${thanaObj.postcode}`;
       }
     } else {
-      return `${villageName}, ${thanaObj.name}, ${matchedDistrict.name}-${thanaObj.postcode}`;
+      // Must have Holding in non-Dhaka districts
+      return `Holding-${houseNum}, ${villageName}, ${thanaObj.name}, ${matchedDistrict.name}-${thanaObj.postcode}`;
     }
   } else {
     // Office/Business
     const level = ((seed % 8) + 1).toString();
-    const isUrban = matchedDistrict.name === 'Dhaka' || matchedDistrict.name === 'Gazipur';
     if (isUrban) {
-      return `Level ${level}, ${roadName}, ${areaName}, ${matchedDistrict.name}-${thanaObj.postcode}`;
+      if (seed % 2 === 0) {
+        return `Level ${level}, Plot ${plotNum}, ${roadName}, ${areaName}, ${matchedDistrict.name}-${thanaObj.postcode}`;
+      } else {
+        return `Level ${level}, House ${houseNum}, ${roadName}, ${areaName}, ${matchedDistrict.name}-${thanaObj.postcode}`;
+      }
     } else {
-      return `${roadName}, ${thanaObj.name}, ${matchedDistrict.name}-${thanaObj.postcode}`;
+      return `Level ${level}, Holding-${houseNum}, ${roadName}, ${thanaObj.name}, ${matchedDistrict.name}-${thanaObj.postcode}`;
     }
   }
 };
@@ -363,21 +370,25 @@ const thanaSadarFormat = (name: string): string => {
 };
 
 export const getThanaSadarAddress = (permanentAddress: string | undefined | null, seed: number): string => {
-  if (!permanentAddress) return "College Road, Gopalganj Sadar, Gopalganj-8100";
-  
-  const dist = getDistrictFromAddress(permanentAddress);
+  const dist = permanentAddress ? getDistrictFromAddress(permanentAddress) : 'Gopalganj';
   const matchedDistrict = getMatchedDistrict(dist);
   
   const thanaObj = matchedDistrict.thanas[seed % matchedDistrict.thanas.length];
   const road = thanaObj.roads[(seed + 1) % thanaObj.roads.length];
+  const houseNum = ((seed % 95) + 1).toString();
   
-  return `${road}, ${thanaSadarFormat(thanaObj.name)}, ${matchedDistrict.name}-${thanaObj.postcode}`;
+  const isUrban = matchedDistrict.name === 'Dhaka' || matchedDistrict.name === 'Gazipur';
+  if (isUrban) {
+    return `House ${houseNum}, ${road}, ${thanaSadarFormat(thanaObj.name)}, ${matchedDistrict.name}-${thanaObj.postcode}`;
+  } else {
+    return `Holding-${houseNum}, ${road}, ${thanaSadarFormat(thanaObj.name)}, ${matchedDistrict.name}-${thanaObj.postcode}`;
+  }
 };
 
 export const getBusinessAddressLocal = (permanentAddress: string, itemData?: PassportData | null): string => {
   if (itemData && itemData.businessAddressLocal) return itemData.businessAddressLocal;
   if (!permanentAddress) {
-    return "College Road, Sadar Thana, Gopalganj-8100";
+    return "Holding-12, College Road, Gopalganj Sadar, Gopalganj-8100";
   }
   const seed = (itemData?.passportNumber || itemData?.givenName || 'seeder_local')
     .split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
@@ -387,7 +398,7 @@ export const getBusinessAddressLocal = (permanentAddress: string, itemData?: Pas
 export const getOfficeAddressLocal = (permanentAddress: string, itemData?: PassportData | null): string => {
   if (itemData && itemData.officeAddressLocal) return itemData.officeAddressLocal;
   if (!permanentAddress) {
-    return "College Road, Sadar Thana, Gopalganj-8100";
+    return "Holding-24, College Road, Gopalganj Sadar, Gopalganj-8100";
   }
   const seed = (itemData?.passportNumber || itemData?.givenName || 'seeder_office_local')
     .split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) + 17;
@@ -400,12 +411,19 @@ export const generatePermanentAddressForDistrict = (district: string, seedString
   
   const thanaObj = matchedDistrict.thanas[seed % matchedDistrict.thanas.length];
   const villageName = thanaObj.villages[(seed + 3) % thanaObj.villages.length];
+  const houseNum = ((seed % 95) + 1).toString();
   
-  return `${villageName}, ${thanaObj.name}, ${thanaObj.name} - ${thanaObj.postcode}, ${matchedDistrict.name.toUpperCase()}`;
+  const isUrban = matchedDistrict.name === 'Dhaka' || matchedDistrict.name === 'Gazipur';
+  if (isUrban) {
+    const road = thanaObj.roads[(seed + 1) % thanaObj.roads.length];
+    return `House-${houseNum}, ${road}, ${thanaObj.name} - ${thanaObj.postcode}, ${matchedDistrict.name.toUpperCase()}`;
+  } else {
+    return `Holding-${houseNum}, ${villageName}, ${thanaObj.name} - ${thanaObj.postcode}, ${matchedDistrict.name.toUpperCase()}`;
+  }
 };
 
 export const getPermanentAddress = (itemData: PassportData | null): string => {
-  if (!itemData) return "HARPARA, SREENAGAR, SREENAGAR - 1550, MUNSHIGANJ";
+  if (!itemData) return "Holding-12, HARPARA, SREENAGAR, SREENAGAR - 1550, MUNSHIGANJ";
   
   if (itemData.permanentAddress) {
     const commaCount = (itemData.permanentAddress.match(/,/g) || []).length;
