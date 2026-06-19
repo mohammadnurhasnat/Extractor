@@ -84,10 +84,6 @@ export function ApiSettingsModal({
                     </button>
                   </div>
                 </div>
-
-                <div className="p-3 bg-blue-50/50 dark:bg-blue-950/10 rounded-xl border border-blue-100/30 dark:border-blue-900/20 text-[11px] text-blue-600 dark:text-blue-400 leading-relaxed font-semibold">
-                  🔑 <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" className="underline hover:text-blue-700 dark:hover:text-blue-300">Google AI Studio (aistudio.google.com)</a> থেকে একদম ফ্রিতে আপনার ব্যক্তিগত Gemini API Key তৈরি করে আনতে পারেন।
-                </div>
               </div>
             </div>
             
