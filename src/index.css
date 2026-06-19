@@ -53,6 +53,31 @@
       transform: translateX(-50%) translateY(-10%);
     }
   }
+
+  --animate-glow-white: glowWhite 3s infinite ease-in-out;
+  --animate-glow-black: glowBlack 3s infinite ease-in-out;
+
+  @keyframes glowWhite {
+    0%, 100% {
+      box-shadow: 0 0 5px rgba(255, 255, 255, 0.2), inset 0 0 5px rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    50% {
+      box-shadow: 0 0 25px rgba(255, 255, 255, 0.85), inset 0 0 15px rgba(255, 255, 255, 0.4);
+      border-color: rgba(255, 255, 255, 0.85);
+    }
+  }
+
+  @keyframes glowBlack {
+    0%, 100% {
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.1), inset 0 0 5px rgba(0, 0, 0, 0.05);
+      border-color: rgba(0, 0, 0, 0.15);
+    }
+    50% {
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.65), inset 0 0 10px rgba(0, 0, 0, 0.3);
+      border-color: rgba(0, 0, 0, 0.65);
+    }
+  }
 }
 
 @media print {

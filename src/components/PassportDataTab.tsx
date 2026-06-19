@@ -1,19 +1,12 @@
 import React from 'react';
-import { CheckCircle2, Check, Copy, Download, FileText, Printer } from 'lucide-react';
+import { CheckCircle2, Check, Copy, Download, FileText, Printer, Sparkles } from 'lucide-react';
 import { PassportData } from '../types';
 import { DataField } from './DataField';
 import {
-  getPresentAddress,
-  getPermanentAddress,
-  getDistrictFromAddress,
   getGeneratedEmail,
   getProprietorBusinessName,
   getJobCompanyName,
-  getJobRole,
-  getBusinessAddressDhaka,
-  getOfficeAddressDhaka,
-  getBusinessAddressLocal,
-  getOfficeAddressLocal
+  getJobRole
 } from '../utils/addressUtils';
 
 interface PassportDataTabProps {
@@ -23,6 +16,8 @@ interface PassportDataTabProps {
   handleDownloadText: () => void;
   handleDownloadPDF: () => void;
   isCopied: boolean;
+  isGeneratingAddresses?: boolean;
+  onGenerateAddresses?: () => void;
 }
 
 export function PassportDataTab({
@@ -31,11 +26,10 @@ export function PassportDataTab({
   handleCopyAll,
   handleDownloadText,
   handleDownloadPDF,
-  isCopied
+  isCopied,
+  isGeneratingAddresses = false,
+  onGenerateAddresses
 }: PassportDataTabProps) {
-  const presentAddr = getPresentAddress(data);
-  const permanentAddr = getPermanentAddress(data);
-
   return (
     <>
       <div className="flex flex-col xl:flex-row xl:items-center justify-between mb-5 pb-4 border-b border-slate-100 dark:border-zinc-800/50 gap-4 print:hidden">
@@ -44,6 +38,7 @@ export function PassportDataTab({
             <CheckCircle2 className="w-6 h-6 text-emerald-500" />
             Passport Data
           </h2>
+          <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1">Verified extracted elements from passport page scan.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto xl:justify-end">
           <button 
@@ -93,14 +88,49 @@ export function PassportDataTab({
         
         <div className="col-span-1 sm:col-span-2 pt-2 border-t border-slate-100 dark:border-zinc-800/50"></div>
         
-        <div className="col-span-1 sm:col-span-2">
-           <DataField label="PRESENT ADDRESS" value={presentAddr} onValueChange={(val) => updateDataField('presentAddress', val)} />
-        </div>
-        <div className="col-span-1 sm:col-span-2">
-           <DataField label="PERMANENT ADDRESS" value={permanentAddr} onValueChange={(val) => updateDataField('permanentAddress', val)} />
+        <div className="col-span-1 sm:col-span-2 flex justify-between items-center pb-1">
+          <h4 className="text-xs font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">Address Profile</h4>
+          {onGenerateAddresses && (
+            <button 
+              onClick={onGenerateAddresses}
+              disabled={isGeneratingAddresses || !data.permanentAddress}
+              className="text-xs font-semibold px-2.5 py-1 rounded bg-teal-50 text-teal-600 hover:bg-teal-100 dark:bg-teal-950/40 dark:text-teal-400 border border-teal-200/50 hover:border-teal-300 transition duration-150 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed print:hidden cursor-pointer"
+              title="Auto-generates Present, Business, and Office addresses using Gemini AI based on permanent address categorization."
+            >
+              {isGeneratingAddresses ? (
+                <>
+                  <svg className="animate-spin h-3.5 w-3.5 text-current animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Regenerating...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400 animate-pulse" />
+                  Auto-Gen from Permanent Address
+                </>
+              )}
+            </button>
+          )}
         </div>
 
-        <div className="col-span-1 sm:col-span-2 pt-3 border-t border-slate-100 dark:border-zinc-800/50 mt-2">
+        <div className="col-span-1 sm:col-span-2 space-y-3">
+          <DataField 
+            label="Permanent Address (Extracted from Passport)" 
+            value={data.permanentAddress || ''} 
+            onValueChange={(val) => updateDataField('permanentAddress', val)} 
+          />
+          <DataField 
+            label="Present Address" 
+            value={data.presentAddress || ''} 
+            onValueChange={(val) => updateDataField('presentAddress', val)} 
+          />
+        </div>
+        
+        <div className="col-span-1 sm:col-span-2 pt-2 border-t border-slate-100 dark:border-zinc-800/50"></div>
+        
+        <div className="col-span-1 sm:col-span-2">
           <h4 className="text-xs font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider mb-2.5">Additional Information</h4>
         </div>
         
@@ -108,7 +138,7 @@ export function PassportDataTab({
         <DataField label="Mother's Name" value={data.motherName} onValueChange={(val) => updateDataField('motherName', val)} />
         <DataField label="Spouse's Name" value={data.spouseName || "N/A"} onValueChange={(val) => updateDataField('spouseName', val)} />
         <DataField label="Mobile Number" value={data.mobileNumber ? data.mobileNumber.replace(/^\+88\s*/, '') : ''} onValueChange={(val) => updateDataField('mobileNumber', val)} />
-        <DataField label="Town/City of birth/BIRTH PLACE" value={getDistrictFromAddress(permanentAddr, data)} onValueChange={(val) => updateDataField('birthPlaceDistrict', val)} />
+        <DataField label="District of Birth" value={data.birthPlaceDistrict || data.birthPlace || ''} onValueChange={(val) => updateDataField('birthPlaceDistrict', val)} />
 
         <div className="col-span-1 sm:col-span-2 pt-3 border-t border-slate-100 dark:border-zinc-800/50 mt-2">
           <h4 className="text-xs font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider mb-2.5">Business & Profession Details</h4>
@@ -120,12 +150,8 @@ export function PassportDataTab({
             <h5 className="text-sm font-semibold text-slate-700 dark:text-zinc-300 border-b border-slate-200 dark:border-zinc-800/50 pb-2 mb-1">Business (Proprietorship)</h5>
             <DataField label="Business Name" value={getProprietorBusinessName(data)} onValueChange={(val) => updateDataField('proprietorBusinessName', val)} />
             <DataField label="Designation" value="Proprietor" />
-            <div className="pt-2">
-              <DataField label="Business Address (Present)" value={getBusinessAddressDhaka(presentAddr, data)} onValueChange={(val) => updateDataField('businessAddressDhaka', val)} />
-            </div>
-            <div className="pt-2">
-              <DataField label="Business Address (Permanent)" value={getBusinessAddressLocal(permanentAddr, data)} onValueChange={(val) => updateDataField('businessAddressLocal', val)} />
-            </div>
+            <DataField label="Business Address (Present / Dhaka)" value={data.businessAddressDhaka || ''} onValueChange={(val) => updateDataField('businessAddressDhaka', val)} />
+            <DataField label="Business Address (Permanent / Local)" value={data.businessAddressLocal || ''} onValueChange={(val) => updateDataField('businessAddressLocal', val)} />
           </div>
 
           {/* Private Service / Job */}
@@ -133,12 +159,8 @@ export function PassportDataTab({
             <h5 className="text-sm font-semibold text-slate-700 dark:text-zinc-300 border-b border-slate-200 dark:border-zinc-800/50 pb-2 mb-1">Private Service / Job</h5>
             <DataField label="Company Name" value={getJobCompanyName(data)} onValueChange={(val) => updateDataField('jobCompanyName', val)} />
             <DataField label="Designation" value={getJobRole(data)} onValueChange={(val) => updateDataField('jobRole', val)} />
-            <div className="pt-2">
-              <DataField label="Office Address (Present)" value={getOfficeAddressDhaka(presentAddr, data)} onValueChange={(val) => updateDataField('officeAddressDhaka', val)} />
-            </div>
-            <div className="pt-2">
-              <DataField label="Office Address (Permanent)" value={getOfficeAddressLocal(permanentAddr, data)} onValueChange={(val) => updateDataField('officeAddressLocal', val)} />
-            </div>
+            <DataField label="Office Address (Present / Dhaka)" value={data.officeAddressDhaka || ''} onValueChange={(val) => updateDataField('officeAddressDhaka', val)} />
+            <DataField label="Office Address (Permanent / Local)" value={data.officeAddressLocal || ''} onValueChange={(val) => updateDataField('officeAddressLocal', val)} />
           </div>
         </div>
       </div>

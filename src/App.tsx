@@ -26,20 +26,7 @@ import { UploadSection } from './components/UploadSection';
 import { ResultsSection } from './components/ResultsSection';
 
 // Utilities
-import {
-  getPresentAddress,
-  getPermanentAddress,
-  getDistrictFromAddress,
-  getGeneratedEmail,
-  getProprietorBusinessName,
-  getJobCompanyName,
-  getJobRole,
-  getBusinessAddressDhaka,
-  getOfficeAddressDhaka,
-  getBusinessAddressLocal,
-  generateDataText,
-  normalizeGender
-} from './utils/addressUtils';
+import { generateDataText } from './utils/addressUtils';
 import { generatePDF, getPDFDocument, generateUndertakingPDF } from './utils/pdfGenerator';
 
 import { useUndertakingState } from './hooks/useUndertakingState';
@@ -193,6 +180,51 @@ export default function App() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isCopied, setIsCopied] = useState(false);
+  const [isGeneratingAddresses, setIsGeneratingAddresses] = useState(false);
+
+  const handleGenerateAddresses = async () => {
+    if (!data || !data.permanentAddress) return;
+    setIsGeneratingAddresses(true);
+    setToast({ message: "Generating realistic addresses with Gemini...", type: "info" });
+    try {
+      const response = await fetch('/api/generate-addresses', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-gemini-key': userApiKey || '',
+        },
+        body: JSON.stringify({ permanentAddress: data.permanentAddress }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to generate addresses');
+      }
+      const addresses = await response.json();
+      
+      const updated = {
+        ...data,
+        presentAddress: addresses.presentAddress || '',
+        businessAddressDhaka: addresses.businessAddressDhaka || '',
+        businessAddressLocal: addresses.businessAddressLocal || '',
+        officeAddressDhaka: addresses.officeAddressDhaka || '',
+        officeAddressLocal: addresses.officeAddressLocal || '',
+      };
+      
+      setData(updated);
+      if (activeQueueId) {
+        setQueue(prev => prev.map(q => q.id === activeQueueId ? { ...q, data: updated } : q));
+      }
+      setHistory(prev => prev.map(item => {
+        if (item.data.passportNumber === data.passportNumber) return { ...item, data: updated };
+        return item;
+      }));
+      setToast({ message: "Addresses generated successfully with Gemini!", type: "success" });
+    } catch (e) {
+      console.error(e);
+      setToast({ message: "Error auto-generating addresses.", type: "error" });
+    } finally {
+      setIsGeneratingAddresses(false);
+    }
+  };
 
   const {
     queue, setQueue,
@@ -389,9 +421,6 @@ export default function App() {
     generatePDF(data);
   };
 
-  const presentAddr = getPresentAddress(data);
-  const permanentAddr = getPermanentAddress(data);
-
   if (authLoading) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 flex items-center justify-center">
@@ -508,6 +537,8 @@ export default function App() {
               setIsUndertakingEditable={setIsUndertakingEditable}
               handleUpdateUndertakingField={handleUpdateUndertakingField}
               handleDownloadUndertaking={handleDownloadUndertaking}
+              isGeneratingAddresses={isGeneratingAddresses}
+              onGenerateAddresses={handleGenerateAddresses}
             />
           </div>
         </main>
@@ -551,7 +582,7 @@ export default function App() {
 
       {/* Footer */}
       <div className="fixed bottom-2 right-2 z-40">
-        <div className="bg-white/80 dark:bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-200/50 dark:border-zinc-800/50 shadow-sm flex items-center gap-1.5 text-[11px] font-medium text-slate-500 dark:text-zinc-400 transition-colors">
+        <div className="bg-white/80 dark:bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-200/50 dark:border-zinc-800/50 shadow-sm flex items-center gap-1.5 text-[11px] font-medium text-slate-500 dark:text-zinc-400 transition-all duration-300 animate-glow-black dark:animate-glow-white">
           Built with <Heart className="w-3.5 h-3.5 text-red-500 fill-current" /> by <span className="text-slate-700 dark:text-zinc-200 font-semibold tracking-wide ml-0.5">MOHAMMAD NUR HASNAT</span>
         </div>
       </div>

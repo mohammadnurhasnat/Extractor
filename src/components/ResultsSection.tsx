@@ -20,6 +20,8 @@ interface ResultsSectionProps {
   setIsUndertakingEditable: (editable: boolean) => void;
   handleUpdateUndertakingField: (field: keyof UndertakingFormData, value: string) => void;
   handleDownloadUndertaking: () => void;
+  isGeneratingAddresses?: boolean;
+  onGenerateAddresses?: () => void;
 }
 
 export function ResultsSection({
@@ -36,7 +38,9 @@ export function ResultsSection({
   isUndertakingEditable,
   setIsUndertakingEditable,
   handleUpdateUndertakingField,
-  handleDownloadUndertaking
+  handleDownloadUndertaking,
+  isGeneratingAddresses,
+  onGenerateAddresses
 }: ResultsSectionProps) {
   return (
     <div className="lg:col-span-7 print:w-full print:col-span-12">
@@ -96,6 +100,8 @@ export function ResultsSection({
                 handleDownloadText={handleDownloadText}
                 handleDownloadPDF={handleDownloadPDF}
                 isCopied={isCopied}
+                isGeneratingAddresses={isGeneratingAddresses}
+                onGenerateAddresses={onGenerateAddresses}
               />
             ) : (
               <UndertakingFormTab

@@ -65,9 +65,6 @@ async function startServer() {
               surname: { type: Type.STRING, description: "Last name" },
               dob: { type: Type.STRING, description: "Date of Birth (must be formatted as dd/mm/yyyy)" },
               birthPlace: { type: Type.STRING, description: "Place of birth (e.g., DHAKA)" },
-              permanentAddress: { type: Type.STRING, description: "Full permanent address" },
-              presentAddress: { type: Type.STRING, description: "Full present address (if available on the document)" },
-              emergencyContactAddress: { type: Type.STRING, description: "Full emergency contact address or details (if available on the document)" },
               fatherName: { type: Type.STRING, description: "Father's name" },
               motherName: { type: Type.STRING, description: "Mother's name" },
               spouseName: { type: Type.STRING, description: "Spouse's name (if any, otherwise empty)" },
@@ -76,13 +73,14 @@ async function startServer() {
               issueDate: { type: Type.STRING, description: "Date of issue (must be formatted as dd/mm/yyyy)" },
               expiryDate: { type: Type.STRING, description: "Date of expiry (must be formatted as dd/mm/yyyy)" },
               gender: { type: Type.STRING, description: "Gender or Sex (Extract M or F from the image, Male is M, Female is F, then convert to 'Male' or 'Female')" },
-              mobileNumber: { type: Type.STRING, description: "Mobile number if visible anywhere, otherwise empty" }
+              mobileNumber: { type: Type.STRING, description: "Mobile number if visible anywhere, otherwise empty" },
+              permanentAddress: { type: Type.STRING, description: "Full permanent address of the passport bearer" }
             },
             required: [
               "givenName", "surname", "dob", "birthPlace", 
-              "permanentAddress", "fatherName", "motherName", 
+              "fatherName", "motherName", 
               "spouseName", "passportNumber", "nidOrBirthCertNumber", 
-              "issueDate", "expiryDate", "mobileNumber", "gender"
+              "issueDate", "expiryDate", "mobileNumber", "gender", "permanentAddress"
             ]
           }
         }
@@ -90,6 +88,31 @@ async function startServer() {
 
       if (response.text) {
         const result = JSON.parse(response.text);
+        
+        if (result.permanentAddress) {
+          try {
+            const enriched = await generateAddressesUsingGemini(ai, result.permanentAddress);
+            result.presentAddress = enriched.presentAddress;
+            result.businessAddressDhaka = enriched.businessAddressDhaka;
+            result.businessAddressLocal = enriched.businessAddressLocal;
+            result.officeAddressDhaka = enriched.officeAddressDhaka;
+            result.officeAddressLocal = enriched.officeAddressLocal;
+          } catch (addrErr) {
+            console.error('Failed to pre-enrich addresses:', addrErr);
+            result.presentAddress = '';
+            result.businessAddressDhaka = '';
+            result.businessAddressLocal = '';
+            result.officeAddressDhaka = '';
+            result.officeAddressLocal = '';
+          }
+        } else {
+          result.presentAddress = '';
+          result.businessAddressDhaka = '';
+          result.businessAddressLocal = '';
+          result.officeAddressDhaka = '';
+          result.officeAddressLocal = '';
+        }
+
         res.json({ success: true, data: result });
       } else {
         res.status(500).json({ error: 'Failed to extract data from image' });
@@ -100,14 +123,11 @@ async function startServer() {
       
       let errorMessage = 'Server error during extraction';
       
-      // Try to parse clean error message from Gemini API response
       if (error && error.message) {
         if (error.message.includes('503') || error.message.includes('high demand') || error.message.includes('UNAVAILABLE')) {
           errorMessage = 'The AI system is currently experiencing high demand. Please try again in a few moments.';
         } else {
-          // If the error message is a JSON string, try to parse it
           try {
-            // Find JSON-like structure in the error message string
             const jsonMatch = error.message.match(/\{.*\}/);
             if (jsonMatch) {
               const parsed = JSON.parse(jsonMatch[0]);
@@ -126,6 +146,110 @@ async function startServer() {
       }
 
       res.status(500).json({ error: errorMessage });
+    }
+  });
+
+  // Helper function to generate addresses based on permanentAddress using Gemini
+  async function generateAddressesUsingGemini(ai: GoogleGenAI, permanentAddress: string) {
+    if (!permanentAddress || permanentAddress.trim() === '') {
+      return {
+        permanentAddress: '',
+        presentAddress: '',
+        businessAddressDhaka: '',
+        businessAddressLocal: '',
+        officeAddressDhaka: '',
+        officeAddressLocal: ''
+      };
+    }
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3.5-flash',
+      contents: [
+        {
+          text: `You are an expert Bangladeshi address generator.
+Given the Bangladeshi permanent address below, classify it and generate other complete addresses strictly following these 3 rules:
+
+Permanent Address to analyze: "${permanentAddress}"
+
+Classify or decide based on these 3 categories:
+Category 1: If the permanent address is inside DHAKA DISTRICT (e.g. Dhaka city areas, Uttara, Banani, Gulshan, Dhanmondi, Savar, Keraniganj, Dhamrai, Nawabganj, Dohar etc.):
+   - permanentAddress: Keep it exactly as "${permanentAddress}".
+   - presentAddress: MUST be exactly equal to the permanentAddress.
+   - businessAddressDhaka & officeAddressDhaka: These 2 addresses MUST be realistic, proper, and complete random addresses inside DHAKA CITY (e.g., Banani, Gulshan, Dhanmondi, Uttara, Motijheel, Mirpur, etc.) featuring proper House, Road, Area, and Zip Code. They must be distinct from each other.
+   - businessAddressLocal & officeAddressLocal: These 2 addresses MUST be realistic, proper, and complete random addresses near the permanent address (within the same area or district, but with different building/road/holding numbers). They must be distinct from each other.
+
+Category 2: If the permanent address is inside DHAKA DIVISION but NOT Dhaka District (e.g., Gazipur, Narayanganj, Tangail, Faridpur, Manikganj, Munshiganj, Narsingdi, Madaripur, Gopalganj, Rajbari, Shariatpur, Kishoreganj):
+   - permanentAddress: Keep it exactly as "${permanentAddress}".
+   - presentAddress: MUST be a realistic, proper, and complete random address inside DHAKA CITY (distinct from permanentAddress).
+   - businessAddressDhaka & officeAddressDhaka: These 2 addresses MUST be realistic, proper, and complete random addresses inside DHAKA CITY.
+   - businessAddressLocal & officeAddressLocal: These 2 addresses MUST be realistic, proper, and complete random addresses near the permanent address (within the same district / local area, but different building/road/holding numbers). They must be distinct from each other.
+
+Category 3: If the permanent address is OUTSIDE DHAKA DIVISION (e.g., Sylhet, Chittagong, Rajshahi, Khulna, Barisal, Rangpur, Mymensingh, or any district outside Dhaka division):
+   - permanentAddress: Keep it exactly as "${permanentAddress}".
+   - presentAddress: MUST be a realistic, proper, and complete random address inside DHAKA CITY.
+   - businessAddressDhaka & officeAddressDhaka: These 2 addresses MUST be realistic, proper, and complete random addresses inside DHAKA CITY.
+   - businessAddressLocal & officeAddressLocal: These 2 addresses MUST be realistic, proper, and complete random addresses near the permanent address (within the same local district, but different building/road/holding numbers). They must be distinct from each other.
+
+CRITICAL INSTRUCTIONS FOR ALL GENERATED ADDRESSES:
+- Each generated address MUST be a complete, realistic, and fully formatted Bangladeshi address including House/Holding number, Road, Area/Sector, Block (if applicable), Thana/Police Station, District, and Zip/Post Code of that specific area.
+- Do not return placeholders like "[Insert Road]". Use actual real-sounding numbers and details.
+- Avoid using exact same text/templates. All five addresses must be fully cohesive and professional.
+- Return the output strictly in the requested JSON structure.`
+        }
+      ],
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            permanentAddress: { type: Type.STRING },
+            presentAddress: { type: Type.STRING },
+            businessAddressDhaka: { type: Type.STRING },
+            businessAddressLocal: { type: Type.STRING },
+            officeAddressDhaka: { type: Type.STRING },
+            officeAddressLocal: { type: Type.STRING }
+          },
+          required: [
+            "permanentAddress", "presentAddress", "businessAddressDhaka",
+            "businessAddressLocal", "officeAddressDhaka", "officeAddressLocal"
+          ]
+        }
+      }
+    });
+
+    if (response.text) {
+      return JSON.parse(response.text);
+    }
+    throw new Error('Failed to generate addresses using Gemini');
+  }
+
+  // API Route for address generation based on permanent address
+  app.post('/api/generate-addresses', async (req, res) => {
+    try {
+      const { permanentAddress } = req.body;
+      const clientApiKey = req.headers['x-api-key']?.toString() || process.env.GEMINI_API_KEY;
+
+      if (!clientApiKey) {
+        return res.status(400).json({ 
+          success: false,
+          error: 'GEMINI_API_KEY is missing. Please configure it in your Settings.' 
+        });
+      }
+
+      const ai = new GoogleGenAI({
+        apiKey: clientApiKey,
+        httpOptions: {
+          headers: {
+            'User-Agent': 'aistudio-build',
+          }
+        }
+      });
+
+      const addresses = await generateAddressesUsingGemini(ai, permanentAddress);
+      res.json({ success: true, data: addresses });
+    } catch (error: any) {
+      console.error('Address Generation Error:', error);
+      res.status(500).json({ success: false, error: error.message || 'Failed to generate addresses' });
     }
   });
 

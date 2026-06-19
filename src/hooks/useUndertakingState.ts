@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { PassportData, UndertakingFormData } from '../types';
-import { getPresentAddress } from '../utils/addressUtils';
 
 export function useUndertakingState(data: PassportData | null) {
   const [utPurpose, setUtPurpose] = useState(() => localStorage.getItem('ut_purpose') || '');
@@ -141,7 +140,7 @@ export function useUndertakingState(data: PassportData | null) {
           nationality: 'Bangladeshi',
           dob: data.dob || '',
           gender: data.gender || '',
-          address: getPresentAddress(data) || '',
+          address: data.presentAddress || '',
           purpose: utPurpose || '',
           travelFrom: utFromDate ? new Date(utFromDate).toLocaleDateString('en-GB') : '',
           travelTo: utToDate ? new Date(utToDate).toLocaleDateString('en-GB') : '',

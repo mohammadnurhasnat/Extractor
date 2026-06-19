@@ -4,9 +4,6 @@ export interface PassportData {
   gender: string;
   dob: string;
   birthPlace: string;
-  permanentAddress: string;
-  presentAddress?: string;
-  emergencyContactAddress?: string;
   fatherName: string;
   motherName: string;
   spouseName: string;
@@ -15,15 +12,17 @@ export interface PassportData {
   issueDate: string;
   expiryDate: string;
   mobileNumber: string;
+  permanentAddress?: string;
+  presentAddress?: string;
+  businessAddressDhaka?: string;
+  businessAddressLocal?: string;
+  officeAddressDhaka?: string;
+  officeAddressLocal?: string;
   // Editable manual overrides
   email?: string;
   proprietorBusinessName?: string;
-  businessAddressDhaka?: string;
-  businessAddressLocal?: string;
   jobCompanyName?: string;
   jobRole?: string;
-  officeAddressDhaka?: string;
-  officeAddressLocal?: string;
   placeOfIssue?: string;
   birthPlaceDistrict?: string;
 }

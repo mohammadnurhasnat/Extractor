@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Copy, Check, Pencil, X } from 'lucide-react';
-import { checkAddressValidity } from '../utils/addressUtils';
 
 interface DataFieldProps {
   label: string;
@@ -77,10 +76,8 @@ export function DataField({ label, value, highlight = false, onValueChange }: Da
   };
 
   const isTextArea = label.toUpperCase().includes('ADDRESS') || (value && value.length > 40);
-  const isAddressField = label.toUpperCase().includes('ADDRESS');
-  const validation = isAddressField ? checkAddressValidity(value) : { hasError: false, message: '' };
-  const hasValidationError = validation.hasError || (value && value.includes("Verification Required"));
-  const errorMessage = validation.message || "Verification Required: Address details are unverified.";
+  const hasValidationError = (value && value.includes("Verification Required"));
+  const errorMessage = "Verification Required: Details are unverified.";
 
   return (
     <div className="flex flex-col group/field">

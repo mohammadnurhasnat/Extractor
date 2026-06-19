@@ -1,15 +1,9 @@
 import { jsPDF } from 'jspdf';
 import { PassportData, UndertakingFormData } from '../types';
 import {
-  getPresentAddress,
-  getPermanentAddress,
   getGeneratedEmail,
   getProprietorBusinessName,
-  getBusinessAddressDhaka,
-  getBusinessAddressLocal,
-  getOfficeAddressLocal,
   getJobCompanyName,
-  getOfficeAddressDhaka,
   getJobRole
 } from './addressUtils';
 
@@ -138,18 +132,13 @@ export const getPDFDocument = (data: PassportData): jsPDF => {
   drawRow('FATHER\'S NAME', data.fatherName || 'N/A', 'MOTHER\'S NAME', data.motherName || 'N/A');
   drawRow('SPOUSE\'S NAME', data.spouseName || 'N/A', 'EMAIL ADDRESS', getGeneratedEmail(data));
   drawRow('MOBILE NUMBER', data.mobileNumber ? data.mobileNumber.replace(/^\+88\s*/, '') : 'N/A', 'PLACE OF ISSUE', 'DHAKA');
-  drawRow('PLACE OF BIRTH', data.birthPlace || 'N/A', 'EMERGENCY CONTACT', data.emergencyContactAddress ? 'Available' : 'N/A');
+  drawRow('PLACE OF BIRTH', data.birthPlace || 'N/A', 'BIRTH DISTRICT', data.birthPlaceDistrict || 'N/A');
   y += 4;
 
-  // SECTION 2: Address Information
-  drawSectionHeading('2. ADDRESS INFORMATION');
-  const presentAddr = getPresentAddress(data);
-  const permanentAddr = getPermanentAddress(data);
-  drawFullWidthField('PRESENT ADDRESS (DHAKA RESIDENCY)', presentAddr);
-  drawFullWidthField('PERMANENT ADDRESS', permanentAddr);
-  if (data.emergencyContactAddress) {
-    drawFullWidthField('EMERGENCY CONTACT ADDRESS', data.emergencyContactAddress);
-  }
+  // SECTION 2: Restored Address Profile
+  drawSectionHeading('2. ADDRESS PROFILE');
+  drawFullWidthField('PRESENT ADDRESS', data.presentAddress || 'N/A');
+  drawFullWidthField('PERMANENT ADDRESS', data.permanentAddress || 'N/A');
   y += 4;
 
   // SECTION 3: Business & Professional Details
@@ -163,8 +152,8 @@ export const getPDFDocument = (data: PassportData): jsPDF => {
   doc.text('A. BUSINESS (PROPRIETORSHIP)', 15, y);
   y += 6;
   drawRow('BUSINESS NAME', getProprietorBusinessName(data), 'DESIGNATION', 'Proprietor');
-  drawFullWidthField('BUSINESS ADDRESS (DHAKA / PRESENT)', getBusinessAddressDhaka(presentAddr, data));
-  drawFullWidthField('BUSINESS ADDRESS (LOCAL / PERMANENT)', getBusinessAddressLocal(permanentAddr, data));
+  drawFullWidthField('BUSINESS ADDRESS (DHAKA / PRESENT)', data.businessAddressDhaka || 'N/A');
+  drawFullWidthField('BUSINESS ADDRESS (LOCAL / PERMANENT)', data.businessAddressLocal || 'N/A');
   y += 4;
 
   // B. Job Details
@@ -175,8 +164,8 @@ export const getPDFDocument = (data: PassportData): jsPDF => {
   doc.text('B. PRIVATE SERVICE / EMPLOYMENT', 15, y);
   y += 6;
   drawRow('COMPANY NAME', getJobCompanyName(data), 'DESIGNATION', getJobRole(data));
-  drawFullWidthField('OFFICE ADDRESS (DHAKA / PRESENT)', getOfficeAddressDhaka(presentAddr, data));
-  drawFullWidthField('OFFICE ADDRESS (LOCAL / PERMANENT)', getOfficeAddressLocal(permanentAddr, data));
+  drawFullWidthField('OFFICE ADDRESS (DHAKA / PRESENT)', data.officeAddressDhaka || 'N/A');
+  drawFullWidthField('OFFICE ADDRESS (LOCAL / PERMANENT)', data.officeAddressLocal || 'N/A');
 
   // Professional Footer decorator loops on all generated pages
   const pageCount = doc.getNumberOfPages();
