@@ -402,6 +402,29 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 font-sans text-slate-900 dark:text-zinc-50 pb-12 selection:bg-blue-100 dark:selection:bg-blue-900/50 transition-colors relative">
+      {/* Global Progress Bar */}
+      <AnimatePresence>
+        {loading && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed top-0 left-0 right-0 h-1 bg-blue-100 dark:bg-blue-900/30 z-[100] overflow-hidden"
+          >
+            <motion.div
+              className="absolute top-0 bottom-0 bg-blue-600 dark:bg-blue-500"
+              initial={{ left: '-10%', width: '30%' }}
+              animate={{ left: '110%' }}
+              transition={{
+                repeat: Infinity,
+                duration: 1.5,
+                ease: "easeInOut"
+              }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className={`transition-all duration-500 ${!user ? 'blur-md pointer-events-none' : ''}`}>
         <Header
           isDarkMode={isDarkMode}
@@ -527,8 +550,8 @@ export default function App() {
       )}
 
       {/* Footer */}
-      <div className="fixed bottom-4 right-4 z-40">
-        <div className="bg-white/80 dark:bg-black/80 backdrop-blur-md px-4 py-2 rounded-full border border-slate-200/50 dark:border-zinc-800/50 shadow-sm flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-zinc-400 transition-colors">
+      <div className="fixed bottom-2 right-2 z-40">
+        <div className="bg-white/80 dark:bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-200/50 dark:border-zinc-800/50 shadow-sm flex items-center gap-1.5 text-[11px] font-medium text-slate-500 dark:text-zinc-400 transition-colors">
           Built with <Heart className="w-3.5 h-3.5 text-red-500 fill-current" /> by <span className="text-slate-700 dark:text-zinc-200 font-semibold tracking-wide ml-0.5">MOHAMMAD NUR HASNAT</span>
         </div>
       </div>
