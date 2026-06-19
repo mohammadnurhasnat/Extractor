@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileText, Eye, Settings, Download } from 'lucide-react';
+import { FileText, Eye, Settings, Download, Printer } from 'lucide-react';
 import { UndertakingFormData } from '../types';
 
 interface UndertakingFormTabProps {
@@ -61,8 +61,15 @@ export function UndertakingFormTab({
           </div>
 
           <button
+            onClick={() => window.print()}
+            className="flex items-center gap-1.5 px-4 py-2 bg-slate-800 hover:bg-slate-700 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-white text-xs sm:text-sm font-bold rounded-lg transition-all shadow-sm active:scale-95 duration-100 cursor-pointer self-start sm:self-auto print:hidden"
+          >
+            <Printer className="w-4 h-4" />
+            Print
+          </button>
+          <button
             onClick={handleDownloadUndertaking}
-            className="flex items-center gap-1.5 px-4 py-2 bg-[#FF8006] hover:bg-[#FF8006]/90 text-white text-xs sm:text-sm font-bold rounded-lg transition-all shadow-sm active:scale-95 duration-100 cursor-pointer self-start sm:self-auto"
+            className="flex items-center gap-1.5 px-4 py-2 bg-[#FF8006] hover:bg-[#FF8006]/90 text-white text-xs sm:text-sm font-bold rounded-lg transition-all shadow-sm active:scale-95 duration-100 cursor-pointer self-start sm:self-auto print:hidden"
           >
             <Download className="w-4 h-4" />
             Download

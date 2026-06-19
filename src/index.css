@@ -7,7 +7,7 @@
   *, ::before, ::after {
     transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-duration: 300ms;
+    transition-duration: 700ms;
   }
 }
 
@@ -103,15 +103,17 @@
 
   /* Results card should span nicely and look like a premium report */
   #printable-results-card {
-    background: transparent !important;
+    background: #ffffff !important;
+    color: #000000 !important;
     backdrop-filter: none !important;
     border: none !important;
     box-shadow: none !important;
     padding: 0 !important;
     margin: 0 !important;
-    position: relative !important;
-    top: 0 !important;
+    position: static !important;
     width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
   }
 
   /* Force print datafields as an elegant 2-column key-value ledger */
@@ -122,6 +124,10 @@
   }
 
   /* Full-width fields inside subgrids */
+  .col-span-1.sm\:col-span-2 {
+    grid-column: span 2 / span 2 !important;
+  }
+  
   .col-span-2 {
     grid-column: span 2 / span 2 !important;
   }

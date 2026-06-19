@@ -1,165 +1,245 @@
 import { PassportData } from '../types';
 
+const REAL_DISTRICTS: Record<string, {
+  name: string;
+  defaultPostcode: string;
+  thanas: {
+    name: string;
+    postcode: string;
+    areas: string[];
+    roads: string[];
+    villages: string[];
+  }[];
+}> = {
+  DHAKA: {
+    name: "Dhaka",
+    defaultPostcode: "1200",
+    thanas: [
+      {
+        name: "Gulshan",
+        postcode: "1212",
+        areas: ["Gulshan-1", "Gulshan-2", "Badda"],
+        roads: ["Madani Avenue", "Gulshan Avenue", "Road 12", "Road 23", "Road 79"],
+        villages: ["Gulshan", "Shahjadpur", "Badda"]
+      },
+      {
+        name: "Banani",
+        postcode: "1213",
+        areas: ["Banani", "Chairman Bari", "Kakoli"],
+        roads: ["Kemal Ataturk Avenue", "Road 11", "Road 4", "Road 8", "Road 18"],
+        villages: ["Banani", "Amtoli"]
+      },
+      {
+        name: "Dhanmondi",
+        postcode: "1209",
+        areas: ["Dhanmondi R/A", "Lalmatia", "Sobhanbagh"],
+        roads: ["Mirpur Road", "Satmasjid Road", "Road 2/A", "Road 8/A", "Road 27"],
+        villages: ["Dhanmondi", "Lalmatia"]
+      },
+      {
+        name: "Mirpur",
+        postcode: "1216",
+        areas: ["Mirpur-1", "Mirpur-10", "Mirpur-12", "Pallabi"],
+        roads: ["Begum Rokeya Sarani", "Zoo Road", "Main Road", "Road 6", "Road 3"],
+        villages: ["Mirpur", "Kallayanpur", "Pallabi"]
+      },
+      {
+        name: "Uttara",
+        postcode: "1230",
+        areas: ["Sector 1", "Sector 3", "Sector 4", "Sector 11", "Sector 13"],
+        roads: ["Jashimuddin Avenue", "Garib-e-Newaj Avenue", "Road 6", "Road 12", "Road 18"],
+        villages: ["Uttara", "Abdullahpur"]
+      },
+      {
+        name: "Savar",
+        postcode: "1340",
+        areas: ["Savar Bazaar", "Hemayetpur", "Ashulia"],
+        roads: ["Dhaka-Aricha Highway", "Savar College Road", "Radio Colony Road"],
+        villages: ["Bank Town", "Rejupur", "Nidhin"]
+      }
+    ]
+  },
+  GOPALGANJ: {
+    name: "Gopalganj",
+    defaultPostcode: "8100",
+    thanas: [
+      {
+        name: "Gopalganj Sadar",
+        postcode: "8100",
+        areas: ["Mandartala", "Ghatakchar", "Bedgram"],
+        roads: ["Sadar Road", "Hospital Road", "Court Road", "College Road"],
+        villages: ["Mandartala", "Bedgram", "Suktail Uttarpara", "Gopinathpur"]
+      },
+      {
+        name: "Tungipara",
+        postcode: "8120",
+        areas: ["Patgati", "Tungipara Bazaar", "Gimadanga"],
+        roads: ["Tungipara Main Road", "Patgati Bypass", "Shorifpara Road"],
+        villages: ["Gimadanga", "Patgati", "Karchalia", "Tungipara"]
+      },
+      {
+        name: "Kotalipara",
+        postcode: "8110",
+        areas: ["Pinjuri", "Ramsheel", "Sikarpur"],
+        roads: ["Kotalipara-Gopalganj Road", "Bazaar Road"],
+        villages: ["Pinjuri", "Sukhail", "Ramshil", "Chitra"]
+      },
+      {
+        name: "Muksudpur",
+        postcode: "8130",
+        areas: ["Majhigati", "Nanikhial", "Tekerhat"],
+        roads: ["Muksudpur-Tekerhat Highway", "Muksudpur Station Road"],
+        villages: ["Majhigati", "Nanikhiar", "Raghurampur", "Bonogram"]
+      },
+      {
+        name: "Kashiani",
+        postcode: "8140",
+        areas: ["Kashiani Sadar", "Bhatiapara", "Fukra"],
+        roads: ["Bhatiapara Bypass", "Kashiani Station Road"],
+        villages: ["Kashiani", "Bhatiapara", "Fukra", "Ramdia"]
+      }
+    ]
+  },
+  MUNSHIGANJ: {
+    name: "Munshiganj",
+    defaultPostcode: "1500",
+    thanas: [
+      {
+        name: "Sreenagar",
+        postcode: "1550",
+        areas: ["Sreenagar Bazaar", "Bhagyakul", "Kukutia"],
+        roads: ["Sreenagar Main Road", "Bhagyakul Bazar Road"],
+        villages: ["Harpara", "Kukutia", "Baghra", "Bhagyakul"]
+      },
+      {
+        name: "Louhajang",
+        postcode: "1530",
+        areas: ["Medinimandal", "Louhajang Sadar", "Maowa"],
+        roads: ["Louhajang Highway", "Maowa Ferry Ghat Road"],
+        villages: ["Medinimandal", "Kaltia", "Gandharbapur"]
+      },
+      {
+        name: "Sirajdikhan",
+        postcode: "1540",
+        areas: ["Balushur", "Sirajdikhan Bazaar", "Roshunia"],
+        roads: ["Sirajdikhan Road", "Balushur Bazar Road"],
+        villages: ["Balushur", "Chhationtal", "Rushidia"]
+      }
+    ]
+  },
+  BARGUNA: {
+    name: "Barguna",
+    defaultPostcode: "8700",
+    thanas: [
+      {
+        name: "Barguna Sadar",
+        postcode: "8700",
+        areas: ["Barguna Town", "Krok", "Adatola"],
+        roads: ["Sadar Road", "Launch Ghat Road", "Bazaar Road", "Zilla Council Road"],
+        villages: ["Phuljhuri", "Krok", "Baraikhali", "Gozkhali"]
+      },
+      {
+        name: "Amtali",
+        postcode: "8710",
+        areas: ["Amtali Town", "Chowra", "Kukuya"],
+        roads: ["Amtali-Patuakhali Highway", "Bazaar Main Road"],
+        villages: ["Amtali", "Chowra", "Kukuya", "Gazipur"]
+      },
+      {
+        name: "Patharghata",
+        postcode: "8720",
+        areas: ["Patharghata Town", "Kakchira", "Chhania"],
+        roads: ["Patharghata Bypass Road", "Launch Terminal Road"],
+        villages: ["Patharghata", "Kakchira", "Chhania"]
+      }
+    ]
+  },
+  GAZIPUR: {
+    name: "Gazipur",
+    defaultPostcode: "1700",
+    thanas: [
+      {
+        name: "Gazipur Sadar",
+        postcode: "1700",
+        areas: ["Chowrasta", "Board Bazar", "Joydebpur"],
+        roads: ["Dhaka-Mymensingh Highway", "Joydebpur Road", "College Road"],
+        villages: ["Vogra", "Harinachala", "Chondra"]
+      },
+      {
+        name: "Tongi",
+        postcode: "1710",
+        areas: ["Tongi Bazaar", "Cherag Ali", "Station Road"],
+        roads: ["Tongi-Savar Road", "Tongi Station Road", "Anarkali Road"],
+        villages: ["Tongi", "Cherag Ali", "Auchpara"]
+      },
+      {
+        name: "Sreepur",
+        postcode: "1740",
+        areas: ["Mawna", "Barmi", "Teliati"],
+        roads: ["Mawna Chowrasta Road", "Sreepur Highway"],
+        villages: ["Mawna", "Barmi", "Teliati"]
+      }
+    ]
+  }
+};
+
+const getMatchedDistrict = (distName: string): typeof REAL_DISTRICTS[keyof typeof REAL_DISTRICTS] => {
+  const norm = (distName || '').trim().toUpperCase().replace(/(DISTRICT|ZILLA|ZILLA\s+OF)/gi, '').trim();
+  if (norm.includes("DHAKA") || norm.includes("METRO")) return REAL_DISTRICTS.DHAKA;
+  if (norm.includes("GOPALGANJ") || norm.includes("GOPAL")) return REAL_DISTRICTS.GOPALGANJ;
+  if (norm.includes("MUNSHIGANJ") || norm.includes("MUNSHI")) return REAL_DISTRICTS.MUNSHIGANJ;
+  if (norm.includes("BARGUNA") || norm.includes("BARG")) return REAL_DISTRICTS.BARGUNA;
+  if (norm.includes("GAZIPUR") || norm.includes("GAZI")) return REAL_DISTRICTS.GAZIPUR;
+  
+  // Fallback to a deterministic real district if an invalid/artificial district like "Ghutabasa" is entered
+  const keys = Object.keys(REAL_DISTRICTS);
+  const pickedKey = keys[norm.length % keys.length];
+  return REAL_DISTRICTS[pickedKey];
+};
+
 export const generateBangladeshiAddress = (
   districtName: string, 
   seedString: string, 
   type: 'present' | 'office' | 'business' | 'local'
 ): string => {
-  const normDistrict = (districtName || 'Dhaka')
-    .trim()
-    .replace(/(district|zilla|zilla\s+of)/i, '')
-    .trim();
-  const districtUpper = normDistrict.toUpperCase() || 'DHAKA';
-  const districtProper = districtUpper.charAt(0).toUpperCase() + districtUpper.slice(1).toLowerCase();
-
+  const matchedDistrict = getMatchedDistrict(districtName);
   const seed = seedString.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) + type.length;
-
-  // Pools of realistic address component names to construct deterministic varieties (seed-based)
-  const bananis = ["Banani", "Gulshan", "Mohakhali", "Baridhara", "Dhanmondi"];
-  const dhanmondis = ["Dhanmondi", "Lalmatia", "Tejgaon", "Green Road", "Kalabagan"];
-  const mirpurs = ["Mirpur", "Kallayanpur", "Gabtoli", "Adabor", "Pallabi"];
   
-  const houseNums = ["14", "25", "12", "8", "90", "5", "102", "33", "88", "42"];
-  const roadNums = ["6", "12", "9", "4", "15/A", "22", "8", "10", "3", "7"];
-  const blocks = ["C", "A", "B", "D", "E", "F"];
-  const flats = ["3B", "4A", "2C", "5D", "1A", "3C", "11B", "8F"];
-  const plots = ["45/2", "12/A", "28/1", "33", "88/B", "41/2", "9/3", "4/2"];
-  const roadNames = ["Mirpur Road", "Station Road", "College Road", "Airport Road", "Kandirpar Road", "Main Road"];
-  const areas = ["Banani", "Dhanmondi", "Mirpur", "Gulshan", "Uttara", "Kandirpar", "Agrabad", "Zindabazar"];
-  const levels = ["4", "7", "2", "9", "1", "5", "8"];
-  const dohsNames = ["Mirpur", "Mohakhali", "Baridhara", "Banani"];
-
-  const getPostCode = (areaName: string): string => {
-    const areaLower = areaName.toLowerCase();
-    if (areaLower.includes("banani")) return "1213";
-    if (areaLower.includes("dhanmondi")) return "1209";
-    if (areaLower.includes("mirpur")) return "1216";
-    if (areaLower.includes("gulshan")) return "1212";
-    if (areaLower.includes("uttara")) return "1230";
-    if (areaLower.includes("savar")) return "1340";
-    if (areaLower.includes("tongi")) return "1710";
-    if (areaLower.includes("rangpur")) return "5400";
-    if (areaLower.includes("gopalganj")) return "8100";
-    if (areaLower.includes("comilla") || areaLower.includes("cumilla")) return "3500";
-    
-    // Fallbacks
-    if (districtUpper === "DHAKA") return "1212";
-    if (districtUpper === "GOPALGANJ") return "8100";
-    if (districtUpper === "RANGPUR") return "5400";
-    if (districtUpper === "GAZIPUR") return "1710";
-    if (districtUpper === "COMILLA" || districtUpper === "CUMILLA") return "3500";
-    if (districtUpper === "BARISAL" || districtUpper === "BARISHAL") return "8200";
-    if (districtUpper === "KHULNA") return "9100";
-    if (districtUpper === "RAJSHAHI") return "6000";
-    return "1000";
-  };
-
-  const isGopalganj = districtUpper.includes("GOPALGANJ");
-
+  const thanaObj = matchedDistrict.thanas[seed % matchedDistrict.thanas.length];
+  const houseNum = ((seed % 95) + 1).toString();
+  const roadName = thanaObj.roads[(seed + 1) % thanaObj.roads.length];
+  // Convert "Dhanmondi R/A" or other variables to simplified readable names
+  let areaName = thanaObj.areas[(seed + 2) % thanaObj.areas.length];
+  if (areaName === "Dhanmondi R/A") areaName = "Dhanmondi";
+  const villageName = thanaObj.villages[(seed + 3) % thanaObj.villages.length];
+  
   if (type === 'present' || type === 'local') {
-    // 5 House/Village Address Formats
-    let formatIndex = seed % 5;
-    
-    // For Gopalganj, strictly cycle rural village address forms to respect the spec
-    if (isGopalganj) {
-      formatIndex = (seed % 2 === 0) ? 3 : 4;
-    } else if (districtUpper === 'DHAKA') {
-      // For Dhaka, use the urban Dhaka formats
-      formatIndex = seed % 3;
-    }
-
-    if (formatIndex === 0) {
-      // Form 1: House 14, Road 6, Block C, Banani, Dhaka-1213
-      // OR Form 1b: House 45, Road 12, Sector 10, Uttara, Dhaka-1230
-      const h = houseNums[seed % houseNums.length];
-      const r = roadNums[(seed + 1) % roadNums.length];
+    const isUrban = matchedDistrict.name === 'Dhaka';
+    if (isUrban) {
       if (seed % 2 === 0) {
-        const sec = (seed % 14) + 1;
-        const pc = "1230"; // Uttara postcode
-        return `House ${h}, Road ${r}, Sector ${sec}, Uttara, ${districtProper}-${pc}`;
+        return `House ${houseNum}, ${roadName}, ${areaName}, ${matchedDistrict.name}-${thanaObj.postcode}`;
       } else {
-        const b = blocks[(seed + 2) % blocks.length];
-        const a = bananis[(seed + 3) % bananis.length];
-        const pc = getPostCode(a);
-        return `House ${h}, Road ${r}, Block ${b}, ${a}, ${districtProper}-${pc}`;
+        // Hyphen pattern like House-22, Kolwalapara, Mirpur, Dhaka-1216
+        const subArea = seed % 3 === 0 ? 'Kolwalapara, ' : '';
+        return `House-${houseNum}, ${subArea}${areaName}, ${matchedDistrict.name}-${thanaObj.postcode}`;
       }
-      
-    } else if (formatIndex === 1) {
-      // Form 2: 3B, 45/2 Mirpur Road, Dhanmondi, Dhaka-1209
-      const fl = flats[seed % flats.length];
-      const pl = plots[(seed + 1) % plots.length];
-      const rn = "Mirpur Road";
-      const a = dhanmondis[(seed + 2) % dhanmondis.length];
-      const pc = getPostCode(a);
-      return `${fl}, ${pl} ${rn}, ${a}, ${districtProper}-${pc}`;
-      
-    } else if (formatIndex === 2) {
-      // Form 3: 28 Station Road, Rangpur Sadar, Rangpur-5400
-      const pl = plots[seed % plots.length].split('/')[0] || "28"; 
-      const rn = "Station Road";
-      const pc = getPostCode(districtProper);
-      return `${pl} ${rn}, ${districtProper} Sadar, ${districtProper}-${pc}`;
-      
-    } else if (formatIndex === 3) {
-      // Form 4: dynamic village based on seed
-      const villages = ["Kotalipara East", "Tungipara Ghighat", "Kashiani Modhupur", "Majhigati", "Nanikhial"];
-      const v = villages[seed % villages.length];
-      const pc = isGopalganj ? "8100" : getPostCode(districtProper);
-      return `${v}, Post-Office ${v}-${pc}, ${districtProper}`;
-      
     } else {
-      // Form 5: another dynamic village
-      const villages2 = ["Bonogram Village", "Gopinathpur", "Suktail Uttarpara", "Charprasannapur", "Karamdinga"];
-      const v = villages2[seed % villages2.length];
-      const pc = isGopalganj ? "8100" : getPostCode(districtProper);
-      return `${v}, Post-Office ${v}-${pc}, ${districtProper}`;
+      return `${villageName}, ${thanaObj.name}, ${matchedDistrict.name}-${thanaObj.postcode}`;
     }
   } else {
-    // 5 Office/Business Address Formats
-    const formatIndex = seed % 5;
-
-    if (formatIndex === 0) {
-      // Form 1: House 25, Road 12, Banani, Dhaka-1213
-      const h = houseNums[seed % houseNums.length];
-      const r = roadNums[(seed + 1) % roadNums.length];
-      const a = bananis[(seed + 2) % bananis.length];
-      const pc = getPostCode(a);
-      return `House ${h}, Road ${r}, ${a}, ${districtProper}-${pc}`;
-      
-    } else if (formatIndex === 1) {
-      // Form 2: Level 4, Mirpur DOHS, Mirpur, Dhaka-1216
-      const lvl = levels[seed % levels.length];
-      const dohs = dohsNames[(seed + 1) % dohsNames.length];
-      const pc = getPostCode(dohs);
-      return `Level ${lvl}, ${dohs} DOHS, ${dohs}, ${districtProper}-${pc}`;
-      
-    } else if (formatIndex === 2) {
-      // Form 3: Holding 15, Ward 5, Savar Upazila, Dhaka-1340
-      const hp = (seed % 90) + 10;
-      const wd = (seed % 12) + 1;
-      const dist = (districtProper.toUpperCase() === 'DHAKA' || districtProper.toUpperCase() === 'GOPALGANJ') ? 'Dhaka' : districtProper;
-      const pc = getPostCode('savar');
-      return `Holding ${hp}, Ward ${wd}, Savar Upazila, ${dist}-${pc}`;
-      
-    } else if (formatIndex === 3) {
-      // Form 4: Main Market Road, Tongi Upazila, Gazipur-1710
-      const mr = "Main Market Road";
-      const dist = (districtProper.toUpperCase() === 'DHAKA' || districtProper.toUpperCase() === 'GOPALGANJ') ? 'Gazipur' : districtProper;
-      const pc = getPostCode("tongi");
-      return `${mr}, Tongi Upazila, ${dist}-${pc}`;
-      
+    // Office/Business
+    const level = ((seed % 8) + 1).toString();
+    const isUrban = matchedDistrict.name === 'Dhaka' || matchedDistrict.name === 'Gazipur';
+    if (isUrban) {
+      return `Level ${level}, ${roadName}, ${areaName}, ${matchedDistrict.name}-${thanaObj.postcode}`;
     } else {
-      // Form 5: Generic Thana Sadar (Always dynamic, no Comilla reference)
-      const cr = "College Road";
-      const thana = districtProper === 'Dhaka' ? 'Savar' : (districtProper === 'Gopalganj' ? 'Kashiani' : 'Sadar');
-      const pc = getPostCode(thana);
-      return `${cr}, ${thana} Upazila, ${districtProper}-${pc}`;
+      return `${roadName}, ${thanaObj.name}, ${matchedDistrict.name}-${thanaObj.postcode}`;
     }
   }
 };
 
 export const getPresentAddress = (itemData: PassportData | null): string => {
-  if (!itemData) return "House 12, Road 5, Dhanmondi Post Office, Dhanmondi Thana, Dhaka";
+  if (!itemData) return "House 12, Road 5, Dhanmondi, Dhaka-1205";
   
   if (itemData.presentAddress && itemData.presentAddress !== itemData.permanentAddress) {
     const commaCount = (itemData.presentAddress.match(/,/g) || []).length;
@@ -277,41 +357,21 @@ export const getOfficeAddressDhaka = (presentAddress: string, itemData?: Passpor
   return generateBangladeshiAddress("Dhaka", seedStr, 'office');
 };
 
+const thanaSadarFormat = (name: string): string => {
+  if (name.toLowerCase().includes("sadar") || name.toLowerCase().includes("gulshan") || name.toLowerCase().includes("banani") || name.toLowerCase().includes("dhanmondi") || name.toLowerCase().includes("mirpur") || name.toLowerCase().includes("uttara") || name.toLowerCase().includes("savar") || name.toLowerCase().includes("tongi")) return name;
+  return `${name} Upazila`;
+};
+
 export const getThanaSadarAddress = (permanentAddress: string | undefined | null, seed: number): string => {
-  if (!permanentAddress) return "College Road, Sadar Thana, Gopalganj-8100";
+  if (!permanentAddress) return "College Road, Gopalganj Sadar, Gopalganj-8100";
   
-  const cleanAddress = permanentAddress.trim();
-  const rawParts = cleanAddress.split(',').map(s => s.trim()).filter(Boolean);
+  const dist = getDistrictFromAddress(permanentAddress);
+  const matchedDistrict = getMatchedDistrict(dist);
   
-  let postcode = '';
-  const pcMatch = cleanAddress.match(/-?\s*(\d{4})/);
-  if (pcMatch) {
-    postcode = pcMatch[1];
-  }
+  const thanaObj = matchedDistrict.thanas[seed % matchedDistrict.thanas.length];
+  const road = thanaObj.roads[(seed + 1) % thanaObj.roads.length];
   
-  const parts = rawParts.map(s => s.replace(/\s*-\s*\d{4}/g, '').replace(/\d{4}/g, '').trim()).filter(Boolean);
-  
-  let thana = 'Sadar';
-  let district = 'Gopalganj';
-  
-  if (parts.length >= 2) {
-    district = parts[parts.length - 1];
-    thana = parts[parts.length - 2];
-  } else if (parts.length === 1) {
-    district = parts[0];
-  }
-  
-  const formatWord = (w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
-  const thanaProper = thana.split(/\s+/).map(formatWord).join(' ');
-  const districtProper = district.split(/\s+/).map(formatWord).join(' ');
-  
-  const roads = ["College Road", "Sadar Road", "Hospital Road", "Court Road", "Station Road"];
-  const road = roads[seed % roads.length];
-  
-  const thanaSadar = thanaProper.toLowerCase().includes('sadar') ? thanaProper : `${thanaProper} Sadar`;
-  const postcodeSuffix = postcode ? `-${postcode}` : '';
-  
-  return `${road}, ${thanaSadar}, ${districtProper}${postcodeSuffix}`;
+  return `${road}, ${thanaSadarFormat(thanaObj.name)}, ${matchedDistrict.name}-${thanaObj.postcode}`;
 };
 
 export const getBusinessAddressLocal = (permanentAddress: string, itemData?: PassportData | null): string => {
@@ -335,65 +395,13 @@ export const getOfficeAddressLocal = (permanentAddress: string, itemData?: Passp
 };
 
 export const generatePermanentAddressForDistrict = (district: string, seedString: string): string => {
-  const normDistrict = (district || 'Munshiganj')
-    .trim()
-    .replace(/(district|zilla|zilla\s+of)/i, '')
-    .trim();
-  const districtUpper = normDistrict.toUpperCase() || 'MUNSHIGANJ';
-  
+  const matchedDistrict = getMatchedDistrict(district);
   const seed = seedString.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
   
-  // Real Thanas & Post Offices & Villages per District for realism
-  const db: Record<string, { thana: string; po: string; pc: string; villages: string[] }[]> = {
-    'MUNSHIGANJ': [
-      { thana: "SREENAGAR", po: "SREENAGAR", pc: "1550", villages: ["HARPARA", "KUKUTIA", "BAGHRA", "BHAGYAKUL"] },
-      { thana: "LOUHAJANG", po: "LOUHAJANG", pc: "1530", villages: ["MEDINIMANDAL", "KALTIA", "GANDHARBAPUR"] },
-      { thana: "SIRAJDIKHAN", po: "SIRAJDIKHAN", pc: "1540", villages: ["BALUSHUR", "CHHATIANTAL", "RUSHIDIA"] }
-    ],
-    'GOPALGANJ': [
-      { thana: "MUKSUDPUR", po: "MAJHIGATI", pc: "8131", villages: ["MAJHIGATI", "NANIKHIAL", "RAGHURAMPUR"] },
-      { thana: "MUKSUDPUR", po: "BONOGRAM", pc: "8151", villages: ["MALIGRAM", "BONOGRAM", "CHARPRASANNAPUR"] },
-      { thana: "TUNGIPARA", po: "TUNGIPARA", pc: "8120", villages: ["GIMADANGA", "PATGATI", "KARCHALIA"] },
-      { thana: "KOTALIPARA", po: "KOTALIPARA", pc: "8110", villages: ["PINJURI", "SUKHAIL", "RAMSHIL"] }
-    ],
-    'DHAKA': [
-      { thana: "SAVAR", po: "SAVAR", pc: "1340", villages: ["BANKTOWN", "REJUPUR", "NIDHIN"] },
-      { thana: "KERANIGANJ", po: "KERANIGANJ", pc: "1310", villages: ["ZINZIRA", "KALATIA", "ROHITPUR"] },
-      { thana: "DHAMRAI", po: "DHAMRAI", pc: "1350", villages: ["SUAPUR", "KUSHURA", "SUTIPARA"] }
-    ],
-    'COMILLA': [
-      { thana: "LAKSHAM", po: "LAKSHAM", pc: "3570", villages: ["GABTALI", "HEMAMPUR", "KANDIRPAR"] },
-      { thana: "CHAUDDAGRAM", po: "CHAUDDAGRAM", pc: "3510", villages: ["ALIPUR", "BATISA", "JAGANNATHPUR"] }
-    ],
-    'CUMILLA': [
-      { thana: "LAKSHAM", po: "LAKSHAM", pc: "3570", villages: ["GABTALI", "HEMAMPUR", "KANDIRPAR"] },
-      { thana: "CHAUDDAGRAM", po: "CHAUDDAGRAM", pc: "3510", villages: ["ALIPUR", "BATISA", "JAGANNATHPUR"] }
-    ],
-    'RANGPUR': [
-      { thana: "MITHAPUKUR", po: "MITHAPUKUR", pc: "5460", villages: ["SHALTI", "BALUA", "RAMNATHPUR"] },
-      { thana: "PIRGANJ", po: "PIRGANJ", pc: "5470", villages: ["KHALISPUR", "LALDIGHI", "DAUDPRASAD"] }
-    ],
-    'GAZIPUR': [
-      { thana: "KALIGANJ", po: "KALIGANJ", pc: "1720", villages: ["BALIGAON", "JANGALIA", "TUMILIA"] },
-      { thana: "SREEPUR", po: "SREEPUR", pc: "1740", villages: ["MAWNA", "BARMI", "TELIATI"] }
-    ]
-  };
+  const thanaObj = matchedDistrict.thanas[seed % matchedDistrict.thanas.length];
+  const villageName = thanaObj.villages[(seed + 3) % thanaObj.villages.length];
   
-  // Choose standard fallback if no key matched
-  const options = db[districtUpper] || [
-    { 
-      thana: `${districtUpper} SADAR`, 
-      po: `${districtUpper} SADAR`, 
-      pc: (1000 + (seed % 8000)).toString(), 
-      villages: ["HARIPUR", "ROYPUR", "KRISHNAPUR", "SUNDARPUR", "UTTARPARA", "SOUTHPARA"] 
-    }
-  ];
-  
-  const chosenArea = options[seed % options.length];
-  const chosenVillage = chosenArea.villages[(seed + 3) % chosenArea.villages.length];
-  
-  // Format strictly like: HARPARA, SREENAGAR, SREENAGAR - 1550, MUNSHIGANJ
-  return `${chosenVillage}, ${chosenArea.po}, ${chosenArea.thana} - ${chosenArea.pc}, ${districtUpper}`;
+  return `${villageName}, ${thanaObj.name}, ${thanaObj.name} - ${thanaObj.postcode}, ${matchedDistrict.name.toUpperCase()}`;
 };
 
 export const getPermanentAddress = (itemData: PassportData | null): string => {

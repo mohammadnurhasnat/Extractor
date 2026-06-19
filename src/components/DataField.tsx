@@ -34,7 +34,7 @@ export function DataField({ label, value, highlight = false, onValueChange }: Da
     if (!value) return;
     navigator.clipboard.writeText(value);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setTimeout(() => setCopied(false), 8000);
   };
 
   const handleStartEdit = (e: React.MouseEvent) => {
@@ -89,10 +89,12 @@ export function DataField({ label, value, highlight = false, onValueChange }: Da
       </div>
 
       <div className={`
-        relative rounded-lg text-sm font-medium border transition-colors flex items-stretch overflow-hidden min-h-[40px]
-        ${highlight 
-          ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800/50 text-blue-900 dark:text-blue-100 shadow-inner' 
-          : 'bg-slate-50 dark:bg-black border-slate-200 dark:border-zinc-800 text-slate-800 dark:text-zinc-100'}
+        relative rounded-lg text-sm font-medium border transition-all duration-300 flex items-stretch overflow-hidden min-h-[40px]
+        ${copied
+          ? 'bg-emerald-50/80 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-800 text-emerald-900 dark:text-emerald-100 shadow-sm'
+          : highlight 
+            ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800/50 text-blue-900 dark:text-blue-100 shadow-inner' 
+            : 'bg-slate-50 dark:bg-black border-slate-200 dark:border-zinc-800 text-slate-800 dark:text-zinc-100'}
         ${!value && !isEditing ? 'italic opacity-60' : ''}
       `}>
         {isEditing ? (
