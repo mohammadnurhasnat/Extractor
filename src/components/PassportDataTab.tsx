@@ -163,6 +163,71 @@ export function PassportDataTab({
             <DataField label="Office Address (Permanent / Local)" value={data.officeAddressLocal || ''} onValueChange={(val) => updateDataField('officeAddressLocal', val)} />
           </div>
         </div>
+
+        {/* Multi-Agent Collaboration Log Panel */}
+        {data.agentLog && (
+          <div className="col-span-1 sm:col-span-2 mt-6 bg-[#0C8493]/5 dark:bg-[#0C8493]/10 border border-[#0C8493]/20 rounded-2xl p-5 space-y-4 shadow-sm print:hidden">
+            <div className="flex items-center justify-between border-b border-[#0C8493]/25 pb-3">
+              <h4 className="text-sm font-black text-[#0C8493] tracking-wide flex items-center gap-1.5 font-sans">
+                <Sparkles className="w-4 h-4 text-amber-500 animate-pulse" />
+                Multi-Agent System Insights & Conversation Log
+              </h4>
+              {data.discrepancyList && data.discrepancyList.length > 0 ? (
+                <span className="px-2.5 py-1 bg-amber-500/10 text-amber-600 dark:text-[#FF8006] text-[10px] font-black rounded-full uppercase tracking-wider border border-amber-500/20 font-sans">
+                  Warnings Flagged
+                </span>
+              ) : (
+                <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-black rounded-full uppercase tracking-wider border border-emerald-500/20 font-sans">
+                  Perfect Validation
+                </span>
+              )}
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              {/* Agent conversation logs */}
+              <div className="bg-white/80 dark:bg-zinc-950/60 p-4 rounded-xl border border-slate-200/50 dark:border-zinc-800/80 shadow-inner flex flex-col">
+                <h5 className="text-[11px] font-black text-slate-400 dark:text-zinc-500 mb-2.5 uppercase tracking-wider font-mono">🤖 Coordinated Sub-Agent Communication:</h5>
+                <div className="text-xs text-slate-600 dark:text-zinc-300 font-sans leading-relaxed whitespace-pre-wrap max-h-64 overflow-y-auto pr-2 custom-scrollbar space-y-2">
+                  {data.agentLog}
+                </div>
+              </div>
+
+              {/* Sub-Agent D Draft & Discrepancies */}
+              <div className="flex flex-col gap-3.5">
+                {data.discrepancyList && data.discrepancyList.length > 0 ? (
+                  <div className="bg-amber-500/5 dark:bg-amber-500/10 p-4 rounded-xl border border-amber-500/20">
+                    <h5 className="text-[11px] font-black text-amber-800 dark:text-amber-400 mb-2 uppercase tracking-wider font-mono flex items-center gap-1">
+                      ⚠️ Mismatch Warnings (QA Agent C):
+                    </h5>
+                    <ul className="text-xs text-amber-700 dark:text-amber-350 list-disc pl-4 space-y-1.5">
+                      {data.discrepancyList.map((item, idx) => (
+                        <li key={idx} className="font-semibold leading-relaxed">{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : (
+                  <div className="bg-emerald-500/5 dark:bg-emerald-500/10 p-4 rounded-xl border border-emerald-500/20">
+                    <h5 className="text-[11px] font-black text-emerald-800 dark:text-emerald-400 mb-1 uppercase tracking-wider font-mono">
+                      ✅ Integrity Verification
+                    </h5>
+                    <p className="text-xs text-slate-500 dark:text-zinc-400 font-sans font-medium leading-relaxed">
+                      Sub-Agent C conducted an interface scan. Zero discrepancies found between visual data and printed Machine Readable Zone (MRZ).
+                    </p>
+                  </div>
+                )}
+
+                {data.customUndertakingDraft && (
+                  <div className="bg-slate-50/50 dark:bg-zinc-900/50 p-4 rounded-xl border border-slate-200/60 dark:border-zinc-800/50 flex-1 flex flex-col">
+                    <h5 className="text-[11px] font-black text-[#0C8493] dark:text-[#0C8493] mb-2 uppercase tracking-wider font-mono">✍️ Custom Draft Declaration (Agent D):</h5>
+                    <p className="text-xs text-slate-600 dark:text-zinc-300 font-serif italic leading-relaxed whitespace-pre-wrap flex-1 scroll-smooth">
+                      "{data.customUndertakingDraft}"
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

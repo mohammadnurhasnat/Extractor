@@ -25,6 +25,10 @@ export interface PassportData {
   jobRole?: string;
   placeOfIssue?: string;
   birthPlaceDistrict?: string;
+  // Multi-Agent System Insights
+  agentLog?: string;
+  discrepancyList?: string[];
+  customUndertakingDraft?: string;
 }
 
 export interface HistoryItem {

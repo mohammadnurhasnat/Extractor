@@ -40,14 +40,30 @@ async function startServer() {
       // We expect the frontend to send just the base64 string without the data URI prefix
       const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '');
 
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
+      console.log('🤖 Multi-Agent Pipeline Started: Main Agent Coordinating.');
+
+      // --- STAGE 1: Combined Dual-Agent Multimodal Scan (Sub-Agent A & B) ---
+      // This combined call lets both image-level agents process the image parallelly 
+      // in a single API pass to save substantial image-token costs.
+      const intakeResponse = await ai.models.generateContent({
+        model: 'gemini-3.5-flash',
         contents: [
           {
-            text: `Extract the requested information from this passport image. 
-            If any information is not clearly visible or not present, return an empty string "".
-            CRITICAL: All date fields (dob, issueDate, expiryDate) MUST be strictly formatted as dd/mm/yyyy.
-            Return ONLY the raw data corresponding to the fields, properly formatted.`
+            text: `You are the Multi-Agent Passport Intake Coordinator. 
+            You are running two specialized sub-agents in parallel to process this passport image:
+            
+            1. **Sub-Agent A (Visual OCR Checker)**:
+               - Extract all raw visual fields directly visible on the passport page.
+               - Fields required: givenName, surname, dob (formatted as dd/mm/yyyy), birthPlace, fatherName, motherName, spouseName, passportNumber, nidOrBirthCertNumber, issueDate (formatted as dd/mm/yyyy), expiryDate (formatted as dd/mm/yyyy), gender (Extract sex field as M or F or Male or Female), permanentAddress, mobileNumber (extract if visible, otherwise empty).
+               
+            2. **Sub-Agent B (MRZ Verification & Validation Specialist)**:
+               - Locate and extract the Machine Readable Zone (MRZ) - usually the 2 or 3 lines of alphanumeric codes with '<' at the bottom.
+               - Extract the raw MRZ lines as an array of strings.
+               - Parse individual fields from the MRZ: passportNumber, dob (formatted as dd/mm/yyyy), expiryDate (formatted as dd/mm/yyyy), gender (M/F), surname, and givenName.
+               - Calculate or verify basic MRZ checksum values for Passport Number check-digit, DOB check-digit, Expiry Date check-digit, and the Composite check-digit. 
+               - Set each check-digit validation status to "Pass" or "Fail" based on whether they correctly align with MRZ format specifications.
+            
+            Format response strictly according to the specified JSON schema structure.`
           },
           {
             inlineData: {
@@ -61,62 +77,224 @@ async function startServer() {
           responseSchema: {
             type: Type.OBJECT,
             properties: {
-              givenName: { type: Type.STRING, description: "First name and middle name(s)" },
-              surname: { type: Type.STRING, description: "Last name" },
-              dob: { type: Type.STRING, description: "Date of Birth (must be formatted as dd/mm/yyyy)" },
-              birthPlace: { type: Type.STRING, description: "Place of birth (e.g., DHAKA)" },
-              fatherName: { type: Type.STRING, description: "Father's name" },
-              motherName: { type: Type.STRING, description: "Mother's name" },
-              spouseName: { type: Type.STRING, description: "Spouse's name (if any, otherwise empty)" },
-              passportNumber: { type: Type.STRING, description: "Alphanumeric passport number" },
-              nidOrBirthCertNumber: { type: Type.STRING, description: "National ID / NID or Personal No." },
-              issueDate: { type: Type.STRING, description: "Date of issue (must be formatted as dd/mm/yyyy)" },
-              expiryDate: { type: Type.STRING, description: "Date of expiry (must be formatted as dd/mm/yyyy)" },
-              gender: { type: Type.STRING, description: "Gender or Sex (Extract M or F from the image, Male is M, Female is F, then convert to 'Male' or 'Female')" },
-              mobileNumber: { type: Type.STRING, description: "Mobile number if visible anywhere, otherwise empty" },
-              permanentAddress: { type: Type.STRING, description: "Full permanent address of the passport bearer" }
+              subAgentA: {
+                type: Type.OBJECT,
+                properties: {
+                  givenName: { type: Type.STRING },
+                  surname: { type: Type.STRING },
+                  dob: { type: Type.STRING },
+                  birthPlace: { type: Type.STRING },
+                  fatherName: { type: Type.STRING },
+                  motherName: { type: Type.STRING },
+                  spouseName: { type: Type.STRING },
+                  passportNumber: { type: Type.STRING },
+                  nidOrBirthCertNumber: { type: Type.STRING },
+                  issueDate: { type: Type.STRING },
+                  expiryDate: { type: Type.STRING },
+                  gender: { type: Type.STRING },
+                  permanentAddress: { type: Type.STRING },
+                  mobileNumber: { type: Type.STRING }
+                },
+                required: [
+                  "givenName", "surname", "dob", "birthPlace", "fatherName", "motherName",
+                  "spouseName", "passportNumber", "nidOrBirthCertNumber", "issueDate", "expiryDate", "gender", "permanentAddress", "mobileNumber"
+                ]
+              },
+              subAgentB: {
+                type: Type.OBJECT,
+                properties: {
+                  rawMrz: { type: Type.ARRAY, items: { type: Type.STRING } },
+                  parsedFields: {
+                    type: Type.OBJECT,
+                    properties: {
+                      passportNumber: { type: Type.STRING },
+                      dob: { type: Type.STRING },
+                      expiryDate: { type: Type.STRING },
+                      gender: { type: Type.STRING },
+                      surname: { type: Type.STRING },
+                      givenName: { type: Type.STRING }
+                    },
+                    required: ["passportNumber", "dob", "expiryDate", "gender", "surname", "givenName"]
+                  },
+                  checksumStatus: {
+                    type: Type.OBJECT,
+                    properties: {
+                      passportNumberChecksum: { type: Type.STRING, description: "Pass or Fail" },
+                      dobChecksum: { type: Type.STRING, description: "Pass or Fail" },
+                      expiryDateChecksum: { type: Type.STRING, description: "Pass or Fail" },
+                      compositeChecksum: { type: Type.STRING, description: "Pass or Fail" }
+                    },
+                    required: ["passportNumberChecksum", "dobChecksum", "expiryDateChecksum", "compositeChecksum"]
+                  }
+                },
+                required: ["rawMrz", "parsedFields", "checksumStatus"]
+              }
             },
-            required: [
-              "givenName", "surname", "dob", "birthPlace", 
-              "fatherName", "motherName", 
-              "spouseName", "passportNumber", "nidOrBirthCertNumber", 
-              "issueDate", "expiryDate", "mobileNumber", "gender", "permanentAddress"
-            ]
+            required: ["subAgentA", "subAgentB"]
           }
         }
       });
 
-      if (response.text) {
-        const result = JSON.parse(response.text);
+      if (!intakeResponse.text) {
+        throw new Error('Sub-Agent A & B failed to return scan data.');
+      }
+
+      const intakeData = JSON.parse(intakeResponse.text);
+      console.log('✅ Stage 1 Complete: Visual and MRZ scan gathered.');
+
+      // --- STAGE 2: QA and Integrity Reconciliation (Sub-Agent C) ---
+      // This is a text-only call. It cross-checks Visual data against MRZ data,
+      // reports mismatching spellings or format discrepancies, and computes a confidence score.
+      const qaResponse = await ai.models.generateContent({
+        model: 'gemini-3.5-flash',
+        contents: `You are **Sub-Agent C (QA / Verification Analyst)**.
+        Analyze and reconcile the outputs from Sub-Agent A (Visual Page) and Sub-Agent B (MRZ Zone).
         
-        if (result.permanentAddress) {
-          try {
-            const enriched = await generateAddressesUsingGemini(ai, result.permanentAddress);
-            result.presentAddress = enriched.presentAddress;
-            result.businessAddressDhaka = enriched.businessAddressDhaka;
-            result.businessAddressLocal = enriched.businessAddressLocal;
-            result.officeAddressDhaka = enriched.officeAddressDhaka;
-            result.officeAddressLocal = enriched.officeAddressLocal;
-          } catch (addrErr) {
-            console.error('Failed to pre-enrich addresses:', addrErr);
-            result.presentAddress = '';
-            result.businessAddressDhaka = '';
-            result.businessAddressLocal = '';
-            result.officeAddressDhaka = '';
-            result.officeAddressLocal = '';
+        Sub-Agent A (Visual OCR Check):
+        ${JSON.stringify(intakeData.subAgentA, null, 2)}
+        
+        Sub-Agent B (MRZ Specialist Check):
+        ${JSON.stringify(intakeData.subAgentB, null, 2)}
+        
+        Tasks:
+        1. Compare Names spelling (Visual Surname + Given Name vs MRZ Name). Note truncated names in MRZ.
+        2. Compare Birthdate (DOB) formats and values.
+        3. Compare Passport Numbers, Sex/Gender, and Expiration Dates.
+        4. Synthesize any found variations or errors into an array of clear warnings under "discrepancies". Write them in clear English (e.g. "Passport number matches, minor visual spelling variation corrected"). If perfect, output empty array.
+        5. Formulate the ultimate correct dataset for "finalData", converting sex/gender code M/F to fully written "Male" or "Female", and dates to proper dd/mm/yyyy.
+        6. Determine overall confidence score out of 100%.`,
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              discrepancies: { type: Type.ARRAY, items: { type: Type.STRING } },
+              confidenceScore: { type: Type.INTEGER },
+              finalData: {
+                type: Type.OBJECT,
+                properties: {
+                  givenName: { type: Type.STRING },
+                  surname: { type: Type.STRING },
+                  dob: { type: Type.STRING },
+                  birthPlace: { type: Type.STRING },
+                  fatherName: { type: Type.STRING },
+                  motherName: { type: Type.STRING },
+                  spouseName: { type: Type.STRING },
+                  passportNumber: { type: Type.STRING },
+                  nidOrBirthCertNumber: { type: Type.STRING },
+                  issueDate: { type: Type.STRING },
+                  expiryDate: { type: Type.STRING },
+                  gender: { type: Type.STRING },
+                  permanentAddress: { type: Type.STRING },
+                  mobileNumber: { type: Type.STRING }
+                },
+                required: [
+                  "givenName", "surname", "dob", "birthPlace", "fatherName", "motherName",
+                  "spouseName", "passportNumber", "nidOrBirthCertNumber", "issueDate", "expiryDate", "gender", "permanentAddress", "mobileNumber"
+                ]
+              }
+            },
+            required: ["discrepancies", "confidenceScore", "finalData"]
           }
-        } else {
+        }
+      });
+
+      if (!qaResponse.text) {
+        throw new Error('Sub-Agent C failed to reconcile the parsed passport data.');
+      }
+
+      const qaData = JSON.parse(qaResponse.text);
+      console.log('✅ Stage 2 Complete: QA Cross-Check completed.');
+
+      // --- STAGE 3: Custom Visa Declaration Drafting (Sub-Agent D) ---
+      // This is a text-only call. It drafts a general, highly professional undertaking 
+      // based on the finalized dataset, strictly ignoring minor-age rules or single parent rules.
+      const undertakingDraftResponse = await ai.models.generateContent({
+        model: 'gemini-3.5-flash',
+        contents: `You are **Sub-Agent D (Declaration / Undertaking Generator)**.
+        Your task is to draft a formal self-declaration undertaking in official English to support the applicant's visa application.
+        
+        Applicant Data:
+        - Full Name: ${qaData.finalData.givenName} ${qaData.finalData.surname}
+        - Passport Number: ${qaData.finalData.passportNumber}
+        - Date of Birth: ${qaData.finalData.dob}
+        - Gender: ${qaData.finalData.gender}
+        - Place of Birth: ${qaData.finalData.birthPlace}
+        
+        Discrepancy warnings flagged: ${JSON.stringify(qaData.discrepancies)}
+        
+        STRICT CONSTRAINTS from the system design:
+        1. Do NOT write automated parent/guardian clauses regardless of age.
+        2. Do NOT omit spouse sections or add single-parent conditional formatting clauses.
+        3. Keep the undertaking completely general, official, and professional for the applicant.
+        
+        Write 2-3 formal paragraphs. If there was a discrepancy reported in the names, add a supportive sentence confirming that the names represent the exact same individual and any differences are minor spelling variations in the digital scan process. Else, standard pledge of truthfulness.`,
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              customDraft: { type: Type.STRING }
+            },
+            required: ["customDraft"]
+          }
+        }
+      });
+
+      const subAgentDData = undertakingDraftResponse.text ? JSON.parse(undertakingDraftResponse.text) : { customDraft: "" };
+      console.log('✅ Stage 3 Complete: Undertaking draft created by Sub-Agent D.');
+
+      // --- STAGE 4: Main Agent Coordination & Data Packaging ---
+      // Combine results into final package, inject generated addresses and formatted coordination log
+      const result = { ...qaData.finalData };
+      result.discrepancyList = qaData.discrepancies;
+      result.customUndertakingDraft = subAgentDData.customDraft || "";
+
+      // Generate coordination logs in markdown
+      const formattedMrzLines = Array.isArray(intakeData.subAgentB.rawMrz) 
+        ? intakeData.subAgentB.rawMrz.map((line: string) => `\`${line}\``).join('\n  ')
+        : 'Lines not detected';
+
+      const logLines = [
+        `🤖 **Main Agent (Executive System Coordinator)**: Initiated Multi-Agent Session. Coordinated parallel execution flows.`,
+        `🛰️ **Sub-Agent A (Visual Page Extractor)**: Scan complete. Retrieved raw textual and structural page properties.`,
+        `🔍 **Sub-Agent B (MRZ Verification Specialist)**: Detected Machine-Readable Zone:\n  ${formattedMrzLines}`,
+        `   - Passport No Checksum: **${intakeData.subAgentB.checksumStatus.passportNumberChecksum}**`,
+        `   - Date of Birth Checksum: **${intakeData.subAgentB.checksumStatus.dobChecksum}**`,
+        `   - Expiry Date Checksum: **${intakeData.subAgentB.checksumStatus.expiryDateChecksum}**`,
+        `   - Composite Checksum: **${intakeData.subAgentB.checksumStatus.compositeChecksum}**`,
+        `🛡️ **Sub-Agent C (QA / Data Integrity Analyst)**: Completed visual vs MRZ correlation check. Calculated overall extraction confidence at **${qaData.confidenceScore}%**. Flagged ${qaData.discrepancies.length} discrepancy warnings.`,
+        `✍️ **Sub-Agent D (Declaration Drafter)**: Prepared customized official visa undertaking form draft matching passport data.`
+      ];
+      result.agentLog = logLines.join('\n\n');
+
+      // Now add addresses
+      if (result.permanentAddress) {
+        try {
+          const enriched = await generateAddressesUsingGemini(ai, result.permanentAddress);
+          result.presentAddress = enriched.presentAddress;
+          result.businessAddressDhaka = enriched.businessAddressDhaka;
+          result.businessAddressLocal = enriched.businessAddressLocal;
+          result.officeAddressDhaka = enriched.officeAddressDhaka;
+          result.officeAddressLocal = enriched.officeAddressLocal;
+        } catch (addrErr) {
+          console.error('Failed to pre-enrich addresses:', addrErr);
           result.presentAddress = '';
           result.businessAddressDhaka = '';
           result.businessAddressLocal = '';
           result.officeAddressDhaka = '';
           result.officeAddressLocal = '';
         }
-
-        res.json({ success: true, data: result });
       } else {
-        res.status(500).json({ error: 'Failed to extract data from image' });
+        result.presentAddress = '';
+        result.businessAddressDhaka = '';
+        result.businessAddressLocal = '';
+        result.officeAddressDhaka = '';
+        result.officeAddressLocal = '';
       }
+
+      console.log('🤖 Multi-Agent Pipeline Completed. Packaging results for display.');
+      res.json({ success: true, data: result });
 
     } catch (error: any) {
       console.error('Extraction Error:', error);
