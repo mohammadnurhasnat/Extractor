@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Copy, Check, Pencil, X } from 'lucide-react';
+import { checkAddressValidity } from '../utils/addressUtils';
 
 interface DataFieldProps {
   label: string;
@@ -76,6 +77,10 @@ export function DataField({ label, value, highlight = false, onValueChange }: Da
   };
 
   const isTextArea = label.toUpperCase().includes('ADDRESS') || (value && value.length > 40);
+  const isAddressField = label.toUpperCase().includes('ADDRESS');
+  const validation = isAddressField ? checkAddressValidity(value) : { hasError: false, message: '' };
+  const hasValidationError = validation.hasError || (value && value.includes("Verification Required"));
+  const errorMessage = validation.message || "Verification Required: Address details are unverified.";
 
   return (
     <div className="flex flex-col group/field">
@@ -92,9 +97,11 @@ export function DataField({ label, value, highlight = false, onValueChange }: Da
         relative rounded-lg text-sm font-medium border transition-all duration-300 flex items-stretch overflow-hidden min-h-[40px]
         ${copied
           ? 'bg-emerald-50/80 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-800 text-emerald-900 dark:text-emerald-100 shadow-sm'
-          : highlight 
-            ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800/50 text-blue-900 dark:text-blue-100 shadow-inner' 
-            : 'bg-slate-50 dark:bg-black border-slate-200 dark:border-zinc-800 text-slate-800 dark:text-zinc-100'}
+          : hasValidationError
+            ? 'bg-rose-500/5 dark:bg-rose-500/10 border-red-500/70 dark:border-red-500/40 text-red-900 dark:text-red-300 shadow-[0_0_8px_rgba(239,68,68,0.06)]'
+            : highlight 
+              ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800/50 text-blue-900 dark:text-blue-100 shadow-inner' 
+              : 'bg-slate-50 dark:bg-black border-slate-200 dark:border-zinc-800 text-slate-800 dark:text-zinc-100'}
         ${!value && !isEditing ? 'italic opacity-60' : ''}
       `}>
         {isEditing ? (
@@ -140,7 +147,7 @@ export function DataField({ label, value, highlight = false, onValueChange }: Da
           </form>
         ) : (
           <div className="flex-1 flex items-start justify-between gap-2 p-3 w-full">
-            <span className="break-words whitespace-normal text-left flex-1 w-full" title={value || ''}>
+            <span className={`break-words whitespace-normal text-left flex-1 w-full ${hasValidationError ? 'text-red-800 dark:text-red-400 font-semibold' : ''}`} title={value || ''}>
               {value || 'Not Found'}
             </span>
             
@@ -172,6 +179,12 @@ export function DataField({ label, value, highlight = false, onValueChange }: Da
           </div>
         )}
       </div>
+      
+      {hasValidationError && value && (
+        <span className="text-[11px] font-semibold text-rose-500 dark:text-rose-400 mt-1 flex items-center gap-1 animate-pulse">
+          ⚠️ {errorMessage}
+        </span>
+      )}
     </div>
   );
 }

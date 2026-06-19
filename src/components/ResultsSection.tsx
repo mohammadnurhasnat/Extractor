@@ -47,18 +47,20 @@ export function ResultsSection({
             animate={{ opacity: 1 }}
           >
             {/* PRINT-ONLY PROFESSIONAL HEADER/LETTERHEAD */}
-            <div className="hidden print:block mb-8 border-b-2 border-[#0C8493] pb-4">
-              <div className="flex justify-between items-end">
-                <div>
-                  <h1 className="text-2xl font-black text-[#0C8493]">PASSPORT DATA EXTRACTION REPORT</h1>
-                  <p className="text-xs text-[#FF8006] font-bold mt-1 uppercase tracking-wider">Smart Automated Identity Processor</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs text-slate-500 font-medium">Date Printed: {new Date().toLocaleDateString('en-GB')}</p>
-                  <p className="text-xs text-slate-500 font-medium">Status: <span className="text-emerald-600 font-semibold">Verified Extract</span></p>
+            {resultsTab === 'profile' && (
+              <div className="hidden print:block mb-8 border-b-2 border-[#0C8493] pb-4">
+                <div className="flex justify-between items-end">
+                  <div>
+                    <h1 className="text-2xl font-black text-[#0C8493]">PASSPORT DATA EXTRACTION REPORT</h1>
+                    <p className="text-xs text-[#FF8006] font-bold mt-1 uppercase tracking-wider">Smart Automated Identity Processor</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-slate-500 font-medium">Date Printed: {new Date().toLocaleDateString('en-GB')}</p>
+                    <p className="text-xs text-slate-500 font-medium">Status: <span className="text-emerald-600 font-semibold">Verified Extract</span></p>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* TABS SELECTOR */}
             {isUndertakingConfigured && undertakingData && (

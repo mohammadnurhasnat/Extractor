@@ -197,6 +197,97 @@ const getMatchedDistrict = (distName: string): typeof REAL_DISTRICTS[keyof typeo
   return REAL_DISTRICTS[pickedKey];
 };
 
+export interface ValidationError {
+  hasError: boolean;
+  message: string;
+}
+
+export const checkAddressValidity = (address: string | undefined | null): ValidationError => {
+  if (!address) {
+    return { hasError: true, message: "Verification Required: Address is empty." };
+  }
+  
+  const clean = address.trim();
+  if (clean === "Verification Required" || clean.startsWith("Verification Required") || clean.includes("Verification Required")) {
+    return { hasError: true, message: "Verification Required: Invalid address value." };
+  }
+
+  const isDhaka = /dhaka/i.test(clean);
+  
+  if (isDhaka) {
+    // Pattern: House, Road, Area, Thana Name, Dhaka-PostalCode
+    const hasHouseOrPlot = /(house\s*#?\s*[-#]?\s*\d+|plot\s*#?\s*[-#]?\s*\d+|holding\s*[-#]?\s*\d+)/i.test(clean);
+    const hasRoad = /(road\s*[-#]?\s*\d+|road\s+[a-zA-Z0-9]+|avenue|sarani|highway)/i.test(clean);
+    const hasZip = /dhaka\s*-\s*\d{4}/i.test(clean);
+
+    if (!hasHouseOrPlot) {
+      return { 
+        hasError: true, 
+        message: "Verification Required: Missing House or Plot detail (e.g., 'House 12' or 'House-22')." 
+      };
+    }
+    if (!hasRoad) {
+      return { 
+        hasError: true, 
+        message: "Verification Required: Missing Road details (e.g., 'Road 5')." 
+      };
+    }
+    if (!hasZip) {
+      return { 
+        hasError: true, 
+        message: "Verification Required: Invalid format. Must end with 'Dhaka-XXXX' (e.g., 'Dhaka-1205')." 
+      };
+    }
+
+    const commas = (clean.match(/,/g) || []).length;
+    if (commas < 2) {
+      return {
+        hasError: true,
+        message: "Verification Required: Address is incomplete. Expected: House, Road, Area, Thana, Dhaka-Zip."
+      };
+    }
+  } else {
+    // Non-Dhaka addresses
+    const isCommercialStyle = /(holding|office|level|plot)/i.test(clean);
+    const hasZipPattern = /[a-zA-Z\s\d]+-\d{4}$/i.test(clean);
+    
+    if (!hasZipPattern) {
+      return { 
+        hasError: true, 
+        message: "Verification Required: Invalid format. Must end with '[District Name]-[4-digit Zip Code]'." 
+      };
+    }
+
+    if (isCommercialStyle) {
+      const hasHolding = /(holding|house|plot)\s*[-#]?\s*\d+/i.test(clean);
+      const hasRoad = /(road|bazaar|highway|lane)/i.test(clean);
+      if (!hasHolding) {
+        return {
+          hasError: true,
+          message: "Verification Required: Missing Holding or Plot detail (e.g., 'Holding-12')."
+        };
+      }
+      if (!hasRoad) {
+        return {
+          hasError: true,
+          message: "Verification Required: Missing Road or Bazaar details (e.g., 'College Road')."
+        };
+      }
+    } else {
+      // Village style: village, PO, Thana, District-Zip
+      const parts = clean.split(',').map(s => s.trim()).filter(Boolean);
+      if (parts.length < 3) {
+        return {
+          hasError: true,
+          message: "Verification Required: Address is incomplete. Expected: Village, Post Office, Thana, District-Zip."
+        };
+      }
+    }
+  }
+
+  return { hasError: false, message: "" };
+};
+
 export const generateBangladeshiAddress = (
   districtName: string, 
   seedString: string, 
@@ -220,42 +311,50 @@ export const generateBangladeshiAddress = (
   if (type === 'present' || type === 'local') {
     if (isUrban) {
       if (seed % 2 === 0) {
-        return `House ${houseNum}, ${roadName}, ${areaName}, ${matchedDistrict.name}-${thanaObj.postcode}`;
+        return `House ${houseNum}, ${roadName}, ${areaName}, ${thanaObj.name}, ${matchedDistrict.name}-${thanaObj.postcode}`;
       } else {
         // Hyphen pattern like House-22, Kolwalapara, Mirpur, Dhaka-1216
         const subArea = seed % 3 === 0 ? 'Kolwalapara, ' : '';
-        return `House-${houseNum}, ${subArea}${areaName}, ${matchedDistrict.name}-${thanaObj.postcode}`;
+        return `House-${houseNum}, ${subArea}${areaName}, ${thanaObj.name}, ${matchedDistrict.name}-${thanaObj.postcode}`;
       }
     } else {
       // Must have Holding in non-Dhaka districts
-      return `Holding-${houseNum}, ${villageName}, ${thanaObj.name}, ${matchedDistrict.name}-${thanaObj.postcode}`;
+      return `${villageName}, ${thanaObj.name}, ${thanaObj.name}, ${matchedDistrict.name}-${thanaObj.postcode}`;
     }
   } else {
     // Office/Business
     const level = ((seed % 8) + 1).toString();
     if (isUrban) {
       if (seed % 2 === 0) {
-        return `Level ${level}, Plot ${plotNum}, ${roadName}, ${areaName}, ${matchedDistrict.name}-${thanaObj.postcode}`;
+        return `Level ${level}, Plot ${plotNum}, ${roadName}, ${areaName}, ${thanaObj.name}, ${matchedDistrict.name}-${thanaObj.postcode}`;
       } else {
-        return `Level ${level}, House ${houseNum}, ${roadName}, ${areaName}, ${matchedDistrict.name}-${thanaObj.postcode}`;
+        return `Level ${level}, House ${houseNum}, ${roadName}, ${areaName}, ${thanaObj.name}, ${matchedDistrict.name}-${thanaObj.postcode}`;
       }
     } else {
-      return `Level ${level}, Holding-${houseNum}, ${roadName}, ${thanaObj.name}, ${matchedDistrict.name}-${thanaObj.postcode}`;
+      // Always use the sadar thana/main town for other district business/offices
+      const sadarThana = matchedDistrict.thanas.find(t => t.name.toLowerCase().includes('sadar')) || matchedDistrict.thanas[0];
+      const sadarRoad = sadarThana.roads[(seed + 1) % sadarThana.roads.length];
+      const sadarArea = sadarThana.areas[(seed + 2) % sadarThana.areas.length];
+      return `Level ${level}, Holding-${houseNum}, ${sadarRoad}, ${sadarArea}, ${sadarThana.name}, ${matchedDistrict.name}-${sadarThana.postcode}`;
     }
   }
 };
 
 export const getPresentAddress = (itemData: PassportData | null): string => {
-  if (!itemData) return "House 12, Road 5, Dhanmondi, Dhaka-1205";
+  if (!itemData) return "House 12, Road 5, Dhanmondi, Dhanmondi, Dhaka-1205";
   
   if (itemData.presentAddress && itemData.presentAddress !== itemData.permanentAddress) {
-    const commaCount = (itemData.presentAddress.match(/,/g) || []).length;
-    if (commaCount >= 2) {
+    const validity = checkAddressValidity(itemData.presentAddress);
+    if (!validity.hasError) {
       return itemData.presentAddress;
     }
+    return "Verification Required";
   }
 
   const permanentAddr = getPermanentAddress(itemData);
+  if (permanentAddr === "Verification Required") {
+    return "Verification Required";
+  }
   const district = getDistrictFromAddress(permanentAddr, itemData);
   
   // Rule 1: If permanent address is Dhaka district, present address is same as permanent
@@ -373,22 +472,24 @@ export const getThanaSadarAddress = (permanentAddress: string | undefined | null
   const dist = permanentAddress ? getDistrictFromAddress(permanentAddress) : 'Gopalganj';
   const matchedDistrict = getMatchedDistrict(dist);
   
-  const thanaObj = matchedDistrict.thanas[seed % matchedDistrict.thanas.length];
+  // To make it "main shohor er ase paser", seek the Sadar Thana (normally the first thana or has 'Sadar' in its name)
+  const thanaObj = matchedDistrict.thanas.find(t => t.name.toLowerCase().includes('sadar')) || matchedDistrict.thanas[0];
   const road = thanaObj.roads[(seed + 1) % thanaObj.roads.length];
   const houseNum = ((seed % 95) + 1).toString();
+  const areaName = thanaObj.areas[0] || thanaSadarFormat(thanaObj.name);
   
   const isUrban = matchedDistrict.name === 'Dhaka' || matchedDistrict.name === 'Gazipur';
   if (isUrban) {
-    return `House ${houseNum}, ${road}, ${thanaSadarFormat(thanaObj.name)}, ${matchedDistrict.name}-${thanaObj.postcode}`;
+    return `House ${houseNum}, ${road}, ${areaName}, ${thanaObj.name}, ${matchedDistrict.name}-${thanaObj.postcode}`;
   } else {
-    return `Holding-${houseNum}, ${road}, ${thanaSadarFormat(thanaObj.name)}, ${matchedDistrict.name}-${thanaObj.postcode}`;
+    return `Holding-${houseNum}, ${road}, ${areaName}, ${thanaObj.name}, ${matchedDistrict.name}-${thanaObj.postcode}`;
   }
 };
 
 export const getBusinessAddressLocal = (permanentAddress: string, itemData?: PassportData | null): string => {
   if (itemData && itemData.businessAddressLocal) return itemData.businessAddressLocal;
-  if (!permanentAddress) {
-    return "Holding-12, College Road, Gopalganj Sadar, Gopalganj-8100";
+  if (!permanentAddress || permanentAddress === "Verification Required") {
+    return "Holding-12, College Road, Sadar Area, Gopalganj Sadar, Gopalganj-8100";
   }
   const seed = (itemData?.passportNumber || itemData?.givenName || 'seeder_local')
     .split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
@@ -397,8 +498,8 @@ export const getBusinessAddressLocal = (permanentAddress: string, itemData?: Pas
 
 export const getOfficeAddressLocal = (permanentAddress: string, itemData?: PassportData | null): string => {
   if (itemData && itemData.officeAddressLocal) return itemData.officeAddressLocal;
-  if (!permanentAddress) {
-    return "Holding-24, College Road, Gopalganj Sadar, Gopalganj-8100";
+  if (!permanentAddress || permanentAddress === "Verification Required") {
+    return "Holding-24, College Road, Sadar Area, Gopalganj Sadar, Gopalganj-8100";
   }
   const seed = (itemData?.passportNumber || itemData?.givenName || 'seeder_office_local')
     .split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) + 17;
@@ -416,23 +517,22 @@ export const generatePermanentAddressForDistrict = (district: string, seedString
   const isUrban = matchedDistrict.name === 'Dhaka' || matchedDistrict.name === 'Gazipur';
   if (isUrban) {
     const road = thanaObj.roads[(seed + 1) % thanaObj.roads.length];
-    return `House-${houseNum}, ${road}, ${thanaObj.name} - ${thanaObj.postcode}, ${matchedDistrict.name.toUpperCase()}`;
+    return `House-${houseNum}, ${road}, ${thanaObj.areas[0] || thanaObj.name}, ${thanaObj.name}, ${matchedDistrict.name}-${thanaObj.postcode}`;
   } else {
-    return `Holding-${houseNum}, ${villageName}, ${thanaObj.name} - ${thanaObj.postcode}, ${matchedDistrict.name.toUpperCase()}`;
+    // pattern: village-postoffice name-thana-district-postal code
+    return `${villageName}, ${thanaObj.name}, ${thanaObj.name}, ${matchedDistrict.name}-${thanaObj.postcode}`;
   }
 };
 
 export const getPermanentAddress = (itemData: PassportData | null): string => {
-  if (!itemData) return "Holding-12, HARPARA, SREENAGAR, SREENAGAR - 1550, MUNSHIGANJ";
+  if (!itemData) return "Gimadanga, Tungipara, Tungipara, Gopalganj-8120";
   
   if (itemData.permanentAddress) {
-    const commaCount = (itemData.permanentAddress.match(/,/g) || []).length;
-    if (commaCount >= 2) {
+    const validity = checkAddressValidity(itemData.permanentAddress);
+    if (!validity.hasError) {
       return itemData.permanentAddress;
     }
-    // If it has permanentAddress but not in a clean 3+ part format, reformat it
-    const dist = getDistrictFromAddress(itemData.permanentAddress, itemData) || "Munshiganj";
-    return generatePermanentAddressForDistrict(dist, itemData.passportNumber || itemData.givenName || 'seeder_perm');
+    return "Verification Required";
   }
 
   const dist = itemData.birthPlaceDistrict || itemData.birthPlace || "Munshiganj";
