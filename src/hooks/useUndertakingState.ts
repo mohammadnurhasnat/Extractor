@@ -7,7 +7,14 @@ export function useUndertakingState(data: PassportData | null) {
   const [utToDate, setUtToDate] = useState(() => localStorage.getItem('ut_to_date') || '');
   const [utReturnCountry, setUtReturnCountry] = useState(() => localStorage.getItem('ut_return_country') || 'Bangladesh');
   const [utHospitalName, setUtHospitalName] = useState(() => localStorage.getItem('ut_hospital_name') || '');
-  const [utDoctorName, setUtDoctorName] = useState(() => localStorage.getItem('ut_doctor_name') || '');
+  const [utDoctorName, setUtDoctorName] = useState(() => {
+    const saved = localStorage.getItem('ut_doctor_name') || '';
+    if (saved === 'Dr. K. S. Murthy') {
+      localStorage.removeItem('ut_doctor_name');
+      return '';
+    }
+    return saved;
+  });
   const [utEmbassyCity, setUtEmbassyCity] = useState(() => localStorage.getItem('ut_embassy_city') || 'Delhi');
   const [utEmbassyDate, setUtEmbassyDate] = useState(() => localStorage.getItem('ut_embassy_date') || '');
   const [isUndertakingEditable, setIsUndertakingEditable] = useState(() => localStorage.getItem('is_undertaking_editable') !== 'false');
@@ -72,6 +79,9 @@ export function useUndertakingState(data: PassportData | null) {
         if (saved) {
           const parsed = JSON.parse(saved) as UndertakingFormData;
           if (parsed && parsed.passportNumber === (data.passportNumber || '')) {
+            if (parsed.doctorName === 'Dr. K. S. Murthy') {
+              parsed.doctorName = '';
+            }
             savedData = parsed;
           }
         }

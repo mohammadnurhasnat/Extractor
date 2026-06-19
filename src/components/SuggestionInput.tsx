@@ -91,7 +91,7 @@ export function SuggestionInput({
                   e.preventDefault(); // Prevents input blur before selection
                   selectItem(item);
                 }}
-                className={`w-full text-left px-3 py-1.5 text-xs font-sans transition-colors flex items-center justify-between hover:bg-slate-50 dark:hover:bg-zinc-90 w-full hover:text-slate-900 dark:hover:text-white ${
+                className={`w-full text-left px-3 py-1.5 text-xs font-sans transition-colors flex items-center justify-between hover:bg-slate-100 dark:hover:bg-zinc-800 hover:text-slate-900 dark:hover:text-white ${
                   isSelected 
                     ? 'bg-blue-50/50 dark:bg-blue-900/10 text-blue-600 dark:text-blue-400 font-semibold' 
                     : 'text-slate-650 dark:text-zinc-350'

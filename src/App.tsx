@@ -126,7 +126,12 @@ export default function App() {
   const [savedDepartments, setSavedDepartments] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem('saved_department_names');
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          return parsed.filter((d: string) => d !== 'Dr. K. S. Murthy');
+        }
+      }
     } catch (e) {
       console.error(e);
     }
