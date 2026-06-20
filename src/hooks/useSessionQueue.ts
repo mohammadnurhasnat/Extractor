@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { QueueItem, PassportData } from '../types';
 import imageCompression from 'browser-image-compression';
+import { applyOcrCorrections } from '../utils/ocrCorrection';
 import JSZip from 'jszip';
 import { generateDataText, normalizeGender } from '../utils/addressUtils';
 import { getPDFDocument } from '../utils/pdfGenerator';
@@ -68,8 +69,11 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
       const result = await res.json();
       
       if (res.ok && result.success) {
-        if (result.data && result.data.gender) {
-          result.data.gender = normalizeGender(result.data.gender);
+        if (result.data) {
+          result.data = applyOcrCorrections(result.data);
+          if (result.data.gender) {
+            result.data.gender = normalizeGender(result.data.gender);
+          }
         }
         
         const deduplicatedData = addToHistory(result.data) || result.data;
