@@ -201,7 +201,9 @@ export default function App() {
       if (saved && saved !== 'undefined' && saved.trim() !== '') {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
-          return Array.from(new Set([...defaults, ...parsed]));
+          const defaultLower = new Set(defaults.map(d => d.toLowerCase().trim()));
+          const filteredParsed = parsed.filter(p => !defaultLower.has(p.toLowerCase().trim()));
+          return Array.from(new Set([...defaults, ...filteredParsed]));
         }
       }
     } catch (e) {
