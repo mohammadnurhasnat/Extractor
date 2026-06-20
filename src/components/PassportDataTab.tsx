@@ -85,9 +85,13 @@ export function PassportDataTab({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-3">
         <DataField label="EMAIL" value={getGeneratedEmail(data)} highlight onValueChange={(val) => updateDataField('email', val)} />
         <DataField label="DOB" value={data.dob} onValueChange={(val) => updateDataField('dob', val)} />
+        
         <DataField label="Gender" value={data.gender || ''} onValueChange={(val) => updateDataField('gender', val)} />
+        <div className="hidden sm:block"></div>
+        
         <DataField label="Surname" value={data.surname} onValueChange={(val) => updateDataField('surname', val)} />
         <DataField label="Given Name" value={data.givenName} onValueChange={(val) => updateDataField('givenName', val)} />
+        
         <DataField label="Town/City of birth/BIRTH PLACE" value={data.birthPlace} onValueChange={(val) => updateDataField('birthPlace', val)} />
         <DataField label="National Id No/BIRTH CERTIFICATE NO" value={data.nidOrBirthCertNumber} onValueChange={(val) => updateDataField('nidOrBirthCertNumber', val)} />
         <DataField label="Passport Number" value={data.passportNumber} highlight onValueChange={(val) => updateDataField('passportNumber', val)} />
