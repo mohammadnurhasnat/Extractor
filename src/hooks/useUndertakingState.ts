@@ -150,7 +150,7 @@ export function useUndertakingState(data: PassportData | null) {
           nationality: 'Bangladeshi',
           dob: data.dob || '',
           gender: data.gender || '',
-          address: data.presentAddress || '',
+          address: data.permanentAddress || '',
           purpose: utPurpose || '',
           travelFrom: utFromDate ? new Date(utFromDate).toLocaleDateString('en-GB') : '',
           travelTo: utToDate ? new Date(utToDate).toLocaleDateString('en-GB') : '',

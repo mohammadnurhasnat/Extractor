@@ -117,9 +117,14 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
     }
     setIsBatchProcessing(true);
     const pendingItems = queue.filter(q => q.status === 'queued' || q.status === 'failed');
-    for (const item of pendingItems) {
-      await extractSingleItem(item.id);
+    
+    // Process in parallel, e.g., 3 at a time.
+    const concurrency = 3;
+    for (let i = 0; i < pendingItems.length; i += concurrency) {
+      const chunk = pendingItems.slice(i, i + concurrency);
+      await Promise.all(chunk.map(item => extractSingleItem(item.id)));
     }
+    
     setIsBatchProcessing(false);
   };
 
