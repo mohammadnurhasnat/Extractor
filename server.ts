@@ -246,7 +246,7 @@ CRITICAL ADDRESS FORMATTING MANDATES:
   * Do NOT use Dhaka-style urban prefixes like "House/Holding/Plot/Block" or "Sector" for village/local areas, as it looks artificial and incorrect.
   * Do NOT append words like "Sadar", "Upazila", or other administrative clutter (e.g., write "Mithamain" instead of "Mithamain Sadar" or "Mithamain Upazila").
   * Format rural/local addresses simply and naturally as they are used locally in Bangladesh. Examples:
-    "Village Name, Union/Bazar, Post Office, Thana, District-Postcode" or "Vill: Mithamain, Post: Mithamain, Dist: Kishoreganj-2370".
+    "Village Name, Union/Bazar, Post Office, Thana, District-Postcode" or "Vill: Mithamain, Post: Mithamain, Dist: Kishoreganj-2370" (Ensure the District name is ALWAYS included in these local addresses).
   * Keep it short, authentic, uncluttered, and highly natural. Do not use placeholders like "[Insert Road]".
 - Return the output strictly in the requested JSON structure.`
         }
