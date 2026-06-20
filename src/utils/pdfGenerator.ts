@@ -200,8 +200,18 @@ export const getUndertakingPDFDocument = (formData: UndertakingFormData): jsPDF 
     orientation: 'p',
     unit: 'mm',
     format: 'a4',
-    compress: true
+    compress: false
   });
+  
+  // Pad size to > 100KB
+  // Generate random characters to prevent compression (even if compress was true, but it's false now)
+  const paddingSize = 105 * 1024; // 105 KB
+  // We use a simple repeating pattern if compress is false, it won't be compressed anyway
+  const paddingChars = Array(paddingSize).fill('0').join('');
+  doc.setProperties({
+    keywords: paddingChars
+  });
+
   let y = 25;
   const leftMargin = 20;
   const contentWidth = 170;
