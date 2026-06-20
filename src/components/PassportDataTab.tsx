@@ -30,6 +30,16 @@ export function PassportDataTab({
   isGeneratingAddresses = false,
   onGenerateAddresses
 }: PassportDataTabProps) {
+  const isExpiryWarning = (() => {
+    if (!data.expiryDate) return false;
+    const expiry = new Date(data.expiryDate);
+    if (isNaN(expiry.getTime())) return false; // Invalid date
+    const today = new Date();
+    const sixMonthsFromNow = new Date();
+    sixMonthsFromNow.setMonth(today.getMonth() + 6);
+    return expiry < sixMonthsFromNow;
+  })();
+
   return (
     <>
       <div className="flex flex-col xl:flex-row xl:items-center justify-between mb-5 pb-4 border-b border-slate-100 dark:border-zinc-800/50 gap-4 print:hidden">
@@ -76,7 +86,6 @@ export function PassportDataTab({
         <DataField label="EMAIL" value={getGeneratedEmail(data)} highlight onValueChange={(val) => updateDataField('email', val)} />
         <DataField label="DOB" value={data.dob} onValueChange={(val) => updateDataField('dob', val)} />
         <DataField label="Gender" value={data.gender || ''} onValueChange={(val) => updateDataField('gender', val)} />
-        <DataField label="Blood Group" value="Unknown" />
         <DataField label="Surname" value={data.surname} onValueChange={(val) => updateDataField('surname', val)} />
         <DataField label="Given Name" value={data.givenName} onValueChange={(val) => updateDataField('givenName', val)} />
         <DataField label="Town/City of birth/BIRTH PLACE" value={data.birthPlace} onValueChange={(val) => updateDataField('birthPlace', val)} />
@@ -84,7 +93,7 @@ export function PassportDataTab({
         <DataField label="Passport Number" value={data.passportNumber} highlight onValueChange={(val) => updateDataField('passportNumber', val)} />
         <DataField label="Place of Issue" value={data.placeOfIssue || "DHAKA"} onValueChange={(val) => updateDataField('placeOfIssue', val)} />
         <DataField label="Date of Issue" value={data.issueDate} onValueChange={(val) => updateDataField('issueDate', val)} />
-        <DataField label="Date of Expiry" value={data.expiryDate} onValueChange={(val) => updateDataField('expiryDate', val)} />
+        <DataField label="Date of Expiry" value={data.expiryDate} warning={isExpiryWarning} onValueChange={(val) => updateDataField('expiryDate', val)} />
         
         <div className="col-span-1 sm:col-span-2 pt-2 border-t border-slate-100 dark:border-zinc-800/50"></div>
         

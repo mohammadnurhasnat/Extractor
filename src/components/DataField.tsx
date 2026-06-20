@@ -5,10 +5,11 @@ interface DataFieldProps {
   label: string;
   value: string;
   highlight?: boolean;
+  warning?: boolean;
   onValueChange?: (newValue: string) => void;
 }
 
-export function DataField({ label, value, highlight = false, onValueChange }: DataFieldProps) {
+export function DataField({ label, value, highlight = false, warning = false, onValueChange }: DataFieldProps) {
   const [copied, setCopied] = useState(false);
   const [persistentCopied, setPersistentCopied] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -108,14 +109,16 @@ export function DataField({ label, value, highlight = false, onValueChange }: Da
       </div>
 
       <div className={`
-        relative rounded-lg text-sm font-medium border transition-all duration-300 flex items-stretch overflow-hidden min-h-[40px]
+        relative rounded-lg text-sm font-medium border transition-all duration-300 flex items-stretch overflow-hidden min-h-[32px]
         ${copied || persistentCopied
           ? 'bg-green-100/90 dark:bg-orange-950/40 border-green-500 dark:border-orange-500 text-green-955 dark:text-orange-200 shadow-sm font-semibold'
-          : hasValidationError
-            ? 'bg-rose-500/5 dark:bg-rose-500/10 border-red-500/70 dark:border-red-500/40 text-red-900 dark:text-red-300 shadow-[0_0_8px_rgba(239,68,68,0.06)]'
-            : highlight 
-              ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800/50 text-blue-900 dark:text-blue-100 shadow-inner' 
-              : 'bg-slate-50 dark:bg-black border-slate-200 dark:border-zinc-800 text-slate-800 dark:text-zinc-100'}
+          : warning
+            ? 'bg-rose-100 dark:bg-rose-900/40 border-red-500 dark:border-red-400 text-red-900 dark:text-red-200'
+            : hasValidationError
+              ? 'bg-rose-500/5 dark:bg-rose-500/10 border-red-500/70 dark:border-red-500/40 text-red-900 dark:text-red-300 shadow-[0_0_8px_rgba(239,68,68,0.06)]'
+              : highlight 
+                ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800/50 text-blue-900 dark:text-blue-100 shadow-inner' 
+                : 'bg-slate-50 dark:bg-black border-slate-200 dark:border-zinc-800 text-slate-800 dark:text-zinc-100'}
         ${!value && !isEditing ? 'italic opacity-60' : ''}
       `}>
         {isEditing ? (
@@ -127,7 +130,7 @@ export function DataField({ label, value, highlight = false, onValueChange }: Da
                 onChange={(e) => setEditValue(e.target.value)}
                 onKeyDown={handleKeyDown}
                 rows={2}
-                className="flex-1 w-full min-w-0 px-3.5 py-2 text-sm font-medium bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-600 focus:outline-none resize-none"
+                className="flex-1 w-full min-w-0 px-2 py-1 text-sm font-medium bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-600 focus:outline-none resize-none"
               />
             ) : (
               <input
@@ -136,7 +139,7 @@ export function DataField({ label, value, highlight = false, onValueChange }: Da
                 value={editValue}
                 onChange={(e) => setEditValue(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="flex-1 w-full min-w-0 px-3.5 py-2 text-sm font-medium bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-600 focus:outline-none"
+                className="flex-1 w-full min-w-0 px-2 py-1 text-sm font-medium bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-600 focus:outline-none"
               />
             )}
             
