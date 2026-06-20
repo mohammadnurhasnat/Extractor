@@ -190,6 +190,11 @@ export default function App() {
     }
     return [
       'Apollo Hospital, Chennai',
+      'Max Super Speciality Hospital Noida',
+      'Rabindranath Tagore Hospital Kolkata',
+      'AIG Hospitals',
+      'Manipal Hospitals Mukundapur',
+      'Peerless Hospitex Hospital And Research Center Ltd',
       'Fortis Hospital, Kolkata',
       'Medanta Hospital, Gurgaon',
       'Narayana Health, Bangalore',
@@ -219,6 +224,7 @@ export default function App() {
       'Gastroenterology',
       'Urology',
       'Internal Medicine',
+      'IVF Problem',
       'General Surgery',
       'Pediatrics',
       'Gynecology'
