@@ -32,48 +32,44 @@ export const isHinduName = (name: string): boolean => {
   return hinduKeywords.some(keyword => lowerName.includes(keyword));
 };
 
-export const generateRandomEnterpriseName = (name: string, isJob = false): string => {
-  const firstName = name.split(' ').filter(p => p.length > 2)[0] || name.split(' ')[0] || 'Unknown';
-  const capitalizedName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
+export const extractMainNamePart = (name: string): string => {
+  if (!name || name === 'Unknown') return 'Unknown';
   
-  if (isHinduName(name)) {
-    const hinduSuffixes = isJob 
-      ? ['Jewellers', 'Sweetmeat', 'Mistanno Vandar', 'Bastraloy'] 
-      : ['Hair Cutting Salon', 'Mistanno Vandar', 'Sweet Store', 'Jewellers', 'Bastraloy', 'Mishti Ghor'];
-    const suffix = hinduSuffixes[name.length % hinduSuffixes.length];
-    const prefix = name.length % 2 === 0 ? 'MS ' : '';
-    return `${prefix}${capitalizedName} ${suffix}`.trim();
-  }
+  const prefixesToIgnore = ['md', 'md.', 'mohammad', 'mohammed', 'muhammad', 'mst', 'mst.', 'mosammat', 'mr', 'mr.', 'mrs', 'mrs.', 'miss', 'sree', 'shree'];
+  const nameTokens = name.split(/\s+/).filter(Boolean);
+  const meaningfulTokens = nameTokens.filter(token => !prefixesToIgnore.includes(token.toLowerCase()));
   
-  const suffixes = suffixesToGet(name, isJob);
-  const suffix = suffixes[name.length % suffixes.length];
-  
-  const prefixes = ['MS ', '', ''];
-  const prefix = prefixes[name.length % prefixes.length];
-  
-  return `${prefix}${capitalizedName} ${suffix}`.trim();
+  const mainPart = meaningfulTokens[0] || nameTokens[0] || 'Unknown';
+  return mainPart.charAt(0).toUpperCase() + mainPart.slice(1).toLowerCase();
 };
 
-const suffixesToGet = (name: string, isJob: boolean): string[] => {
-  return isJob 
-    ? ['Enterprise', 'Traders', 'Corporation', 'Agency', 'Trading', 'Limited'] 
-    : ['Enterprise', 'Traders', 'Telecom', 'Motors', 'Fabrics', 'Electronics'];
+export const generateRandomEnterpriseName = (name: string): string => {
+  const mainName = extractMainNamePart(name);
+  
+  const suffixes = ['International', 'Store', 'Traders', 'Fashion House', 'Boutique House', 'Limited', 'Stationary'];
+  
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const suffixIndex = Math.abs(hash) % suffixes.length;
+  const suffix = suffixes[suffixIndex];
+  
+  return `${mainName} ${suffix}`;
 };
 
 export const getProprietorBusinessName = (itemData: PassportData | null): string => {
   if (!itemData) return '';
   if (itemData.proprietorBusinessName) return itemData.proprietorBusinessName;
-  const nameToUse = itemData.givenName || itemData.surname || itemData.fatherName || itemData.motherName || 'Unknown';
-  const fullName = `${itemData.givenName || ''} ${itemData.surname || ''} ${itemData.fatherName || ''} ${itemData.motherName || ''}`;
-  return generateRandomEnterpriseName(isHinduName(fullName) ? fullName : nameToUse);
+  const nameToUse = itemData.givenName || itemData.surname || 'Unknown';
+  return generateRandomEnterpriseName(nameToUse);
 };
 
 export const getJobCompanyName = (itemData: PassportData | null): string => {
   if (!itemData) return '';
   if (itemData.jobCompanyName) return itemData.jobCompanyName;
-  const nameToUse = itemData.fatherName || itemData.motherName || itemData.surname || 'Unknown';
-  const fullName = `${itemData.givenName || ''} ${itemData.surname || ''} ${itemData.fatherName || ''} ${itemData.motherName || ''}`;
-  return generateRandomEnterpriseName(isHinduName(fullName) ? fullName : nameToUse, true);
+  const nameToUse = itemData.fatherName || itemData.motherName || 'Unknown';
+  return generateRandomEnterpriseName(nameToUse);
 };
 
 export const getJobRole = (itemData: PassportData | null): string => {
