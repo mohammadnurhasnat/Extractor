@@ -9,7 +9,12 @@ import {
 
 export const getPDFDocument = (data: PassportData): jsPDF => {
   // Create new PDF layout (A4 size: 210mm x 297mm)
-  const doc = new jsPDF('p', 'mm', 'a4');
+  const doc = new jsPDF({
+    orientation: 'p',
+    unit: 'mm',
+    format: 'a4',
+    compress: true
+  });
   let y = 15;
 
   // Preventive Page-Break Guard
@@ -191,7 +196,12 @@ export const generatePDF = (data: PassportData): void => {
 };
 
 export const getUndertakingPDFDocument = (formData: UndertakingFormData): jsPDF => {
-  const doc = new jsPDF('p', 'mm', 'a4');
+  const doc = new jsPDF({
+    orientation: 'p',
+    unit: 'mm',
+    format: 'a4',
+    compress: true
+  });
   let y = 25;
   const leftMargin = 20;
   const contentWidth = 170;
