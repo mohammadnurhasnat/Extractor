@@ -182,13 +182,7 @@ export default function App() {
   } = useUndertakingState(data);
 
   const [savedHospitals, setSavedHospitals] = useState<string[]>(() => {
-    try {
-      const saved = localStorage.getItem('saved_hospital_names');
-      if (saved && saved !== 'undefined' && saved.trim() !== '') return JSON.parse(saved);
-    } catch (e) {
-      console.error(e);
-    }
-    return [
+    const defaults = [
       'Apollo Hospital, Chennai',
       'Max Super Speciality Hospital Noida',
       'Rabindranath Tagore Hospital Kolkata',
@@ -202,21 +196,22 @@ export default function App() {
       'Peerless Hospitex Hospital And Research Center Ltd',
       'Caree Fertility Pvt Ltd'
     ];
-  });
-
-  const [savedDepartments, setSavedDepartments] = useState<string[]>(() => {
     try {
-      const saved = localStorage.getItem('saved_department_names');
+      const saved = localStorage.getItem('saved_hospital_names');
       if (saved && saved !== 'undefined' && saved.trim() !== '') {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
-          return parsed.filter((d: string) => d !== 'Dr. K. S. Murthy');
+          return Array.from(new Set([...defaults, ...parsed]));
         }
       }
     } catch (e) {
       console.error(e);
     }
-    return [
+    return defaults;
+  });
+
+  const [savedDepartments, setSavedDepartments] = useState<string[]>(() => {
+    const defaults = [
       'Cardiology',
       'Neurology',
       'Oncology',
@@ -230,6 +225,19 @@ export default function App() {
       'Pediatrics',
       'Gynecology'
     ];
+    try {
+      const saved = localStorage.getItem('saved_department_names');
+      if (saved && saved !== 'undefined' && saved.trim() !== '') {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          const filtered = parsed.filter((d: string) => d !== 'Dr. K. S. Murthy');
+          return Array.from(new Set([...defaults, ...filtered]));
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    return defaults;
   });
 
   const handleAddHospitalSuggestion = (name: string) => {
