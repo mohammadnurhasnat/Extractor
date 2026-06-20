@@ -20,7 +20,7 @@ export const Header: React.FC<HeaderProps> = ({
   
   return (
     <header className="bg-white/60 dark:bg-black/60 backdrop-blur-md border-b border-slate-200/50 dark:border-zinc-800/50 sticky top-0 z-10 py-3 transition-colors print:hidden shadow-sm">
-      <div className="max-w-5xl mx-auto px-6 w-full flex justify-between items-center">
+      <div className="w-full px-4 flex justify-between items-center">
         <div className="flex items-center gap-3">
           <div>
             <h1 className="text-lg font-bold tracking-tight text-slate-800 dark:text-zinc-100 flex items-center gap-1.5 leading-none">
