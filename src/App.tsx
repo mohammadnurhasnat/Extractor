@@ -547,7 +547,7 @@ export default function App() {
 
         <OfflineBanner isOnline={isOnline} />
 
-        <main className="max-w-5xl mx-auto px-6 mt-10 print:mt-2 print:max-w-full print:px-0">
+        <main className="w-full px-4 mt-10 print:mt-2 print:w-full print:px-0">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 print:block">
             
             {/* UPLOAD & HISTORY SECTION (Left side) */}

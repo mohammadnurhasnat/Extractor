@@ -46,6 +46,40 @@ export function HistorySidebar({
   const monthCount = history.filter(item => item.timestamp >= startOfThisMonth).length;
   const totalCount = history.length;
 
+  const exportToZip = async () => {
+    if (history.length === 0) return;
+    
+    // Dynamically import JSZip
+    const JSZip = (await import('jszip')).default;
+    const zip = new JSZip();
+    
+    for (const item of history) {
+      const fileName = `${item.data.givenName || 'Unnamed'}_${item.data.passportNumber || 'NoPassport'}_${item.id}.txt`;
+      const content = `
+Given Name: ${item.data.givenName || ''}
+Surname: ${item.data.surname || ''}
+Passport Number: ${item.data.passportNumber || ''}
+Email: ${getGeneratedEmail(item.data)}
+DOB: ${item.data.dob || ''}
+Gender: ${item.data.gender || ''}
+Birth Place: ${item.data.birthPlace || ''}
+Issue Date: ${item.data.issueDate || ''}
+Expiry Date: ${item.data.expiryDate || ''}
+      `.trim();
+      
+      zip.file(fileName, content);
+    }
+
+    const content = await zip.generateAsync({ type: 'blob' });
+    
+    const url = URL.createObjectURL(content);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `passport_history_${new Date().toISOString().split('T')[0]}.zip`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="bg-white/70 dark:bg-zinc-900/70 backdrop-blur-md p-5 sm:p-6 rounded-2xl shadow-sm border border-slate-200/60 dark:border-zinc-800/60 min-h-[300px] flex flex-col transition-colors">
       <div className="flex flex-col xl:flex-row xl:items-center justify-between mb-4 pb-4 border-b border-slate-100 dark:border-zinc-800/50 gap-4">
@@ -57,6 +91,13 @@ export function HistorySidebar({
         </div>
         
         <div className="flex z-10 items-center justify-end gap-2 w-full xl:w-auto max-w-full overflow-hidden">
+          <button 
+            onClick={exportToZip}
+            className="p-1.5 text-slate-400 dark:text-zinc-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-zinc-800 rounded-lg transition-colors border border-slate-200 dark:border-zinc-700"
+            title="Export History to ZIP"
+          >
+            <Download className="w-4 h-4" />
+          </button>
           <div className="relative flex-1 max-w-[200px] sm:max-w-[240px] xl:w-[160px]">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Search className="h-4 w-4 text-slate-400 dark:text-zinc-500" />

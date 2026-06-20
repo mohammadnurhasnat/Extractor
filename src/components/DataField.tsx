@@ -109,7 +109,7 @@ export function DataField({ label, value, highlight = false, warning = false, on
       </div>
 
       <div className={`
-        relative rounded-lg text-sm font-medium border transition-all duration-300 flex items-stretch overflow-hidden min-h-[32px]
+        relative rounded-lg text-sm font-medium border transition-all duration-300 flex items-stretch overflow-hidden min-h-[24px]
         ${copied || persistentCopied
           ? 'bg-green-100/90 dark:bg-orange-950/40 border-green-500 dark:border-orange-500 text-green-955 dark:text-orange-200 shadow-sm font-semibold'
           : warning
@@ -130,7 +130,7 @@ export function DataField({ label, value, highlight = false, warning = false, on
                 onChange={(e) => setEditValue(e.target.value)}
                 onKeyDown={handleKeyDown}
                 rows={2}
-                className="flex-1 w-full min-w-0 px-2 py-1 text-sm font-medium bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-600 focus:outline-none resize-none"
+                className="flex-1 w-full min-w-0 px-2 py-0.5 text-sm font-medium bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-600 focus:outline-none resize-none"
               />
             ) : (
               <input
@@ -139,7 +139,7 @@ export function DataField({ label, value, highlight = false, warning = false, on
                 value={editValue}
                 onChange={(e) => setEditValue(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="flex-1 w-full min-w-0 px-2 py-1 text-sm font-medium bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-600 focus:outline-none"
+                className="flex-1 w-full min-w-0 px-2 py-0.5 text-sm font-medium bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-600 focus:outline-none"
               />
             )}
             
@@ -163,12 +163,12 @@ export function DataField({ label, value, highlight = false, warning = false, on
             </div>
           </form>
         ) : (
-          <div className="flex-1 flex items-start justify-between gap-2 p-3 w-full min-w-0">
+          <div className="flex-1 flex items-center justify-between gap-2 px-2 w-full min-w-0">
             <span className={`break-all whitespace-normal text-left flex-1 min-w-0 w-full ${hasValidationError ? 'text-red-800 dark:text-red-400 font-semibold' : ''}`} title={value || ''}>
               {value || 'Not Found'}
             </span>
             
-            <div className="flex items-center gap-1 self-start shrink-0">
+            <div className="flex items-center gap-1 self-center shrink-0">
               {onValueChange && (
                 <button
                   onClick={handleStartEdit}
