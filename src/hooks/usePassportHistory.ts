@@ -25,19 +25,49 @@ export function usePassportHistory(options?: {
     localStorage.setItem('passport_core_history', JSON.stringify(newHistory));
   }, []);
 
-  const addToHistory = useCallback((data: PassportData) => {
-    const id = Date.now().toString();
-    const timestamp = Date.now();
-    const newItem: HistoryItem = { id, timestamp, data };
-    
-    const newHistory = [newItem, ...history];
-    setInternalHistory(newHistory);
-    localStorage.setItem('passport_core_history', JSON.stringify(newHistory));
+  const addToHistory = useCallback((data: PassportData): PassportData => {
+    let returnData: PassportData = data;
+    setInternalHistory(prev => {
+      const existingItemIndex = prev.findIndex(item => 
+        item.data.passportNumber && 
+        data.passportNumber && 
+        item.data.passportNumber.toUpperCase() === data.passportNumber.toUpperCase()
+      );
 
-    if (options?.onItemAdded) {
-      options.onItemAdded(newItem);
-    }
-  }, [history, options]);
+      let newHistory: HistoryItem[];
+
+      if (existingItemIndex >= 0) {
+        const existingItem = prev[existingItemIndex];
+        
+        const updatedOldItem = {
+          ...existingItem,
+          timestamp: Date.now()
+        };
+        returnData = existingItem.data; // Use the OLD data
+
+        const filtered = prev.filter((_, idx) => idx !== existingItemIndex);
+        newHistory = [updatedOldItem, ...filtered];
+
+        if (options?.onItemAdded) {
+          options.onItemAdded(updatedOldItem);
+        }
+      } else {
+        const id = Date.now().toString();
+        const timestamp = Date.now();
+        const newItem: HistoryItem = { id, timestamp, data };
+        
+        newHistory = [newItem, ...prev];
+
+        if (options?.onItemAdded) {
+          options.onItemAdded(newItem);
+        }
+      }
+
+      localStorage.setItem('passport_core_history', JSON.stringify(newHistory));
+      return newHistory;
+    });
+    return returnData;
+  }, [options]);
 
   const deleteHistoryItem = useCallback((id: string) => {
     const newHistory = history.filter(item => item.id !== id);

@@ -65,5 +65,6 @@ export interface QueueItem {
   error: string | null;
   status: 'queued' | 'extracting' | 'completed' | 'failed';
   data?: PassportData;
+  lastUsedAt?: number;
 }
 

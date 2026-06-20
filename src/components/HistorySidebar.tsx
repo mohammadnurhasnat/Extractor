@@ -148,8 +148,13 @@ Expiry Date: ${item.data.expiryDate || ''}
               className="cursor-pointer group relative flex items-center justify-between p-4 rounded-xl border border-slate-100 dark:border-zinc-800/50 bg-slate-50 dark:bg-black/50 hover:bg-blue-50 dark:hover:bg-zinc-800/50 hover:border-blue-200 dark:hover:border-zinc-700 transition-colors"
             >
               <div className="flex flex-col mr-6 overflow-hidden">
-                <span className="font-bold text-[15px] leading-tight text-slate-800 dark:text-zinc-100 group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors truncate font-sans">
+                <span className="font-bold text-[15px] leading-tight text-slate-800 dark:text-zinc-100 group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors truncate font-sans flex items-center gap-2">
                   {item.data.givenName} {item.data.surname}
+                  {history.length > 0 && item.id === history[0].id && (
+                    <span className="text-[9px] bg-emerald-100/50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider border border-emerald-200 dark:border-emerald-800 whitespace-nowrap">
+                      Last Used
+                    </span>
+                  )}
                 </span>
                 <div className="flex items-center gap-2 mt-2 flex-wrap">
                   <span className="text-[11px] font-semibold px-2 py-0.5 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-300 rounded font-mono">

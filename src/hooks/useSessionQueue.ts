@@ -8,7 +8,7 @@ import { getPDFDocument } from '../utils/pdfGenerator';
 interface QueueStateProps {
   isOnline: boolean;
   userApiKey: string;
-  addToHistory: (data: PassportData) => void;
+  addToHistory: (data: PassportData) => PassportData | void;
   onSelectData: (data: PassportData | null) => void;
   onError: (error: string | null) => void;
 }
@@ -72,14 +72,15 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
           result.data.gender = normalizeGender(result.data.gender);
         }
         
-        setQueue(prev => prev.map(q => q.id === itemId ? { ...q, loading: false, status: 'completed', error: null, data: result.data } : q));
-        addToHistory(result.data);
+        const deduplicatedData = addToHistory(result.data) || result.data;
+        
+        setQueue(prev => prev.map(q => q.id === itemId ? { ...q, loading: false, status: 'completed', error: null, data: deduplicatedData } : q));
         
         if (activeQueueId === itemId) {
-          onSelectData(result.data);
+          onSelectData(deduplicatedData);
           setLoading(false);
         }
-        return result.data;
+        return deduplicatedData;
       } else {
         const errMsg = result.error || 'Failed to extract data.';
         setQueue(prev => prev.map(q => q.id === itemId ? { ...q, loading: false, status: 'failed', error: errMsg } : q));
