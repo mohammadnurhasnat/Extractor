@@ -1,7 +1,10 @@
 import { useState, useCallback } from 'react';
 import { HistoryItem, PassportData } from '../types';
 
-export function usePassportHistory() {
+export function usePassportHistory(options?: {
+  onItemAdded?: (item: HistoryItem) => void;
+  onItemDeleted?: (id: string) => void;
+}) {
   const [history, setInternalHistory] = useState<HistoryItem[]>(() => {
     try {
       const saved = localStorage.getItem('passport_core_history');
@@ -30,13 +33,21 @@ export function usePassportHistory() {
     const newHistory = [newItem, ...history];
     setInternalHistory(newHistory);
     localStorage.setItem('passport_core_history', JSON.stringify(newHistory));
-  }, [history]);
+
+    if (options?.onItemAdded) {
+      options.onItemAdded(newItem);
+    }
+  }, [history, options]);
 
   const deleteHistoryItem = useCallback((id: string) => {
     const newHistory = history.filter(item => item.id !== id);
     setInternalHistory(newHistory);
     localStorage.setItem('passport_core_history', JSON.stringify(newHistory));
-  }, [history]);
+
+    if (options?.onItemDeleted) {
+      options.onItemDeleted(id);
+    }
+  }, [history, options]);
 
   const clearHistory = useCallback(() => {
     setInternalHistory([]);

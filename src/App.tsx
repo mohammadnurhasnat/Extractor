@@ -33,6 +33,7 @@ import { useUndertakingState } from './hooks/useUndertakingState';
 import { useSessionQueue } from './hooks/useSessionQueue';
 import { useAppSettings } from './hooks/useAppSettings';
 import { usePassportHistory } from './hooks/usePassportHistory';
+import { useSupabase } from './hooks/useSupabase';
 import { useAuth } from './lib/AuthContext';
 
 // App main component
@@ -82,6 +83,10 @@ export default function App() {
     showApiKeyChars, setShowApiKeyChars
   } = useAppSettings();
 
+  const supabase = useSupabase();
+  const [isSyncingCloud, setIsSyncingCloud] = useState(false);
+  const [cloudSyncStatusText, setCloudSyncStatusText] = useState('');
+
   const {
     history, setHistory,
     addToHistory,
@@ -89,7 +94,75 @@ export default function App() {
     clearHistory,
     searchTerm, setSearchTerm,
     itemToDelete, setItemToDelete
-  } = usePassportHistory();
+  } = usePassportHistory({
+    onItemAdded: (item) => {
+      if (supabase.isConfigured) {
+        supabase.upsertToCloud(item);
+      }
+    },
+    onItemDeleted: (id) => {
+      if (supabase.isConfigured) {
+        supabase.deleteFromCloud(id);
+      }
+    }
+  });
+
+  const handleFetchFromCloud = async () => {
+    if (!supabase.isConfigured) return;
+    setIsSyncingCloud(true);
+    setCloudSyncStatusText('ক্লাউড থেকে ডেটা নামানো হচ্ছে...');
+    try {
+      const cloudItems = await supabase.fetchFromCloud();
+      if (cloudItems) {
+        if (cloudItems.length === 0) {
+          setCloudSyncStatusText('ক্লাউডে কোনো সেভ করা পাসপোর্ট পাওয়া যায়নি!');
+          setTimeout(() => setCloudSyncStatusText(''), 4000);
+          return;
+        }
+        
+        // Merge strategy: prevent duplicate IDs
+        const localMap = new Map<string, typeof history[0]>(history.map(item => [item.id, item]));
+        cloudItems.forEach(item => {
+          localMap.set(item.id, item);
+        });
+        const mergedHistory = Array.from(localMap.values()).sort((a, b) => b.timestamp - a.timestamp);
+        
+        setHistory(mergedHistory);
+        setCloudSyncStatusText(`ক্লাউড থেকে ${cloudItems.length} টি পাসপোর্ট রেকর্ড সিনক্রোনাইজ করা হয়েছে!`);
+        setTimeout(() => setCloudSyncStatusText(''), 5000);
+      } else {
+        setCloudSyncStatusText('ক্লাউড থেকে তথ্য রিট্রিভ করা সম্ভব হয়নি। Credentials চেক করুন বা টেবিল তৈরি করুন।');
+        setTimeout(() => setCloudSyncStatusText(''), 5000);
+      }
+    } catch (e: any) {
+      setCloudSyncStatusText(`ত্রুটি: ${e.message || 'Error occurred'}`);
+      setTimeout(() => setCloudSyncStatusText(''), 5500);
+    } finally {
+      setIsSyncingCloud(false);
+    }
+  };
+
+  const handleSyncToCloud = async () => {
+    if (!supabase.isConfigured) return;
+    if (history.length === 0) {
+      setCloudSyncStatusText('আপলোড করার জন্য কোনো লোকাল হিস্টরি নেই!');
+      setTimeout(() => setCloudSyncStatusText(''), 4000);
+      return;
+    }
+    setIsSyncingCloud(true);
+    try {
+      const result = await supabase.syncLocalHistoryToCloud(history, (msg) => {
+        setCloudSyncStatusText(msg);
+      });
+      setCloudSyncStatusText(`সিনক্রোনাইজেশন সফল! সম্পূর্ণ হয়েছে: ${result.successCount}, ব্যর্থ: ${result.failCount}`);
+      setTimeout(() => setCloudSyncStatusText(''), 6000);
+    } catch (e: any) {
+      setCloudSyncStatusText(`ত্রুটি: ${e.message || 'Error occurred'}`);
+      setTimeout(() => setCloudSyncStatusText(''), 5000);
+    } finally {
+      setIsSyncingCloud(false);
+    }
+  };
 
   const [resultsTab, setResultsTab] = useState<'profile' | 'undertaking'>(() => {
     return (localStorage.getItem('passport_active_results_tab') as 'profile' | 'undertaking') || 'profile';
@@ -526,6 +599,11 @@ export default function App() {
               setHistory={setHistory}
               loadFromHistory={loadFromHistory}
               confirmDelete={confirmDelete}
+              isSupabaseConfigured={supabase.isConfigured}
+              onFetchHistoryFromCloud={handleFetchFromCloud}
+              onSyncHistoryToCloud={handleSyncToCloud}
+              isSyncingCloud={isSyncingCloud}
+              cloudSyncStatusText={cloudSyncStatusText}
             />
 
             {/* RESULTS SECTION (Right side on large screens) */}
@@ -617,6 +695,14 @@ export default function App() {
           localStorage.removeItem('gemini_api_key');
           setUserApiKey('');
         }}
+        supabaseUrl={supabase.supabaseUrl}
+        supabaseAnonKey={supabase.supabaseAnonKey}
+        onSaveSupabase={supabase.saveConfig}
+        onClearSupabase={supabase.clearConfig}
+        testConnection={supabase.testConnection}
+        isTestLoading={supabase.isTestLoading}
+        testResult={supabase.testResult}
+        clearTestResult={() => supabase.setTestResult(null)}
       />
     </div>
   );
