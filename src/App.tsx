@@ -199,7 +199,8 @@ export default function App() {
       'Medanta Hospital, Gurgaon',
       'Narayana Health, Bangalore',
       'Christian Medical College, Vellore',
-      'Tata Memorial Hospital, Mumbai'
+      'Tata Memorial Hospital, Mumbai',
+      'Peerless Hospitex Hospital And Research Center Ltd',
     ];
   });
 
