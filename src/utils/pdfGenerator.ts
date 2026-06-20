@@ -1,11 +1,76 @@
 import { jsPDF } from 'jspdf';
 import { PassportData, UndertakingFormData } from '../types';
+import imageCompression from 'browser-image-compression';
 import {
   getGeneratedEmail,
   getProprietorBusinessName,
   getJobCompanyName,
   getJobRole
 } from './addressUtils';
+
+export const generatePassportImagePDF = async (file: File, passportData?: PassportData | null): Promise<void> => {
+  // Compress image to ensure PDF stays within 200kb - 350kb
+  const options = {
+    maxSizeMB: 0.3,
+    maxWidthOrHeight: 1920,
+    useWebWorker: true
+  };
+  
+  try {
+    const compressedFile = await imageCompression(file, options);
+    
+    // Read the file as Data URL
+    const reader = new FileReader();
+    reader.readAsDataURL(compressedFile);
+    
+    reader.onloadend = () => {
+      const base64data = reader.result as string;
+      const format = compressedFile.type === 'image/png' ? 'PNG' : 'JPEG';
+      
+      const doc = new jsPDF({
+        orientation: 'p',
+        unit: 'mm',
+        format: 'a4',
+        compress: true
+      });
+      
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      
+      // We will place the image in the center, fit into page with margins
+      const margin = 10;
+      const maxWidth = pageWidth - (margin * 2);
+      const maxHeight = pageHeight - (margin * 2);
+      
+      // Load image to get original dimensions
+      const img = new Image();
+      img.src = base64data;
+      img.onload = () => {
+        const imgWidth = img.width;
+        const imgHeight = img.height;
+        
+        const ratio = Math.min(maxWidth / imgWidth, maxHeight / imgHeight);
+        const finalWidth = imgWidth * ratio;
+        const finalHeight = imgHeight * ratio;
+        
+        const xOffset = (pageWidth - finalWidth) / 2;
+        const yOffset = (pageHeight - finalHeight) / 2;
+        
+        doc.addImage(base64data, format, xOffset, yOffset, finalWidth, finalHeight);
+        
+        const givenName = passportData?.givenName ? passportData.givenName.replace(/\s+/g, '-') : 'UNKNOWN';
+        const surname = passportData?.surname ? passportData.surname.replace(/\s+/g, '-') : '';
+        const passportNumber = passportData?.passportNumber ? passportData.passportNumber.toUpperCase().trim() : 'UNKNOWN';
+        const fullName = [givenName, surname].filter(Boolean).join('-');
+        
+        doc.save(`${fullName}-passport-${passportNumber}.pdf`);
+      };
+    };
+  } catch (err) {
+    console.error('Error generating passport PDF:', err);
+    throw err;
+  }
+};
 
 export const getPDFDocument = (data: PassportData): jsPDF => {
   // Create new PDF layout (A4 size: 210mm x 297mm)
@@ -431,6 +496,6 @@ export const getUndertakingPDFDocument = (formData: UndertakingFormData): jsPDF 
 
 export const generateUndertakingPDF = (formData: UndertakingFormData): void => {
   const doc = getUndertakingPDFDocument(formData);
-  const formattedName = formData.fullName ? formData.fullName.toUpperCase().replace(/\s+/g, '-') : 'APPLICANT';
-  doc.save(`UNDERTAKING-${formattedName}.pdf`);
+  const passportNumber = formData.passportNo ? formData.passportNo.toUpperCase().trim() : 'UNKNOWN';
+  doc.save(`UnderTaking-${passportNumber}.pdf`);
 };
