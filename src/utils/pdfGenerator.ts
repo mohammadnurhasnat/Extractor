@@ -431,5 +431,6 @@ export const getUndertakingPDFDocument = (formData: UndertakingFormData): jsPDF 
 
 export const generateUndertakingPDF = (formData: UndertakingFormData): void => {
   const doc = getUndertakingPDFDocument(formData);
-  doc.save(`Indian_Visa_Undertaking_${formData.fullName.replace(/\s+/g, '_') || 'Applicant'}.pdf`);
+  const formattedName = formData.fullName ? formData.fullName.toUpperCase().replace(/\s+/g, '-') : 'APPLICANT';
+  doc.save(`UNDERTAKING-${formattedName}.pdf`);
 };
