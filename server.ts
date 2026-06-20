@@ -58,6 +58,7 @@ async function startServer() {
 
 GUIDELINES:
 1. OCR: Extract givenName, surname, dob (dd/mm/yyyy), birthPlace, fatherName, motherName, spouseName, passportNumber, nidOrBirthCertNumber, issueDate (dd/mm/yyyy), expiryDate (dd/mm/yyyy), gender (Male/Female), permanentAddress, and mobileNumber.
+   - IMPORTANT OCR RULE: Distinguish carefully between the letter 'O' and the number '0' using their visual shape! The letter 'O' is fully round/circular, while the number '0' is tall, narrow, and flatter on the sides. Always detect them accurately based on their visual shape. Similarly, differentiate 'I' (letter) and '1' (number). 
 2. MRZ: Extract raw MRZ lines as rawMrz. Compute & verify checksums for passport number, dob, expiry, and composite. Return "Pass" or "Fail".
 3. QA: List any visual vs MRZ variations in 'discrepancies'. Return confidenceScore (0-100).
 4. Undertaking: Write a 2-3 paragraph visa declaration confirming passport validity and truthfulness.
