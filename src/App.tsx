@@ -194,13 +194,13 @@ export default function App() {
       'Rabindranath Tagore Hospital Kolkata',
       'AIG Hospitals',
       'Manipal Hospitals Mukundapur',
-      'Peerless Hospitex Hospital And Research Center Ltd',
       'Fortis Hospital, Kolkata',
       'Medanta Hospital, Gurgaon',
       'Narayana Health, Bangalore',
       'Christian Medical College, Vellore',
       'Tata Memorial Hospital, Mumbai',
       'Peerless Hospitex Hospital And Research Center Ltd',
+      'Caree Fertility Pvt Ltd'
     ];
   });
 
