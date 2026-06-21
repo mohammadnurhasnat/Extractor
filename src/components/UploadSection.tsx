@@ -60,106 +60,144 @@ interface UploadSectionProps {
 export function UploadSection(props: UploadSectionProps) {
   return (
     <div className="lg:col-span-5 flex flex-col gap-6 print:hidden">
-      <div className="bg-white/70 dark:bg-zinc-900/70 backdrop-blur-md p-6 rounded-2xl shadow-sm border border-slate-200/60 dark:border-zinc-800/60 transition-colors">
-        <h2 className="text-lg font-semibold mb-1 flex items-center gap-2 dark:text-zinc-100">
-          <FileText className="w-5 h-5 text-blue-500" />
-          Upload Documents
-        </h2>
-        <p className="text-sm text-slate-500 dark:text-zinc-400 mb-6 font-medium">Select one or multiple passport images to process in a session.</p>
+      <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-205 dark:border-zinc-800/80 transition-all duration-300">
+        <div className="flex items-start justify-between mb-2">
+          <div>
+            <h2 className="text-lg font-bold flex items-center gap-2 text-slate-800 dark:text-zinc-100">
+              <FileText className="w-5 h-5 text-blue-500" />
+              Upload Documents
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5 font-medium">Select one or multiple passport images to process in a session.</p>
+          </div>
+          <span className="text-[9px] font-extrabold bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-full border border-blue-100/30 dark:border-blue-900/30 uppercase tracking-wider">
+            Batch Extract
+          </span>
+        </div>
         
         {!props.preview ? (
-          <div className="border-2 border-dashed border-slate-300 dark:border-zinc-700 rounded-xl bg-slate-50 dark:bg-black/50 hover:bg-slate-100 dark:hover:bg-zinc-800/80 transition-colors group flex flex-col items-center justify-center text-center h-64 relative">
+          <div className="border-2 border-dashed border-slate-300 dark:border-zinc-700/80 rounded-2xl bg-slate-50/50 dark:bg-black/40 hover:bg-slate-100/60 dark:hover:bg-zinc-805/80 hover:border-blue-400 dark:hover:border-blue-500/50 transition-all duration-300 group flex flex-col items-center justify-center text-center h-48 relative overflow-hidden shadow-inner cursor-pointer" onClick={() => props.fileInputRef.current?.click()}>
             <input 
-              type="file" 
-              ref={props.fileInputRef} 
-              className="hidden" 
-              accept="image/jpeg, image/png, image/webp" 
-              onChange={props.handleFileChange}
-              multiple
+               type="file" 
+               ref={props.fileInputRef} 
+               className="hidden" 
+               accept="image/jpeg, image/png, image/webp" 
+               onChange={props.handleFileChange}
+               multiple
             />
-            <div className="flex flex-col items-center justify-center cursor-pointer p-6 w-full h-full" onClick={() => props.fileInputRef.current?.click()}>
-              <div className="w-14 h-14 bg-white dark:bg-zinc-900 rounded-full shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <UploadCloud className="w-7 h-7 text-blue-500 dark:text-blue-400" />
+            {/* Ambient Background Glow inside Dropbox */}
+            <div className="absolute w-32 h-32 bg-blue-400/5 dark:bg-blue-500/5 rounded-full blur-2xl top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
+            
+            <div className="flex flex-col items-center justify-center p-4 w-full h-full relative z-10">
+              <div className="w-12 h-12 bg-white dark:bg-zinc-900 rounded-2xl shadow-sm hover:shadow flex items-center justify-center mb-2.5 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 border border-slate-100 dark:border-zinc-800">
+                <UploadCloud className="w-6 h-6 text-blue-500 dark:text-blue-400" />
               </div>
-              <p className="font-semibold text-slate-700 dark:text-zinc-200">Click to upload or drag and drop</p>
-              <p className="text-xs text-slate-500 dark:text-zinc-400 mt-2">JPEG, PNG, WEBP (Supports multiple files)</p>
+              <p className="font-bold text-slate-705 dark:text-zinc-200 text-xs sm:text-sm">Click to select passport image</p>
+              <p className="text-[11px] text-slate-400 dark:text-zinc-500 font-medium mt-0.5">or drag and drop files here</p>
+              <p className="text-[9px] text-slate-400 dark:text-zinc-500 mt-2.5 bg-slate-150/50 dark:bg-zinc-900/80 border border-slate-200/50 dark:border-zinc-800 px-2.5 py-0.5 rounded-full font-mono">
+                JPEG, PNG, WEBP (Supports multiple files)
+              </p>
             </div>
           </div>
         ) : (
           <div className="flex flex-col gap-4">
             <div 
-              className="border border-dashed border-slate-300 dark:border-zinc-800 rounded-xl bg-slate-50 dark:bg-black/30 hover:bg-slate-100 dark:hover:bg-zinc-800/40 transition-colors group flex items-center gap-3 p-3.5 cursor-pointer"
+              className="border border-dashed border-slate-205 dark:border-zinc-800 rounded-xl bg-slate-50/55 dark:bg-black/25 hover:bg-slate-100/60 dark:hover:bg-zinc-850/40 hover:border-blue-405 dark:hover:border-blue-500/30 transition-all duration-300 group flex items-center gap-3 p-3 cursor-pointer"
               onClick={() => props.fileInputRef.current?.click()}
             >
               <input type="file" ref={props.fileInputRef} className="hidden" accept="image/jpeg, image/png, image/webp" onChange={props.handleFileChange} multiple />
-              <div className="w-8 h-8 bg-white dark:bg-zinc-900 rounded-lg shadow-sm flex items-center justify-center shrink-0">
+              <div className="w-9 h-9 bg-white dark:bg-zinc-900 rounded-xl shadow-sm flex items-center justify-center shrink-0 border border-slate-100 dark:border-zinc-800 group-hover:scale-105 transition-transform">
                 <UploadCloud className="w-4.5 h-4.5 text-blue-500 dark:text-blue-400" />
               </div>
               <div className="text-left min-w-0 flex-1">
-                <p className="text-xs font-semibold text-slate-700 dark:text-zinc-200">Add more passport images...</p>
+                <p className="text-xs font-bold text-slate-700 dark:text-zinc-200">Add more passports...</p>
                 <p className="text-[10px] text-slate-400 dark:text-zinc-500 font-medium">Select multiple images to append to the queue</p>
               </div>
             </div>
 
-            <div className="relative rounded-xl overflow-hidden border border-slate-200 dark:border-zinc-800 bg-slate-100 dark:bg-black aspect-[4/3] flex items-center justify-center">
-              {props.preview ? (
-                <img src={props.preview} alt="Passport Preview" className="max-w-full max-h-full object-contain" />
-              ) : (
-                <div className="text-slate-400 text-xs">No preview available</div>
-              )}
-              <div className="absolute inset-0 ring-1 ring-inset ring-black/10 dark:ring-white/10 rounded-xl" />
+            {/* 2-Column Responsive Layout for Passport Preview and Undertaking Options */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
+              {/* Left Column: Passport Preview */}
+              <div className="relative rounded-2xl overflow-hidden border border-slate-205 dark:border-zinc-800 bg-slate-100 dark:bg-black w-full min-h-[220px] md:h-auto flex items-center justify-center shadow-inner group/preview">
+                {props.preview ? (
+                  <img src={props.preview} alt="Passport Preview" className="max-w-full max-h-[350px] md:max-h-[420px] object-contain transition-transform duration-500 group-hover/preview:scale-[1.02]" />
+                ) : (
+                  <div className="text-slate-400 text-xs">No preview available</div>
+                )}
+                
+                {props.preview && props.loading && (
+                  <>
+                    <div className="absolute inset-0 bg-blue-500/5 dark:bg-blue-950/10 pointer-events-none animate-pulse" />
+                    <motion.div
+                      initial={{ top: 0 }}
+                      animate={{ top: "100%" }}
+                      transition={{
+                        duration: 2.2,
+                        repeat: Infinity,
+                        repeatType: "reverse",
+                        ease: "easeInOut"
+                      }}
+                      className="absolute left-0 right-0 w-full bg-gradient-to-r from-transparent via-blue-500 via-[50%] to-transparent h-[4px] shadow-[0_0_15px_rgba(59,130,246,0.9)] z-10 opacity-90 pointer-events-none"
+                    />
+                  </>
+                )}
+                
+                <div className="absolute inset-0 ring-1 ring-inset ring-black/5 dark:ring-white/5 rounded-2xl" />
+              </div>
+              
+              {/* Right Column: Undertaking Options */}
+              <div className="flex flex-col h-full justify-between">
+                <UndertakingOptions
+                  utPurpose={props.utPurpose}
+                  setUtPurpose={props.setUtPurpose}
+                  utHospitalName={props.utHospitalName}
+                  setUtHospitalName={props.setUtHospitalName}
+                  utDoctorName={props.utDoctorName}
+                  setUtDoctorName={props.setUtDoctorName}
+                  utEmbassyCity={props.utEmbassyCity}
+                  setUtEmbassyCity={props.setUtEmbassyCity}
+                  utEmbassyDate={props.utEmbassyDate}
+                  setUtEmbassyDate={props.setUtEmbassyDate}
+                  utFromDate={props.utFromDate}
+                  setUtFromDate={props.setUtFromDate}
+                  utToDate={props.utToDate}
+                  setUtToDate={props.setUtToDate}
+                  utReturnCountry={props.utReturnCountry}
+                  isUndertakingConfigured={props.isUndertakingConfigured}
+                  undertakingData={props.undertakingData}
+                  setUndertakingData={props.setUndertakingData}
+                  savedHospitals={props.savedHospitals}
+                  handleAddHospitalSuggestion={props.handleAddHospitalSuggestion}
+                  savedDepartments={props.savedDepartments}
+                  handleAddDepartmentSuggestion={props.handleAddDepartmentSuggestion}
+                />
+              </div>
             </div>
-            
-            <UndertakingOptions
-              utPurpose={props.utPurpose}
-              setUtPurpose={props.setUtPurpose}
-              utHospitalName={props.utHospitalName}
-              setUtHospitalName={props.setUtHospitalName}
-              utDoctorName={props.utDoctorName}
-              setUtDoctorName={props.setUtDoctorName}
-              utEmbassyCity={props.utEmbassyCity}
-              setUtEmbassyCity={props.setUtEmbassyCity}
-              utEmbassyDate={props.utEmbassyDate}
-              setUtEmbassyDate={props.setUtEmbassyDate}
-              utFromDate={props.utFromDate}
-              setUtFromDate={props.setUtFromDate}
-              utToDate={props.utToDate}
-              setUtToDate={props.setUtToDate}
-              utReturnCountry={props.utReturnCountry}
-              isUndertakingConfigured={props.isUndertakingConfigured}
-              undertakingData={props.undertakingData}
-              setUndertakingData={props.setUndertakingData}
-              savedHospitals={props.savedHospitals}
-              handleAddHospitalSuggestion={props.handleAddHospitalSuggestion}
-              savedDepartments={props.savedDepartments}
-              handleAddDepartmentSuggestion={props.handleAddDepartmentSuggestion}
-            />
 
             <div className="flex gap-3">
               <button 
                 onClick={props.clearAll}
                 disabled={props.loading || props.isBatchProcessing}
-                className="flex-1 py-2.5 px-4 rounded-lg font-medium text-slate-600 dark:text-zinc-300 bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50"
+                className="slide-btn slide-btn-purple flex-1 py-2.5 px-4 rounded-xl font-bold text-xs sm:text-sm cursor-pointer disabled:opacity-50"
               >
-                Clear All
+                <span className="relative z-10">Clear All</span>
               </button>
               {!props.data && (
                 <div className="flex-[2] flex flex-col gap-2">
                   <button 
                     onClick={props.extractData}
                     disabled={props.loading || !props.isOnline || props.isBatchProcessing}
-                    className={`w-full py-2.5 px-4 rounded-lg font-medium text-white transition-all flex items-center justify-center gap-2 shadow-sm border border-transparent ${
+                    className={`slide-btn w-full py-2.5 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer ${
                       !props.isOnline 
-                        ? 'bg-slate-200 dark:bg-zinc-800 text-slate-400 dark:text-zinc-500 cursor-not-allowed' 
-                        : 'bg-blue-600 hover:bg-blue-700 disabled:opacity-70 cursor-pointer'
+                        ? 'bg-slate-200 dark:bg-zinc-800 text-slate-400 dark:text-zinc-500 cursor-not-allowed border-transparent' 
+                        : 'slide-btn-teal'
                     }`}
                   >
                     {props.loading ? (
-                      <><Loader2 className="w-5 h-5 animate-spin" /> Extracting...</>
+                      <><Loader2 className="w-4 h-4 animate-spin relative z-10" /><span className="relative z-10">EXTRACTING DATA...</span></>
                     ) : !props.isOnline ? (
-                      <><ZapOff className="w-5 h-5 text-red-500" /> Offline: Disabled</>
+                      <><ZapOff className="w-4 h-4 text-red-500 relative z-10" /><span className="relative z-10">Offline: Disabled</span></>
                     ) : (
-                      'Extract Active'
+                      <span className="relative z-10">Extract Active</span>
                     )}
                   </button>
                   {!props.isOnline && (

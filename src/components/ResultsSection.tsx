@@ -45,8 +45,8 @@ export function ResultsSection({
   isGeneratingAddresses,
   onGenerateAddresses
 }: ResultsSectionProps) {
-  // If there's an active item but no data yet, user might want to just download PDF
-  const hasContent = !!data || !!activeItem;
+  // If there's data, show the results card
+  const hasContent = !!data;
 
   return (
     <div className="lg:col-span-7 print:w-full print:col-span-12">
@@ -62,7 +62,7 @@ export function ResultsSection({
                 <div className="flex justify-between items-end">
                   <div>
                     <h1 className="text-2xl font-black text-[#0C8493]">PASSPORT DATA EXTRACTION REPORT</h1>
-                    <p className="text-xs text-[#FF8006] font-bold mt-1 uppercase tracking-wider">Smart Automated Identity Processor</p>
+                    <p className="text-[#FF8006] text-xs font-bold mt-1 uppercase tracking-wider">Smart Automated Identity Processor</p>
                   </div>
                   <div className="text-right">
                     <p className="text-xs text-slate-500 font-medium">Date Printed: {new Date().toLocaleDateString('en-GB')}</p>
@@ -74,49 +74,47 @@ export function ResultsSection({
 
             {/* TABS SELECTOR */}
             {(data && isUndertakingConfigured && undertakingData) || activeItem ? (
-              <div className="flex border-b border-slate-100 dark:border-zinc-800/50 mb-6 print:hidden overflow-x-auto whitespace-nowrap">
+              <div className="grid grid-cols-3 bg-slate-100/60 dark:bg-zinc-950/65 p-1.5 rounded-2xl mb-6 print:hidden gap-1.5 w-full text-center">
                 {data && (
                   <button
                     onClick={() => setResultsTab('profile')}
-                    className={`px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 transition-all cursor-pointer ${
+                    className={`slide-btn slide-btn-purple text-center py-2 px-1 rounded-xl text-xs sm:text-xs font-extrabold cursor-pointer transition-none border ${
                       resultsTab === 'profile'
-                        ? 'border-[#0C8493] text-[#0C8493]'
-                        : 'border-transparent text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-400'
-                    }`}
+                        ? 'active shadow-[0_2px_10px_rgba(0,0,0,0.02)] font-black border-[#2DD4BF]/50'
+                        : 'border-slate-205 dark:border-zinc-800'
+                     }`}
                   >
-                    Passport Profile
+                    <span className="relative z-10">Passport Profile</span>
                   </button>
                 )}
                 {data && isUndertakingConfigured && undertakingData && (
                   <button
                     onClick={() => setResultsTab('undertaking')}
-                    className={`px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 transition-all cursor-pointer ${
+                    className={`slide-btn slide-btn-purple text-center py-2 px-1 rounded-xl text-xs sm:text-xs font-extrabold cursor-pointer transition-none border ${
                       resultsTab === 'undertaking'
-                        ? 'border-[#0C8493] text-[#0C8493]'
-                        : 'border-transparent text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-400'
-                    }`}
+                        ? 'active shadow-[0_2px_10px_rgba(0,0,0,0.02)] font-black border-[#2DD4BF]/50'
+                        : 'border-slate-205 dark:border-zinc-800'
+                     }`}
                   >
-                    Undertaking Form
+                    <span className="relative z-10">Undertaking Form</span>
                   </button>
                 )}
-                {activeItem && activeItem.file && activeItem.file.size > 0 && (
+                {activeItem && (
                   <button
                     onClick={() => setResultsTab('passport-pdf')}
-                    className={`px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 transition-all cursor-pointer ${
-                      resultsTab === 'passport-pdf' || (!data && resultsTab !== 'passport-pdf')
-                        ? 'border-[#0C8493] text-[#0C8493]'
-                        : 'border-transparent text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-400'
-                    }`}
+                    className={`slide-btn slide-btn-purple text-center py-2 px-1 rounded-xl text-xs sm:text-xs font-extrabold cursor-pointer transition-none border ${
+                      resultsTab === 'passport-pdf'
+                        ? 'active shadow-[0_2px_10px_rgba(0,0,0,0.02)] font-black border-[#2DD4BF]/50'
+                        : 'border-slate-205 dark:border-zinc-800'
+                     }`}
                   >
-                    Passport PDF
+                    <span className="relative z-10">Image to PDF</span>
                   </button>
                 )}
               </div>
             ) : null}
 
-            {!data && activeItem && activeItem.file && activeItem.file.size > 0 ? (
-              <PassportImagePdfTab activeItem={activeItem} />
-            ) : resultsTab === 'profile' && data ? (
+            {resultsTab === 'profile' && data ? (
               <PassportDataTab
                 data={data}
                 updateDataField={updateDataField}

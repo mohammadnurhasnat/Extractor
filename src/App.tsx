@@ -119,7 +119,10 @@ export default function App() {
   } = useSupabaseCloudSync({ supabase, history, setHistory });
 
   const [resultsTab, setResultsTab] = useState<'profile' | 'undertaking' | 'passport-pdf'>(() => {
-    return (localStorage.getItem('passport_active_results_tab') as 'profile' | 'undertaking' | 'passport-pdf') || 'profile';
+    const saved = localStorage.getItem('passport_active_results_tab');
+    if (saved === 'undertaking') return 'undertaking';
+    if (saved === 'passport-pdf') return 'passport-pdf';
+    return 'profile';
   });
 
   const {
@@ -155,13 +158,32 @@ export default function App() {
     }
   }, [toast]);
 
+  const hasAutoloadedRef = useRef(false);
+
+  useEffect(() => {
+    if (supabase.isConfigured && !hasAutoloadedRef.current) {
+      hasAutoloadedRef.current = true;
+      
+      const triggerAutoFetch = async () => {
+        try {
+          await handleFetchFromCloud();
+          setToast({
+            message: 'ক্লাউড থেকে হিস্ট্রি অটোমেটিক ব্যাকগ্রাউন্ডে লোড এবং সিনক্রোনাইজ করা হয়েছে!',
+            type: 'success'
+          });
+        } catch (e) {
+          console.error("Auto background cloud sync failed:", e);
+        }
+      };
+      
+      const timeoutId = setTimeout(triggerAutoFetch, 400);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [supabase.isConfigured, handleFetchFromCloud]);
+
   const isUndertakingConfigured = !!(utPurpose || utFromDate || utToDate);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const { isGeneratingAddresses, handleGenerateAddresses } = useAddressGeneration({
-    data, setData, userApiKey, activeQueueId, setQueue, setHistory, setToast
-  });
 
   const {
     queue, setQueue,
@@ -178,6 +200,10 @@ export default function App() {
     addToHistory,
     onSelectData: setData,
     onError: setError
+  });
+
+  const { isGeneratingAddresses, handleGenerateAddresses } = useAddressGeneration({
+    data, setData, userApiKey, activeQueueId, setQueue, setHistory, setToast
   });
 
   const {

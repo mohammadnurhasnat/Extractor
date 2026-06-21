@@ -1,4 +1,4 @@
-import { RefObject } from 'react';
+import React, { RefObject } from 'react';
 import { QueueItem, HistoryItem, PassportData } from '../types';
 
 interface UseQueueHandlersProps {
@@ -40,8 +40,8 @@ export function useQueueHandlers({
     });
 
     setQueue(prev => {
-      const updated = [...newQueueItems, ...prev];
-      if (prev.length === 0 && newQueueItems.length > 0) {
+      const updated = [...prev, ...newQueueItems];
+      if (newQueueItems.length > 0) {
         const activeItem = newQueueItems[0];
         setActiveQueueId(activeItem.id);
         setFile(activeItem.file);

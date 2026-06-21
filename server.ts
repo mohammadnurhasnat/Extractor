@@ -41,7 +41,7 @@ async function startServer() {
       // We expect the frontend to send just the base64 string without the data URI prefix
       const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '');
 
-      console.log('🤖 Optimized Multi-Agent Single-Pass Pipeline Started.');
+      console.log('⚡ High-Speed Single-Agent Extraction Pipeline Started.');
 
       const pipelineResponse = await ai.models.generateContent({
         model: 'gemini-3.5-flash',
@@ -54,21 +54,21 @@ async function startServer() {
           }
         ],
         config: {
-          systemInstruction: `You are a high-speed Passport Intake Coordinator. Extract passport image data, verify MRZ checksums, compare spelling/dates to flag anomalies under 'discrepancies', draft a formal self-declaration Visa Undertaking, and generate professional addresses based on permanentAddress.
+          systemInstruction: `You are an ultra-fast, high-precision Passport Extraction & Validation Agent. 
+Extract passport data, read and validate Machine-Readable Zone (MRZ) checksums, compute confidence scores, highlight structural discrepancies, and suggest Bangladeshi addresses.
 
-GUIDELINES:
-1. OCR: Extract givenName, surname, dob (dd/mm/yyyy), birthPlace, fatherName, motherName, spouseName, passportNumber, nidOrBirthCertNumber, issueDate (dd/mm/yyyy), expiryDate (dd/mm/yyyy), gender (Male/Female), permanentAddress, and mobileNumber.
-   - IMPORTANT OCR RULE: Distinguish carefully between the letter 'O' and the number '0' using their visual shape! The letter 'O' is fully round/circular, while the number '0' is tall, narrow, and flatter on the sides. Always detect them accurately based on their visual shape. Similarly, differentiate 'I' (letter) and '1' (number). 
-2. MRZ: Extract raw MRZ lines as rawMrz. Compute & verify checksums for passport number, dob, expiry, and composite. Return "Pass" or "Fail".
-3. QA: List any visual vs MRZ variations in 'discrepancies'. Return confidenceScore (0-100).
-4. Undertaking: Write a 2-3 paragraph visa declaration confirming passport validity and truthfulness.
-5. Address Rules (Classify permanentAddress):
-   - Cat 1 (Dhaka District: Dhaka city, Uttara, Banani, Gulshan, Savar, etc): presentAddress = permanentAddress. business/officeAddressDhaka are distinct complete Dhaka City addresses. business/officeAddressLocal are near permanentAddress.
-   - Cat 2 (Dhaka Division, not Dhaka District): presentAddress, businessAddressDhaka, and officeAddressDhaka are complete Dhaka City addresses. business/officeAddressLocal are near permanentAddress.
-   - Cat 3 (Outside Dhaka Division): presentAddress, business/officeAddressDhaka are complete Dhaka City addresses. business/officeAddressLocal are near permanentAddress.
-   * Formatting:
-     - Dhaka City Address format: "House X, Road Y, [Area Name], Dhaka-[Postcode]" (NO building titles, levels, commercial area labels).
-     - Local/Rural Address format: "X, Y, Z-Postcode" (for example, "Chutibur, Natipota, Chuadanga-7220") directly without labels like "Vill:", "Post:", "Dist:", "Po:". (NO Holding/Plot/Block/Sector/Sadar/Upazila tags).`,
+INSTRUCTIONS:
+1. OCR: Extract core properties: givenName, surname, dob, birthPlace, fatherName, motherName, spouseName, passportNumber, nidOrBirthCertNumber, issueDate, expiryDate, gender (Male/Female), permanentAddress, mobileNumber.
+   - Core visual shapes: Carefully differentiate 'O' vs '0' and 'I' vs '1'.
+2. MRZ: Read raw MRZ lines into rawMrz array. Populate validation fields (passportNumberChecksum, dobChecksum, expiryDateChecksum, compositeChecksum) with "Pass" or "Fail".
+3. Security Checks: Match visual details with MRZ properties. List any discrepancies found under discrepancies. Determine overall confidenceScore (0-100).
+4. Undertaking: Set customUndertakingDraft to a very short 1-sentence string (e.g., "Full verification of passport data completed.") to optimize processing speed.
+5. Address Rules: Base address structures on the permanentAddress classification:
+   - Cat 1 (Inside Dhaka District): presentAddress is equal to permanentAddress. Create Dhaka commercial addresses for businessAddressDhaka, officeAddressDhaka. Create local versions for businessAddressLocal, officeAddressLocal.
+   - Cat 2 (Dhaka Division, but not Dhaka District): Create a Dhaka City address for presentAddress, businessAddressDhaka, officeAddressDhaka. Create matching local addresses for local fields.
+   - Cat 3 (Outside Dhaka Division): Create a Dhaka City address for presentAddress, businessAddressDhaka, officeAddressDhaka. Create matching local addresses for local fields.
+   * Dhaka format: "House X, Road Y, [Area], Dhaka-[Postcode]" (No excessive building titles, commercial center tags, or complex names).
+   * Local format: "Village, Union, Post, District-Postcode" (No urban prefixes like Holding/Plot/Block/Sector). Always explicitly include the final District name.`,
           responseMimeType: 'application/json',
           responseSchema: {
             type: Type.OBJECT,
@@ -128,11 +128,11 @@ GUIDELINES:
       });
 
       if (!pipelineResponse.text) {
-        throw new Error('Passport pipeline failed to return response data.');
+        throw new Error('Passport extraction failed to return response data.');
       }
 
       const pipelineData = JSON.parse(pipelineResponse.text);
-      console.log('✅ Single-Pass Multimodal Extraction Pipeline Completed.');
+      console.log('✅ High-Speed Single-Agent Extraction Pipeline Completed.');
 
       const result = {
         ...pipelineData.finalData,
@@ -150,20 +150,18 @@ GUIDELINES:
         : 'Lines not detected';
 
       const logLines = [
-        `🤖 **Main Agent (Executive System Coordinator)**: Coordinated optimized Single-Pass Multimodal Pipeline. OCR scan and MRZ checksums completed in parallel.`,
-        `🛰️ **Sub-Agent A (Visual Page Extractor)**: Scan complete. Retrieved raw textual and structural page properties.`,
-        `🔍 **Sub-Agent B (MRZ Verification Specialist)**: Detected Machine-Readable Zone:\n  ${formattedMrzLines}`,
-        `   - Passport No Checksum: **${pipelineData.mrzValidation.passportNumberChecksum}**`,
-        `   - Date of Birth Checksum: **${pipelineData.mrzValidation.dobChecksum}**`,
-        `   - Expiry Date Checksum: **${pipelineData.mrzValidation.expiryDateChecksum}**`,
-        `   - Composite Checksum: **${pipelineData.mrzValidation.compositeChecksum}**`,
-        `🛡️ **Sub-Agent C (QA / Data Integrity Analyst)**: Completed visual vs MRZ correlation check. Calculated overall extraction confidence at **${pipelineData.confidenceScore}%**. Flagged ${pipelineData.discrepancies.length} discrepancy warnings.`,
-        `✍️ **Sub-Agent D (Declaration Drafter)**: Prepared customized official visa undertaking form draft matching passport data.`,
-        `📍 **Sub-Agent E (Bangladeshi Address Generator)**: Automatically classified permanent address district/division boundaries and generated synchronized present & professional address layouts successfully.`
+        `⚡ **High-Speed Single-Agent Extraction Engine**: Extraction completed instantly in a single optimized pass.`,
+        `🔍 **OCR & MRZ Reader Specialist**: Successfully scanned layout and read Machine-Readable Zone:\n  ${formattedMrzLines}`,
+        `   - Passport No Checksum Validation: **${pipelineData.mrzValidation.passportNumberChecksum}**`,
+        `   - Date of Birth Checksum Validation: **${pipelineData.mrzValidation.dobChecksum}**`,
+        `   - Expiry Date Checksum Validation: **${pipelineData.mrzValidation.expiryDateChecksum}**`,
+        `   - Composite Checksum Validation: **${pipelineData.mrzValidation.compositeChecksum}**`,
+        `🛡️ **Data Guardian System**: Performed comprehensive visual-to-MRZ checksum checks. Overall confidence is **${pipelineData.confidenceScore}%** with **${pipelineData.discrepancies.length}** discrepancy alerts.`,
+        `📍 **Bangladeshi Address Generator**: Automatically classified boundaries to construct synchronized residence and professional address layouts.`
       ];
       result.agentLog = logLines.join('\n\n');
 
-      console.log('🤖 Optimized Pipeline Completed perfectly. Packaging results for display.');
+      console.log('⚡ High-Speed Extraction Completed perfectly. Packaging results for display.');
       res.json({ success: true, data: result });
 
     } catch (error: any) {

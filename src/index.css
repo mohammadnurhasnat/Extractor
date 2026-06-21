@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Lato:wght@300;400;700;900&display=swap');
 @import "tailwindcss";
 
 @custom-variant dark (&:where(.dark, .dark *));
@@ -9,10 +9,13 @@
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     transition-duration: 700ms;
   }
+  html, body {
+    font-family: 'Inter', 'Lato', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif !important;
+  }
 }
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", "Lato", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   
   --animate-first: moveVertical 30s ease infinite;
   --animate-second: moveInCircle 20s reverse infinite;
@@ -78,6 +81,134 @@
       border-color: rgba(0, 0, 0, 0.65);
     }
   }
+}
+
+/* --- BOTTOM-TO-TOP COLORED SLIDE EFFECT --- */
+.slide-btn {
+  position: relative;
+  overflow: hidden !important;
+  isolation: isolate;
+  /* Override general slow transition, using a faster and snappier easing curve */
+  transition-property: color, background-color, border-color, transform !important;
+  transition-duration: 350ms !important;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transform: translateZ(0); /* hardware acceleration */
+}
+
+.slide-btn::before {
+  content: "" !important;
+  position: absolute !important;
+  left: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: -1 !important;
+  border-radius: inherit !important;
+  /* Starts completely below the button border */
+  transform: translateY(100%) !important;
+  /* Smooth bottom-to-top slide up transition, and top-to-bottom slide down on leave */
+  transition: transform 350ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Under hover or active selection, moving upward to fill the background */
+.slide-btn:hover::before,
+.slide-btn.active::before {
+  transform: translateY(0) !important;
+}
+
+/* Reverse/revert: moves downward when mouse moved away or click is released */
+.slide-btn:not(:hover):not(.active)::before {
+  transform: translateY(100%) !important;
+}
+
+/* 1. Purple Slide Button (If the button's default color is white/light, slide is soft light teal #2DD4BF and text turns black) */
+.slide-btn-purple {
+  background-color: #ffffff !important;
+  color: #0c8493 !important; /* Elegant default color */
+  border: 1px solid #e2e8f0 !important;
+}
+
+.dark .slide-btn-purple {
+  background-color: #18181b !important;
+  color: #38bdf8 !important;
+  border-color: #27272a !important;
+}
+
+.slide-btn-purple::before {
+  background-color: #2DD4BF !important; /* Changed to beautiful light teal #2DD4BF */
+}
+
+/* Hover & Active overrides */
+.slide-btn-purple:hover,
+.slide-btn-purple.active {
+  color: #ffffff !important;
+  background-color: transparent !important;
+  border-color: #2DD4BF !important; /* matching boundary #2DD4BF */
+}
+
+/* 2. Orange Slide Button (For download actions: slides from orange to light teal, text turns white) */
+.slide-btn-orange {
+  color: #ffffff !important;
+  background-color: #FF6347 !important; /* Changed from orange to tomato/coral #FF6347 */
+  border: 1px solid transparent !important;
+}
+
+.slide-btn-orange::before {
+  background-color: #14b8a6 !important; /* light color of #008080 (teal) */
+}
+
+.slide-btn-orange:hover,
+.slide-btn-orange.active {
+  color: #ffffff !important;
+  background-color: transparent !important;
+  border-color: #14b8a6 !important;
+}
+
+/* 3. Teal Slide Button (For primary teal actions: slides from teal to orange) */
+.slide-btn-teal {
+  color: #ffffff !important;
+  background-color: #0c8493 !important;
+  border: 1px solid transparent !important;
+}
+
+.slide-btn-teal::before {
+  background-color: #FF6347 !important; /* Slide bg updated to new download button color #FF6347 */
+}
+
+.slide-btn-teal:hover,
+.slide-btn-teal.active {
+  color: #ffffff !important;
+  background-color: transparent !important;
+  border-color: #FF6347 !important;
+}
+
+/* 4. Slate Slide Button (For default dark/grey helper, slides from slate-100 to slate-700) */
+.slide-btn-slate {
+  background-color: #f1f5f9 !important;
+  color: #334155 !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+.dark .slide-btn-slate {
+  background-color: #27272a !important;
+  color: #e4e4e7 !important;
+  border-color: #3f3f46 !important;
+}
+
+.slide-btn-slate::before {
+  background-color: #475569 !important; /* Slate-600 */
+}
+
+.slide-btn-slate:hover,
+.slide-btn-slate.active {
+  color: #ffffff !important;
+  background-color: transparent !important;
+  border-color: #475569 !important;
+}
+
+/* Override the aggressive baseline 700ms transition specifically on interactive buttons to avoid any visual lag or blinking */
+button, .slide-btn {
+  transition-duration: 200ms !important;
 }
 
 @media print {

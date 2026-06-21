@@ -33,14 +33,10 @@ export function PassportImagePdfTab({ activeItem }: PassportImagePdfTabProps) {
   };
 
   return (
-    <div className="flex flex-col items-center max-w-2xl mx-auto py-8 text-center space-y-6">
-      <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center">
-        <FileDown className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-      </div>
-      
+    <div className="flex flex-col items-center max-w-md mx-auto py-4 text-center space-y-4">
       <div>
-        <h2 className="text-xl font-bold text-slate-800 dark:text-zinc-100">Passport Image PDF</h2>
-        <p className="text-slate-500 dark:text-zinc-400 mt-2 text-sm leading-relaxed max-w-md mx-auto">
+        <h2 className="text-xl font-bold text-slate-800 dark:text-zinc-100">Image to PDF</h2>
+        <p className="text-slate-500 dark:text-zinc-400 mt-2 text-sm leading-relaxed max-w-sm mx-auto">
           Convert the uploaded passport image directly into a standard PDF format. The system automatically optimizes the file size (200KB - 350KB) and names it correctly.
         </p>
       </div>
@@ -55,17 +51,17 @@ export function PassportImagePdfTab({ activeItem }: PassportImagePdfTabProps) {
         <button
           onClick={handleDownload}
           disabled={isGenerating}
-          className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-all disabled:opacity-70 disabled:cursor-not-allowed shadow-sm shadow-blue-500/20"
+          className="slide-btn slide-btn-teal flex items-center gap-2 px-6 py-3 font-medium rounded-xl disabled:opacity-70 disabled:cursor-not-allowed border border-transparent shadow-sm shadow-blue-500/10 cursor-pointer"
         >
           {isGenerating ? (
             <>
-              <Loader2 className="w-5 h-5 animate-spin" />
-              <span>Optimizing & Generating...</span>
+              <Loader2 className="w-5 h-5 animate-spin relative z-10" />
+              <span className="relative z-10">Optimizing & Generating...</span>
             </>
           ) : (
             <>
-              <FileDown className="w-5 h-5" />
-              <span>Download Optimized PDF</span>
+              <FileDown className="w-5 h-5 relative z-10" />
+              <span className="relative z-10">Download Optimized PDF</span>
             </>
           )}
         </button>

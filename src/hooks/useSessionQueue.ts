@@ -36,13 +36,24 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
     if (!currentItem) return null;
 
     try {
-      const options = {
-        maxSizeMB: 1.5,
-        maxWidthOrHeight: 2048,
-        useWebWorker: true,
-      };
+      let compressedFile = currentItem.file;
       
-      const compressedFile = await imageCompression(currentItem.file, options);
+      // If original file is already under 400 KB, skip compression entirely to reduce client CPU wait time.
+      // Else, compress aggressively to max 0.35MB and max 1200px width/height for fast upload and fast Gemini processing.
+      if (currentItem.file.size > 400 * 1024) {
+        const options = {
+          maxSizeMB: 0.35,
+          maxWidthOrHeight: 1200,
+          useWebWorker: true,
+          initialQuality: 0.85
+        };
+        try {
+          compressedFile = await imageCompression(currentItem.file, options);
+        } catch (compressErr) {
+          console.warn('Image compression failed, falling back to original:', compressErr);
+          compressedFile = currentItem.file;
+        }
+      }
 
       const base64String = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();

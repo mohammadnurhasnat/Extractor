@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckCircle2, Check, Copy, Download, FileText, Printer } from 'lucide-react';
+import { CheckCircle2, Check, Copy, Download, FileText } from 'lucide-react';
 import { PassportData } from '../types';
 import { DataField } from './DataField';
 import {
@@ -53,31 +53,28 @@ export function PassportDataTab({
         <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto xl:justify-end">
           <button 
             onClick={handleCopyAll}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 text-xs sm:text-sm font-medium rounded-lg transition-colors border border-transparent dark:border-zinc-700 cursor-pointer"
+            className="slide-btn slide-btn-slate flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg cursor-pointer"
           >
-            {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
-            {isCopied ? "Copied" : "Copy All"}
+            {isCopied ? (
+              <Check className="w-3.5 h-3.5 text-emerald-500 relative z-10" />
+            ) : (
+              <Copy className="w-3.5 h-3.5 relative z-10" />
+            )}
+            <span className="relative z-10">{isCopied ? "Copied" : "Copy All"}</span>
           </button>
           <button 
             onClick={handleDownloadText}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-400 text-xs sm:text-sm font-medium rounded-lg transition-colors border border-blue-200 dark:border-blue-800/50 cursor-pointer"
+            className="slide-btn slide-btn-slate flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg cursor-pointer"
           >
-            <Download className="w-3.5 h-3.5" />
-            Download TXT
+            <Download className="w-3.5 h-3.5 relative z-10" />
+            <span className="relative z-10">Download TXT</span>
           </button>
           <button 
             onClick={handleDownloadPDF}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#FF8006] hover:bg-[#FF8006]/90 text-white text-xs sm:text-sm font-semibold rounded-lg transition-all shadow-sm active:scale-95 duration-100 cursor-pointer"
+            className="slide-btn slide-btn-orange flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-lg cursor-pointer"
           >
-            <FileText className="w-3.5 h-3.5" />
-            Download
-          </button>
-          <button 
-            onClick={() => window.print()}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0C8493] hover:bg-[#0C8493]/90 text-white text-xs sm:text-sm font-semibold rounded-lg transition-all shadow-sm active:scale-95 duration-100 cursor-pointer"
-          >
-            <Printer className="w-3.5 h-3.5" />
-            Print Report
+            <FileText className="w-3.5 h-3.5 relative z-10" />
+            <span className="relative z-10">Download</span>
           </button>
         </div>
       </div>

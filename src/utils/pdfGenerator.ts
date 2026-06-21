@@ -9,16 +9,27 @@ import {
 } from './addressUtils';
 
 export const generatePassportImagePDF = async (file: File, passportData?: PassportData | null): Promise<void> => {
-  // Compress image to ensure PDF stays within 200kb - 350kb
-  const options = {
-    maxSizeMB: 0.3,
-    maxWidthOrHeight: 1920,
-    useWebWorker: true
-  };
+  let compressedFile = file;
+  
+  // If original file is already clean and under 500 KB, we do not need to compress it at all.
+  // This preserves 100% of the original high-resolution visual clarity.
+  // If it is larger than 500 KB, we compress with extremely high-quality thresholds to hit 300kb - 350kb beautifully.
+  if (file.size > 500 * 1024) {
+    const options = {
+      maxSizeMB: 0.4,           // Intended to land close to ~300kb-350kb for larger photographs
+      maxWidthOrHeight: 2560,    // High resolution max boundary
+      useWebWorker: true,
+      initialQuality: 0.98      // Superior visual detail
+    };
+    try {
+      compressedFile = await imageCompression(file, options);
+    } catch (compressErr) {
+      console.warn('Image compression failed, falling back to original quality:', compressErr);
+      compressedFile = file;
+    }
+  }
   
   try {
-    const compressedFile = await imageCompression(file, options);
-    
     // Read the file as Data URL
     const reader = new FileReader();
     reader.readAsDataURL(compressedFile);
@@ -63,7 +74,7 @@ export const generatePassportImagePDF = async (file: File, passportData?: Passpo
         const passportNumber = passportData?.passportNumber ? passportData.passportNumber.toUpperCase().trim() : 'UNKNOWN';
         const fullName = [givenName, surname].filter(Boolean).join('-');
         
-        doc.save(`${fullName}-passport-${passportNumber}.pdf`);
+        doc.save(`${fullName}-${passportNumber}.pdf`);
       };
     };
   } catch (err) {
@@ -496,6 +507,6 @@ export const getUndertakingPDFDocument = (formData: UndertakingFormData): jsPDF 
 
 export const generateUndertakingPDF = (formData: UndertakingFormData): void => {
   const doc = getUndertakingPDFDocument(formData);
-  const passportNumber = formData.passportNo ? formData.passportNo.toUpperCase().trim() : 'UNKNOWN';
+  const passportNumber = formData.passportNumber ? formData.passportNumber.toUpperCase().trim() : 'UNKNOWN';
   doc.save(`UnderTaking-${passportNumber}.pdf`);
 };

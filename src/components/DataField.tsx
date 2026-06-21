@@ -99,26 +99,26 @@ export function DataField({ label, value, highlight = false, warning = false, on
 
   return (
     <div className="flex flex-col group/field">
-      <div className="flex items-center justify-between mb-1">
-        <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wide">{label}</span>
+      <div className="flex items-center justify-between mb-1.5 px-0.5">
+        <span className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">{label}</span>
         {onValueChange && !isEditing && value && (
-          <span className="text-[10px] text-blue-500 font-medium opacity-0 group-hover/field:opacity-100 transition-opacity whitespace-nowrap hidden sm:inline">
-            Editable field
+          <span className="text-[9px] text-blue-500 font-semibold opacity-0 group-hover/field:opacity-100 transition-opacity whitespace-nowrap hidden sm:inline-flex items-center gap-1">
+            <span className="w-1 h-1 rounded-full bg-blue-500 animate-pulse" /> Editable field
           </span>
         )}
       </div>
 
       <div className={`
-        relative rounded-lg text-sm font-medium border transition-all duration-300 flex items-stretch overflow-hidden min-h-[24px]
+        relative rounded-xl text-sm font-medium border transition-all duration-300 flex items-stretch overflow-hidden min-h-[38px] shadow-sm hover:shadow-md
         ${copied || persistentCopied
-          ? 'bg-green-100/90 dark:bg-orange-950/40 border-green-500 dark:border-orange-500 text-green-955 dark:text-orange-200 shadow-sm font-semibold'
+          ? 'bg-emerald-500/10 dark:bg-emerald-550/10 border-emerald-500 dark:border-emerald-500 text-emerald-950 dark:text-emerald-250 ring-1 ring-emerald-500/20'
           : warning
-            ? 'bg-rose-100 dark:bg-rose-900/40 border-red-500 dark:border-red-400 text-red-900 dark:text-red-200'
+            ? 'bg-rose-500/5 dark:bg-rose-950/20 border-red-500 dark:border-red-400 text-red-950 dark:text-red-200'
             : hasValidationError
               ? 'bg-rose-500/5 dark:bg-rose-500/10 border-red-500/70 dark:border-red-500/40 text-red-900 dark:text-red-300 shadow-[0_0_8px_rgba(239,68,68,0.06)]'
               : highlight 
-                ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800/50 text-blue-900 dark:text-blue-100 shadow-inner' 
-                : 'bg-slate-50 dark:bg-black border-slate-200 dark:border-zinc-800 text-slate-800 dark:text-zinc-100'}
+                ? 'bg-blue-50/70 dark:bg-blue-950/20 border-blue-250 dark:border-blue-900/40 text-blue-950 dark:text-blue-150 ring-1 ring-blue-500/5' 
+                : 'bg-white dark:bg-zinc-950/50 border-slate-200 dark:border-zinc-800 hover:border-slate-350 dark:hover:border-zinc-700 text-slate-800 dark:text-zinc-100'}
         ${!value && !isEditing ? 'italic opacity-60' : ''}
       `}>
         {isEditing ? (
@@ -130,7 +130,7 @@ export function DataField({ label, value, highlight = false, warning = false, on
                 onChange={(e) => setEditValue(e.target.value)}
                 onKeyDown={handleKeyDown}
                 rows={2}
-                className="flex-1 w-full min-w-0 px-2 py-0.5 text-sm font-medium bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-600 focus:outline-none resize-none"
+                className="flex-1 w-full min-w-0 px-3 py-2 text-xs sm:text-sm font-medium bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-600 focus:outline-none resize-none"
               />
             ) : (
               <input
@@ -139,15 +139,15 @@ export function DataField({ label, value, highlight = false, warning = false, on
                 value={editValue}
                 onChange={(e) => setEditValue(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="flex-1 w-full min-w-0 px-2 py-0.5 text-sm font-medium bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-600 focus:outline-none"
+                className="flex-1 w-full min-w-0 px-3 py-1 text-xs sm:text-sm font-medium bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-600 focus:outline-none"
               />
             )}
             
-            <div className="flex items-center gap-1.5 px-2 bg-slate-100/90 dark:bg-zinc-800/90 border-l border-slate-200 dark:border-zinc-700 shrink-0">
+            <div className="flex items-center gap-1.5 px-3 bg-slate-50 dark:bg-zinc-900 border-l border-slate-200 dark:border-zinc-850 shrink-0">
               <button
                 type="button"
                 onClick={handleSave}
-                className="p-1 rounded bg-emerald-500 text-white hover:bg-emerald-600 transition-colors cursor-pointer shrink-0"
+                className="p-1 rounded bg-emerald-500 text-white hover:bg-emerald-600 transition-all hover:scale-105 active:scale-95 cursor-pointer shrink-0"
                 title="Save changes"
               >
                 <Check className="w-4 h-4" />
@@ -155,7 +155,7 @@ export function DataField({ label, value, highlight = false, warning = false, on
               <button
                 type="button"
                 onClick={handleCancel}
-                className="p-1 rounded bg-slate-300 dark:bg-zinc-700 text-slate-700 dark:text-zinc-300 hover:bg-slate-400 dark:hover:bg-zinc-600 transition-colors cursor-pointer shrink-0"
+                className="p-1 rounded bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 hover:bg-slate-305 dark:hover:bg-zinc-700 transition-all hover:scale-105 active:scale-95 cursor-pointer shrink-0"
                 title="Cancel edit"
               >
                 <X className="w-4 h-4" />
@@ -163,33 +163,33 @@ export function DataField({ label, value, highlight = false, warning = false, on
             </div>
           </form>
         ) : (
-          <div className="flex-1 flex items-center justify-between gap-2 px-2 w-full min-w-0">
-            <span className={`break-all whitespace-normal text-left flex-1 min-w-0 w-full ${hasValidationError ? 'text-red-800 dark:text-red-400 font-semibold' : ''}`} title={value || ''}>
+          <div className="flex-1 flex items-center justify-between gap-2 px-3 py-2 w-full min-w-0">
+            <span className={`break-all whitespace-normal text-left flex-1 min-w-0 w-full text-xs sm:text-sm ${hasValidationError ? 'text-red-800 dark:text-red-400 font-semibold' : 'font-semibold text-slate-750 dark:text-zinc-200'}`} title={value || ''}>
               {value || 'Not Found'}
             </span>
             
-            <div className="flex items-center gap-1 self-center shrink-0">
+            <div className="flex items-center gap-1.5 self-center shrink-0">
               {onValueChange && (
                 <button
                   onClick={handleStartEdit}
-                  className="p-1.5 rounded-md transition-all text-slate-400 opacity-100 sm:opacity-0 group-hover/field:opacity-100 hover:text-blue-600 hover:bg-blue-50 dark:hover:text-blue-400 dark:hover:bg-blue-950/40"
+                  className="p-1.5 rounded-lg transition-all text-slate-400 opacity-100 sm:opacity-0 group-hover/field:opacity-100 hover:text-blue-650 hover:bg-blue-50/80 dark:hover:text-blue-400 dark:hover:bg-blue-950/40"
                   title="Edit Field"
                 >
-                  <Pencil className="w-4 h-4" />
+                  <Pencil className="w-3.5 h-3.5" />
                 </button>
               )}
               {value && (
                 <button
                   onClick={handleCopy}
                   className={`
-                    p-1.5 rounded-md transition-all
+                    p-1.5 rounded-lg transition-all
                     ${copied || persistentCopied
                       ? 'text-emerald-700 bg-emerald-100/50 dark:text-orange-350 dark:bg-orange-950/40' 
-                      : 'text-slate-400 opacity-100 sm:opacity-0 group-hover/field:opacity-100 hover:text-slate-600 hover:bg-slate-200 dark:hover:text-zinc-300 dark:hover:bg-zinc-800'}
+                      : 'text-slate-400 opacity-100 sm:opacity-0 group-hover/field:opacity-100 hover:text-slate-600 hover:bg-slate-100 dark:hover:text-zinc-300 dark:hover:bg-zinc-800'}
                   `}
                   title="Copy"
                 >
-                  {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                  {copied ? <Check className="w-3.5 h-3.5 animate-bounce" /> : <Copy className="w-3.5 h-3.5" />}
                 </button>
               )}
             </div>
@@ -198,7 +198,7 @@ export function DataField({ label, value, highlight = false, warning = false, on
       </div>
       
       {hasValidationError && value && (
-        <span className="text-[11px] font-semibold text-rose-500 dark:text-rose-400 mt-1 flex items-center gap-1 animate-pulse">
+        <span className="text-[11px] font-semibold text-rose-500 dark:text-rose-400 mt-1 flex items-center gap-1 animate-pulse px-0.5">
           ⚠️ {errorMessage}
         </span>
       )}

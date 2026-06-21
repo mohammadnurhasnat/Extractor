@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { HistoryItem } from '../types';
 import { useSupabase } from './useSupabase';
 
@@ -12,7 +12,7 @@ export function useSupabaseCloudSync({ supabase, history, setHistory }: UseSupab
   const [isSyncingCloud, setIsSyncingCloud] = useState(false);
   const [cloudSyncStatusText, setCloudSyncStatusText] = useState('');
 
-  const handleFetchFromCloud = async () => {
+  const handleFetchFromCloud = useCallback(async () => {
     if (!supabase.isConfigured) return;
     setIsSyncingCloud(true);
     setCloudSyncStatusText('ক্লাউড থেকে ডেটা নামানো হচ্ছে...');
@@ -45,9 +45,9 @@ export function useSupabaseCloudSync({ supabase, history, setHistory }: UseSupab
     } finally {
       setIsSyncingCloud(false);
     }
-  };
+  }, [supabase, history, setHistory]);
 
-  const handleSyncToCloud = async () => {
+  const handleSyncToCloud = useCallback(async () => {
     if (!supabase.isConfigured) return;
     if (history.length === 0) {
       setCloudSyncStatusText('আপলোড করার জন্য কোনো লোকাল হিস্টরি নেই!');
@@ -67,7 +67,7 @@ export function useSupabaseCloudSync({ supabase, history, setHistory }: UseSupab
     } finally {
       setIsSyncingCloud(false);
     }
-  };
+  }, [supabase, history]);
 
   return {
     isSyncingCloud,

@@ -173,7 +173,7 @@ CREATE POLICY "Allow public all access" ON public.passport_records FOR ALL USING
               {activeTab === 'gemini' ? (
                 <div className="space-y-4 animate-fadeIn">
                   <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed">
-                    Render Deployment এ API Key Error এড়াতে আপনি আপনার নিজস্ব <strong>Google Gemini API Key</strong> নিচে সেভ করতে পারেন। এটি আপনার ব্রাউজারের <strong>localStorage</strong> এ সম্পুর্ন নিরাপদে সংরক্ষিত থাকবে এবং প্রতিটা রিকুয়েস্টে সার্ভার হেডার হিসেবে পাস হবে।
+                    To avoid Gemini API Key limit issues or errors, save your own <strong>Google Gemini API Key</strong> below. It is stored safely in your browser's <strong>localStorage</strong> and sent securely in server-side headers for each request.
                   </p>
 
                   <div>
@@ -201,7 +201,7 @@ CREATE POLICY "Allow public all access" ON public.passport_records FOR ALL USING
               ) : (
                 <div className="space-y-4 animate-fadeIn text-xs">
                   <p className="text-slate-500 dark:text-zinc-400 leading-relaxed">
-                    আপনার প্রতিটা স্ক্যান করা পাসপোর্ট রেকর্ড ক্লাউডে জমা রাখার জন্য নিচের <strong>Supabase Credentials</strong> প্রদান করুন। 
+                    Provide your <strong>Supabase Credentials</strong> below to synchronize your scanned passports and history data securely with your cloud database.
                   </p>
 
                   <div className="grid grid-cols-1 gap-3">

@@ -23,7 +23,7 @@ export function UndertakingFormTab({
         <div>
           <h2 className="text-lg font-bold flex items-center gap-2 text-slate-800 dark:text-zinc-100">
             <FileText className="w-5 h-5 text-teal-600" />
-            {isUndertakingEditable ? "Edit Visa Undertaking Document" : "Preview Visa Undertaking Document"}
+            {isUndertakingEditable ? "Edit Undertaking Document" : "Preview Undertaking Document"}
           </h2>
           <p className="text-xs text-slate-400 dark:text-zinc-500 font-medium font-sans">
             {isUndertakingEditable 
@@ -33,44 +33,44 @@ export function UndertakingFormTab({
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 flex-nowrap shrink-0">
           {/* Toggle Switch */}
-          <div className="bg-slate-100 dark:bg-zinc-800/50 p-1 rounded-lg flex items-center gap-1 text-xs border border-slate-200 dark:border-zinc-700/60 print:hidden">
+          <div className="bg-slate-100 dark:bg-zinc-800/50 p-1 rounded-lg flex items-center gap-1 text-xs border border-slate-200 dark:border-zinc-700/60 print:hidden shrink-0">
             <button
-              onClick={() => setIsUndertakingEditable(false)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-bold transition-all cursor-pointer ${
-                !isUndertakingEditable
-                  ? 'bg-white dark:bg-zinc-900 shadow-sm text-teal-650 dark:text-teal-400 font-extrabold border border-slate-205 dark:border-zinc-800'
-                  : 'text-slate-500 hover:text-slate-700 dark:text-zinc-400 dark:hover:text-zinc-350'
-              }`}
+               onClick={() => setIsUndertakingEditable(false)}
+               className={`slide-btn slide-btn-purple flex items-center gap-1.5 px-3 py-1.5 rounded-md font-bold cursor-pointer border ${
+                 !isUndertakingEditable
+                  ? 'active shadow-sm font-extrabold border-[#2DD4BF]/50'
+                  : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-zinc-400 dark:hover:text-zinc-350 bg-transparent!'
+               }`}
             >
-              <Eye className="w-3.5 h-3.5" />
-              Preview
+              <Eye className="w-3.5 h-3.5 relative z-10" />
+              <span className="relative z-10">Preview</span>
             </button>
             <button
-              onClick={() => setIsUndertakingEditable(true)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-bold transition-all cursor-pointer ${
-                isUndertakingEditable
-                  ? 'bg-white dark:bg-zinc-900 shadow-sm text-teal-650 dark:text-teal-400 font-extrabold border border-slate-205 dark:border-zinc-800'
-                  : 'text-slate-500 hover:text-slate-700 dark:text-zinc-400 dark:hover:text-zinc-350'
-              }`}
+               onClick={() => setIsUndertakingEditable(true)}
+               className={`slide-btn slide-btn-purple flex items-center gap-1.5 px-3 py-1.5 rounded-md font-bold cursor-pointer border ${
+                 isUndertakingEditable
+                  ? 'active shadow-sm font-extrabold border-[#2DD4BF]/50'
+                  : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-zinc-400 dark:hover:text-zinc-350 bg-transparent!'
+               }`}
             >
-              <Settings className="w-3.5 h-3.5" />
-              Edit
+              <Settings className="w-3.5 h-3.5 relative z-10" />
+              <span className="relative z-10">Edit</span>
             </button>
           </div>
 
           <button
             onClick={handleDownloadUndertaking}
-            className="flex items-center gap-1.5 px-4 py-2 bg-[#FF8006] hover:bg-[#FF8006]/90 text-white text-xs sm:text-sm font-bold rounded-lg transition-all shadow-sm active:scale-95 duration-100 cursor-pointer self-start sm:self-auto print:hidden"
+            className="slide-btn slide-btn-orange flex items-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-bold rounded-lg cursor-pointer print:hidden shrink-0"
           >
-            <Download className="w-4 h-4" />
-            Download
+            <Download className="w-4 h-4 relative z-10" />
+            <span className="relative z-10">Download</span>
           </button>
         </div>
       </div>
 
-      <div className="bg-white dark:bg-zinc-950 p-6 sm:p-12 border border-slate-200 dark:border-zinc-800 rounded-xl shadow-inner font-serif text-slate-900 dark:text-zinc-100 text-xs sm:text-sm space-y-6 leading-relaxed relative print:border-none print:shadow-none print:p-0">
+      <div className="bg-white dark:bg-zinc-950 p-6 sm:p-12 border border-slate-200 dark:border-zinc-800 rounded-xl shadow-inner font-sans text-slate-900 dark:text-zinc-100 text-xs sm:text-sm space-y-6 leading-relaxed relative print:border-none print:shadow-none print:p-0">
         <div className="text-center font-bold text-base sm:text-lg uppercase tracking-wide border-b border-zinc-200 dark:border-zinc-800 pb-3 mb-6">
           Undertaking Form
         </div>
@@ -87,7 +87,7 @@ export function UndertakingFormTab({
               <span className="text-blue-500 font-mono">1.</span> Personal Details
             </h3>
             
-            <div className="space-y-2.5 pl-4 sm:pl-6 border-l-2 border-slate-200 dark:border-zinc-800 py-1 font-serif text-slate-700 dark:text-zinc-350">
+            <div className="space-y-2.5 pl-4 sm:pl-6 border-l-2 border-slate-200 dark:border-zinc-800 py-1 font-sans text-slate-700 dark:text-zinc-350">
               {/* Point 1: Full Name */}
               <div className="grid grid-cols-1 sm:grid-cols-[180px_1fr] gap-x-4 gap-y-1 items-start">
                 <span className="font-bold text-slate-800 dark:text-zinc-200">1. Full Name:</span>
@@ -190,11 +190,11 @@ export function UndertakingFormTab({
                       rows={2}
                       value={undertakingData.address || ''}
                       onChange={(e) => handleUpdateUndertakingField('address', e.target.value)}
-                      className="w-full bg-slate-50 dark:bg-zinc-900 border border-dashed border-slate-350 dark:border-zinc-700 rounded p-1.5 text-slate-905 dark:text-zinc-100 focus:outline-none focus:border-blue-500 resize-none font-serif leading-relaxed"
+                      className="w-full bg-slate-50 dark:bg-zinc-900 border border-dashed border-slate-350 dark:border-zinc-700 rounded p-1.5 text-slate-905 dark:text-zinc-100 focus:outline-none focus:border-blue-500 resize-none font-sans leading-relaxed"
                       placeholder="[Full Address]"
                     />
                   ) : (
-                    <div className="w-full text-slate-900 dark:text-zinc-100 font-serif leading-relaxed whitespace-pre-wrap">
+                    <div className="w-full text-slate-900 dark:text-zinc-100 font-sans leading-relaxed whitespace-pre-wrap">
                       {undertakingData.address || '____________________________________________________________________'}
                     </div>
                   )}
@@ -213,7 +213,7 @@ export function UndertakingFormTab({
               <span className="text-blue-500 font-mono">2.</span> Purpose of Visit
             </h3>
             
-            <div className="pl-4 sm:pl-6 space-y-3 font-serif text-slate-705 dark:text-zinc-350">
+            <div className="pl-4 sm:pl-6 space-y-3 font-sans text-slate-705 dark:text-zinc-350">
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                 <span>My Purpose of Visit to India is</span>
                 {isUndertakingEditable ? (
@@ -401,7 +401,7 @@ export function UndertakingFormTab({
               <span className="text-blue-500 font-mono">3.</span> Duration of Stay
             </h3>
             
-            <div className="pl-4 sm:pl-6 text-sm font-serif text-slate-700 dark:text-zinc-350 leading-relaxed">
+            <div className="pl-4 sm:pl-6 text-sm font-sans text-slate-700 dark:text-zinc-350 leading-relaxed">
               {undertakingData.purpose.toLowerCase().includes('medical') ? (
                 <div className="italic text-slate-800 dark:text-zinc-200 font-medium bg-blue-50/50 dark:bg-zinc-900/30 p-2.5 rounded border border-slate-100 dark:border-zinc-800 max-w-2xl">
                   "The exact duration and dates of my stay in India will depend entirely upon the medical treatment requirements, progress, and schedule as prescribed and advised by the consulting hospital and medical specialists."
@@ -461,7 +461,7 @@ export function UndertakingFormTab({
               <span className="text-blue-500 font-mono">4.</span> Return to Home Country
             </h3>
             
-            <div className="pl-4 sm:pl-6 text-sm font-serif text-slate-705 dark:text-zinc-350">
+            <div className="pl-4 sm:pl-6 text-sm font-sans text-slate-705 dark:text-zinc-350">
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                 <span>I swear to return to my home country, namely</span>
                 {isUndertakingEditable ? (
@@ -486,7 +486,7 @@ export function UndertakingFormTab({
               <span className="text-blue-500 font-mono">5.</span> Compliance with Indian Laws
             </h3>
             
-            <div className="pl-4 sm:pl-6 text-justify leading-relaxed font-serif text-slate-600 dark:text-zinc-400 text-xs sm:text-sm">
+            <div className="pl-4 sm:pl-6 text-justify leading-relaxed font-sans text-slate-600 dark:text-zinc-400 text-xs sm:text-sm">
               I also declare that the details provided here are absolutely true and complete. I will adhere entirely to the rules, regulations, and timelines stipulated by the Embassy of India and the appropriate authorities, and understand that any violations may hold me legally accountable under applicable regulatory provisions.
             </div>
           </div>
@@ -494,11 +494,11 @@ export function UndertakingFormTab({
 
         <div className="pt-8 border-t border-slate-100 dark:border-zinc-800/50 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 font-sans">
           <div className="space-y-1">
-            <div className="font-bold text-slate-900 dark:text-zinc-100 font-serif">Signature of Applicant:</div>
+            <div className="font-bold text-slate-900 dark:text-zinc-100 font-sans">Signature of Applicant:</div>
             <div className="text-[10px] text-slate-400 dark:text-zinc-500 italic mt-1">(Physical Signature required on printed copy)</div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="font-bold text-slate-900 dark:text-zinc-100 font-serif">Date:</span>
+            <span className="font-bold text-slate-900 dark:text-zinc-100 font-sans">Date:</span>
             {isUndertakingEditable ? (
               <input 
                 type="text" 
@@ -507,7 +507,7 @@ export function UndertakingFormTab({
                 className="min-w-[100px] text-center bg-slate-50 dark:bg-zinc-900 border-b border-dashed border-slate-400 dark:border-zinc-700 px-2 py-0.5 text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500 font-bold"
               />
             ) : (
-              <span className="font-bold underline decoration-dashed decoration-slate-400 px-2 text-slate-900 dark:text-zinc-100 font-serif">{undertakingData.date || '__________'}</span>
+              <span className="font-bold underline decoration-dashed decoration-slate-400 px-2 text-slate-900 dark:text-zinc-100 font-sans">{undertakingData.date || '__________'}</span>
             )}
           </div>
         </div>
