@@ -118,14 +118,23 @@ Expiry Date: ${item.data.expiryDate || ''}
       </div>
       
       {history.length === 0 ? (
-        <div className="flex flex-col items-center justify-center text-center opacity-50 flex-1 py-8">
-          <History className="w-10 h-10 text-slate-300 dark:text-zinc-650 mb-4 animate-pulse" />
-          <p className="text-sm font-semibold text-slate-600 dark:text-zinc-355 font-sans">No history yet</p>
+        <div className="flex flex-col items-center justify-center text-center flex-1 py-12 relative overflow-hidden rounded-xl bg-slate-50/50 dark:bg-zinc-900/30 border border-slate-100/80 dark:border-zinc-800/50 mt-2 group">
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-blue-50/30 dark:to-blue-900/10 pointer-events-none"></div>
+          <div className="p-4 bg-white dark:bg-zinc-800 rounded-2xl shadow-sm border border-slate-200 dark:border-zinc-700 mb-5 relative z-10 transform group-hover:scale-105 transition-transform duration-300 rotate-3 group-hover:-rotate-3">
+            <History className="w-7 h-7 text-blue-500/80 dark:text-blue-400/80" />
+            <div className="absolute -top-1 -right-1 w-3 h-3 bg-pink-500 rounded-full border-2 border-white dark:border-zinc-800 shadow-sm animate-pulse"></div>
+          </div>
+          <p className="text-[14px] font-bold text-slate-700 dark:text-zinc-200 font-sans mb-1.5 relative z-10 tracking-tight">Your Archive is Empty</p>
+          <p className="text-[12px] text-slate-500 dark:text-zinc-450 max-w-[200px] relative z-10 leading-relaxed font-medium">Processed passports will be securely saved here for quick access later.</p>
         </div>
       ) : filteredHistory.length === 0 ? (
-        <div className="flex flex-col items-center justify-center text-center opacity-50 flex-1 py-8">
-          <Search className="w-10 h-10 text-slate-300 dark:text-zinc-650 mb-4" />
-          <p className="text-sm font-semibold text-slate-600 dark:text-zinc-355 font-sans">No matching results</p>
+        <div className="flex flex-col items-center justify-center text-center flex-1 py-12 relative overflow-hidden rounded-xl bg-slate-50/50 dark:bg-zinc-900/30 border border-slate-100/80 dark:border-zinc-800/50 mt-2">
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-100/50 dark:to-zinc-800/20 pointer-events-none"></div>
+          <div className="p-4 bg-white dark:bg-zinc-800 rounded-2xl shadow-sm border border-slate-200 dark:border-zinc-700 mb-5 relative z-10 transform transition-transform duration-300 -rotate-3">
+             <Search className="w-7 h-7 text-slate-400 dark:text-zinc-500" />
+          </div>
+          <p className="text-[14px] font-bold text-slate-700 dark:text-zinc-200 font-sans mb-1.5 relative z-10 tracking-tight">No matching records</p>
+          <p className="text-[12px] text-slate-500 dark:text-zinc-450 max-w-[200px] relative z-10 leading-relaxed font-medium">Try adjusting your search terms or clearing the filter.</p>
         </div>
       ) : (
         <div className="overflow-y-auto pr-1 space-y-2.5 pb-2 scrollbar-thin max-h-[300px]">

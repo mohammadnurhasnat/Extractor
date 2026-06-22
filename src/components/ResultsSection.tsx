@@ -139,10 +139,29 @@ export function ResultsSection({
           </motion.div>
         </div>
       ) : (
-        <div className="bg-white/40 dark:bg-zinc-950/20 backdrop-blur-md border border-slate-200/50 dark:border-zinc-800/50 border-dashed rounded-2xl h-[500px] flex flex-col items-center justify-center text-center p-8 sticky top-6">
-          <FileText className="w-16 h-16 text-slate-200 dark:text-zinc-700 mb-4" />
-          <p className="text-lg font-medium text-slate-500 dark:text-zinc-400">No Data Extracted Yet</p>
-          <p className="text-sm text-slate-400 dark:text-zinc-500 mt-2 max-w-sm">Upload a passport image on the left and click "Extract Data" to see the extracted fields here.</p>
+        <div className="bg-white/60 dark:bg-zinc-900/60 backdrop-blur-md border border-slate-200/80 dark:border-zinc-800/80 border-dashed rounded-2xl h-[500px] flex flex-col items-center justify-center text-center p-8 sticky top-6 shadow-sm overflow-hidden relative group">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-transparent dark:from-blue-950/20 dark:to-transparent opacity-50 z-0"></div>
+          
+          <motion.div 
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="z-10 flex flex-col items-center"
+          >
+            <div className="relative mb-8 group-hover:scale-105 transition-transform duration-500">
+              <div className="absolute -inset-4 bg-blue-100/50 dark:bg-blue-900/20 rounded-full blur-xl animate-pulse"></div>
+              <div className="absolute inset-0 bg-gradient-to-tr from-blue-100 to-indigo-50 dark:from-blue-900/40 dark:to-indigo-800/40 rounded-2xl transform rotate-6 scale-105 shadow-inner"></div>
+              <div className="w-24 h-24 bg-white dark:bg-zinc-800 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] flex items-center justify-center border border-slate-100 dark:border-zinc-700 relative z-10 transform -rotate-3 transition-transform duration-500 group-hover:-rotate-6">
+                <FileText className="w-10 h-10 text-blue-500 dark:text-blue-400 drop-shadow-sm" />
+              </div>
+            </div>
+            
+            <h3 className="text-xl font-bold text-slate-800 dark:text-zinc-100 mb-2.5 font-sans tracking-tight">Ready for Extraction</h3>
+            
+            <p className="text-[13px] text-slate-500 dark:text-zinc-400 max-w-[280px] leading-relaxed font-medium">
+              Upload a passport image on the left and click <span className="font-bold text-blue-600 dark:text-blue-400 px-1 py-0.5 rounded bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800/50 mx-0.5 shadow-sm">Process</span> to see the magically extracted data appear right here.
+            </p>
+          </motion.div>
         </div>
       )}
     </div>
