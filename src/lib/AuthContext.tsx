@@ -58,6 +58,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           photoURL: firebaseUser.photoURL
         };
         setUser(u);
+        setAccessToken(getCachedAccessToken());
         localStorage.setItem('local_google_user', JSON.stringify(u));
         
         // Also persist their email in localStorage for older usecases

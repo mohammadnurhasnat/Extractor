@@ -16,7 +16,13 @@ googleProvider.setCustomParameters({
   prompt: 'select_account'
 });
 
-let cachedAccessToken: string | null = null;
+let cachedAccessToken: string | null = (() => {
+  try {
+    return localStorage.getItem('google_drive_access_token');
+  } catch (e) {
+    return null;
+  }
+})();
 let isSigningIn = false;
 
 export const initFirebaseAuth = (
@@ -34,6 +40,9 @@ export const initFirebaseAuth = (
       }
     } else {
       cachedAccessToken = null;
+      try {
+        localStorage.removeItem('google_drive_access_token');
+      } catch (e) {}
       if (onAuthFailure) onAuthFailure();
     }
   });
@@ -48,6 +57,9 @@ export const signInWithGooglePopup = async (): Promise<{ user: User; accessToken
       throw new Error('Failed to get access token from Google');
     }
     cachedAccessToken = credential.accessToken;
+    try {
+      localStorage.setItem('google_drive_access_token', cachedAccessToken);
+    } catch (e) {}
     return { user: result.user, accessToken: cachedAccessToken };
   } catch (error) {
     console.error('Core Google Sign In Error:', error);
@@ -63,9 +75,19 @@ export const getCachedAccessToken = (): string | null => {
 
 export const setCachedAccessToken = (token: string | null) => {
   cachedAccessToken = token;
+  try {
+    if (token) {
+      localStorage.setItem('google_drive_access_token', token);
+    } else {
+      localStorage.removeItem('google_drive_access_token');
+    }
+  } catch (e) {}
 };
 
 export const logoutGoogle = async () => {
   await signOut(auth);
   cachedAccessToken = null;
+  try {
+    localStorage.removeItem('google_drive_access_token');
+  } catch (e) {}
 };

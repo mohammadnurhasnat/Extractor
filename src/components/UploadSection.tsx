@@ -63,9 +63,6 @@ export function UploadSection(props: UploadSectionProps) {
             </h2>
             <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5 font-medium">Select one or multiple passport images to process in a session.</p>
           </div>
-          <span className="text-[9px] font-extrabold bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-full border border-blue-100/30 dark:border-blue-900/30 uppercase tracking-wider">
-            Batch Extract
-          </span>
         </div>
         
         {!props.preview ? (

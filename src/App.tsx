@@ -15,7 +15,6 @@ import { PassportData, HistoryItem, QueueItem, UndertakingFormData } from './typ
 import { Header } from './components/Header';
 import { OfflineBanner } from './components/OfflineBanner';
 import { ToastNotification } from './components/ToastNotification';
-import { ApiSettingsModal } from './components/ApiSettingsModal';
 import { HistorySidebar } from './components/HistorySidebar';
 import { PassportDataTab } from './components/PassportDataTab';
 import { UndertakingFormTab } from './components/UndertakingFormTab';
@@ -24,7 +23,6 @@ import { SessionQueue } from './components/SessionQueue';
 import { DeleteConfirmationModal } from './components/DeleteConfirmationModal';
 import { UploadSection } from './components/UploadSection';
 import { ResultsSection } from './components/ResultsSection';
-import { WelcomeModal } from './components/WelcomeModal';
 import { GlobalProgress } from './components/GlobalProgress';
 
 // Utilities
@@ -35,18 +33,14 @@ import { useUndertakingState } from './hooks/useUndertakingState';
 import { useSessionQueue } from './hooks/useSessionQueue';
 import { useAppSettings } from './hooks/useAppSettings';
 import { usePassportHistory } from './hooks/usePassportHistory';
-import { useAuth } from './lib/AuthContext';
 import { useExporterHelpers } from './hooks/useExporterHelpers';
 import { useAddressGeneration } from './hooks/useAddressGeneration';
 import { useSavedOptions } from './hooks/useSavedOptions';
-import { useGoogleDriveSync } from './hooks/useGoogleDriveSync';
 import { useQueueHandlers } from './hooks/useQueueHandlers';
 
 // App main component
 
 export default function App() {
-  const { user, accessToken, loading: authLoading, signInWithGoogle } = useAuth();
-  
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(() => {
     return localStorage.getItem('passport_active_preview') || null;
@@ -98,14 +92,7 @@ export default function App() {
     itemToDelete, setItemToDelete
   } = usePassportHistory();
 
-  const {
-    isSyncing: isSyncingDrive,
-    syncStatus: driveSyncStatus,
-    backupSize: driveBackupSize,
-    lastSyncTime: driveLastSyncTime,
-    handleRestore: handleRestoreFromDrive,
-    forceManualBackup: handleBackupToDrive
-  } = useGoogleDriveSync({ user, accessToken, history, setHistory });
+
 
   const [resultsTab, setResultsTab] = useState<'profile' | 'undertaking' | 'passport-pdf'>(() => {
     const saved = localStorage.getItem('passport_active_results_tab');
@@ -226,31 +213,15 @@ export default function App() {
     handleDownloadUndertaking
   } = useExporterHelpers({ data, undertakingData, setToast });
 
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 font-sans text-slate-900 dark:text-zinc-50 pb-12 selection:bg-blue-100 dark:selection:bg-blue-900/50 transition-colors relative">
       {/* Global Progress Bar */}
       <GlobalProgress loading={loading} />
 
-      <div className={`transition-all duration-500 ${!user ? 'blur-md pointer-events-none' : ''}`}>
+      <div className="transition-all duration-500">
         <Header
           isDarkMode={isDarkMode}
           onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
-          userApiKey={userApiKey}
-          onOpenApiSettings={() => {
-            setTempApiKey(userApiKey);
-            setShowApiSettings(true);
-          }}
-          driveBackupSize={driveBackupSize}
-          isSyncingDrive={isSyncingDrive}
-          driveSyncStatus={driveSyncStatus}
         />
 
         <OfflineBanner isOnline={isOnline} />
@@ -334,8 +305,6 @@ export default function App() {
         </main>
       </div>
 
-      {!user && <WelcomeModal signInWithGoogle={signInWithGoogle} />}
-
       {/* Footer */}
       <div className="fixed bottom-2 right-2 z-40">
         <div className="bg-white/80 dark:bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-200/50 dark:border-zinc-800/50 shadow-sm flex items-center gap-1.5 text-[11px] font-medium text-slate-500 dark:text-zinc-400 transition-all duration-300 animate-glow-black dark:animate-glow-white">
@@ -352,29 +321,6 @@ export default function App() {
 
       {/* Toast Notification */}
       <ToastNotification toast={toast} onClose={() => setToast(null)} />
-
-      {/* Gemini API Key Settings Modal */}
-      <ApiSettingsModal
-        isOpen={showApiSettings}
-        userApiKey={userApiKey}
-        onClose={() => setShowApiSettings(false)}
-        onSave={(key) => {
-          localStorage.setItem('gemini_api_key', key);
-          setUserApiKey(key);
-        }}
-        onClear={() => {
-          localStorage.removeItem('gemini_api_key');
-          setUserApiKey('');
-        }}
-        user={user}
-        isSyncingDrive={isSyncingDrive}
-        driveSyncStatus={driveSyncStatus}
-        handleRestoreFromDrive={handleRestoreFromDrive}
-        handleBackupToDrive={handleBackupToDrive}
-        localHistoryCount={history.length}
-        driveBackupSize={driveBackupSize}
-        lastSyncTime={driveLastSyncTime}
-      />
     </div>
   );
 }
