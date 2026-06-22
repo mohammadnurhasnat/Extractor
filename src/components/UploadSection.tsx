@@ -49,13 +49,6 @@ interface UploadSectionProps {
   setHistory: (history: HistoryItem[]) => void;
   loadFromHistory: (item: HistoryItem) => void;
   confirmDelete: (e: React.MouseEvent, id: string) => void;
-
-  // Supabase Integration Props
-  isSupabaseConfigured: boolean;
-  onFetchHistoryFromCloud: () => void;
-  onSyncHistoryToCloud: () => void;
-  isSyncingCloud: boolean;
-  cloudSyncStatusText: string;
 }
 
 export function UploadSection(props: UploadSectionProps) {
@@ -249,11 +242,6 @@ export function UploadSection(props: UploadSectionProps) {
         onSearchTermChange={props.setSearchTerm}
         onLoadItem={props.loadFromHistory}
         onConfirmDelete={props.confirmDelete}
-        isSupabaseConfigured={props.isSupabaseConfigured}
-        onFetchHistoryFromCloud={props.onFetchHistoryFromCloud}
-        onSyncHistoryToCloud={props.onSyncHistoryToCloud}
-        isSyncingCloud={props.isSyncingCloud}
-        cloudSyncStatusText={props.cloudSyncStatusText}
       />
     </div>
   );

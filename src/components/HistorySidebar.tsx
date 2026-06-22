@@ -9,13 +9,6 @@ interface HistorySidebarProps {
   onSearchTermChange: (term: string) => void;
   onLoadItem: (item: HistoryItem) => void;
   onConfirmDelete: (e: React.MouseEvent, id: string) => void;
-  
-  // Supabase Integration Props
-  isSupabaseConfigured: boolean;
-  onFetchHistoryFromCloud: () => void;
-  onSyncHistoryToCloud: () => void;
-  isSyncingCloud: boolean;
-  cloudSyncStatusText: string;
 }
 
 export function HistorySidebar({
@@ -23,12 +16,7 @@ export function HistorySidebar({
   searchTerm,
   onSearchTermChange,
   onLoadItem,
-  onConfirmDelete,
-  isSupabaseConfigured,
-  onFetchHistoryFromCloud,
-  onSyncHistoryToCloud,
-  isSyncingCloud,
-  cloudSyncStatusText
+  onConfirmDelete
 }: HistorySidebarProps) {
   const filteredHistory = history.filter(item => {
     const fullName = `${item.data.givenName || ''} ${item.data.surname || ''}`.toLowerCase();
@@ -177,42 +165,6 @@ Expiry Date: ${item.data.expiryDate || ''}
         </div>
       )}
 
-      {isSupabaseConfigured && (
-        <div className="mt-4 pt-4 border-t border-slate-100 dark:border-zinc-800 flex flex-col gap-2 bg-blue-50/20 dark:bg-zinc-950/40 rounded-2xl p-4 border border-blue-200/20 dark:border-zinc-850/40">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-705 dark:text-zinc-200">
-              <Database className="w-4 h-4 text-blue-500 animate-pulse" />
-              Supabase Cloud Storage
-            </div>
-            <span className="text-[8px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-450 px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wider border border-emerald-500/10">
-              Connected
-            </span>
-          </div>
-          <p className="text-[10.5px] text-slate-500 dark:text-zinc-400 leading-relaxed font-sans font-medium">
-            {cloudSyncStatusText || "অফলাইন হিস্টরি ক্লাউড ডেটাবেজের সাথে সিনক্রোনাইজ করে রাখুন।"}
-          </p>
-          <div className="flex gap-2 mt-1">
-            <button
-              type="button"
-              disabled={isSyncingCloud}
-              onClick={onFetchHistoryFromCloud}
-              className="flex-1 py-1.5 bg-white dark:bg-zinc-900 hover:bg-slate-50 dark:hover:bg-zinc-850 border border-slate-205 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 rounded-lg text-xs font-extrabold flex items-center justify-center gap-1 cursor-pointer transition-all disabled:opacity-50 active:scale-95 shadow-sm"
-              title="Pull all items from clouds"
-            >
-              <Download className="w-3 h-3 text-blue-500" /> Pull Cloud
-            </button>
-            <button
-              type="button"
-              disabled={isSyncingCloud}
-              onClick={onSyncHistoryToCloud}
-              className="flex-1 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-extrabold flex items-center justify-center gap-1 cursor-pointer transition-all disabled:opacity-50 active:scale-95 shadow-sm"
-              title="Push all items from local to cloud"
-            >
-              <UploadCloud className="w-3 h-3" /> Push Local
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -492,11 +492,7 @@ export function UndertakingFormTab({
           </div>
         </div>
 
-        <div className="pt-8 border-t border-slate-100 dark:border-zinc-800/50 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 font-sans">
-          <div className="space-y-1">
-            <div className="font-bold text-slate-900 dark:text-zinc-100 font-sans">Signature of Applicant:</div>
-            <div className="text-[10px] text-slate-400 dark:text-zinc-500 italic mt-1">(Physical Signature required on printed copy)</div>
-          </div>
+        <div className="pt-8 border-t border-slate-100 dark:border-zinc-800/50 flex justify-end gap-6 font-sans">
           <div className="flex items-center gap-2">
             <span className="font-bold text-slate-900 dark:text-zinc-100 font-sans">Date:</span>
             {isUndertakingEditable ? (

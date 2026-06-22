@@ -496,10 +496,8 @@ export const getUndertakingPDFDocument = (formData: UndertakingFormData): jsPDF 
 
   y += 6;
 
-  // Signature Block & Date
+  // Date Block
   doc.setFont('times', 'bold');
-  doc.text('Signature of Applicant: __________________________', leftMargin, y);
-  y += 8;
   doc.text(`Date: ${formData.date || '__________________________'}`, leftMargin, y);
 
   return doc;

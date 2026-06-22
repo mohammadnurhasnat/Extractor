@@ -2,7 +2,6 @@ import express from 'express';
 import path from 'path';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI, Type } from '@google/genai';
-import { createClient } from '@supabase/supabase-js';
 
 async function startServer() {
   const app = express();
@@ -10,6 +9,13 @@ async function startServer() {
 
   // Increase payload limit for large passport images
   app.use(express.json({ limit: '20mb' }));
+
+  function cleanAddressPrefixes(address: string | undefined): string {
+    if (!address) return '';
+    return address
+      .replace(/\b(?:vill|village|post|p\.o|thana|upazila|dist|district)\b\s*[\.:-]?\s*/gi, '')
+      .trim();
+  }
   
   // API Route for passport extraction
   app.post('/api/extract-passport', async (req, res) => {
@@ -69,7 +75,7 @@ INSTRUCTIONS:
    - Cat 2 (Dhaka Division, but not Dhaka District): Create a Dhaka City address for presentAddress, businessAddressDhaka, officeAddressDhaka. Create matching local addresses for local fields.
    - Cat 3 (Outside Dhaka Division): Create a Dhaka City address for presentAddress, businessAddressDhaka, officeAddressDhaka. Create matching local addresses for local fields.
    * Dhaka format: "House X, Road Y, [Area], Dhaka-[Postcode]" (No excessive building titles, commercial center tags, or complex names).
-   * Local format: "Village, Union, Post, District-Postcode" (No urban prefixes like Holding/Plot/Block/Sector). Always explicitly include the final District name.`,
+   * Rules for All addresses: Do NOT include prefix labels or structural tags like 'Vill:', 'Post:', 'Thana:', 'Dist:', 'dist:', 'vill', 'post', 'thana', or 'dist'. Write clean comma-separated names of locations e.g. "Mithamain, Mithamain, Kishoreganj-2370" instead of "Vill: Mithamain, Post: Mithamain, Dist: Kishoreganj-2370".`,
           responseMimeType: 'application/json',
           responseSchema: {
             type: Type.OBJECT,
@@ -139,11 +145,12 @@ INSTRUCTIONS:
         ...pipelineData.finalData,
         discrepancyList: pipelineData.discrepancies,
         customUndertakingDraft: pipelineData.customUndertakingDraft || "",
-        presentAddress: pipelineData.generatedAddresses.presentAddress,
-        businessAddressDhaka: pipelineData.generatedAddresses.businessAddressDhaka,
-        businessAddressLocal: pipelineData.generatedAddresses.businessAddressLocal,
-        officeAddressDhaka: pipelineData.generatedAddresses.officeAddressDhaka,
-        officeAddressLocal: pipelineData.generatedAddresses.officeAddressLocal,
+        permanentAddress: cleanAddressPrefixes(pipelineData.finalData.permanentAddress),
+        presentAddress: cleanAddressPrefixes(pipelineData.generatedAddresses.presentAddress),
+        businessAddressDhaka: cleanAddressPrefixes(pipelineData.generatedAddresses.businessAddressDhaka),
+        businessAddressLocal: cleanAddressPrefixes(pipelineData.generatedAddresses.businessAddressLocal),
+        officeAddressDhaka: cleanAddressPrefixes(pipelineData.generatedAddresses.officeAddressDhaka),
+        officeAddressLocal: cleanAddressPrefixes(pipelineData.generatedAddresses.officeAddressLocal),
       };
 
       const formattedMrzLines = Array.isArray(pipelineData.mrzValidation.rawMrz) 
@@ -229,13 +236,13 @@ Category 2: If the permanent address is inside DHAKA DIVISION but NOT Dhaka Dist
    - permanentAddress: Keep it exactly as "${permanentAddress}".
    - presentAddress: MUST be a realistic, proper, and complete random address inside DHAKA CITY (distinct from permanentAddress).
    - businessAddressDhaka & officeAddressDhaka: These 2 addresses MUST be realistic, proper, and complete random addresses inside DHAKA CITY.
-   - businessAddressLocal & officeAddressLocal: These 2 addresses MUST be realistic, proper, and complete random addresses near the permanent address. You MUST explicitly append the District name (e.g. "Dist: Faridpur") to the end of these addresses.
+   - businessAddressLocal & officeAddressLocal: These 2 addresses MUST be realistic, proper, and complete random addresses near the permanent address. You MUST explicitly append the District name (e.g. "Faridpur") to the end of these addresses.
 
 Category 3: If the permanent address is OUTSIDE DHAKA DIVISION (e.g., Sylhet, Chittagong, Rajshahi, Khulna, Barisal, Rangpur, Mymensingh, or any district outside Dhaka division):
    - permanentAddress: Keep it exactly as "${permanentAddress}".
    - presentAddress: MUST be a realistic, proper, and complete random address inside DHAKA CITY.
    - businessAddressDhaka & officeAddressDhaka: These 2 addresses MUST be realistic, proper, and complete random addresses inside DHAKA CITY.
-   - businessAddressLocal & officeAddressLocal: These 2 addresses MUST be realistic, proper, and complete random addresses near the permanent address. You MUST explicitly append the District name (e.g. "Dist: Sylhet") to the end of these addresses.
+   - businessAddressLocal & officeAddressLocal: These 2 addresses MUST be realistic, proper, and complete random addresses near the permanent address. You MUST explicitly append the District name (e.g. "Sylhet") to the end of these addresses.
 
 CRITICAL ADDRESS FORMATTING MANDATES:
 - DHAKA CITY ADDRESSES (presentAddress, businessAddressDhaka, officeAddressDhaka):
@@ -245,8 +252,7 @@ CRITICAL ADDRESS FORMATTING MANDATES:
 - LOCAL/RURAL ADDRESSES OUTSIDE DHAKA (businessAddressLocal, officeAddressLocal if permanentAddress is outside Dhaka):
   * Do NOT use Dhaka-style urban prefixes like "House/Holding/Plot/Block" or "Sector" for village/local areas, as it looks artificial and incorrect.
   * Do NOT append words like "Sadar", "Upazila", or other administrative clutter (e.g., write "Mithamain" instead of "Mithamain Sadar" or "Mithamain Upazila").
-  * Format rural/local addresses simply and naturally as they are used locally in Bangladesh. Examples:
-    "Village Name, Union/Bazar, Post Office, Thana, District-Postcode" or "Vill: Mithamain, Post: Mithamain, Dist: Kishoreganj-2370" (Ensure the District name is ALWAYS included in these local addresses).
+  * Do NOT include prefix labels or structural tags like 'Vill:', 'Post:', 'Thana:', 'Dist:', 'dist:', 'vill', 'post', 'thana', or 'dist'. Write clean comma-separated names of locations e.g. "Mithamain, Mithamain, Kishoreganj-2370" instead of "Vill: Mithamain, Post: Mithamain, Dist: Kishoreganj-2370" (Ensure the District name is ALWAYS included in these local addresses).
   * Keep it short, authentic, uncluttered, and highly natural. Do not use placeholders like "[Insert Road]".
 - Return the output strictly in the requested JSON structure.`
         }
@@ -272,7 +278,15 @@ CRITICAL ADDRESS FORMATTING MANDATES:
     });
 
     if (response.text) {
-      return JSON.parse(response.text);
+      const rawObj = JSON.parse(response.text);
+      return {
+        permanentAddress: cleanAddressPrefixes(rawObj.permanentAddress),
+        presentAddress: cleanAddressPrefixes(rawObj.presentAddress),
+        businessAddressDhaka: cleanAddressPrefixes(rawObj.businessAddressDhaka),
+        businessAddressLocal: cleanAddressPrefixes(rawObj.businessAddressLocal),
+        officeAddressDhaka: cleanAddressPrefixes(rawObj.officeAddressDhaka),
+        officeAddressLocal: cleanAddressPrefixes(rawObj.officeAddressLocal)
+      };
     }
     throw new Error('Failed to generate addresses using Gemini');
   }
@@ -304,218 +318,6 @@ CRITICAL ADDRESS FORMATTING MANDATES:
     } catch (error: any) {
       console.error('Address Generation Error:', error);
       res.status(500).json({ success: false, error: error.message || 'Failed to generate addresses' });
-    }
-  });
-
-  // Base helper to retrieve Supabase client on demand
-  const getSupabaseClient = (req: express.Request) => {
-    let url = req.headers['x-supabase-url']?.toString() || process.env.SUPABASE_URL;
-    let key = req.headers['x-supabase-anon-key']?.toString() || process.env.SUPABASE_ANON_KEY;
-    
-    if (!url || !key) return null;
-    
-    url = url.trim();
-    key = key.trim();
-    
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      url = 'https://' + url;
-    }
-
-    try {
-      // Validate url
-      new URL(url);
-      
-      return createClient(url, key, {
-        auth: {
-          persistSession: false
-        }
-      });
-    } catch (e: any) {
-      throw new Error(`Invalid Supabase Server URL provided: ${url}`);
-    }
-  };
-
-  // 1. Connection and Schema Verification test
-  app.post('/api/supabase/test', async (req, res) => {
-    try {
-      const client = getSupabaseClient(req);
-      if (!client) {
-        return res.status(400).json({ 
-          success: false, 
-          error: 'Supabase credentials are not configured. Please supply them in your App settings or environment files.' 
-        });
-      }
-
-      // Query the table for 1 item to verify its structure & existence
-      const { data, error } = await client
-        .from('passport_records')
-        .select('id')
-        .limit(1);
-
-      if (error) {
-        // Code 42P01 means table does not exist in postgres
-        if (error.code === 'PGRST116' || error.message?.includes('does not exist') || error.code === '42P01') {
-          return res.json({
-            success: false,
-            error: 'Table Not Found',
-            message: 'Database is connected successfully, but the "passport_records" table was not found! Please run the SQL schema creation script inside the Supabase SQL Editor.'
-          });
-        }
-        return res.status(400).json({ success: false, error: error.message });
-      }
-
-      res.json({ 
-        success: true, 
-        message: 'Successfully authenticated & verified the "passport_records" table structure in the Supabase Cloud!' 
-      });
-    } catch (e: any) {
-      res.status(500).json({ success: false, error: e.message || 'Internal server error while testing Supabase connection' });
-    }
-  });
-
-  // 2. Fetch all cloud passport records
-  app.get('/api/supabase/fetch', async (req, res) => {
-    try {
-      const client = getSupabaseClient(req);
-      if (!client) {
-        return res.status(400).json({ success: false, error: 'Supabase URL or Key is missing from configuration.' });
-      }
-
-      const { data, error } = await client
-        .from('passport_records')
-        .select('*')
-        .order('timestamp', { ascending: false });
-
-      if (error) {
-        return res.status(400).json({ success: false, error: error.message });
-      }
-
-      // Compile columns back to frontend camelCase HistoryItem format
-      const historyItems = (data || []).map((row: any) => ({
-        id: row.id,
-        timestamp: Number(row.timestamp),
-        data: {
-          givenName: row.given_name || '',
-          surname: row.surname || '',
-          gender: row.gender || '',
-          dob: row.dob || '',
-          birthPlace: row.birth_place || '',
-          fatherName: row.father_name || '',
-          motherName: row.mother_name || '',
-          spouseName: row.spouse_name || '',
-          passportNumber: row.passport_number || '',
-          nidOrBirthCertNumber: row.nid_or_birth_cert_number || '',
-          issueDate: row.issue_date || '',
-          expiryDate: row.expiry_date || '',
-          mobileNumber: row.mobile_number || '',
-          permanentAddress: row.permanent_address || '',
-          presentAddress: row.present_address || '',
-          businessAddressDhaka: row.business_address_dhaka || '',
-          businessAddressLocal: row.business_address_local || '',
-          officeAddressDhaka: row.office_address_dhaka || '',
-          officeAddressLocal: row.office_address_local || '',
-          email: row.email || '',
-          proprietorBusinessName: row.proprietor_business_name || '',
-          jobCompanyName: row.job_company_name || '',
-          jobRole: row.job_role || '',
-          placeOfIssue: row.place_of_issue || '',
-          birthPlaceDistrict: row.birth_place_district || '',
-          discrepancyList: Array.isArray(row.discrepancy_list) ? row.discrepancy_list : [],
-          customUndertakingDraft: row.custom_undertaking_draft || ''
-        }
-      }));
-
-      res.json({ success: true, data: historyItems });
-    } catch (e: any) {
-      res.status(500).json({ success: false, error: e.message || 'Internal server error while fetching from cloud' });
-    }
-  });
-
-  // 3. Upsert a single passport record to cloud
-  app.post('/api/supabase/upsert', async (req, res) => {
-    try {
-      const client = getSupabaseClient(req);
-      if (!client) {
-        return res.status(400).json({ success: false, error: 'Supabase configuration is missing.' });
-      }
-
-      const { item } = req.body;
-      if (!item || !item.id || !item.data) {
-        return res.status(400).json({ success: false, error: 'Invalid history item format.' });
-      }
-
-      const { id, timestamp, data } = item;
-      const dbFormat = {
-        id,
-        timestamp,
-        given_name: data.givenName || '',
-        surname: data.surname || '',
-        gender: data.gender || '',
-        dob: data.dob || '',
-        birth_place: data.birthPlace || '',
-        father_name: data.fatherName || '',
-        mother_name: data.motherName || '',
-        spouse_name: data.spouseName || '',
-        passport_number: data.passportNumber || '',
-        nid_or_birth_cert_number: data.nidOrBirthCertNumber || '',
-        issue_date: data.issueDate || '',
-        expiry_date: data.expiryDate || '',
-        mobile_number: data.mobileNumber || '',
-        permanent_address: data.permanentAddress || '',
-        present_address: data.presentAddress || '',
-        business_address_dhaka: data.businessAddressDhaka || '',
-        business_address_local: data.businessAddressLocal || '',
-        office_address_dhaka: data.officeAddressDhaka || '',
-        office_address_local: data.officeAddressLocal || '',
-        email: data.email || '',
-        proprietor_business_name: data.proprietorBusinessName || '',
-        job_company_name: data.jobCompanyName || '',
-        job_role: data.jobRole || '',
-        place_of_issue: data.placeOfIssue || '',
-        birth_place_district: data.birthPlaceDistrict || '',
-        discrepancy_list: Array.isArray(data.discrepancyList) ? data.discrepancyList : [],
-        custom_undertaking_draft: data.customUndertakingDraft || ''
-      };
-
-      const { error } = await client
-        .from('passport_records')
-        .upsert(dbFormat, { onConflict: 'id' });
-
-      if (error) {
-        return res.status(400).json({ success: false, error: error.message });
-      }
-
-      res.json({ success: true, message: 'Successfully saved to Supabase cloud' });
-    } catch (e: any) {
-      res.status(500).json({ success: false, error: e.message || 'Internal server error while syncing' });
-    }
-  });
-
-  // 4. Delete a passport record from cloud
-  app.post('/api/supabase/delete', async (req, res) => {
-    try {
-      const client = getSupabaseClient(req);
-      if (!client) {
-        return res.status(400).json({ success: false, error: 'Supabase configuration is missing.' });
-      }
-
-      const { id } = req.body;
-      if (!id) {
-        return res.status(400).json({ success: false, error: 'Missing row ID.' });
-      }
-
-      const { error } = await client
-        .from('passport_records')
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        return res.status(400).json({ success: false, error: error.message });
-      }
-
-      res.json({ success: true, message: 'Successfully deleted from Supabase cloud' });
-    } catch (e: any) {
-      res.status(500).json({ success: false, error: e.message || 'Internal server error while deleting' });
     }
   });
 

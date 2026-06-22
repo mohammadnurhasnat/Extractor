@@ -35,18 +35,17 @@ import { useUndertakingState } from './hooks/useUndertakingState';
 import { useSessionQueue } from './hooks/useSessionQueue';
 import { useAppSettings } from './hooks/useAppSettings';
 import { usePassportHistory } from './hooks/usePassportHistory';
-import { useSupabase } from './hooks/useSupabase';
 import { useAuth } from './lib/AuthContext';
 import { useExporterHelpers } from './hooks/useExporterHelpers';
 import { useAddressGeneration } from './hooks/useAddressGeneration';
 import { useSavedOptions } from './hooks/useSavedOptions';
-import { useSupabaseCloudSync } from './hooks/useSupabaseCloudSync';
+import { useGoogleDriveSync } from './hooks/useGoogleDriveSync';
 import { useQueueHandlers } from './hooks/useQueueHandlers';
 
 // App main component
 
 export default function App() {
-  const { user, loading: authLoading, signInWithGoogle } = useAuth();
+  const { user, accessToken, loading: authLoading, signInWithGoogle } = useAuth();
   
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(() => {
@@ -90,7 +89,6 @@ export default function App() {
     showApiKeyChars, setShowApiKeyChars
   } = useAppSettings();
 
-  const supabase = useSupabase();
   const {
     history, setHistory,
     addToHistory,
@@ -98,25 +96,14 @@ export default function App() {
     clearHistory,
     searchTerm, setSearchTerm,
     itemToDelete, setItemToDelete
-  } = usePassportHistory({
-    onItemAdded: (item) => {
-      if (supabase.isConfigured) {
-        supabase.upsertToCloud(item);
-      }
-    },
-    onItemDeleted: (id) => {
-      if (supabase.isConfigured) {
-        supabase.deleteFromCloud(id);
-      }
-    }
-  });
+  } = usePassportHistory();
 
   const {
-    isSyncingCloud,
-    cloudSyncStatusText,
-    handleFetchFromCloud,
-    handleSyncToCloud
-  } = useSupabaseCloudSync({ supabase, history, setHistory });
+    isSyncing: isSyncingDrive,
+    syncStatus: driveSyncStatus,
+    handleRestore: handleRestoreFromDrive,
+    forceManualBackup: handleBackupToDrive
+  } = useGoogleDriveSync({ user, accessToken, history, setHistory });
 
   const [resultsTab, setResultsTab] = useState<'profile' | 'undertaking' | 'passport-pdf'>(() => {
     const saved = localStorage.getItem('passport_active_results_tab');
@@ -157,29 +144,6 @@ export default function App() {
       return () => clearTimeout(timer);
     }
   }, [toast]);
-
-  const hasAutoloadedRef = useRef(false);
-
-  useEffect(() => {
-    if (supabase.isConfigured && !hasAutoloadedRef.current) {
-      hasAutoloadedRef.current = true;
-      
-      const triggerAutoFetch = async () => {
-        try {
-          await handleFetchFromCloud();
-          setToast({
-            message: 'ক্লাউড থেকে হিস্ট্রি অটোমেটিক ব্যাকগ্রাউন্ডে লোড এবং সিনক্রোনাইজ করা হয়েছে!',
-            type: 'success'
-          });
-        } catch (e) {
-          console.error("Auto background cloud sync failed:", e);
-        }
-      };
-      
-      const timeoutId = setTimeout(triggerAutoFetch, 400);
-      return () => clearTimeout(timeoutId);
-    }
-  }, [supabase.isConfigured, handleFetchFromCloud]);
 
   const isUndertakingConfigured = !!(utPurpose || utFromDate || utToDate);
 
@@ -339,11 +303,6 @@ export default function App() {
               setHistory={setHistory}
               loadFromHistory={loadFromHistory}
               confirmDelete={confirmDelete}
-              isSupabaseConfigured={supabase.isConfigured}
-              onFetchHistoryFromCloud={handleFetchFromCloud}
-              onSyncHistoryToCloud={handleSyncToCloud}
-              isSyncingCloud={isSyncingCloud}
-              cloudSyncStatusText={cloudSyncStatusText}
             />
 
             {/* RESULTS SECTION (Right side on large screens) */}
@@ -402,14 +361,12 @@ export default function App() {
           localStorage.removeItem('gemini_api_key');
           setUserApiKey('');
         }}
-        supabaseUrl={supabase.supabaseUrl}
-        supabaseAnonKey={supabase.supabaseAnonKey}
-        onSaveSupabase={supabase.saveConfig}
-        onClearSupabase={supabase.clearConfig}
-        testConnection={supabase.testConnection}
-        isTestLoading={supabase.isTestLoading}
-        testResult={supabase.testResult}
-        clearTestResult={() => supabase.setTestResult(null)}
+        user={user}
+        isSyncingDrive={isSyncingDrive}
+        driveSyncStatus={driveSyncStatus}
+        handleRestoreFromDrive={handleRestoreFromDrive}
+        handleBackupToDrive={handleBackupToDrive}
+        localHistoryCount={history.length}
       />
     </div>
   );
