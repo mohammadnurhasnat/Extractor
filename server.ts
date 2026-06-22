@@ -60,6 +60,7 @@ Extract passport data, read and validate Machine-Readable Zone (MRZ) checksums, 
 INSTRUCTIONS:
 1. OCR: Extract core properties: givenName, surname, dob, birthPlace, fatherName, motherName, spouseName, passportNumber, nidOrBirthCertNumber, issueDate, expiryDate, gender (Male/Female), permanentAddress, mobileNumber.
    - Core visual shapes: Carefully differentiate 'O' vs '0' and 'I' vs '1'.
+   - IMPORTANT: Format dob, issueDate, and expiryDate strictly as DD/MM/YYYY (e.g. 15/08/1990).
 2. MRZ: Read raw MRZ lines into rawMrz array. Populate validation fields (passportNumberChecksum, dobChecksum, expiryDateChecksum, compositeChecksum) with "Pass" or "Fail".
 3. Security Checks: Match visual details with MRZ properties. List any discrepancies found under discrepancies. Determine overall confidenceScore (0-100).
 4. Undertaking: Set customUndertakingDraft to a very short 1-sentence string (e.g., "Full verification of passport data completed.") to optimize processing speed.

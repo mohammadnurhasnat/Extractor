@@ -61,14 +61,14 @@ export const generateRandomEnterpriseName = (name: string): string => {
 export const getProprietorBusinessName = (itemData: PassportData | null): string => {
   if (!itemData) return '';
   if (itemData.proprietorBusinessName) return itemData.proprietorBusinessName;
-  const nameToUse = itemData.givenName || itemData.surname || 'Unknown';
+  const nameToUse = `${itemData.givenName || ''} ${itemData.surname || ''}`.trim() || 'Unknown';
   return generateRandomEnterpriseName(nameToUse);
 };
 
 export const getJobCompanyName = (itemData: PassportData | null): string => {
   if (!itemData) return '';
   if (itemData.jobCompanyName) return itemData.jobCompanyName;
-  const nameToUse = itemData.fatherName || itemData.motherName || 'Unknown';
+  const nameToUse = `${itemData.fatherName || ''} ${itemData.motherName || ''}`.trim() || 'Unknown';
   return generateRandomEnterpriseName(nameToUse);
 };
 

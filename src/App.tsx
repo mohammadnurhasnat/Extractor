@@ -193,6 +193,7 @@ export default function App() {
     loading, setLoading,
     extractSingleItem,
     processEntireQueue,
+    cancelExtraction,
     handleDownloadAllZIP
   } = useSessionQueue({
     isOnline,
@@ -330,6 +331,7 @@ export default function App() {
               selectQueueItem={selectQueueItem}
               removeFromQueue={removeFromQueue}
               extractSingleItem={extractSingleItem}
+              cancelExtraction={cancelExtraction}
               error={error}
               history={history}
               searchTerm={searchTerm}

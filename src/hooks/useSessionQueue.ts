@@ -20,6 +20,17 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
   const [isZipping, setIsZipping] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const abortControllersRef = useRef<Set<AbortController>>(new Set());
+  const isCancelledRef = useRef<boolean>(false);
+
+  const cancelExtraction = useCallback(() => {
+    isCancelledRef.current = true;
+    abortControllersRef.current.forEach(controller => controller.abort());
+    abortControllersRef.current.clear();
+    setIsBatchProcessing(false);
+    setLoading(false);
+  }, []);
+
   const extractSingleItem = useCallback(async (itemId: string): Promise<PassportData | null> => {
     // Current queue state needs to be accessed
     let currentItem: QueueItem | undefined;
@@ -67,6 +78,9 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
         headers['x-api-key'] = userApiKey;
       }
 
+      const controller = new AbortController();
+      abortControllersRef.current.add(controller);
+
       const res = await fetch('/api/extract-passport', {
         method: 'POST',
         headers,
@@ -74,7 +88,10 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
           imageBase64: base64String,
           mimeType: currentItem.file.type
         }),
+        signal: controller.signal,
       });
+      
+      abortControllersRef.current.delete(controller);
       
       const result = await res.json();
       
@@ -103,7 +120,16 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
         }
         return null;
       }
-    } catch (err) {
+    } catch (err: any) {
+      if (err.name === 'AbortError') {
+        const errMsg = 'Extraction cancelled.';
+        setQueue(prev => prev.map(q => q.id === itemId ? { ...q, loading: false, status: 'failed', error: errMsg } : q));
+        if (activeQueueId === itemId) {
+          onError(errMsg);
+          setLoading(false);
+        }
+        return null;
+      }
       const errMsg = 'Network error: Could not reach the server.';
       setQueue(prev => prev.map(q => q.id === itemId ? { ...q, loading: false, status: 'failed', error: errMsg } : q));
       if (activeQueueId === itemId) {
@@ -129,14 +155,22 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
       onError("Cannot extract data while offline. Please restore your internet connection and try again.");
       return;
     }
+    
+    isCancelledRef.current = false;
+    abortControllersRef.current.clear();
+    
     setIsBatchProcessing(true);
     const pendingItems = queue.filter(q => q.status === 'queued' || q.status === 'failed');
     
     // Process in parallel, e.g., 3 at a time.
     const concurrency = 3;
     for (let i = 0; i < pendingItems.length; i += concurrency) {
+      if (isCancelledRef.current) break;
       const chunk = pendingItems.slice(i, i + concurrency);
-      await Promise.all(chunk.map(item => extractSingleItem(item.id)));
+      await Promise.all(chunk.map(item => {
+         if (isCancelledRef.current) return Promise.resolve(null);
+         return extractSingleItem(item.id);
+      }));
     }
     
     setIsBatchProcessing(false);
@@ -193,6 +227,7 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
     loading, setLoading,
     extractSingleItem,
     processEntireQueue,
+    cancelExtraction,
     handleDownloadAllZIP
   };
 }

@@ -40,6 +40,7 @@ interface UploadSectionProps {
   selectQueueItem: (item: QueueItem) => void;
   removeFromQueue: (e: React.MouseEvent, itemId: string) => void;
   extractSingleItem: (itemId: string) => Promise<PassportData | null>;
+  cancelExtraction: () => void;
 
   error: string | null;
   history: HistoryItem[];
@@ -184,16 +185,18 @@ export function UploadSection(props: UploadSectionProps) {
               {!props.data && (
                 <div className="flex-[2] flex flex-col gap-2">
                   <button 
-                    onClick={props.extractData}
-                    disabled={props.loading || !props.isOnline || props.isBatchProcessing}
+                    onClick={props.loading || props.isBatchProcessing ? props.cancelExtraction : props.extractData}
+                    disabled={!props.isOnline && !props.loading && !props.isBatchProcessing}
                     className={`slide-btn w-full py-2.5 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer ${
-                      !props.isOnline 
+                      props.loading || props.isBatchProcessing
+                        ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100 dark:bg-red-950/30 dark:text-red-400 dark:border-red-900/50 dark:hover:bg-red-900/40' 
+                        : !props.isOnline 
                         ? 'bg-slate-200 dark:bg-zinc-800 text-slate-400 dark:text-zinc-500 cursor-not-allowed border-transparent' 
                         : 'slide-btn-teal'
                     }`}
                   >
-                    {props.loading ? (
-                      <><Loader2 className="w-4 h-4 animate-spin relative z-10" /><span className="relative z-10">EXTRACTING DATA...</span></>
+                    {props.loading || props.isBatchProcessing ? (
+                      <><div className="w-2 h-2 rounded-sm bg-red-600 dark:bg-red-400 relative z-10" /><span className="relative z-10">STOP EXTRACTION</span></>
                     ) : !props.isOnline ? (
                       <><ZapOff className="w-4 h-4 text-red-500 relative z-10" /><span className="relative z-10">Offline: Disabled</span></>
                     ) : (
@@ -222,6 +225,7 @@ export function UploadSection(props: UploadSectionProps) {
           selectQueueItem={props.selectQueueItem}
           removeFromQueue={props.removeFromQueue}
           extractSingleItem={props.extractSingleItem}
+          cancelExtraction={props.cancelExtraction}
         />
 
         <AnimatePresence>

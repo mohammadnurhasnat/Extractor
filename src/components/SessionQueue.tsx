@@ -14,6 +14,7 @@ interface SessionQueueProps {
   selectQueueItem: (item: QueueItem) => void;
   removeFromQueue: (e: React.MouseEvent, itemId: string) => void;
   extractSingleItem: (itemId: string) => void;
+  cancelExtraction: () => void;
 }
 
 export function SessionQueue({
@@ -27,6 +28,7 @@ export function SessionQueue({
   selectQueueItem,
   removeFromQueue,
   extractSingleItem,
+  cancelExtraction,
 }: SessionQueueProps) {
   if (queue.length === 0) return null;
 
@@ -43,14 +45,27 @@ export function SessionQueue({
         </div>
         
         <div className="flex items-center gap-2">
-          {queue.some(q => q.status === 'queued' || q.status === 'failed') && (
+          {queue.some(q => q.status === 'queued' || q.status === 'failed' || q.status === 'extracting') && (
             <button
-              onClick={processEntireQueue}
-              disabled={isBatchProcessing || !isOnline}
-              className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-1 bg-blue-50 dark:bg-blue-900/10 px-2.5 py-1.5 rounded-lg border border-blue-100 dark:border-blue-900/30 transition-all disabled:opacity-50 shrink-0 cursor-pointer"
+              onClick={isBatchProcessing ? cancelExtraction : processEntireQueue}
+              disabled={!isBatchProcessing && !isOnline}
+              className={`text-xs font-bold flex items-center gap-1 px-2.5 py-1.5 rounded-lg border transition-all disabled:opacity-50 shrink-0 cursor-pointer ${
+                isBatchProcessing 
+                  ? 'text-red-600 dark:text-red-400 hover:text-red-700 bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-900/30' 
+                  : 'text-blue-600 dark:text-blue-400 hover:text-blue-700 bg-blue-50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-900/30'
+              }`}
             >
-              <Play className="w-3.5 h-3.5" />
-              Extract All
+              {isBatchProcessing ? (
+                <>
+                  <div className="w-2.5 h-2.5 bg-red-500 rounded-sm" />
+                  Stop Extraction
+                </>
+              ) : (
+                <>
+                  <Play className="w-3.5 h-3.5" />
+                  Extract All
+                </>
+              )}
             </button>
           )}
 
