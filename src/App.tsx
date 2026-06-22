@@ -101,6 +101,8 @@ export default function App() {
   const {
     isSyncing: isSyncingDrive,
     syncStatus: driveSyncStatus,
+    backupSize: driveBackupSize,
+    lastSyncTime: driveLastSyncTime,
     handleRestore: handleRestoreFromDrive,
     forceManualBackup: handleBackupToDrive
   } = useGoogleDriveSync({ user, accessToken, history, setHistory });
@@ -246,6 +248,9 @@ export default function App() {
             setTempApiKey(userApiKey);
             setShowApiSettings(true);
           }}
+          driveBackupSize={driveBackupSize}
+          isSyncingDrive={isSyncingDrive}
+          driveSyncStatus={driveSyncStatus}
         />
 
         <OfflineBanner isOnline={isOnline} />
@@ -367,6 +372,8 @@ export default function App() {
         handleRestoreFromDrive={handleRestoreFromDrive}
         handleBackupToDrive={handleBackupToDrive}
         localHistoryCount={history.length}
+        driveBackupSize={driveBackupSize}
+        lastSyncTime={driveLastSyncTime}
       />
     </div>
   );

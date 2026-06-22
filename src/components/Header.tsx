@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Settings, Sun, Moon, LogIn, LogOut, User } from 'lucide-react';
+import { Settings, Sun, Moon, LogIn, LogOut, User, Cloud, Loader2 } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
 
 interface HeaderProps {
@@ -7,6 +7,9 @@ interface HeaderProps {
   onToggleDarkMode: () => void;
   userApiKey: string;
   onOpenApiSettings: () => void;
+  driveBackupSize?: number | null;
+  isSyncingDrive?: boolean;
+  driveSyncStatus?: string;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -14,9 +17,22 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleDarkMode,
   userApiKey,
   onOpenApiSettings,
+  driveBackupSize = null,
+  isSyncingDrive = false,
+  driveSyncStatus = ''
 }) => {
   const { user, signInWithGoogle, logout } = useAuth();
   const [showProfile, setShowProfile] = useState(false);
+
+  // Bytes size pretty formatter
+  const formatBytes = (bytes: number | null | undefined): string => {
+    if (bytes === undefined || bytes === null) return '0 B';
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  };
   
   return (
     <header className="bg-white/60 dark:bg-black/60 backdrop-blur-md border-b border-slate-200/50 dark:border-zinc-800/50 sticky top-0 z-10 py-3 transition-colors print:hidden shadow-sm">
@@ -31,6 +47,7 @@ export const Header: React.FC<HeaderProps> = ({
             </p>
           </div>
         </div>
+
         <div className="flex items-center gap-2">
           {user ? (
             <div className="relative">
