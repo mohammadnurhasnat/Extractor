@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { PassportData, QueueItem, HistoryItem, UndertakingFormData } from '../types';
+import { encryptData, decryptData } from '../utils/crypto';
 
 interface PassportContextType {
   data: PassportData | null;
@@ -24,7 +25,7 @@ export const PassportProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [data, setData] = useState<PassportData | null>(() => {
     try {
       const saved = localStorage.getItem('passport_active_data');
-      if (saved && saved !== 'undefined' && saved.trim() !== '') return JSON.parse(saved);
+      if (saved && saved !== 'undefined' && saved.trim() !== '') return decryptData(saved);
     } catch (e) { console.error(e); }
     return null;
   });
@@ -33,7 +34,7 @@ export const PassportProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [activeQueueId, setActiveQueueId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (data) localStorage.setItem('passport_active_data', JSON.stringify(data));
+    if (data) localStorage.setItem('passport_active_data', encryptData(data));
     else localStorage.removeItem('passport_active_data');
   }, [data]);
 

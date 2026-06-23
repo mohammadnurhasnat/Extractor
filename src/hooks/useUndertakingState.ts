@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { PassportData, UndertakingFormData } from '../types';
+import { encryptData, decryptData } from '../utils/crypto';
 
 export function useUndertakingState(data: PassportData | null) {
   const [utPurpose, setUtPurpose] = useState(() => localStorage.getItem('ut_purpose') || '');
@@ -22,7 +23,7 @@ export function useUndertakingState(data: PassportData | null) {
   const [undertakingData, setUndertakingData] = useState<UndertakingFormData | null>(() => {
     try {
       const saved = localStorage.getItem('active_undertaking_data');
-      if (saved && saved !== 'undefined' && saved.trim() !== '') return JSON.parse(saved);
+      if (saved && saved !== 'undefined' && saved.trim() !== '') return decryptData(saved);
     } catch (e) {
       console.error(e);
     }
@@ -49,7 +50,7 @@ export function useUndertakingState(data: PassportData | null) {
 
   useEffect(() => {
     if (undertakingData) {
-      localStorage.setItem('active_undertaking_data', JSON.stringify(undertakingData));
+      localStorage.setItem('active_undertaking_data', encryptData(undertakingData));
     } else {
       localStorage.removeItem('active_undertaking_data');
     }
@@ -77,12 +78,12 @@ export function useUndertakingState(data: PassportData | null) {
       try {
         const saved = localStorage.getItem('active_undertaking_data');
         if (saved && saved !== 'undefined' && saved.trim() !== '') {
-          const parsed = JSON.parse(saved) as UndertakingFormData;
-          if (parsed && parsed.passportNumber === (data.passportNumber || '')) {
-            if (parsed.doctorName === 'Dr. K. S. Murthy') {
-              parsed.doctorName = '';
+          const decrypted = decryptData(saved) as UndertakingFormData;
+          if (decrypted && decrypted.passportNumber === (data.passportNumber || '')) {
+            if (decrypted.doctorName === 'Dr. K. S. Murthy') {
+              decrypted.doctorName = '';
             }
-            savedData = parsed;
+            savedData = decrypted;
           }
         }
       } catch (e) {

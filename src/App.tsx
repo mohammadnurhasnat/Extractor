@@ -38,6 +38,8 @@ import { useAddressGeneration } from './hooks/useAddressGeneration';
 import { useSavedOptions } from './hooks/useSavedOptions';
 import { useQueueHandlers } from './hooks/useQueueHandlers';
 
+import { encryptData, decryptData } from './utils/crypto';
+
 // App main component
 
 export default function App() {
@@ -49,7 +51,7 @@ export default function App() {
     try {
       const saved = localStorage.getItem('passport_active_data');
       if (saved && saved !== 'undefined' && saved.trim() !== '') {
-        return JSON.parse(saved);
+        return decryptData(saved);
       }
     } catch (e) {
       console.error("Failed to load active data", e);
@@ -60,7 +62,7 @@ export default function App() {
 
   useEffect(() => {
     if (data) {
-      localStorage.setItem('passport_active_data', JSON.stringify(data));
+      localStorage.setItem('passport_active_data', encryptData(data));
     } else {
       localStorage.removeItem('passport_active_data');
     }

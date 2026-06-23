@@ -1,11 +1,29 @@
 import express from 'express';
 import path from 'path';
 import { createServer as createViteServer } from 'vite';
-import { GoogleGenAI, Type } from '@google/genai';
+import { GoogleGenAI, Type, ThinkingLevel } from '@google/genai';
+import helmet from 'helmet';
+import { z } from 'zod';
+
+// Define request validation schemas
+const ExtractPassportSchema = z.object({
+  imageBase64: z.string().min(1, 'Image base64 data is required'),
+  mimeType: z.string().regex(/^image\/(jpeg|png|webp)$/i, 'Only JPEG, PNG, and WEBP images are supported'),
+});
+
+const GenerateAddressesSchema = z.object({
+  permanentAddress: z.string().min(1, 'Permanent address is required'),
+});
 
 async function startServer() {
   const app = express();
   const PORT = 3000;
+
+  // Add security headers using helmet
+  app.use(helmet({
+    contentSecurityPolicy: false, // Disable CSP to allow easy development preview and asset loading
+    crossOriginEmbedderPolicy: false,
+  }));
 
   // Increase payload limit for large passport images
   app.use(express.json({ limit: '20mb' }));
@@ -20,7 +38,16 @@ async function startServer() {
   // API Route for passport extraction
   app.post('/api/extract-passport', async (req, res) => {
     try {
-      const { imageBase64, mimeType } = req.body;
+      // Validate input request using Zod
+      const parsedBody = ExtractPassportSchema.safeParse(req.body);
+      if (!parsedBody.success) {
+        return res.status(400).json({ 
+          success: false, 
+          error: parsedBody.error.issues.map(e => e.message).join(', ') 
+        });
+      }
+
+      const { imageBase64, mimeType } = parsedBody.data;
 
       const clientApiKey = req.headers['x-api-key']?.toString() || process.env.GEMINI_API_KEY;
 
@@ -40,10 +67,6 @@ async function startServer() {
         }
       });
 
-      if (!imageBase64 || !mimeType) {
-        return res.status(400).json({ error: 'Image data and mimeType are required' });
-      }
-
       // We expect the frontend to send just the base64 string without the data URI prefix
       const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '');
 
@@ -60,6 +83,10 @@ async function startServer() {
           }
         ],
         config: {
+          // Set ThinkingLevel.LOW to minimize latency (down to 2-4 seconds) and keep cost low while preserving OCR precision!
+          thinkingConfig: {
+            thinkingLevel: ThinkingLevel.LOW
+          },
           systemInstruction: `You are an ultra-fast, high-precision Passport Extraction & Validation Agent. 
 Extract passport data, read and validate Machine-Readable Zone (MRZ) checksums, compute confidence scores, highlight structural discrepancies, and suggest Bangladeshi addresses.
 
@@ -294,7 +321,16 @@ CRITICAL ADDRESS FORMATTING MANDATES:
   // API Route for address generation based on permanent address
   app.post('/api/generate-addresses', async (req, res) => {
     try {
-      const { permanentAddress } = req.body;
+      // Validate input request using Zod
+      const parsedBody = GenerateAddressesSchema.safeParse(req.body);
+      if (!parsedBody.success) {
+        return res.status(400).json({ 
+          success: false, 
+          error: parsedBody.error.issues.map(e => e.message).join(', ') 
+        });
+      }
+
+      const { permanentAddress } = parsedBody.data;
       const clientApiKey = req.headers['x-api-key']?.toString() || process.env.GEMINI_API_KEY;
 
       if (!clientApiKey) {

@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { HistoryItem, PassportData } from '../types';
+import { encryptData, decryptData } from '../utils/crypto';
 
 export function usePassportHistory(options?: {
   onItemAdded?: (item: HistoryItem) => void;
@@ -9,7 +10,8 @@ export function usePassportHistory(options?: {
     try {
       const saved = localStorage.getItem('passport_core_history');
       if (saved && saved !== 'undefined' && saved.trim() !== '') {
-        return JSON.parse(saved);
+        const decrypted = decryptData(saved);
+        return Array.isArray(decrypted) ? decrypted : [];
       }
     } catch (e) {
       console.error("Failed to load history", e);
@@ -22,16 +24,16 @@ export function usePassportHistory(options?: {
 
   const saveHistory = useCallback((newHistory: HistoryItem[]) => {
     setInternalHistory(newHistory);
-    localStorage.setItem('passport_core_history', JSON.stringify(newHistory));
+    localStorage.setItem('passport_core_history', encryptData(newHistory));
   }, []);
 
   const addToHistory = useCallback((data: PassportData): PassportData => {
     let returnData: PassportData = data;
     setInternalHistory(prev => {
       const existingItemIndex = prev.findIndex(item => 
-        item.data.passportNumber && 
-        data.passportNumber && 
-        item.data.passportNumber.toUpperCase() === data.passportNumber.toUpperCase()
+         item.data.passportNumber && 
+         data.passportNumber && 
+         item.data.passportNumber.toUpperCase() === data.passportNumber.toUpperCase()
       );
 
       let newHistory: HistoryItem[];
@@ -63,7 +65,7 @@ export function usePassportHistory(options?: {
         }
       }
 
-      localStorage.setItem('passport_core_history', JSON.stringify(newHistory));
+      localStorage.setItem('passport_core_history', encryptData(newHistory));
       return newHistory;
     });
     return returnData;
@@ -72,7 +74,7 @@ export function usePassportHistory(options?: {
   const deleteHistoryItem = useCallback((id: string) => {
     const newHistory = history.filter(item => item.id !== id);
     setInternalHistory(newHistory);
-    localStorage.setItem('passport_core_history', JSON.stringify(newHistory));
+    localStorage.setItem('passport_core_history', encryptData(newHistory));
 
     if (options?.onItemDeleted) {
       options.onItemDeleted(id);
@@ -81,7 +83,7 @@ export function usePassportHistory(options?: {
 
   const clearHistory = useCallback(() => {
     setInternalHistory([]);
-    localStorage.setItem('passport_core_history', JSON.stringify([]));
+    localStorage.setItem('passport_core_history', encryptData([]));
   }, []);
 
   return {
