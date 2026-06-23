@@ -46,6 +46,7 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
 
     if (!currentItem) return null;
 
+    const startTime = Date.now();
     try {
       let compressedFile = currentItem.file;
       
@@ -94,12 +95,14 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
       abortControllersRef.current.delete(controller);
       
       const result = await res.json();
+      const durationSeconds = parseFloat(((Date.now() - startTime) / 1000).toFixed(2));
       
       if (res.ok && result.success) {
         if (result.data) {
           if (result.data.gender) {
             result.data.gender = normalizeGender(result.data.gender);
           }
+          result.data.extractionTime = durationSeconds;
         }
         
         const deduplicatedData = addToHistory(result.data) || result.data;

@@ -41,11 +41,19 @@ export function usePassportHistory(options?: {
       if (existingItemIndex >= 0) {
         const existingItem = prev[existingItemIndex];
         
-        const updatedOldItem = {
-          ...existingItem,
-          timestamp: Date.now()
+        const updatedData = {
+          ...existingItem.data,
+          ...data,
+          extractionTime: data.extractionTime || existingItem.data.extractionTime || existingItem.extractionTime
         };
-        returnData = existingItem.data; // Use the OLD data
+
+        const updatedOldItem: HistoryItem = {
+          ...existingItem,
+          timestamp: Date.now(),
+          data: updatedData,
+          extractionTime: data.extractionTime || existingItem.extractionTime
+        };
+        returnData = updatedData;
 
         const filtered = prev.filter((_, idx) => idx !== existingItemIndex);
         newHistory = [updatedOldItem, ...filtered];
@@ -56,7 +64,12 @@ export function usePassportHistory(options?: {
       } else {
         const id = Date.now().toString();
         const timestamp = Date.now();
-        const newItem: HistoryItem = { id, timestamp, data };
+        const newItem: HistoryItem = { 
+          id, 
+          timestamp, 
+          data, 
+          extractionTime: data.extractionTime 
+        };
         
         newHistory = [newItem, ...prev];
 

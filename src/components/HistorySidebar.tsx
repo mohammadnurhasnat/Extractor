@@ -160,6 +160,11 @@ Expiry Date: ${item.data.expiryDate || ''}
                   <span className="text-[10px] text-slate-500 dark:text-zinc-450 font-medium bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 px-1.5 py-0.5 rounded-md truncate max-w-[150px] font-mono">
                     {getGeneratedEmail(item.data)}
                   </span>
+                  {(item.extractionTime || item.data.extractionTime) && (
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200/40 dark:border-blue-900/30 text-blue-600 dark:text-blue-450 rounded-md font-mono flex items-center gap-1">
+                      ⚡ {(item.extractionTime || item.data.extractionTime)!.toFixed(1)}s
+                    </span>
+                  )}
                 </div>
               </div>
               <button 

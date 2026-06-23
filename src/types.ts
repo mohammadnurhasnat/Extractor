@@ -25,6 +25,7 @@ export interface PassportData {
   jobRole?: string;
   placeOfIssue?: string;
   birthPlaceDistrict?: string;
+  extractionTime?: number;
   // Multi-Agent System Insights
   agentLog?: string;
   discrepancyList?: string[];
@@ -35,6 +36,7 @@ export interface HistoryItem {
   id: string;
   timestamp: number;
   data: PassportData;
+  extractionTime?: number;
 }
 
 export interface UndertakingFormData {

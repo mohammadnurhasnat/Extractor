@@ -44,9 +44,14 @@ export function PassportDataTab({
     <>
       <div className="flex flex-col xl:flex-row xl:items-center justify-between mb-5 pb-4 border-b border-slate-100 dark:border-zinc-800/50 gap-4 print:hidden">
         <div>
-          <h2 className="text-xl font-bold flex items-center gap-2 text-slate-800 dark:text-zinc-100">
+          <h2 className="text-xl font-bold flex flex-wrap items-center gap-2 text-slate-800 dark:text-zinc-100">
             <CheckCircle2 className="w-6 h-6 text-emerald-500" />
-            Passport Data
+            <span>Passport Data</span>
+            {data.extractionTime ? (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-blue-50/80 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 border border-blue-100/60 dark:border-blue-900/40 shadow-sm font-sans">
+                ⚡ Processed in {data.extractionTime.toFixed(2)}s
+              </span>
+            ) : null}
           </h2>
           <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1">Verified extracted elements from passport page scan.</p>
         </div>
