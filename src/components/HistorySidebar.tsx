@@ -86,24 +86,24 @@ Expiry Date: ${item.data.expiryDate || ''}
           <div className="flex items-center gap-2 shrink-0">
             <button 
               onClick={onOpenBackup}
-              className="relative overflow-hidden group px-3.5 py-1.5 border border-amber-500/30 dark:border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-400 rounded-[5px] transition-all duration-300 font-bold text-xs shadow-sm active:scale-95 cursor-pointer flex items-center gap-1.5 shrink-0"
+              className="relative overflow-hidden group px-3.5 py-1.5 border border-amber-500/30 dark:border-amber-500/20 bg-amber-500/10 rounded-[5px] transition-all duration-300 font-bold text-xs shadow-sm active:scale-95 cursor-pointer flex items-center gap-1.5 shrink-0"
               title="Open Cryptographic Profile Backup"
             >
               <span className="absolute inset-0 w-full h-full bg-amber-500 -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></span>
-              <span className="relative z-10 group-hover:text-white dark:group-hover:text-black transition-colors duration-300 flex items-center gap-1.5">
-                <Database className="w-3.5 h-3.5" />
+              <span className="relative z-10 text-black dark:text-zinc-200 group-hover:text-white dark:group-hover:text-white transition-colors duration-300 flex items-center gap-1.5">
+                <Database className="w-3.5 h-3.5 text-black dark:text-zinc-200 group-hover:text-white dark:group-hover:text-white transition-colors" />
                 <span>Backup</span>
               </span>
             </button>
             
             <button 
               onClick={onOpenRestore}
-              className="relative overflow-hidden group px-3.5 py-1.5 border border-emerald-500/30 dark:border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 rounded-[5px] transition-all duration-300 font-bold text-xs shadow-sm active:scale-95 cursor-pointer flex items-center gap-1.5 shrink-0"
+              className="relative overflow-hidden group px-3.5 py-1.5 border border-emerald-500/30 dark:border-emerald-500/20 bg-emerald-500/10 rounded-[5px] transition-all duration-300 font-bold text-xs shadow-sm active:scale-95 cursor-pointer flex items-center gap-1.5 shrink-0"
               title="Open Secure Data Restore"
             >
               <span className="absolute inset-0 w-full h-full bg-emerald-500 -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></span>
-              <span className="relative z-10 group-hover:text-white dark:group-hover:text-black transition-colors duration-300 flex items-center gap-1.5">
-                <UploadCloud className="w-3.5 h-3.5" />
+              <span className="relative z-10 text-black dark:text-zinc-200 group-hover:text-white dark:group-hover:text-white transition-colors duration-300 flex items-center gap-1.5">
+                <UploadCloud className="w-3.5 h-3.5 text-black dark:text-zinc-200 group-hover:text-white dark:group-hover:text-white transition-colors" />
                 <span>Restore</span>
               </span>
             </button>

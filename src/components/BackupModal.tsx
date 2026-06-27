@@ -55,8 +55,8 @@ export function BackupModal({
       const link = document.createElement('a');
       link.href = url;
       
-      const safeName = `${item.data.givenName || 'Profile'}_${item.data.surname || ''}`.replace(/\s+/g, '_');
-      link.download = `SECURE_PROFILE_${safeName}_${item.data.passportNumber || 'NoPassport'}.pass`;
+      const displayName = `${item.data.givenName || 'Profile'} ${item.data.surname || ''}`.trim();
+      link.download = `${displayName} Backup.pass`;
       
       document.body.appendChild(link);
       link.click();
@@ -92,7 +92,7 @@ export function BackupModal({
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `MASTER_BACKUP_${new Date().toISOString().split('T')[0]}.enc`;
+      link.download = `All Data Backup.enc`;
       
       document.body.appendChild(link);
       link.click();
@@ -119,7 +119,7 @@ export function BackupModal({
         className="relative bg-white/95 dark:bg-zinc-950/95 shadow-[0_32px_64px_rgba(30,41,59,0.25)] border border-slate-200/80 dark:border-zinc-800/80 flex flex-col overflow-hidden max-h-[90vh] w-full max-w-sm rounded-[5px] text-black dark:text-white"
       >
         {/* Glossy top-light reflection lines */}
-        <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-amber-450 to-transparent pointer-events-none" />
+        <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-amber-400 to-transparent pointer-events-none" />
         
         {/* Colorful Gradient Blur Circles for a modern vibrant touch */}
         <div className="absolute -top-16 -left-16 w-36 h-36 bg-gradient-to-tr from-amber-500/10 to-yellow-500/10 rounded-full blur-2xl pointer-events-none" />
@@ -153,11 +153,11 @@ export function BackupModal({
           <button
             onClick={handleExportAllBackup}
             disabled={history.length === 0}
-            className="relative overflow-hidden group w-full py-2 border border-amber-500/30 dark:border-amber-500/20 bg-amber-500/10 text-black dark:text-zinc-200 font-bold text-xs rounded-[5px] shadow-sm transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed active:scale-98 cursor-pointer flex items-center justify-center gap-2"
+            className="relative overflow-hidden group w-full py-2 border border-emerald-500/30 dark:border-emerald-500/20 bg-emerald-500/10 rounded-[5px] shadow-sm transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed active:scale-98 cursor-pointer flex items-center justify-center gap-2"
           >
-            <span className="absolute inset-0 w-full h-full bg-amber-500 -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></span>
-            <span className="relative z-10 group-hover:text-white transition-colors duration-300 flex items-center gap-2 text-black dark:text-zinc-200">
-              <Download className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 group-hover:text-white transition-colors" />
+            <span className="absolute inset-0 w-full h-full bg-emerald-600 -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></span>
+            <span className="relative z-10 transition-colors duration-300 flex items-center gap-2 text-black dark:text-zinc-200 group-hover:text-white dark:group-hover:text-white">
+              <Download className="w-3.5 h-3.5 text-black dark:text-zinc-200 group-hover:text-white dark:group-hover:text-white transition-colors" />
               <span>Backup your all data</span>
             </span>
           </button>
@@ -217,11 +217,11 @@ export function BackupModal({
                     {/* Single Backup Button with slide effect */}
                     <button
                       onClick={() => handleExportIndividualEncrypted(item)}
-                      className="relative overflow-hidden group px-2.5 py-1 border border-amber-500/30 dark:border-amber-500/20 bg-amber-500/10 text-black dark:text-zinc-200 rounded-[5px] transition-all duration-300 font-bold text-[10px] cursor-pointer flex items-center gap-1.5 shadow-sm active:scale-95 shrink-0"
+                      className="relative overflow-hidden group px-2.5 py-1 border border-yellow-500/30 dark:border-yellow-500/20 bg-yellow-500/10 rounded-[5px] transition-all duration-300 font-bold text-[10px] cursor-pointer flex items-center gap-1.5 shadow-sm active:scale-95 shrink-0"
                     >
-                      <span className="absolute inset-0 w-full h-full bg-amber-500 -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></span>
-                      <span className="relative z-10 group-hover:text-white transition-colors duration-300 flex items-center gap-1 text-black dark:text-zinc-200">
-                        <Key className="w-3 h-3 text-amber-600 dark:text-amber-400 group-hover:text-white transition-colors" />
+                      <span className="absolute inset-0 w-full h-full bg-yellow-500 -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></span>
+                      <span className="relative z-10 transition-colors duration-300 flex items-center gap-1 text-black dark:text-zinc-200 group-hover:text-white dark:group-hover:text-white">
+                        <Key className="w-3 h-3 text-black dark:text-zinc-200 group-hover:text-white dark:group-hover:text-white transition-colors" />
                         <span>Backup</span>
                       </span>
                     </button>

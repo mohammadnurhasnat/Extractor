@@ -318,10 +318,10 @@ export function RestoreModal({
         <div className="p-3 bg-white/60 dark:bg-zinc-950/60 border-t border-slate-100 dark:border-zinc-900/80 flex items-center justify-end gap-2 relative z-10">
           <button 
             onClick={onClose}
-            className="relative overflow-hidden group px-3 py-1.5 border border-red-500/30 dark:border-red-500/20 bg-red-500/10 text-black dark:text-zinc-200 transition-all duration-300 font-bold text-[11px] shadow-sm active:scale-95 cursor-pointer shrink-0 rounded-[5px]"
+            className="relative overflow-hidden group px-3 py-1.5 border border-red-500/30 dark:border-red-500/20 bg-red-500/10 transition-all duration-300 font-bold text-[11px] shadow-sm active:scale-95 cursor-pointer shrink-0 rounded-[5px]"
           >
             <span className="absolute inset-0 w-full h-full bg-red-600 -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></span>
-            <span className="relative z-10 text-black dark:text-zinc-200 group-hover:text-white transition-colors duration-300">
+            <span className="relative z-10 text-black dark:text-zinc-200 group-hover:text-white dark:group-hover:text-white transition-colors duration-300">
               Cancel
             </span>
           </button>
@@ -331,8 +331,8 @@ export function RestoreModal({
             onClick={handleExecuteRestore}
             className={`relative overflow-hidden group px-4 py-1.5 border rounded-[5px] transition-all duration-300 font-bold text-[11px] shadow-sm active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex items-center gap-1 shrink-0 ${
               attachedFile 
-                ? 'border-emerald-500/30 dark:border-emerald-500/20 bg-emerald-500/10 text-black dark:text-zinc-200' 
-                : 'border-slate-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 text-slate-400 dark:text-zinc-500'
+                ? 'border-emerald-500/30 dark:border-emerald-500/20 bg-emerald-500/10' 
+                : 'border-slate-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80'
             }`}
           >
             {attachedFile && (
@@ -340,8 +340,8 @@ export function RestoreModal({
             )}
             <span className={`relative z-10 transition-colors duration-300 flex items-center gap-1 ${
               attachedFile 
-                ? 'text-black dark:text-zinc-200 group-hover:text-white' 
-                : 'text-slate-450 dark:text-zinc-500'
+                ? 'text-black dark:text-zinc-200 group-hover:text-white dark:group-hover:text-white' 
+                : 'text-slate-400 dark:text-zinc-500'
             }`}>
               <CheckCircle2 className="w-3.5 h-3.5" />
               <span>OK</span>
