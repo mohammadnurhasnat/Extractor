@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   X, UploadCloud, ShieldCheck, AlertCircle, CheckCircle2, FileText
 } from 'lucide-react';
@@ -33,6 +33,16 @@ export function RestoreModal({
   const [parsedData, setParsedData] = useState<BackupPayload | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Lock body scroll when modal is active
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -242,18 +252,18 @@ export function RestoreModal({
         {/* Single-line elegant instruction */}
         <div className="mx-3 mt-3 p-2.5 bg-gradient-to-br from-emerald-50/50 to-teal-50/50 dark:from-emerald-950/15 dark:to-teal-950/15 rounded-[5px] border border-emerald-100/30 dark:border-emerald-900/10 text-[11px] text-center text-slate-650 dark:text-zinc-300 relative z-10">
           <p className="font-medium">
-            একটি ব্যাকআপ ফাইল (<span className="font-bold text-emerald-600 dark:text-emerald-400">.pass</span> বা <span className="font-bold text-emerald-600 dark:text-emerald-400">.enc</span>) যুক্ত করে <span className="font-bold">"OK"</span> দিলে ডেটা রিস্টোর হয়ে যাবে।
+            Attach a backup file (<span className="font-bold text-emerald-600 dark:text-emerald-400">.pass</span> or <span className="font-bold text-emerald-600 dark:text-emerald-400">.enc</span>) and click <span className="font-bold">"OK"</span> to restore.
           </p>
         </div>
 
-        {/* Dropzone Area (Optimized to minimum possible size) */}
+        {/* Dropzone Area (Optimized to minimum possible size, with SOLID border) */}
         <div className="p-3 space-y-2 relative z-10">
           <div 
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             onClick={() => fileInputRef.current?.click()}
-            className={`group border-2 border-dashed rounded-[5px] py-4 px-3 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-300 ${
+            className={`group border-2 border-solid rounded-[5px] py-4 px-3 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-300 ${
               isDragging 
                 ? 'border-emerald-500 bg-emerald-500/10 dark:bg-emerald-950/20' 
                 : 'border-slate-200 dark:border-zinc-800/60 hover:border-emerald-500 dark:hover:border-emerald-400 bg-white dark:bg-zinc-900/40'
@@ -306,13 +316,17 @@ export function RestoreModal({
           )}
         </div>
 
-        {/* Action Buttons (More compact py-2.5) */}
+        {/* Action Buttons (More compact py-2.5 with dynamic light/pure premium colors) */}
         <div className="p-3 bg-white/60 dark:bg-zinc-950/60 border-t border-slate-100 dark:border-zinc-900/80 flex items-center justify-end gap-2 relative z-10">
           <button 
             onClick={onClose}
-            className="relative overflow-hidden group px-3 py-1.5 border border-red-200 dark:border-red-900/40 bg-red-50/60 dark:bg-red-950/30 text-red-600 dark:text-red-400 rounded-[5px] transition-all duration-300 font-bold text-[11px] shadow-sm active:scale-95 cursor-pointer shrink-0"
+            className={`relative overflow-hidden group px-3 py-1.5 border transition-all duration-300 font-bold text-[11px] shadow-sm active:scale-95 cursor-pointer shrink-0 rounded-[5px] ${
+              attachedFile 
+                ? 'border-red-500/40 dark:border-red-500/20 bg-red-500/10 text-red-700 dark:text-red-400' 
+                : 'border-slate-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 text-slate-700 dark:text-zinc-400'
+            }`}
           >
-            <span className="absolute inset-0 w-full h-full bg-red-600 dark:bg-red-500 -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></span>
+            <span className="absolute inset-0 w-full h-full bg-red-650 dark:bg-red-550 -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></span>
             <span className="relative z-10 group-hover:text-white transition-colors duration-300">
               Cancel
             </span>
@@ -323,19 +337,15 @@ export function RestoreModal({
             onClick={handleExecuteRestore}
             className={`relative overflow-hidden group px-4 py-1.5 border rounded-[5px] transition-all duration-300 font-bold text-[11px] shadow-sm active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer flex items-center gap-1 shrink-0 ${
               attachedFile 
-                ? 'border-emerald-500 dark:border-emerald-400 bg-emerald-500 text-white dark:bg-emerald-400 dark:text-black' 
-                : 'border-slate-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 text-slate-800 dark:text-zinc-200'
+                ? 'border-emerald-500/40 dark:border-emerald-500/20 bg-emerald-500/10 text-emerald-750 dark:text-emerald-400' 
+                : 'border-slate-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 text-slate-450 dark:text-zinc-500'
             }`}
           >
-            <span className={`absolute inset-0 w-full h-full -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0 ${
-              attachedFile 
-                ? 'bg-emerald-600 dark:bg-emerald-500' 
-                : 'bg-slate-900 dark:bg-white'
-            }`}></span>
+            <span className="absolute inset-0 w-full h-full bg-emerald-600 -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></span>
             <span className={`relative z-10 transition-colors duration-300 flex items-center gap-1 ${
               attachedFile 
-                ? 'group-hover:text-white dark:group-hover:text-black text-white dark:text-black' 
-                : 'group-hover:text-white dark:group-hover:text-black text-slate-800 dark:text-zinc-200'
+                ? 'group-hover:text-white text-emerald-700 dark:text-emerald-400' 
+                : 'text-slate-450 dark:text-zinc-500'
             }`}>
               <CheckCircle2 className="w-3.5 h-3.5" />
               <span>OK</span>

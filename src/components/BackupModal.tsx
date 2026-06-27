@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   X, Database, Search, Key, ShieldCheck, Download
 } from 'lucide-react';
@@ -20,6 +20,16 @@ export function BackupModal({
   setToast
 }: BackupModalProps) {
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Lock body scroll when modal is active
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -106,7 +116,7 @@ export function BackupModal({
         initial={{ opacity: 0, scale: 0.95, y: 15 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 15 }}
-        className="relative bg-white/95 dark:bg-zinc-950/95 shadow-[0_32px_64px_rgba(30,41,59,0.25)] border border-slate-200/80 dark:border-zinc-800/80 flex flex-col overflow-hidden max-h-[85vh] w-full max-w-sm rounded-[5px] text-black dark:text-white"
+        className="relative bg-white/95 dark:bg-zinc-950/95 shadow-[0_32px_64px_rgba(30,41,59,0.25)] border border-slate-200/80 dark:border-zinc-800/80 flex flex-col overflow-hidden max-h-[90vh] w-full max-w-sm rounded-[5px] text-black dark:text-white"
       >
         {/* Glossy top-light reflection lines */}
         <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-indigo-400/50 to-transparent pointer-events-none" />
@@ -116,12 +126,12 @@ export function BackupModal({
         <div className="absolute -bottom-16 -right-16 w-36 h-36 bg-gradient-to-tr from-pink-500/10 to-indigo-500/10 rounded-full blur-2xl pointer-events-none" />
 
         {/* Header */}
-        <div className="p-4.5 border-b border-slate-100 dark:border-zinc-900/80 flex items-center justify-between bg-white/60 dark:bg-zinc-950/60 relative z-10">
+        <div className="p-3 border-b border-slate-100 dark:border-zinc-900/80 flex items-center justify-between bg-white/60 dark:bg-zinc-950/60 relative z-10">
           <div className="flex items-center gap-2">
             <div className="p-1.5 bg-indigo-500/10 rounded-[5px] text-indigo-600 dark:text-indigo-400">
-              <Database className="w-4 h-4 animate-pulse" />
+              <Database className="w-3.5 h-3.5 animate-pulse" />
             </div>
-            <h3 className="font-extrabold text-sm tracking-tight">
+            <h3 className="font-extrabold text-xs tracking-tight">
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-300 dark:to-pink-400 font-black">
                 Backup Manager
               </span>
@@ -129,37 +139,34 @@ export function BackupModal({
           </div>
           <button 
             onClick={onClose}
-            className="p-1.5 hover:bg-rose-500/10 hover:text-rose-600 dark:hover:bg-rose-500/20 dark:hover:text-rose-400 rounded-[5px] border border-slate-200/60 dark:border-zinc-800/80 transition-colors cursor-pointer"
+            className="p-1 hover:bg-rose-500/10 hover:text-rose-600 dark:hover:bg-rose-500/20 dark:hover:text-rose-400 rounded-[5px] border border-slate-200/60 dark:border-zinc-800/80 transition-colors cursor-pointer"
           >
-            <X className="w-3.5 h-3.5" />
+            <X className="w-3 h-3" />
           </button>
         </div>
 
-        {/* Short & Concise instructions for how and why (max 2-3 lines) */}
-        <div className="mx-4 mt-4 p-3 bg-gradient-to-br from-indigo-50/50 to-purple-50/50 dark:from-indigo-950/15 dark:to-purple-950/15 rounded-[5px] border border-indigo-100/30 dark:border-indigo-900/10 text-[11px] leading-relaxed text-slate-650 dark:text-zinc-300 relative z-10">
-          <p className="font-bold text-indigo-700 dark:text-indigo-400 flex items-center gap-1">💡 Secure Passport Backups</p>
-          <p>
-            ভবিষ্যতে রিস্টোর করার জন্য আপনার রেকর্ডগুলো অফলাইনে ডাউনলোড করে ব্যাকআপ রাখুন। নিচে থেকে পুরো ডাটা বা নির্দিষ্ট প্রোফাইল ব্যাকআপ ফাইল ডাউনলোড করতে পারবেন।
-          </p>
+        {/* Thinner single line English text */}
+        <div className="px-4 pt-3 text-[11px] font-bold text-indigo-700 dark:text-indigo-400 text-center relative z-10">
+          Backup your data
         </div>
 
-        {/* Backup All Control */}
-        <div className="p-4 border-b border-slate-100 dark:border-zinc-900/50 relative z-10">
+        {/* Backup All Control (Raised below the English instruction) */}
+        <div className="p-4 pt-1.5 pb-3 border-b border-slate-100 dark:border-zinc-900/50 relative z-10">
           <button
             onClick={handleExportAllBackup}
             disabled={history.length === 0}
-            className="relative overflow-hidden group w-full py-2.5 border border-indigo-200 dark:border-indigo-900/50 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/20 dark:to-purple-950/20 text-indigo-700 dark:text-indigo-450 font-bold text-xs rounded-[5px] shadow-sm transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed active:scale-98 cursor-pointer flex items-center justify-center gap-2"
+            className="relative overflow-hidden group w-full py-2 border border-indigo-200 dark:border-indigo-900/50 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/20 dark:to-purple-950/20 text-indigo-700 dark:text-indigo-450 font-bold text-xs rounded-[5px] shadow-sm transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed active:scale-98 cursor-pointer flex items-center justify-center gap-2"
           >
             <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-indigo-600 to-purple-600 -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></span>
             <span className="relative z-10 group-hover:text-white transition-colors duration-300 flex items-center gap-2">
               <Download className="w-3.5 h-3.5" />
-              <span>Backup All ({history.length} Profiles)</span>
+              <span>Backup your all data</span>
             </span>
           </button>
         </div>
 
         {/* Search */}
-        <div className="px-4 py-3 border-b border-slate-100 dark:border-zinc-900/50 bg-slate-50/20 dark:bg-zinc-950/10 relative z-10">
+        <div className="px-4 py-2 border-b border-slate-100 dark:border-zinc-900/50 bg-slate-50/20 dark:bg-zinc-950/10 relative z-10">
           <div className="relative w-full">
             <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
               <Search className="h-3.5 w-3.5 text-indigo-400 dark:text-indigo-500" />
@@ -174,8 +181,8 @@ export function BackupModal({
           </div>
         </div>
 
-        {/* List of profiles */}
-        <div className="flex-1 overflow-y-auto p-4 max-h-[220px] space-y-2 relative z-10">
+        {/* List of profiles (Taking up ~70% to ensure highly visible) */}
+        <div className="flex-1 overflow-y-auto p-4 max-h-[380px] space-y-2 relative z-10">
           {filteredProfiles.length === 0 ? (
             <div className="text-center py-8 border border-dashed border-slate-200 dark:border-zinc-800 rounded-[5px] flex flex-col items-center justify-center">
               <Database className="w-6 h-6 text-zinc-400 mb-1.5" />
