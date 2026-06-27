@@ -119,22 +119,20 @@ export function BackupModal({
         className="relative bg-white/95 dark:bg-zinc-950/95 shadow-[0_32px_64px_rgba(30,41,59,0.25)] border border-slate-200/80 dark:border-zinc-800/80 flex flex-col overflow-hidden max-h-[90vh] w-full max-w-sm rounded-[5px] text-black dark:text-white"
       >
         {/* Glossy top-light reflection lines */}
-        <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-indigo-400/50 to-transparent pointer-events-none" />
+        <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-amber-450 to-transparent pointer-events-none" />
         
         {/* Colorful Gradient Blur Circles for a modern vibrant touch */}
-        <div className="absolute -top-16 -left-16 w-36 h-36 bg-gradient-to-tr from-indigo-500/10 to-purple-500/10 rounded-full blur-2xl pointer-events-none" />
-        <div className="absolute -bottom-16 -right-16 w-36 h-36 bg-gradient-to-tr from-pink-500/10 to-indigo-500/10 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute -top-16 -left-16 w-36 h-36 bg-gradient-to-tr from-amber-500/10 to-yellow-500/10 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute -bottom-16 -right-16 w-36 h-36 bg-gradient-to-tr from-yellow-500/10 to-amber-500/10 rounded-full blur-2xl pointer-events-none" />
 
         {/* Header */}
         <div className="p-3 border-b border-slate-100 dark:border-zinc-900/80 flex items-center justify-between bg-white/60 dark:bg-zinc-950/60 relative z-10">
           <div className="flex items-center gap-2">
-            <div className="p-1.5 bg-indigo-500/10 rounded-[5px] text-indigo-600 dark:text-indigo-400">
+            <div className="p-1.5 bg-amber-500/10 rounded-[5px] text-amber-600 dark:text-amber-400">
               <Database className="w-3.5 h-3.5 animate-pulse" />
             </div>
-            <h3 className="font-extrabold text-xs tracking-tight">
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-300 dark:to-pink-400 font-black">
-                Backup Manager
-              </span>
+            <h3 className="font-extrabold text-xs tracking-tight text-black dark:text-white">
+              Backup Manager
             </h3>
           </div>
           <button 
@@ -146,7 +144,7 @@ export function BackupModal({
         </div>
 
         {/* Thinner single line English text */}
-        <div className="px-4 pt-3 text-[11px] font-bold text-indigo-700 dark:text-indigo-400 text-center relative z-10">
+        <div className="px-4 pt-3 text-[11px] font-bold text-black dark:text-zinc-200 text-center relative z-10">
           Backup your data
         </div>
 
@@ -155,11 +153,11 @@ export function BackupModal({
           <button
             onClick={handleExportAllBackup}
             disabled={history.length === 0}
-            className="relative overflow-hidden group w-full py-2 border border-indigo-200 dark:border-indigo-900/50 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/20 dark:to-purple-950/20 text-indigo-700 dark:text-indigo-450 font-bold text-xs rounded-[5px] shadow-sm transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed active:scale-98 cursor-pointer flex items-center justify-center gap-2"
+            className="relative overflow-hidden group w-full py-2 border border-amber-500/30 dark:border-amber-500/20 bg-amber-500/10 text-black dark:text-zinc-200 font-bold text-xs rounded-[5px] shadow-sm transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed active:scale-98 cursor-pointer flex items-center justify-center gap-2"
           >
-            <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-indigo-600 to-purple-600 -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></span>
-            <span className="relative z-10 group-hover:text-white transition-colors duration-300 flex items-center gap-2">
-              <Download className="w-3.5 h-3.5" />
+            <span className="absolute inset-0 w-full h-full bg-amber-500 -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></span>
+            <span className="relative z-10 group-hover:text-white transition-colors duration-300 flex items-center gap-2 text-black dark:text-zinc-200">
+              <Download className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 group-hover:text-white transition-colors" />
               <span>Backup your all data</span>
             </span>
           </button>
@@ -169,14 +167,14 @@ export function BackupModal({
         <div className="px-4 py-2 border-b border-slate-100 dark:border-zinc-900/50 bg-slate-50/20 dark:bg-zinc-950/10 relative z-10">
           <div className="relative w-full">
             <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
-              <Search className="h-3.5 w-3.5 text-indigo-400 dark:text-indigo-500" />
+              <Search className="h-3.5 w-3.5 text-amber-500 dark:text-amber-400" />
             </div>
             <input
               type="text"
               placeholder="Search profile by name or passport..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="block w-full pl-8 pr-2.5 py-1.5 border border-slate-200 dark:border-zinc-800 rounded-[5px] text-xs bg-white dark:bg-black/40 focus:bg-white dark:focus:bg-black focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:focus:ring-indigo-500 text-black dark:text-white font-medium transition-colors placeholder-zinc-400"
+              className="block w-full pl-8 pr-2.5 py-1.5 border border-slate-200 dark:border-zinc-800 rounded-[5px] text-xs bg-white dark:bg-black/40 focus:bg-white dark:focus:bg-black focus:outline-none focus:ring-1 focus:ring-amber-500 dark:focus:ring-amber-500 text-black dark:text-white font-medium transition-colors placeholder-zinc-400"
             />
           </div>
         </div>
@@ -201,13 +199,13 @@ export function BackupModal({
                   >
                     <div className="flex items-center gap-2.5 overflow-hidden">
                       {/* Serial Number */}
-                      <span className="w-5 h-5 rounded-full border border-indigo-100 dark:border-indigo-900 text-indigo-600 dark:text-indigo-450 text-[10px] font-bold flex items-center justify-center shrink-0 bg-indigo-50/50 dark:bg-indigo-950/25">
+                      <span className="w-5 h-5 rounded-full border border-slate-200 dark:border-zinc-850 text-black dark:text-zinc-200 text-[10px] font-bold flex items-center justify-center shrink-0 bg-slate-100/60 dark:bg-zinc-900/40">
                         {index + 1}
                       </span>
                       
                       {/* Info block */}
                       <div className="overflow-hidden">
-                        <h5 className="font-extrabold text-xs text-slate-850 dark:text-zinc-200 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                        <h5 className="font-extrabold text-xs text-slate-850 dark:text-zinc-200 truncate group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
                           {displayName}
                         </h5>
                         <p className="text-[10px] text-zinc-400 font-mono font-medium mt-0.5">
@@ -219,11 +217,11 @@ export function BackupModal({
                     {/* Single Backup Button with slide effect */}
                     <button
                       onClick={() => handleExportIndividualEncrypted(item)}
-                      className="relative overflow-hidden group px-2.5 py-1 border border-indigo-200 dark:border-indigo-900/50 bg-indigo-50/30 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 rounded-[5px] transition-all duration-300 font-bold text-[10px] cursor-pointer flex items-center gap-1.5 shadow-sm active:scale-95 shrink-0"
+                      className="relative overflow-hidden group px-2.5 py-1 border border-amber-500/30 dark:border-amber-500/20 bg-amber-500/10 text-black dark:text-zinc-200 rounded-[5px] transition-all duration-300 font-bold text-[10px] cursor-pointer flex items-center gap-1.5 shadow-sm active:scale-95 shrink-0"
                     >
-                      <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-indigo-500 to-purple-500 -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></span>
-                      <span className="relative z-10 group-hover:text-white transition-colors duration-300 flex items-center gap-1">
-                        <Key className="w-3 h-3" />
+                      <span className="absolute inset-0 w-full h-full bg-amber-500 -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></span>
+                      <span className="relative z-10 group-hover:text-white transition-colors duration-300 flex items-center gap-1 text-black dark:text-zinc-200">
+                        <Key className="w-3 h-3 text-amber-600 dark:text-amber-400 group-hover:text-white transition-colors" />
                         <span>Backup</span>
                       </span>
                     </button>
@@ -235,9 +233,9 @@ export function BackupModal({
         </div>
 
         {/* Footer */}
-        <div className="px-4 py-3 border-t border-slate-100 dark:border-zinc-900/80 bg-white/60 dark:bg-zinc-950/60 relative z-10 flex items-center justify-between text-[10px] text-zinc-400 dark:text-zinc-500 font-bold">
+        <div className="px-4 py-3 border-t border-slate-100 dark:border-zinc-900/80 bg-white/60 dark:bg-zinc-950/60 relative z-10 flex items-center justify-between text-[10px] text-black dark:text-zinc-400 font-bold">
           <div className="flex items-center gap-1">
-            <ShieldCheck className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400 animate-pulse" />
+            <ShieldCheck className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400 animate-pulse" />
             <span>SECURE CRYPTO ENGINE</span>
           </div>
           <div>
