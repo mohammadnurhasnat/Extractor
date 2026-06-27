@@ -24,6 +24,7 @@ import { DeleteConfirmationModal } from './components/DeleteConfirmationModal';
 import { UploadSection } from './components/UploadSection';
 import { ResultsSection } from './components/ResultsSection';
 import { GlobalProgress } from './components/GlobalProgress';
+import { ProfileManagerModal } from './components/ProfileManagerModal';
 
 // Utilities
 import { generateDataText } from './utils/addressUtils';
@@ -124,6 +125,7 @@ export default function App() {
   } = useSavedOptions();
 
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);
+  const [isProfileManagerOpen, setIsProfileManagerOpen] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('passport_active_results_tab', resultsTab);
@@ -281,6 +283,7 @@ export default function App() {
               setHistory={setHistory}
               loadFromHistory={loadFromHistory}
               confirmDelete={confirmDelete}
+              onOpenProfileManager={() => setIsProfileManagerOpen(true)}
             />
 
             {/* RESULTS SECTION (Right side on large screens) */}
@@ -313,6 +316,20 @@ export default function App() {
           Built with <Heart className="w-3.5 h-3.5 text-red-500 fill-current" /> by <span className="text-slate-700 dark:text-zinc-200 font-semibold tracking-wide ml-0.5">MOHAMMAD NUR HASNAT</span>
         </div>
       </div>
+
+      {/* Profile Manager Modal */}
+      <AnimatePresence>
+        {isProfileManagerOpen && (
+          <ProfileManagerModal
+            isOpen={isProfileManagerOpen}
+            onClose={() => setIsProfileManagerOpen(false)}
+            history={history}
+            setHistory={setHistory}
+            onLoadItem={loadFromHistory}
+            setToast={setToast}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Delete Confirmation Modal */}
       <DeleteConfirmationModal

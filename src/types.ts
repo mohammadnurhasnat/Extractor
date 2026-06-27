@@ -68,5 +68,6 @@ export interface QueueItem {
   status: 'queued' | 'extracting' | 'completed' | 'failed';
   data?: PassportData;
   lastUsedAt?: number;
+  compressionRatio?: string;
 }
 

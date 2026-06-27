@@ -9,6 +9,7 @@ interface HistorySidebarProps {
   onSearchTermChange: (term: string) => void;
   onLoadItem: (item: HistoryItem) => void;
   onConfirmDelete: (e: React.MouseEvent, id: string) => void;
+  onOpenProfileManager: () => void;
 }
 
 export function HistorySidebar({
@@ -16,7 +17,8 @@ export function HistorySidebar({
   searchTerm,
   onSearchTermChange,
   onLoadItem,
-  onConfirmDelete
+  onConfirmDelete,
+  onOpenProfileManager
 }: HistorySidebarProps) {
   const filteredHistory = history.filter(item => {
     const fullName = `${item.data.givenName || ''} ${item.data.surname || ''}`.toLowerCase();
@@ -79,6 +81,14 @@ Expiry Date: ${item.data.expiryDate || ''}
         </div>
         
         <div className="flex z-10 items-center justify-end gap-2 w-full xl:w-auto max-w-full overflow-hidden">
+          <button 
+            onClick={onOpenProfileManager}
+            className="px-3 py-1.5 bg-blue-50/50 hover:bg-blue-100/70 text-blue-600 dark:bg-blue-950/20 dark:hover:bg-blue-900/30 dark:text-blue-400 border border-blue-200/40 dark:border-blue-800/40 rounded-xl transition-all flex items-center gap-1.5 text-xs font-bold shadow-sm active:scale-95 cursor-pointer"
+            title="Open Secure Profile Manager & Database Backup"
+          >
+            <Database className="w-3.5 h-3.5" />
+            <span>Manage Profiles</span>
+          </button>
           <button 
             onClick={exportToZip}
             className="p-2 text-slate-500 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-xl transition-all border border-slate-200 dark:border-zinc-800 cursor-pointer shadow-sm active:scale-95"

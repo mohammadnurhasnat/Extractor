@@ -61,6 +61,12 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
         };
         try {
           compressedFile = await imageCompression(currentItem.file, options);
+          const originalMB = currentItem.file.size / (1024 * 1024);
+          const compressedMB = compressedFile.size / (1024 * 1024);
+          const reduction = Math.round((1 - compressedMB / originalMB) * 100);
+          const compressionRatio = `-${reduction}% (${compressedMB.toFixed(2)}MB)`;
+          
+          setQueue(prev => prev.map(q => q.id === itemId ? { ...q, compressionRatio } : q));
         } catch (compressErr) {
           console.warn('Image compression failed, falling back to original:', compressErr);
           compressedFile = currentItem.file;

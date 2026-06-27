@@ -49,6 +49,7 @@ interface UploadSectionProps {
   setHistory: (history: HistoryItem[]) => void;
   loadFromHistory: (item: HistoryItem) => void;
   confirmDelete: (e: React.MouseEvent, id: string) => void;
+  onOpenProfileManager: () => void;
 }
 
 export function UploadSection(props: UploadSectionProps) {
@@ -239,6 +240,7 @@ export function UploadSection(props: UploadSectionProps) {
         onSearchTermChange={props.setSearchTerm}
         onLoadItem={props.loadFromHistory}
         onConfirmDelete={props.confirmDelete}
+        onOpenProfileManager={props.onOpenProfileManager}
       />
     </div>
   );

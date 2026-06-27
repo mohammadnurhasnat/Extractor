@@ -131,8 +131,13 @@ export function SessionQueue({
                   <span className="text-xs font-semibold text-slate-700 dark:text-zinc-200 truncate pr-2">
                     {item.file.name}
                   </span>
-                  <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-medium mt-0.5">
-                    {item.file.size > 0 ? `${(item.file.size / (1024 * 1024)).toFixed(2)} MB` : 'History scan'}
+                  <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-medium mt-0.5 flex flex-wrap items-center gap-1.5">
+                    <span>{item.file.size > 0 ? `${(item.file.size / (1024 * 1024)).toFixed(2)} MB` : 'History scan'}</span>
+                    {item.compressionRatio && (
+                      <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/20 px-1.5 py-0.5 rounded border border-emerald-100/50 dark:border-emerald-900/10" title="Client-Side Image Compression Active">
+                        Compressed {item.compressionRatio}
+                      </span>
+                    )}
                   </span>
                 </div>
               </div>
