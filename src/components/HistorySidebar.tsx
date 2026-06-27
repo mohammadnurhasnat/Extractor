@@ -82,31 +82,32 @@ Expiry Date: ${item.data.expiryDate || ''}
           <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1 font-sans font-medium">List of recently processed passport scans.</p>
         </div>
         
-        <div className="flex z-10 items-center justify-end gap-2 w-full xl:w-auto max-w-full overflow-hidden">
+        <div className="flex z-10 items-center justify-end gap-2 w-full xl:w-auto flex-wrap sm:flex-nowrap">
           <button 
             onClick={onOpenBackup}
-            className="px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 hover:border-blue-500/30 rounded-xl transition-all flex items-center gap-1.5 text-xs font-bold shadow-sm active:scale-95 cursor-pointer"
+            className="relative overflow-hidden group px-3.5 py-1.5 border border-black dark:border-white bg-transparent text-black dark:text-white rounded-xl transition-all duration-300 font-bold text-xs shadow-sm active:scale-95 cursor-pointer flex items-center gap-1.5 shrink-0"
             title="Open Cryptographic Profile Backup"
           >
-            <Database className="w-3.5 h-3.5" />
-            <span>Backup</span>
+            <span className="absolute inset-0 w-full h-full bg-black dark:bg-white -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></span>
+            <span className="relative z-10 group-hover:text-white dark:group-hover:text-black transition-colors duration-300 flex items-center gap-1.5">
+              <Database className="w-3.5 h-3.5" />
+              <span>Backup</span>
+            </span>
           </button>
+          
           <button 
             onClick={onOpenRestore}
-            className="px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:border-emerald-500/30 rounded-xl transition-all flex items-center gap-1.5 text-xs font-bold shadow-sm active:scale-95 cursor-pointer"
+            className="relative overflow-hidden group px-3.5 py-1.5 border border-black dark:border-white bg-transparent text-black dark:text-white rounded-xl transition-all duration-300 font-bold text-xs shadow-sm active:scale-95 cursor-pointer flex items-center gap-1.5 shrink-0"
             title="Open Secure Data Restore"
           >
-            <UploadCloud className="w-3.5 h-3.5" />
-            <span>Restore</span>
+            <span className="absolute inset-0 w-full h-full bg-black dark:bg-white -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></span>
+            <span className="relative z-10 group-hover:text-white dark:group-hover:text-black transition-colors duration-300 flex items-center gap-1.5">
+              <UploadCloud className="w-3.5 h-3.5" />
+              <span>Restore</span>
+            </span>
           </button>
-          <button 
-            onClick={exportToZip}
-            className="p-2 text-slate-500 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-xl transition-all border border-slate-200 dark:border-zinc-800 cursor-pointer shadow-sm active:scale-95"
-            title="Export History to ZIP"
-          >
-            <Download className="w-4 h-4" />
-          </button>
-          <div className="relative flex-1 max-w-[200px] sm:max-w-[240px] xl:w-[160px]">
+
+          <div className="relative flex-1 min-w-[140px] sm:min-w-[180px] max-w-[260px]">
             <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
               <Search className="h-3.5 w-3.5 text-slate-400 dark:text-zinc-550" />
             </div>
@@ -115,7 +116,7 @@ Expiry Date: ${item.data.expiryDate || ''}
               placeholder="Search passports..."
               value={searchTerm}
               onChange={(e) => onSearchTermChange(e.target.value)}
-              className="block w-full pl-8.5 pr-2.5 py-1.5 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs bg-slate-50/50 dark:bg-black/30 focus:bg-white dark:focus:bg-black focus:outline-none focus:ring-1 focus:ring-blue-500 text-slate-850 dark:text-zinc-100 transition-colors placeholder-slate-400 dark:placeholder-zinc-550 font-medium"
+              className="block w-full pl-8.5 pr-2.5 py-1.5 border border-slate-200 dark:border-zinc-805 rounded-xl text-xs bg-slate-50/50 dark:bg-black/30 focus:bg-white dark:focus:bg-black focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white text-slate-850 dark:text-zinc-100 transition-colors placeholder-slate-400 dark:placeholder-zinc-550 font-medium"
             />
           </div>
         </div>
