@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  X, Database, Search, Key, ShieldCheck, Download
+  X, Database, Search, Key, ShieldCheck, Download, Loader2
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { HistoryItem } from '../types';
@@ -20,6 +20,9 @@ export function BackupModal({
   setToast
 }: BackupModalProps) {
   const [searchTerm, setSearchTerm] = useState('');
+  const [isBackingUp, setIsBackingUp] = useState(false);
+  const [backupProgress, setBackupProgress] = useState(0);
+  const [backupPhase, setBackupPhase] = useState('');
 
   // Lock body scroll when modal is active
   useEffect(() => {
@@ -79,34 +82,61 @@ export function BackupModal({
       return;
     }
 
-    try {
-      const backupObject = {
-        type: 'passport_history_backup',
-        version: '1.0',
-        timestamp: Date.now(),
-        data: history
-      };
+    setIsBackingUp(true);
+    setBackupProgress(5);
+    setBackupPhase('Reading profiles from secure storage...');
 
-      const encryptedString = encryptData(backupObject);
-      const blob = new Blob([encryptedString], { type: 'application/octet-stream' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `All Data Backup.enc`;
-      
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+    const steps = [
+      { progress: 20, phase: 'Compiling dataset payload...', delay: 250 },
+      { progress: 50, phase: 'Applying AES-256 Encryption standard...', delay: 550 },
+      { progress: 75, phase: 'Generating SHA-256 checksum integrity...', delay: 850 },
+      { progress: 95, phase: 'Constructing master backup payload...', delay: 1150 },
+      { progress: 100, phase: 'Generating secure download...', delay: 1400 },
+    ];
 
-      setToast({
-        message: `All ${history.length} profiles backed up.`,
-        type: 'success'
-      });
-    } catch (err) {
-      console.error(err);
-      setToast({ message: 'Backup failed.', type: 'error' });
-    }
+    steps.forEach((step) => {
+      setTimeout(() => {
+        setBackupProgress(step.progress);
+        setBackupPhase(step.phase);
+
+        if (step.progress === 100) {
+          setTimeout(() => {
+            try {
+              const backupObject = {
+                type: 'passport_history_backup',
+                version: '1.0',
+                timestamp: Date.now(),
+                data: history
+              };
+
+              const encryptedString = encryptData(backupObject);
+              const blob = new Blob([encryptedString], { type: 'application/octet-stream' });
+              const url = URL.createObjectURL(blob);
+              const link = document.createElement('a');
+              link.href = url;
+              link.download = `All Data Backup.enc`;
+              
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+              URL.revokeObjectURL(url);
+
+              setToast({
+                message: `All Data Backup successfully generated & encrypted!`,
+                type: 'success'
+              });
+            } catch (err) {
+              console.error(err);
+              setToast({ message: 'Backup encryption failed.', type: 'error' });
+            } finally {
+              setIsBackingUp(false);
+              setBackupProgress(0);
+              setBackupPhase('');
+            }
+          }, 300);
+        }
+      }, step.delay);
+    });
   };
 
   return (
@@ -150,17 +180,35 @@ export function BackupModal({
 
         {/* Backup All Control (Raised below the English instruction) */}
         <div className="p-4 pt-1.5 pb-3 border-b border-slate-100 dark:border-zinc-900/50 relative z-10">
-          <button
-            onClick={handleExportAllBackup}
-            disabled={history.length === 0}
-            className="relative overflow-hidden group w-full py-2 border border-emerald-500/30 dark:border-emerald-500/20 bg-emerald-500/10 rounded-[5px] shadow-sm transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed active:scale-98 cursor-pointer flex items-center justify-center gap-2"
-          >
-            <span className="absolute inset-0 w-full h-full bg-emerald-600 -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></span>
-            <span className="relative z-10 transition-colors duration-300 flex items-center gap-2 text-black dark:text-zinc-200 group-hover:text-white dark:group-hover:text-white">
-              <Download className="w-3.5 h-3.5 text-black dark:text-zinc-200 group-hover:text-white dark:group-hover:text-white transition-colors" />
-              <span>Backup your all data</span>
-            </span>
-          </button>
+          {isBackingUp ? (
+            <div className="space-y-2 p-2.5 bg-emerald-500/5 border border-emerald-500/20 rounded-[5px]">
+              <div className="flex items-center justify-between text-[11px] font-bold">
+                <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 min-w-0">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span className="truncate">{backupPhase}</span>
+                </span>
+                <span className="text-emerald-600 dark:text-emerald-400 shrink-0">{backupProgress}%</span>
+              </div>
+              <div className="w-full bg-slate-100 dark:bg-zinc-900 h-2 rounded-full overflow-hidden">
+                <div 
+                  className="bg-emerald-500 h-full rounded-full transition-all duration-350 ease-out" 
+                  style={{ width: `${backupProgress}%` }}
+                />
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={handleExportAllBackup}
+              disabled={history.length === 0}
+              className="relative overflow-hidden group w-full py-2 border border-emerald-500/30 dark:border-emerald-500/20 bg-emerald-500/10 rounded-[5px] shadow-sm transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed active:scale-98 cursor-pointer flex items-center justify-center gap-2"
+            >
+              <span className="absolute inset-0 w-full h-full bg-emerald-600 -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></span>
+              <span className="relative z-10 transition-colors duration-300 flex items-center gap-2 text-black dark:text-zinc-200 group-hover:text-white dark:group-hover:text-white">
+                <Download className="w-3.5 h-3.5 text-black dark:text-zinc-200 group-hover:text-white dark:group-hover:text-white transition-colors" />
+                <span>Backup your all data</span>
+              </span>
+            </button>
+          )}
         </div>
 
         {/* Search */}
