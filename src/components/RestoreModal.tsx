@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { 
-  X, UploadCloud, ShieldCheck, AlertCircle, CheckCircle2, FileText
+  X, UploadCloud, ShieldCheck, AlertCircle, CheckCircle2, FileText, Loader2
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { HistoryItem, PassportData } from '../types';
@@ -32,6 +32,9 @@ export function RestoreModal({
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
   const [parsedData, setParsedData] = useState<BackupPayload | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isRestoring, setIsRestoring] = useState(false);
+  const [restoreProgress, setRestoreProgress] = useState(0);
+  const [restorePhase, setRestorePhase] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Lock body scroll when modal is active
@@ -82,82 +85,108 @@ export function RestoreModal({
   const handleExecuteRestore = () => {
     if (!parsedData) return;
 
-    try {
-      if (parsedData.type === 'single_passport_profile') {
-        const singleData = parsedData.data as PassportData;
-        
-        const duplicateIndex = history.findIndex(
-          item => item.data.passportNumber?.toUpperCase() === singleData.passportNumber?.toUpperCase()
-        );
+    setIsRestoring(true);
+    setRestoreProgress(5);
+    setRestorePhase('Reading uploaded backup payload...');
 
-        let updatedHistory: HistoryItem[];
-        if (duplicateIndex >= 0) {
-          const existing = history[duplicateIndex];
-          const updatedItem: HistoryItem = {
-            ...existing,
-            timestamp: Date.now(),
-            data: { ...existing.data, ...singleData }
-          };
-          updatedHistory = [updatedItem, ...history.filter((_, idx) => idx !== duplicateIndex)];
-        } else {
-          const newItem: HistoryItem = {
-            id: Date.now().toString(),
-            timestamp: Date.now(),
-            data: singleData
-          };
-          updatedHistory = [newItem, ...history];
+    const steps = [
+      { progress: 30, phase: 'Verifying cryptographic signature...', delay: 250 },
+      { progress: 60, phase: 'Decrypting dataset...', delay: 550 },
+      { progress: 85, phase: 'Merging restored profile data...', delay: 850 },
+      { progress: 100, phase: 'Finalizing database sync...', delay: 1150 },
+    ];
+
+    steps.forEach((step) => {
+      setTimeout(() => {
+        setRestoreProgress(step.progress);
+        setRestorePhase(step.phase);
+
+        if (step.progress === 100) {
+          setTimeout(() => {
+            try {
+              if (parsedData.type === 'single_passport_profile') {
+                const singleData = parsedData.data as PassportData;
+                
+                const duplicateIndex = history.findIndex(
+                  item => item.data.passportNumber?.toUpperCase() === singleData.passportNumber?.toUpperCase()
+                );
+
+                let updatedHistory: HistoryItem[];
+                if (duplicateIndex >= 0) {
+                  const existing = history[duplicateIndex];
+                  const updatedItem: HistoryItem = {
+                    ...existing,
+                    timestamp: Date.now(),
+                    data: { ...existing.data, ...singleData }
+                  };
+                  updatedHistory = [updatedItem, ...history.filter((_, idx) => idx !== duplicateIndex)];
+                } else {
+                  const newItem: HistoryItem = {
+                    id: Date.now().toString(),
+                    timestamp: Date.now(),
+                    data: singleData
+                  };
+                  updatedHistory = [newItem, ...history];
+                }
+
+                setHistory(updatedHistory);
+                setToast({
+                  message: `${singleData.givenName || 'Profile'} restored successfully.`,
+                  type: 'success'
+                });
+              } 
+              else if (parsedData.type === 'passport_history_backup') {
+                const restoredList = parsedData.data as HistoryItem[];
+                
+                const merged = [...history];
+                let importedCount = 0;
+                let updatedCount = 0;
+
+                restoredList.forEach(restoredItem => {
+                  if (!restoredItem.data?.passportNumber) return;
+
+                  const existingIndex = merged.findIndex(
+                    item => item.data.passportNumber?.toUpperCase() === restoredItem.data.passportNumber?.toUpperCase()
+                  );
+
+                  if (existingIndex >= 0) {
+                    merged[existingIndex] = {
+                      ...merged[existingIndex],
+                      timestamp: Math.max(merged[existingIndex].timestamp, restoredItem.timestamp || Date.now()),
+                      data: { ...merged[existingIndex].data, ...restoredItem.data }
+                    };
+                    updatedCount++;
+                  } else {
+                    merged.push({
+                      ...restoredItem,
+                      id: restoredItem.id || Date.now().toString() + Math.random().toString(36).substring(2, 5)
+                    });
+                    importedCount++;
+                  }
+                });
+
+                merged.sort((a, b) => b.timestamp - a.timestamp);
+                
+                setHistory(merged);
+                setToast({
+                  message: `Restored ${importedCount} new & updated ${updatedCount} profiles.`,
+                  type: 'success'
+                });
+              }
+
+              onClose();
+            } catch (err) {
+              console.error(err);
+              setToast({ message: 'Restore failed.', type: 'error' });
+            } finally {
+              setIsRestoring(false);
+              setRestoreProgress(0);
+              setRestorePhase('');
+            }
+          }, 300);
         }
-
-        setHistory(updatedHistory);
-        setToast({
-          message: `${singleData.givenName || 'Profile'} restored successfully.`,
-          type: 'success'
-        });
-      } 
-      else if (parsedData.type === 'passport_history_backup') {
-        const restoredList = parsedData.data as HistoryItem[];
-        
-        const merged = [...history];
-        let importedCount = 0;
-        let updatedCount = 0;
-
-        restoredList.forEach(restoredItem => {
-          if (!restoredItem.data?.passportNumber) return;
-
-          const existingIndex = merged.findIndex(
-            item => item.data.passportNumber?.toUpperCase() === restoredItem.data.passportNumber?.toUpperCase()
-          );
-
-          if (existingIndex >= 0) {
-            merged[existingIndex] = {
-              ...merged[existingIndex],
-              timestamp: Math.max(merged[existingIndex].timestamp, restoredItem.timestamp || Date.now()),
-              data: { ...merged[existingIndex].data, ...restoredItem.data }
-            };
-            updatedCount++;
-          } else {
-            merged.push({
-              ...restoredItem,
-              id: restoredItem.id || Date.now().toString() + Math.random().toString(36).substring(2, 5)
-            });
-            importedCount++;
-          }
-        });
-
-        merged.sort((a, b) => b.timestamp - a.timestamp);
-        
-        setHistory(merged);
-        setToast({
-          message: `Restored ${importedCount} new & updated ${updatedCount} profiles.`,
-          type: 'success'
-        });
-      }
-
-      onClose();
-    } catch (err) {
-      console.error(err);
-      setToast({ message: 'Restore failed.', type: 'error' });
-    }
+      }, step.delay);
+    });
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -240,8 +269,9 @@ export function RestoreModal({
             </h3>
           </div>
           <button 
+            disabled={isRestoring}
             onClick={onClose}
-            className="p-1.5 hover:bg-rose-500/10 hover:text-rose-600 dark:hover:bg-rose-500/20 dark:hover:text-rose-400 rounded-[5px] border border-slate-200/60 dark:border-zinc-800/80 transition-colors cursor-pointer"
+            className="p-1.5 hover:bg-rose-500/10 hover:text-rose-600 dark:hover:bg-rose-500/20 dark:hover:text-rose-400 rounded-[5px] border border-slate-200/60 dark:border-zinc-800/80 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
           >
             <X className="w-3 h-3" />
           </button>
@@ -256,69 +286,90 @@ export function RestoreModal({
 
         {/* Dropzone Area (Optimized to minimum possible size, with SOLID border) */}
         <div className="p-3 space-y-2 relative z-10">
-          <div 
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            onClick={() => fileInputRef.current?.click()}
-            className={`group border-2 border-solid rounded-[5px] py-4 px-3 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-300 ${
-              isDragging 
-                ? 'border-emerald-500 bg-emerald-500/10 dark:bg-emerald-950/20' 
-                : 'border-slate-200 dark:border-zinc-800/60 hover:border-emerald-500 dark:hover:border-emerald-400 bg-white dark:bg-zinc-900/40'
-            }`}
-          >
-            <input 
-              ref={fileInputRef}
-              type="file" 
-              accept=".pass,.enc" 
-              className="hidden" 
-              onChange={handleFileSelect}
-            />
-
-            <UploadCloud className="w-5 h-5 text-emerald-500 dark:text-emerald-400 group-hover:scale-105 transition-transform duration-300 mb-1" />
-
-            <p className="text-[11px] font-bold text-slate-800 dark:text-zinc-200">
-              Attach Backup File (.pass / .enc)
-            </p>
-            <p className="text-[9px] text-zinc-400 mt-0.5">
-              Drag & drop or click to browse
-            </p>
-          </div>
-
-          {/* Validation Error */}
-          {error && (
-            <div className="flex items-start gap-2 bg-rose-500/10 text-rose-600 dark:text-rose-400 px-2.5 py-2 rounded-[5px] border border-rose-200/45 dark:border-rose-950/45 text-[10px] font-bold">
-              <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-              <span>{error}</span>
-            </div>
-          )}
-
-          {/* Verified File Preview (Super Compact to keep height minimal) */}
-          {attachedFile && preview && (
-            <div className="border border-emerald-200 dark:border-emerald-900/50 rounded-[5px] p-2 bg-emerald-50/20 dark:bg-emerald-950/10 flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2 overflow-hidden">
-                <FileText className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                <div className="overflow-hidden">
-                  <h4 className="text-[11px] font-bold text-slate-900 dark:text-white truncate">
-                    {preview.title}
-                  </h4>
-                  <p className="text-[9px] text-zinc-400 font-mono">
-                    {preview.id}
-                  </p>
-                </div>
+          {isRestoring ? (
+            <div className="space-y-2 p-2.5 bg-emerald-500/5 border border-emerald-500/20 rounded-[5px]">
+              <div className="flex items-center justify-between text-[11px] font-bold">
+                <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 min-w-0">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span className="truncate">{restorePhase}</span>
+                </span>
+                <span className="text-emerald-600 dark:text-emerald-400 shrink-0">{restoreProgress}%</span>
               </div>
-              <span className="flex items-center gap-1 text-[9px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 dark:bg-emerald-400/25 px-1.5 py-0.5 rounded-[5px] shrink-0">
-                <ShieldCheck className="w-3 h-3 text-emerald-500" /> Valid
-              </span>
+              <div className="w-full bg-slate-100 dark:bg-zinc-900 h-2 rounded-full overflow-hidden">
+                <div 
+                  className="bg-emerald-500 h-full rounded-full transition-all duration-350 ease-out" 
+                  style={{ width: `${restoreProgress}%` }}
+                />
+              </div>
             </div>
+          ) : (
+            <>
+              <div 
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                onClick={() => fileInputRef.current?.click()}
+                className={`group border-2 border-solid rounded-[5px] py-4 px-3 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-300 ${
+                  isDragging 
+                    ? 'border-emerald-500 bg-emerald-500/10 dark:bg-emerald-950/20' 
+                    : 'border-slate-200 dark:border-zinc-800/60 hover:border-emerald-500 dark:hover:border-emerald-400 bg-white dark:bg-zinc-900/40'
+                }`}
+              >
+                <input 
+                  ref={fileInputRef}
+                  type="file" 
+                  accept=".pass,.enc" 
+                  className="hidden" 
+                  onChange={handleFileSelect}
+                />
+
+                <UploadCloud className="w-5 h-5 text-emerald-500 dark:text-emerald-400 group-hover:scale-105 transition-transform duration-300 mb-1" />
+
+                <p className="text-[11px] font-bold text-slate-800 dark:text-zinc-200">
+                  Attach Backup File (.pass / .enc)
+                </p>
+                <p className="text-[9px] text-zinc-400 mt-0.5">
+                  Drag & drop or click to browse
+                </p>
+              </div>
+
+              {/* Validation Error */}
+              {error && (
+                <div className="flex items-start gap-2 bg-rose-500/10 text-rose-600 dark:text-rose-400 px-2.5 py-2 rounded-[5px] border border-rose-200/45 dark:border-rose-950/45 text-[10px] font-bold">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                  <span>{error}</span>
+                </div>
+              )}
+
+              {/* Verified File Preview (Super Compact to keep height minimal) */}
+              {attachedFile && preview && (
+                <div className="border border-emerald-200 dark:border-emerald-900/50 rounded-[5px] p-2 bg-emerald-50/20 dark:bg-emerald-950/10 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 overflow-hidden">
+                    <FileText className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <div className="overflow-hidden">
+                      <h4 className="text-[11px] font-bold text-slate-900 dark:text-white truncate">
+                        {preview.title}
+                      </h4>
+                      <p className="text-[9px] text-zinc-400 font-mono">
+                        {preview.id}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="flex items-center gap-1 text-[9px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 dark:bg-emerald-400/25 px-1.5 py-0.5 rounded-[5px] shrink-0">
+                    <ShieldCheck className="w-3 h-3 text-emerald-500" /> Valid
+                  </span>
+                </div>
+              )}
+            </>
           )}
         </div>
 
         {/* Action Buttons (More compact py-2.5 with dynamic light/pure premium colors) */}
         <div className="p-3 bg-white/60 dark:bg-zinc-950/60 border-t border-slate-100 dark:border-zinc-900/80 flex items-center justify-end gap-2 relative z-10">
           <button 
+            disabled={isRestoring}
             onClick={onClose}
-            className="relative overflow-hidden group px-3 py-1.5 border border-red-500/30 dark:border-red-500/20 bg-red-500/10 transition-all duration-300 font-bold text-[11px] shadow-sm active:scale-95 cursor-pointer shrink-0 rounded-[5px]"
+            className="relative overflow-hidden group px-3 py-1.5 border border-red-500/30 dark:border-red-500/20 bg-red-500/10 transition-all duration-300 font-bold text-[11px] shadow-sm active:scale-95 cursor-pointer shrink-0 rounded-[5px] disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <span className="absolute inset-0 w-full h-full bg-red-600 -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></span>
             <span className="relative z-10 text-black dark:text-zinc-200 group-hover:text-white dark:group-hover:text-white transition-colors duration-300">
@@ -327,7 +378,7 @@ export function RestoreModal({
           </button>
 
           <button 
-            disabled={!attachedFile}
+            disabled={!attachedFile || isRestoring}
             onClick={handleExecuteRestore}
             className={`relative overflow-hidden group px-4 py-1.5 border rounded-[5px] transition-all duration-300 font-bold text-[11px] shadow-sm active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex items-center gap-1 shrink-0 ${
               attachedFile 
@@ -335,7 +386,7 @@ export function RestoreModal({
                 : 'border-slate-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80'
             }`}
           >
-            {attachedFile && (
+            {attachedFile && !isRestoring && (
               <span className="absolute inset-0 w-full h-full bg-emerald-600 -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></span>
             )}
             <span className={`relative z-10 transition-colors duration-300 flex items-center gap-1 ${
