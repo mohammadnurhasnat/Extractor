@@ -24,7 +24,8 @@ import { DeleteConfirmationModal } from './components/DeleteConfirmationModal';
 import { UploadSection } from './components/UploadSection';
 import { ResultsSection } from './components/ResultsSection';
 import { GlobalProgress } from './components/GlobalProgress';
-import { ProfileManagerModal } from './components/ProfileManagerModal';
+import { BackupModal } from './components/BackupModal';
+import { RestoreModal } from './components/RestoreModal';
 
 // Utilities
 import { generateDataText } from './utils/addressUtils';
@@ -125,7 +126,8 @@ export default function App() {
   } = useSavedOptions();
 
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);
-  const [isProfileManagerOpen, setIsProfileManagerOpen] = useState(false);
+  const [isBackupOpen, setIsBackupOpen] = useState(false);
+  const [isRestoreOpen, setIsRestoreOpen] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('passport_active_results_tab', resultsTab);
@@ -283,7 +285,8 @@ export default function App() {
               setHistory={setHistory}
               loadFromHistory={loadFromHistory}
               confirmDelete={confirmDelete}
-              onOpenProfileManager={() => setIsProfileManagerOpen(true)}
+              onOpenBackup={() => setIsBackupOpen(true)}
+              onOpenRestore={() => setIsRestoreOpen(true)}
             />
 
             {/* RESULTS SECTION (Right side on large screens) */}
@@ -317,15 +320,25 @@ export default function App() {
         </div>
       </div>
 
-      {/* Profile Manager Modal */}
+      {/* Backup & Restore Modals */}
       <AnimatePresence>
-        {isProfileManagerOpen && (
-          <ProfileManagerModal
-            isOpen={isProfileManagerOpen}
-            onClose={() => setIsProfileManagerOpen(false)}
+        {isBackupOpen && (
+          <BackupModal
+            isOpen={isBackupOpen}
+            onClose={() => setIsBackupOpen(false)}
+            history={history}
+            setToast={setToast}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isRestoreOpen && (
+          <RestoreModal
+            isOpen={isRestoreOpen}
+            onClose={() => setIsRestoreOpen(false)}
             history={history}
             setHistory={setHistory}
-            onLoadItem={loadFromHistory}
             setToast={setToast}
           />
         )}

@@ -9,7 +9,8 @@ interface HistorySidebarProps {
   onSearchTermChange: (term: string) => void;
   onLoadItem: (item: HistoryItem) => void;
   onConfirmDelete: (e: React.MouseEvent, id: string) => void;
-  onOpenProfileManager: () => void;
+  onOpenBackup: () => void;
+  onOpenRestore: () => void;
 }
 
 export function HistorySidebar({
@@ -18,7 +19,8 @@ export function HistorySidebar({
   onSearchTermChange,
   onLoadItem,
   onConfirmDelete,
-  onOpenProfileManager
+  onOpenBackup,
+  onOpenRestore
 }: HistorySidebarProps) {
   const filteredHistory = history.filter(item => {
     const fullName = `${item.data.givenName || ''} ${item.data.surname || ''}`.toLowerCase();
@@ -82,12 +84,20 @@ Expiry Date: ${item.data.expiryDate || ''}
         
         <div className="flex z-10 items-center justify-end gap-2 w-full xl:w-auto max-w-full overflow-hidden">
           <button 
-            onClick={onOpenProfileManager}
-            className="px-3 py-1.5 bg-blue-50/50 hover:bg-blue-100/70 text-blue-600 dark:bg-blue-950/20 dark:hover:bg-blue-900/30 dark:text-blue-400 border border-blue-200/40 dark:border-blue-800/40 rounded-xl transition-all flex items-center gap-1.5 text-xs font-bold shadow-sm active:scale-95 cursor-pointer"
-            title="Open Secure Profile Manager & Database Backup"
+            onClick={onOpenBackup}
+            className="px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 hover:border-blue-500/30 rounded-xl transition-all flex items-center gap-1.5 text-xs font-bold shadow-sm active:scale-95 cursor-pointer"
+            title="Open Cryptographic Profile Backup"
           >
             <Database className="w-3.5 h-3.5" />
-            <span>Manage Profiles</span>
+            <span>Backup</span>
+          </button>
+          <button 
+            onClick={onOpenRestore}
+            className="px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:border-emerald-500/30 rounded-xl transition-all flex items-center gap-1.5 text-xs font-bold shadow-sm active:scale-95 cursor-pointer"
+            title="Open Secure Data Restore"
+          >
+            <UploadCloud className="w-3.5 h-3.5" />
+            <span>Restore</span>
           </button>
           <button 
             onClick={exportToZip}
