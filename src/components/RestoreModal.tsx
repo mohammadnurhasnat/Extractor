@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { 
-  X, UploadCloud, ShieldCheck, AlertCircle, CheckCircle2, FileText, Database
+  X, UploadCloud, ShieldCheck, AlertCircle, CheckCircle2, FileText
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { HistoryItem, PassportData } from '../types';
@@ -204,41 +204,45 @@ export function RestoreModal({
   const preview = getPreviewMetadata();
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-      {/* High contrast, compact black-and-white pop-up window */}
+    <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4">
+      {/* Small Cozy Glassmorphism Pop-up Window */}
       <motion.div 
-        initial={{ opacity: 0, scale: 0.96, y: 10 }}
+        initial={{ opacity: 0, scale: 0.95, y: 15 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.96, y: 10 }}
-        className="relative bg-white dark:bg-zinc-950 w-full max-w-sm rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.3)] border-2 border-black dark:border-zinc-800 flex flex-col overflow-hidden text-black dark:text-white"
+        exit={{ opacity: 0, scale: 0.95, y: 15 }}
+        className="relative bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl w-full max-w-sm rounded-3xl shadow-[0_24px_50px_rgba(59,130,246,0.12)] border border-white/50 dark:border-zinc-850/50 flex flex-col overflow-hidden text-black dark:text-white"
       >
+        {/* Colorful Gradient Blur Circles */}
+        <div className="absolute -top-16 -left-16 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute -bottom-16 -right-16 w-32 h-32 bg-pink-500/10 rounded-full blur-2xl pointer-events-none" />
+
         {/* Header */}
-        <div className="p-4 border-b-2 border-black dark:border-zinc-800 flex items-center justify-between bg-zinc-50 dark:bg-zinc-900">
+        <div className="p-4.5 border-b border-white/30 dark:border-zinc-800/40 flex items-center justify-between bg-white/40 dark:bg-zinc-900/40 backdrop-blur-md relative z-10">
           <div className="flex items-center gap-2">
-            <UploadCloud className="w-4 h-4 text-black dark:text-white" />
-            <h3 className="font-extrabold text-sm tracking-tight">
+            <UploadCloud className="w-4 h-4 text-slate-800 dark:text-zinc-200" />
+            <h3 className="font-extrabold text-sm tracking-tight text-slate-900 dark:text-white">
               Restore Backup
             </h3>
           </div>
           <button 
             onClick={onClose}
-            className="p-1 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black rounded-lg transition-colors cursor-pointer border border-black dark:border-zinc-800"
+            className="p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-xl border border-black/10 dark:border-white/10 transition-colors cursor-pointer"
           >
             <X className="w-3.5 h-3.5" />
           </button>
         </div>
 
-        {/* Dropzone */}
-        <div className="p-4 space-y-3.5">
+        {/* Dropzone Area */}
+        <div className="p-4 space-y-3 relative z-10">
           <div 
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             onClick={() => fileInputRef.current?.click()}
-            className={`group border-2 border-dashed rounded-xl p-5 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-300 ${
+            className={`group border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-300 ${
               isDragging 
-                ? 'border-black dark:border-white bg-zinc-50 dark:bg-zinc-900' 
-                : 'border-zinc-300 dark:border-zinc-800 hover:border-black dark:hover:border-white bg-white dark:bg-black/20'
+                ? 'border-slate-800 dark:border-white bg-white/60 dark:bg-zinc-900/60' 
+                : 'border-slate-200 dark:border-zinc-800 hover:border-slate-400 dark:hover:border-zinc-700 bg-white/30 dark:bg-black/10'
             }`}
           >
             <input 
@@ -249,43 +253,40 @@ export function RestoreModal({
               onChange={handleFileSelect}
             />
 
-            <UploadCloud className="w-5 h-5 text-zinc-500 group-hover:scale-105 transition-transform duration-300 mb-2" />
+            <UploadCloud className="w-6 h-6 text-zinc-400 dark:text-zinc-550 group-hover:scale-105 transition-transform duration-300 mb-2" />
 
-            <p className="text-xs font-extrabold">
-              Attach Backup File
-            </p>
-            <p className="text-[10px] text-zinc-400 mt-1 font-medium">
-              Select <span className="font-mono bg-zinc-100 dark:bg-zinc-900 px-1 py-0.5 rounded">.pass</span> or <span className="font-mono bg-zinc-100 dark:bg-zinc-900 px-1 py-0.5 rounded">.enc</span>
+            <p className="text-xs font-bold text-slate-800 dark:text-zinc-200">
+              Attach Backup File (.pass / .enc)
             </p>
           </div>
 
           {/* Validation Error */}
           {error && (
-            <div className="flex items-start gap-2 bg-rose-50/10 text-rose-600 dark:text-rose-400 px-3 py-2.5 rounded-lg border border-rose-200 dark:border-rose-950 text-[11px] font-bold">
-              <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+            <div className="flex items-start gap-2 bg-rose-50/10 text-rose-600 dark:text-rose-400 px-3 py-2.5 rounded-xl border border-rose-200/50 dark:border-rose-950/50 text-[11px] font-bold">
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
               <span>{error}</span>
             </div>
           )}
 
-          {/* Success File Preview */}
+          {/* Verified File Preview */}
           {attachedFile && preview && (
-            <div className="border border-black dark:border-zinc-800 rounded-xl p-3 space-y-2 bg-zinc-50 dark:bg-zinc-900/40">
-              <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-1.5">
-                <span className="text-[9px] font-extrabold uppercase text-zinc-500">
-                  Verified Backup File
+            <div className="border border-slate-200 dark:border-zinc-800 rounded-2xl p-3 space-y-2 bg-white/50 dark:bg-zinc-950/40">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 pb-1.5">
+                <span className="text-[10px] font-bold uppercase text-zinc-450">
+                  VERIFIED BACKUP
                 </span>
-                <span className="flex items-center gap-1 text-[10px] font-extrabold text-emerald-650 dark:text-emerald-400">
-                  <ShieldCheck className="w-3.5 h-3.5" /> Valid
+                <span className="flex items-center gap-1 text-[11px] font-bold text-slate-800 dark:text-zinc-200">
+                  <ShieldCheck className="w-4 h-4 text-emerald-500" /> Valid
                 </span>
               </div>
 
               <div className="flex items-center gap-2.5">
-                <FileText className="w-4 h-4 text-black dark:text-white shrink-0" />
+                <FileText className="w-4 h-4 text-slate-800 dark:text-zinc-200 shrink-0" />
                 <div className="overflow-hidden">
-                  <h4 className="text-xs font-extrabold truncate">
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate">
                     {preview.title}
                   </h4>
-                  <p className="text-[9px] text-zinc-500 font-mono">
+                  <p className="text-[10px] text-zinc-450 font-mono font-medium">
                     {preview.id}
                   </p>
                 </div>
@@ -294,28 +295,26 @@ export function RestoreModal({
           )}
         </div>
 
-        {/* Actions with beautiful slide effect buttons */}
-        <div className="p-4 bg-zinc-50 dark:bg-zinc-900/40 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-end gap-2">
-          {/* Cancel Button */}
+        {/* Action Buttons with sliding effects */}
+        <div className="p-4 bg-white/40 dark:bg-zinc-900/40 border-t border-white/30 dark:border-zinc-800/40 flex items-center justify-end gap-2.5 relative z-10">
           <button 
             onClick={onClose}
-            className="relative overflow-hidden group px-4 py-2 border border-black dark:border-white bg-transparent text-black dark:text-white rounded-xl transition-all duration-300 font-bold text-xs shadow-sm active:scale-95 cursor-pointer"
+            className="relative overflow-hidden group px-4 py-2 border border-slate-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 text-slate-800 dark:text-zinc-200 rounded-xl transition-all duration-300 font-bold text-xs shadow-sm active:scale-95 cursor-pointer"
           >
-            <span className="absolute inset-0 w-full h-full bg-black dark:bg-white -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></span>
+            <span className="absolute inset-0 w-full h-full bg-slate-900 dark:bg-white -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></span>
             <span className="relative z-10 group-hover:text-white dark:group-hover:text-black transition-colors duration-300">
               Cancel
             </span>
           </button>
 
-          {/* OK Button */}
           <button 
             disabled={!attachedFile}
             onClick={handleExecuteRestore}
-            className="relative overflow-hidden group px-5 py-2 border border-black dark:border-white bg-transparent text-black dark:text-white rounded-xl transition-all duration-300 font-bold text-xs shadow-sm active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer flex items-center gap-1"
+            className="relative overflow-hidden group px-4.5 py-2 border border-slate-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 text-slate-800 dark:text-zinc-200 rounded-xl transition-all duration-300 font-bold text-xs shadow-sm active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer flex items-center gap-1.5"
           >
-            <span className="absolute inset-0 w-full h-full bg-black dark:bg-white -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></span>
-            <span className="relative z-10 group-hover:text-white dark:group-hover:text-black transition-colors duration-300 flex items-center gap-1">
-              <CheckCircle2 className="w-3.5 h-3.5" />
+            <span className="absolute inset-0 w-full h-full bg-slate-900 dark:bg-white -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></span>
+            <span className="relative z-10 group-hover:text-white dark:group-hover:text-black transition-colors duration-300 flex items-center gap-1.5">
+              <CheckCircle2 className="w-4 h-4" />
               <span>OK</span>
             </span>
           </button>

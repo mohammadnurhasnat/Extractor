@@ -82,32 +82,34 @@ Expiry Date: ${item.data.expiryDate || ''}
           <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1 font-sans font-medium">List of recently processed passport scans.</p>
         </div>
         
-        <div className="flex z-10 items-center justify-end gap-2 w-full xl:w-auto flex-wrap sm:flex-nowrap">
-          <button 
-            onClick={onOpenBackup}
-            className="relative overflow-hidden group px-3.5 py-1.5 border border-black dark:border-white bg-transparent text-black dark:text-white rounded-xl transition-all duration-300 font-bold text-xs shadow-sm active:scale-95 cursor-pointer flex items-center gap-1.5 shrink-0"
-            title="Open Cryptographic Profile Backup"
-          >
-            <span className="absolute inset-0 w-full h-full bg-black dark:bg-white -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></span>
-            <span className="relative z-10 group-hover:text-white dark:group-hover:text-black transition-colors duration-300 flex items-center gap-1.5">
-              <Database className="w-3.5 h-3.5" />
-              <span>Backup</span>
-            </span>
-          </button>
-          
-          <button 
-            onClick={onOpenRestore}
-            className="relative overflow-hidden group px-3.5 py-1.5 border border-black dark:border-white bg-transparent text-black dark:text-white rounded-xl transition-all duration-300 font-bold text-xs shadow-sm active:scale-95 cursor-pointer flex items-center gap-1.5 shrink-0"
-            title="Open Secure Data Restore"
-          >
-            <span className="absolute inset-0 w-full h-full bg-black dark:bg-white -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></span>
-            <span className="relative z-10 group-hover:text-white dark:group-hover:text-black transition-colors duration-300 flex items-center gap-1.5">
-              <UploadCloud className="w-3.5 h-3.5" />
-              <span>Restore</span>
-            </span>
-          </button>
+        <div className="flex z-10 flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2.5 w-full xl:w-auto">
+          <div className="flex items-center gap-2 shrink-0">
+            <button 
+              onClick={onOpenBackup}
+              className="relative overflow-hidden group px-3.5 py-1.5 border border-black dark:border-white bg-transparent text-black dark:text-white rounded-[4px] transition-all duration-300 font-bold text-xs shadow-sm active:scale-95 cursor-pointer flex items-center gap-1.5 shrink-0"
+              title="Open Cryptographic Profile Backup"
+            >
+              <span className="absolute inset-0 w-full h-full bg-black dark:bg-white -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></span>
+              <span className="relative z-10 group-hover:text-white dark:group-hover:text-black transition-colors duration-300 flex items-center gap-1.5">
+                <Database className="w-3.5 h-3.5" />
+                <span>Backup</span>
+              </span>
+            </button>
+            
+            <button 
+              onClick={onOpenRestore}
+              className="relative overflow-hidden group px-3.5 py-1.5 border border-black dark:border-white bg-transparent text-black dark:text-white rounded-[4px] transition-all duration-300 font-bold text-xs shadow-sm active:scale-95 cursor-pointer flex items-center gap-1.5 shrink-0"
+              title="Open Secure Data Restore"
+            >
+              <span className="absolute inset-0 w-full h-full bg-black dark:bg-white -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></span>
+              <span className="relative z-10 group-hover:text-white dark:group-hover:text-black transition-colors duration-300 flex items-center gap-1.5">
+                <UploadCloud className="w-3.5 h-3.5" />
+                <span>Restore</span>
+              </span>
+            </button>
+          </div>
 
-          <div className="relative flex-1 min-w-[140px] sm:min-w-[180px] max-w-[260px]">
+          <div className="relative flex-1 min-w-[150px] sm:max-w-[260px] w-full">
             <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
               <Search className="h-3.5 w-3.5 text-slate-400 dark:text-zinc-550" />
             </div>
