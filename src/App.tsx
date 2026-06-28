@@ -199,7 +199,15 @@ export default function App() {
   };
 
   const confirmDelete = (e: React.MouseEvent, id: string) => { e.stopPropagation(); setItemToDelete(id); };
-  const executeDelete = (e: React.MouseEvent) => { e.stopPropagation(); if (itemToDelete) deleteHistoryItem(itemToDelete); setItemToDelete(null); };
+  const executeDelete = (e: React.MouseEvent) => { 
+    e.stopPropagation(); 
+    if (itemToDelete === 'ALL') {
+      clearHistory();
+    } else if (itemToDelete) {
+      deleteHistoryItem(itemToDelete); 
+    }
+    setItemToDelete(null); 
+  };
   const cancelDelete = (e: React.MouseEvent) => { e.stopPropagation(); setItemToDelete(null); };
 
   const extractData = async () => {

@@ -9,78 +9,106 @@ import {
 } from './addressUtils';
 
 export const generatePassportImagePDF = async (file: File, passportData?: PassportData | null): Promise<void> => {
-  let compressedFile = file;
-  
-  // If original file is already clean and under 500 KB, we do not need to compress it at all.
-  // This preserves 100% of the original high-resolution visual clarity.
-  // If it is larger than 500 KB, we compress with extremely high-quality thresholds to hit 300kb - 350kb beautifully.
-  if (file.size > 500 * 1024) {
-    const options = {
-      maxSizeMB: 0.4,           // Intended to land close to ~300kb-350kb for larger photographs
-      maxWidthOrHeight: 2560,    // High resolution max boundary
-      useWebWorker: true,
-      initialQuality: 0.98      // Superior visual detail
-    };
-    try {
-      compressedFile = await imageCompression(file, options);
-    } catch (compressErr) {
-      console.warn('Image compression failed, falling back to original quality:', compressErr);
-      compressedFile = file;
-    }
-  }
-  
-  try {
-    // Read the file as Data URL
-    const reader = new FileReader();
-    reader.readAsDataURL(compressedFile);
+  return new Promise(async (resolve, reject) => {
+    let compressedFile = file;
     
-    reader.onloadend = () => {
-      const base64data = reader.result as string;
-      const format = compressedFile.type === 'image/png' ? 'PNG' : 'JPEG';
-      
-      const doc = new jsPDF({
-        orientation: 'p',
-        unit: 'mm',
-        format: 'a4',
-        compress: true
-      });
-      
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
-      
-      // We will place the image in the center, fit into page with margins
-      const margin = 10;
-      const maxWidth = pageWidth - (margin * 2);
-      const maxHeight = pageHeight - (margin * 2);
-      
-      // Load image to get original dimensions
-      const img = new Image();
-      img.src = base64data;
-      img.onload = () => {
-        const imgWidth = img.width;
-        const imgHeight = img.height;
-        
-        const ratio = Math.min(maxWidth / imgWidth, maxHeight / imgHeight);
-        const finalWidth = imgWidth * ratio;
-        const finalHeight = imgHeight * ratio;
-        
-        const xOffset = (pageWidth - finalWidth) / 2;
-        const yOffset = (pageHeight - finalHeight) / 2;
-        
-        doc.addImage(base64data, format, xOffset, yOffset, finalWidth, finalHeight);
-        
-        const givenName = passportData?.givenName ? passportData.givenName.replace(/\s+/g, '-') : 'UNKNOWN';
-        const surname = passportData?.surname ? passportData.surname.replace(/\s+/g, '-') : '';
-        const passportNumber = passportData?.passportNumber ? passportData.passportNumber.toUpperCase().trim() : 'UNKNOWN';
-        const fullName = [givenName, surname].filter(Boolean).join('-');
-        
-        doc.save(`${fullName}-${passportNumber}.pdf`);
+    // If original file is already clean and under 500 KB, we do not need to compress it at all.
+    // This preserves 100% of the original high-resolution visual clarity.
+    // If it is larger than 500 KB, we compress with extremely high-quality thresholds to hit 300kb - 350kb beautifully.
+    if (file.size > 500 * 1024) {
+      const options = {
+        maxSizeMB: 0.4,           // Intended to land close to ~300kb-350kb for larger photographs
+        maxWidthOrHeight: 2560,    // High resolution max boundary
+        useWebWorker: false,       // Prevent hanging in dev servers/certain browsers
+        initialQuality: 0.98      // Superior visual detail
       };
-    };
-  } catch (err) {
-    console.error('Error generating passport PDF:', err);
-    throw err;
-  }
+      try {
+        compressedFile = await imageCompression(file, options);
+      } catch (compressErr) {
+        console.warn('Image compression failed, falling back to original quality:', compressErr);
+        compressedFile = file;
+      }
+    }
+    
+    try {
+      // Read the file as Data URL
+      const reader = new FileReader();
+      
+      reader.onloadend = () => {
+        if (!reader.result) {
+          return reject(new Error("Failed to read file"));
+        }
+        const base64data = reader.result as string;
+        const format = compressedFile.type === 'image/png' ? 'PNG' : 'JPEG';
+        
+        const doc = new jsPDF({
+          orientation: 'p',
+          unit: 'mm',
+          format: 'a4',
+          compress: true
+        });
+        
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        
+        // We will place the image in the center, fit into page with margins
+        const margin = 10;
+        const maxWidth = pageWidth - (margin * 2);
+        const maxHeight = pageHeight - (margin * 2);
+        
+        // Load image to get original dimensions
+        const img = new Image();
+        img.onload = () => {
+          try {
+            const imgWidth = img.width;
+            const imgHeight = img.height;
+            
+            const ratio = Math.min(maxWidth / imgWidth, maxHeight / imgHeight);
+            const finalWidth = imgWidth * ratio;
+            const finalHeight = imgHeight * ratio;
+            
+            const xOffset = (pageWidth - finalWidth) / 2;
+            const yOffset = (pageHeight - finalHeight) / 2;
+            
+            // Convert any image type (WebP, HEIC, etc.) to JPEG using Canvas
+            const canvas = document.createElement('canvas');
+            canvas.width = imgWidth;
+            canvas.height = imgHeight;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+              ctx.fillStyle = '#FFFFFF'; // Ensure white background for transparent images
+              ctx.fillRect(0, 0, imgWidth, imgHeight);
+              ctx.drawImage(img, 0, 0, imgWidth, imgHeight);
+              const safeJpegBase64 = canvas.toDataURL('image/jpeg', 0.95);
+              doc.addImage(safeJpegBase64, 'JPEG', xOffset, yOffset, finalWidth, finalHeight);
+            } else {
+              // Fallback to direct add if canvas context fails
+              doc.addImage(base64data, format, xOffset, yOffset, finalWidth, finalHeight);
+            }
+            
+            const givenName = passportData?.givenName ? passportData.givenName.replace(/\s+/g, '-') : 'UNKNOWN';
+            const surname = passportData?.surname ? passportData.surname.replace(/\s+/g, '-') : '';
+            const passportNumber = passportData?.passportNumber ? passportData.passportNumber.toUpperCase().trim() : 'UNKNOWN';
+            const fullName = [givenName, surname].filter(Boolean).join('-');
+            
+            doc.save(`${fullName}-${passportNumber}.pdf`);
+            resolve();
+          } catch (e) {
+            console.error('jsPDF addImage error:', e);
+            reject(e);
+          }
+        };
+        img.onerror = () => reject(new Error("Failed to load image for PDF"));
+        img.src = base64data;
+      };
+      
+      reader.onerror = () => reject(new Error("Failed to read file"));
+      reader.readAsDataURL(compressedFile);
+    } catch (err) {
+      console.error('Error generating passport PDF:', err);
+      reject(err);
+    }
+  });
 };
 
 export const getPDFDocument = (data: PassportData): jsPDF => {

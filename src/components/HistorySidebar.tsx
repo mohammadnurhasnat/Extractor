@@ -84,6 +84,20 @@ Expiry Date: ${item.data.expiryDate || ''}
         
         <div className="flex z-10 flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2.5 w-full xl:w-auto">
           <div className="flex items-center gap-2 shrink-0">
+            {history.length > 0 && (
+              <button 
+                onClick={(e) => onConfirmDelete(e, 'ALL')}
+                className="relative overflow-hidden group px-3.5 py-1.5 border border-red-500/30 dark:border-red-500/20 bg-red-500/10 rounded-[5px] transition-all duration-300 font-bold text-xs shadow-sm active:scale-95 cursor-pointer flex items-center gap-1.5 shrink-0"
+                title="Delete All Profiles"
+              >
+                <span className="absolute inset-0 w-full h-full bg-red-500 -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></span>
+                <span className="relative z-10 text-red-600 dark:text-red-400 group-hover:text-white transition-colors duration-300 flex items-center gap-1.5">
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Delete All</span>
+                </span>
+              </button>
+            )}
+            
             <button 
               onClick={onOpenBackup}
               className="relative overflow-hidden group px-3.5 py-1.5 border border-amber-500/30 dark:border-amber-500/20 bg-amber-500/10 rounded-[5px] transition-all duration-300 font-bold text-xs shadow-sm active:scale-95 cursor-pointer flex items-center gap-1.5 shrink-0"

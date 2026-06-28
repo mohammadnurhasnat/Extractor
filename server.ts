@@ -1,7 +1,7 @@
 import express from 'express';
 import path from 'path';
 import { createServer as createViteServer } from 'vite';
-import { GoogleGenAI, Type, ThinkingLevel } from '@google/genai';
+import { GoogleGenAI, Type } from '@google/genai';
 import helmet from 'helmet';
 import { z } from 'zod';
 
@@ -73,24 +73,9 @@ async function startServer() {
       // We expect the frontend to send just the base64 string without the data URI prefix
       const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '');
 
-      console.log('⚡ High-Speed Single-Agent Extraction Pipeline Started.');
+      console.log('⚡ High-Speed Dual-Engine Extraction Pipeline Initiated.');
 
-      const pipelineResponse = await ai.models.generateContent({
-        model: 'gemini-3.5-flash',
-        contents: [
-          {
-            inlineData: {
-              mimeType: mimeType,
-              data: base64Data,
-            }
-          }
-        ],
-        config: {
-          // Set ThinkingLevel.LOW to minimize latency (down to 2-4 seconds) and keep cost low while preserving OCR precision!
-          thinkingConfig: {
-            thinkingLevel: ThinkingLevel.LOW
-          },
-          systemInstruction: `You are an ultra-fast, high-precision Passport Extraction & Validation Agent. 
+      const systemInstruction = `You are an ultra-fast, high-precision Passport Extraction & Validation Agent. 
 Extract passport data, read and validate Machine-Readable Zone (MRZ) checksums, compute confidence scores, highlight structural discrepancies, and suggest Bangladeshi addresses.
 
 INSTRUCTIONS:
@@ -105,64 +90,101 @@ INSTRUCTIONS:
    - Cat 2 (Dhaka Division, but not Dhaka District): Create a Dhaka City address for presentAddress, businessAddressDhaka, officeAddressDhaka. Create matching local addresses for local fields.
    - Cat 3 (Outside Dhaka Division): Create a Dhaka City address for presentAddress, businessAddressDhaka, officeAddressDhaka. Create matching local addresses for local fields.
    * Dhaka format: "House X, Road Y, [Area], Dhaka-[Postcode]" (No excessive building titles, commercial center tags, or complex names).
-   * Rules for All addresses: Do NOT include prefix labels or structural tags like 'Vill:', 'Post:', 'Thana:', 'Dist:', 'dist:', 'vill', 'post', 'thana', or 'dist'. Write clean comma-separated names of locations e.g. "Mithamain, Mithamain, Kishoreganj-2370" instead of "Vill: Mithamain, Post: Mithamain, Dist: Kishoreganj-2370".`,
-          responseMimeType: 'application/json',
-          responseSchema: {
+   * Rules for All addresses: Do NOT include prefix labels or structural tags like 'Vill:', 'Post:', 'Thana:', 'Dist:', 'dist:', 'vill', 'post', 'thana', or 'dist'. Write clean comma-separated names of locations e.g. "Mithamain, Mithamain, Kishoreganj-2370" instead of "Vill: Mithamain, Post: Mithamain, Dist: Kishoreganj-2370".`;
+
+      const responseSchema = {
+        type: Type.OBJECT,
+        properties: {
+          finalData: {
             type: Type.OBJECT,
             properties: {
-              finalData: {
-                type: Type.OBJECT,
-                properties: {
-                  givenName: { type: Type.STRING },
-                  surname: { type: Type.STRING },
-                  dob: { type: Type.STRING },
-                  birthPlace: { type: Type.STRING },
-                  fatherName: { type: Type.STRING },
-                  motherName: { type: Type.STRING },
-                  spouseName: { type: Type.STRING },
-                  passportNumber: { type: Type.STRING },
-                  nidOrBirthCertNumber: { type: Type.STRING },
-                  issueDate: { type: Type.STRING },
-                  expiryDate: { type: Type.STRING },
-                  gender: { type: Type.STRING },
-                  permanentAddress: { type: Type.STRING },
-                  mobileNumber: { type: Type.STRING }
-                },
-                required: [
-                  "givenName", "surname", "dob", "birthPlace", "fatherName", "motherName",
-                  "spouseName", "passportNumber", "nidOrBirthCertNumber", "issueDate", "expiryDate", "gender", "permanentAddress", "mobileNumber"
-                ]
-              },
-              mrzValidation: {
-                type: Type.OBJECT,
-                properties: {
-                  rawMrz: { type: Type.ARRAY, items: { type: Type.STRING } },
-                  passportNumberChecksum: { type: Type.STRING },
-                  dobChecksum: { type: Type.STRING },
-                  expiryDateChecksum: { type: Type.STRING },
-                  compositeChecksum: { type: Type.STRING }
-                },
-                required: ["rawMrz", "passportNumberChecksum", "dobChecksum", "expiryDateChecksum", "compositeChecksum"]
-              },
-              discrepancies: { type: Type.ARRAY, items: { type: Type.STRING } },
-              confidenceScore: { type: Type.INTEGER },
-              customUndertakingDraft: { type: Type.STRING },
-              generatedAddresses: {
-                type: Type.OBJECT,
-                properties: {
-                  presentAddress: { type: Type.STRING },
-                  businessAddressDhaka: { type: Type.STRING },
-                  businessAddressLocal: { type: Type.STRING },
-                  officeAddressDhaka: { type: Type.STRING },
-                  officeAddressLocal: { type: Type.STRING }
-                },
-                required: ["presentAddress", "businessAddressDhaka", "businessAddressLocal", "officeAddressDhaka", "officeAddressLocal"]
-              }
+              givenName: { type: Type.STRING },
+              surname: { type: Type.STRING },
+              dob: { type: Type.STRING },
+              birthPlace: { type: Type.STRING },
+              fatherName: { type: Type.STRING },
+              motherName: { type: Type.STRING },
+              spouseName: { type: Type.STRING },
+              passportNumber: { type: Type.STRING },
+              nidOrBirthCertNumber: { type: Type.STRING },
+              issueDate: { type: Type.STRING },
+              expiryDate: { type: Type.STRING },
+              gender: { type: Type.STRING },
+              permanentAddress: { type: Type.STRING },
+              mobileNumber: { type: Type.STRING }
             },
-            required: ["finalData", "mrzValidation", "discrepancies", "confidenceScore", "customUndertakingDraft", "generatedAddresses"]
+            required: [
+              "givenName", "surname", "dob", "birthPlace", "fatherName", "motherName",
+              "spouseName", "passportNumber", "nidOrBirthCertNumber", "issueDate", "expiryDate", "gender", "permanentAddress", "mobileNumber"
+            ]
+          },
+          mrzValidation: {
+            type: Type.OBJECT,
+            properties: {
+              rawMrz: { type: Type.ARRAY, items: { type: Type.STRING } },
+              passportNumberChecksum: { type: Type.STRING },
+              dobChecksum: { type: Type.STRING },
+              expiryDateChecksum: { type: Type.STRING },
+              compositeChecksum: { type: Type.STRING }
+            },
+            required: ["rawMrz", "passportNumberChecksum", "dobChecksum", "expiryDateChecksum", "compositeChecksum"]
+          },
+          discrepancies: { type: Type.ARRAY, items: { type: Type.STRING } },
+          confidenceScore: { type: Type.INTEGER },
+          customUndertakingDraft: { type: Type.STRING },
+          generatedAddresses: {
+            type: Type.OBJECT,
+            properties: {
+              presentAddress: { type: Type.STRING },
+              businessAddressDhaka: { type: Type.STRING },
+              businessAddressLocal: { type: Type.STRING },
+              officeAddressDhaka: { type: Type.STRING },
+              officeAddressLocal: { type: Type.STRING }
+            },
+            required: ["presentAddress", "businessAddressDhaka", "businessAddressLocal", "officeAddressDhaka", "officeAddressLocal"]
           }
-        }
-      });
+        },
+        required: ["finalData", "mrzValidation", "discrepancies", "confidenceScore", "customUndertakingDraft", "generatedAddresses"]
+      };
+
+      let pipelineResponse;
+      try {
+        console.log('⚡ Running primary engine: gemini-3.1-flash-lite (Target latency: 2-3s)');
+        pipelineResponse = await ai.models.generateContent({
+          model: 'gemini-3.1-flash-lite',
+          contents: [
+            {
+              inlineData: {
+                mimeType: mimeType,
+                data: base64Data,
+              }
+            }
+          ],
+          config: {
+            systemInstruction,
+            responseMimeType: 'application/json',
+            responseSchema
+          }
+        });
+      } catch (err: any) {
+        console.warn('⚠️ Primary gemini-3.1-flash-lite engine error, attempting fast fallback (gemini-flash-latest)...', err.message || err);
+        pipelineResponse = await ai.models.generateContent({
+          model: 'gemini-flash-latest',
+          contents: [
+            {
+              inlineData: {
+                mimeType: mimeType,
+                data: base64Data,
+              }
+            }
+          ],
+          config: {
+            systemInstruction,
+            responseMimeType: 'application/json',
+            responseSchema
+          }
+        });
+      }
 
       if (!pipelineResponse.text) {
         throw new Error('Passport extraction failed to return response data.');
