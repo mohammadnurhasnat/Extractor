@@ -8,6 +8,119 @@ import { z } from 'zod';
 import { USERS_DATABASE } from './src/users';
 
 const LIMITS_FILE = path.join(process.cwd(), 'limits_store.json');
+const USERS_STORE_FILE = path.join(process.cwd(), 'users_store.json');
+
+// Helper to dynamically parse user array from src/users.ts file content
+function parseUsersTsContent(content: string): any[] {
+  try {
+    const startMarker = 'export const USERS_DATABASE: User[] = [';
+    const endMarker = '];';
+    const startIndex = content.indexOf(startMarker);
+    const endIndex = content.lastIndexOf(endMarker);
+    if (startIndex === -1 || endIndex === -1 || endIndex <= startIndex) {
+      return [];
+    }
+    
+    let arrayStr = content.slice(startIndex + startMarker.length, endIndex).trim();
+    // Strip block comments /* ... */
+    arrayStr = arrayStr.replace(/\/\*[\s\S]*?\*\//g, '');
+    
+    // Split into lines, and filter out comments
+    const lines = arrayStr.split('\n').map(line => {
+      const idx = line.indexOf('//');
+      if (idx !== -1) {
+        return line.slice(0, idx);
+      }
+      return line;
+    });
+    arrayStr = lines.join('\n').trim();
+    
+    // Evaluate safely via new Function
+    const parsed = new Function(`return [${arrayStr}];`)();
+    if (Array.isArray(parsed)) {
+      return parsed;
+    }
+  } catch (err) {
+    console.error('Error parsing src/users.ts manually:', err);
+  }
+  return [];
+}
+
+// Get dynamic users list, fallback to static USERS_DATABASE
+function getUsersStore(): typeof USERS_DATABASE {
+  const USERS_TS_FILE = path.join(process.cwd(), 'src', 'users.ts');
+  try {
+    const tsExists = fs.existsSync(USERS_TS_FILE);
+    const storeExists = fs.existsSync(USERS_STORE_FILE);
+    
+    if (tsExists) {
+      const tsMtime = fs.statSync(USERS_TS_FILE).mtimeMs;
+      const storeMtime = storeExists ? fs.statSync(USERS_STORE_FILE).mtimeMs : 0;
+      
+      // If src/users.ts was modified AFTER the users_store.json (or store does not exist), re-sync from the codebase
+      if (!storeExists || tsMtime > storeMtime) {
+        console.log('src/users.ts has been updated. Syncing backend store from codebase...');
+        const tsContent = fs.readFileSync(USERS_TS_FILE, 'utf8');
+        const parsedUsers = parseUsersTsContent(tsContent);
+        if (parsedUsers && parsedUsers.length > 0) {
+          fs.writeFileSync(USERS_STORE_FILE, JSON.stringify(parsedUsers, null, 2), 'utf8');
+          return parsedUsers;
+        }
+      }
+    }
+    
+    if (storeExists) {
+      const data = fs.readFileSync(USERS_STORE_FILE, 'utf8');
+      return JSON.parse(data);
+    }
+  } catch (error) {
+    console.error('Error reading users store file:', error);
+  }
+  
+  // If doesn't exist, save the default database and return it
+  try {
+    fs.writeFileSync(USERS_STORE_FILE, JSON.stringify(USERS_DATABASE, null, 2), 'utf8');
+  } catch (error) {
+    console.error('Error writing initial users store file:', error);
+  }
+  return USERS_DATABASE;
+}
+
+function syncUsersStoreToUsersTs(users: typeof USERS_DATABASE) {
+  try {
+    const filePath = path.join(process.cwd(), 'src', 'users.ts');
+    if (fs.existsSync(filePath)) {
+      let content = fs.readFileSync(filePath, 'utf8');
+      const startMarker = 'export const USERS_DATABASE: User[] = [';
+      const endMarker = '];';
+      const startIndex = content.indexOf(startMarker);
+      const endIndex = content.lastIndexOf(endMarker);
+      if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
+        const arrayBody = users.map(u => {
+          return `  {\n    id: "${u.id}",\n    email: "${u.email}",\n    mobileNumber: "${u.mobileNumber}",\n    password: "${u.password}",\n    name: "${u.name}"${typeof (u as any).dailyLimit === 'number' ? `,\n    dailyLimit: ${(u as any).dailyLimit}` : ''}${u.isSuspended ? `,\n    isSuspended: true` : ''}\n  }`;
+        }).join(',\n');
+        
+        const newContent = content.slice(0, startIndex + startMarker.length) + '\n' + arrayBody + '\n' + content.slice(endIndex);
+        fs.writeFileSync(filePath, newContent, 'utf8');
+        console.log('Successfully synced Users to src/users.ts');
+      }
+    }
+  } catch (error) {
+    console.error('Error syncing users store to src/users.ts:', error);
+  }
+}
+
+function saveUsersStore(users: typeof USERS_DATABASE) {
+  try {
+    // Write to TS file first so its mtime is updated
+    syncUsersStoreToUsersTs(users);
+    // Write to JSON store file second to ensure store mtime is newer when modified from front-end
+    fs.writeFileSync(USERS_STORE_FILE, JSON.stringify(users, null, 2), 'utf8');
+  } catch (error) {
+    console.error('Error writing users store file:', error);
+  }
+}
+
 
 interface LimitData {
   [userId: string]: {
@@ -50,7 +163,12 @@ function checkAndIncrementLimit(userId: string): { allowed: boolean; remaining: 
     data[userId].count = 0;
   }
   
-  if (data[userId].count >= 5) {
+  // Look up user's daily limit
+  const users = getUsersStore();
+  const user = users.find(u => u.id === userId);
+  const userLimit = (user && typeof user.dailyLimit === 'number') ? user.dailyLimit : 5;
+  
+  if (data[userId].count >= userLimit) {
     return { allowed: false, remaining: 0, count: data[userId].count };
   }
   
@@ -58,18 +176,22 @@ function checkAndIncrementLimit(userId: string): { allowed: boolean; remaining: 
   data[userId].count += 1;
   saveLimitData(data);
   
-  return { allowed: true, remaining: 5 - data[userId].count, count: data[userId].count };
+  return { allowed: true, remaining: userLimit - data[userId].count, count: data[userId].count };
 }
 
-function getLimitStatus(userId: string): { count: number; remaining: number } {
+function getLimitStatus(userId: string): { count: number; remaining: number; limit: number } {
   const data = getLimitData();
   const today = new Date().toISOString().split('T')[0];
   
+  const users = getUsersStore();
+  const user = users.find(u => u.id === userId);
+  const userLimit = (user && typeof user.dailyLimit === 'number') ? user.dailyLimit : 5;
+  
   if (!data[userId] || data[userId].date !== today) {
-    return { count: 0, remaining: 5 };
+    return { count: 0, remaining: userLimit, limit: userLimit };
   }
   
-  return { count: data[userId].count, remaining: Math.max(0, 5 - data[userId].count) };
+  return { count: data[userId].count, remaining: Math.max(0, userLimit - data[userId].count), limit: userLimit };
 }
 
 // Define request validation schemas
@@ -111,14 +233,19 @@ async function startServer() {
         return res.status(400).json({ success: false, error: 'Email/Mobile or Password missing.' });
       }
 
+      const users = getUsersStore();
       // Find user matching email or mobileNumber
-      const user = USERS_DATABASE.find(u => 
+      const user = users.find(u => 
         (u.email.toLowerCase() === loginIdentifier.toLowerCase() || u.mobileNumber === loginIdentifier) &&
         u.password === password
       );
 
       if (!user) {
         return res.status(401).json({ success: false, error: 'ভুল ইমেইল/মোবাইল নাম্বার অথবা পাসওয়ার্ড দিয়েছেন।' });
+      }
+
+      if (user.isSuspended) {
+        return res.status(403).json({ success: false, error: 'আপনার অ্যাকাউন্টটি স্থগিত করা হয়েছে। Users have been suspended. Now, contact support.' });
       }
 
       // Safe user info without password
@@ -129,12 +256,241 @@ async function startServer() {
     }
   });
 
+  // API Route to fetch all users (Admin only)
+  app.get('/api/admin/users', (req, res) => {
+    try {
+      const adminId = req.headers['x-user-id']?.toString();
+      if (!adminId) {
+        return res.status(403).json({ success: false, error: 'Access denied. Please log in.' });
+      }
+      
+      const users = getUsersStore();
+      const adminUser = users.find(u => u.id === adminId);
+      if (!adminUser || adminUser.email.toLowerCase() !== 'mohammadnurhasnat@gmail.com') {
+        return res.status(403).json({ success: false, error: 'Access denied. Only Mohammad Nur Hasnat has access.' });
+      }
+
+      res.json({ success: true, users });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message || 'Failed to fetch users list.' });
+    }
+  });
+
+  // API Route to add a new user (Admin only)
+  app.post('/api/admin/add-user', (req, res) => {
+    try {
+      const adminId = req.headers['x-user-id']?.toString();
+      if (!adminId) {
+        return res.status(403).json({ success: false, error: 'Access denied. Please log in.' });
+      }
+      
+      const users = getUsersStore();
+      const adminUser = users.find(u => u.id === adminId);
+      if (!adminUser || adminUser.email.toLowerCase() !== 'mohammadnurhasnat@gmail.com') {
+        return res.status(403).json({ success: false, error: 'Access denied. Only Mohammad Nur Hasnat can add users.' });
+      }
+
+      const { name, email, mobileNumber, password } = req.body;
+      if (!name || !mobileNumber || !password) {
+        return res.status(400).json({ success: false, error: 'Name, Mobile Number, and Password are required fields.' });
+      }
+
+      // Check if username/mobile or email already exists to avoid conflict
+      const identifierExists = users.some(u => 
+        u.mobileNumber === mobileNumber || 
+        (email && u.email.toLowerCase() === email.toLowerCase())
+      );
+      if (identifierExists) {
+        return res.status(400).json({ success: false, error: 'A user with this Email or Mobile Number already exists.' });
+      }
+
+      // Generate a unique ID
+      const newUserId = `user_${Date.now()}`;
+      const newUser = {
+        id: newUserId,
+        name,
+        email: email || '',
+        mobileNumber,
+        password,
+        dailyLimit: 5 // Default limit
+      };
+
+      // 1. Save to Dynamic store (automatically syncs to src/users.ts)
+      users.push(newUser);
+      saveUsersStore(users);
+
+      res.json({ success: true, user: newUser });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message || 'Failed to add user.' });
+    }
+  });
+
+  // API Route to update a user's daily limit (Admin only)
+  app.post('/api/admin/update-user-limit', (req, res) => {
+    try {
+      const adminId = req.headers['x-user-id']?.toString();
+      if (!adminId) {
+        return res.status(403).json({ success: false, error: 'Access denied. Please log in.' });
+      }
+      
+      const users = getUsersStore();
+      const adminUser = users.find(u => u.id === adminId);
+      if (!adminUser || adminUser.email.toLowerCase() !== 'mohammadnurhasnat@gmail.com') {
+        return res.status(403).json({ success: false, error: 'Access denied. Only Mohammad Nur Hasnat can update user limits.' });
+      }
+
+      const { userId, newLimit } = req.body;
+      if (!userId || typeof newLimit !== 'number') {
+        return res.status(400).json({ success: false, error: 'User ID and numeric limit are required.' });
+      }
+
+      const targetUserIndex = users.findIndex(u => u.id === userId);
+      if (targetUserIndex === -1) {
+        return res.status(404).json({ success: false, error: 'User not found.' });
+      }
+
+      // Update in users store
+      users[targetUserIndex].dailyLimit = newLimit;
+      saveUsersStore(users);
+
+      res.json({ success: true, user: users[targetUserIndex] });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message || 'Failed to update user limit.' });
+    }
+  });
+
+  // API Route to suspend/unsuspend a user (Admin only)
+  app.post('/api/admin/toggle-suspend', (req, res) => {
+    try {
+      const adminId = req.headers['x-user-id']?.toString();
+      if (!adminId) {
+        return res.status(403).json({ success: false, error: 'Access denied. Please log in.' });
+      }
+      
+      const users = getUsersStore();
+      const adminUser = users.find(u => u.id === adminId);
+      if (!adminUser || adminUser.email.toLowerCase() !== 'mohammadnurhasnat@gmail.com') {
+        return res.status(403).json({ success: false, error: 'Access denied. Only Mohammad Nur Hasnat can suspend users.' });
+      }
+
+      const { userId, isSuspended } = req.body;
+      if (!userId) {
+        return res.status(400).json({ success: false, error: 'User ID is required.' });
+      }
+
+      const targetUserIndex = users.findIndex(u => u.id === userId);
+      if (targetUserIndex === -1) {
+        return res.status(404).json({ success: false, error: 'User not found.' });
+      }
+
+      // Check to ensure we cannot suspend the admin themselves
+      if (users[targetUserIndex].email.toLowerCase() === 'mohammadnurhasnat@gmail.com') {
+        return res.status(400).json({ success: false, error: 'Admin account cannot be suspended.' });
+      }
+
+      users[targetUserIndex].isSuspended = !!isSuspended;
+      saveUsersStore(users);
+
+      res.json({ success: true, user: users[targetUserIndex] });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message || 'Failed to toggle suspension.' });
+    }
+  });
+
+  // API Route to delete a user (Admin only)
+  app.post('/api/admin/delete-user', (req, res) => {
+    try {
+      const adminId = req.headers['x-user-id']?.toString();
+      if (!adminId) {
+        return res.status(403).json({ success: false, error: 'Access denied. Please log in.' });
+      }
+      
+      const users = getUsersStore();
+      const adminUser = users.find(u => u.id === adminId);
+      if (!adminUser || adminUser.email.toLowerCase() !== 'mohammadnurhasnat@gmail.com') {
+        return res.status(403).json({ success: false, error: 'Access denied. Only Mohammad Nur Hasnat can delete users.' });
+      }
+
+      const { userId } = req.body;
+      if (!userId) {
+        return res.status(400).json({ success: false, error: 'User ID is required.' });
+      }
+
+      const targetUserIndex = users.findIndex(u => u.id === userId);
+      if (targetUserIndex === -1) {
+        return res.status(404).json({ success: false, error: 'User not found.' });
+      }
+
+      // Check to ensure we cannot delete the admin themselves
+      if (users[targetUserIndex].email.toLowerCase() === 'mohammadnurhasnat@gmail.com') {
+        return res.status(400).json({ success: false, error: 'Admin account cannot be deleted.' });
+      }
+
+      users.splice(targetUserIndex, 1);
+      saveUsersStore(users);
+
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message || 'Failed to delete user.' });
+    }
+  });
+
+  // API Route to edit/update a user's complete details (Admin only)
+  app.post('/api/admin/edit-user', (req, res) => {
+    try {
+      const adminId = req.headers['x-user-id']?.toString();
+      if (!adminId) {
+        return res.status(403).json({ success: false, error: 'Access denied. Please log in.' });
+      }
+      
+      const users = getUsersStore();
+      const adminUser = users.find(u => u.id === adminId);
+      if (!adminUser || adminUser.email.toLowerCase() !== 'mohammadnurhasnat@gmail.com') {
+        return res.status(403).json({ success: false, error: 'Access denied. Only Mohammad Nur Hasnat has access.' });
+      }
+
+      const { userId, name, email, mobileNumber, password, dailyLimit } = req.body;
+      if (!userId || !name || !mobileNumber || !password) {
+        return res.status(400).json({ success: false, error: 'User ID, Name, Mobile Number, and Password are required.' });
+      }
+
+      const targetUserIndex = users.findIndex(u => u.id === userId);
+      if (targetUserIndex === -1) {
+        return res.status(404).json({ success: false, error: 'User not found.' });
+      }
+
+      // Check if another user already has the same mobile number or email
+      const conflictExists = users.some((u, idx) => 
+        idx !== targetUserIndex && 
+        (u.mobileNumber === mobileNumber || (email && u.email && u.email.toLowerCase() === email.toLowerCase()))
+      );
+      if (conflictExists) {
+        return res.status(400).json({ success: false, error: 'A different user with this Email or Mobile Number already exists.' });
+      }
+
+      // Update in users list
+      users[targetUserIndex].name = name;
+      users[targetUserIndex].email = email || '';
+      users[targetUserIndex].mobileNumber = mobileNumber;
+      users[targetUserIndex].password = password;
+      if (typeof dailyLimit === 'number') {
+        users[targetUserIndex].dailyLimit = dailyLimit;
+      }
+
+      saveUsersStore(users);
+
+      res.json({ success: true, user: users[targetUserIndex] });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message || 'Failed to edit user.' });
+    }
+  });
+
   // API Route for getting current user's daily limit status
   app.get('/api/limit-status/:userId', (req, res) => {
     try {
       const { userId } = req.params;
       const status = getLimitStatus(userId);
-      res.json({ success: true, ...status, limit: 5 });
+      res.json({ success: true, ...status });
     } catch (error: any) {
       res.status(500).json({ success: false, error: error.message || 'Failed to fetch limit status' });
     }
@@ -149,10 +505,12 @@ async function startServer() {
         return res.status(410).json({ success: false, error: 'প্রবেশাধিকার পাননি। দয়া করে আগে লগইন করুন।' });
       }
 
-      const userExists = USERS_DATABASE.some(u => u.id === userId);
+      const users = getUsersStore();
+      const userExists = users.some(u => u.id === userId);
       if (!userExists) {
         return res.status(410).json({ success: false, error: 'অবৈধ সেশন। দয়া করে আবার লগইন করুন।' });
       }
+
 
       // Enforce 5-Passport Daily Limit
       const limitCheck = checkAndIncrementLimit(userId);

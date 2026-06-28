@@ -17,6 +17,8 @@ export interface User {
   mobileNumber: string;
   password: string;
   name: string;
+  dailyLimit?: number;
+  isSuspended?: boolean;
 }
 
 export const USERS_DATABASE: User[] = [
@@ -25,14 +27,15 @@ export const USERS_DATABASE: User[] = [
     email: "mohammadnurhasnat@gmail.com",
     mobileNumber: "01861186863",
     password: "123", // 💡 পাসওয়ার্ড পরিবর্তন করে আপনার পছন্দমতো দিন
-    name: "Mohammad Nur Hasnat"
+    name: "MOHAMMAD NUR HASNAT"
   },
-  {
-    id: "user_guest",
-    email: "guest@example.com",
+
+   {
+    id: "user_RANA",
+    email: "mohammad@gmail.com",
     mobileNumber: "01800000000",
-    password: "guestpass123",
-    name: "Guest User"
+    password: "123",
+    name: "MOHAMMAD"
   }
   // ➕ নতুন ইউজার যোগ করতে চাইলে নিচের ব্র্যাকেটের ভেতরের অংশটি আন-কমেন্ট করে কপি-পেস্ট করে বসিয়ে দিন:
   /*
