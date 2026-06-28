@@ -1,9 +1,76 @@
 import express from 'express';
 import path from 'path';
+import fs from 'fs';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI, Type } from '@google/genai';
 import helmet from 'helmet';
 import { z } from 'zod';
+import { USERS_DATABASE } from './src/users';
+
+const LIMITS_FILE = path.join(process.cwd(), 'limits_store.json');
+
+interface LimitData {
+  [userId: string]: {
+    date: string;
+    count: number;
+  };
+}
+
+function getLimitData(): LimitData {
+  try {
+    if (fs.existsSync(LIMITS_FILE)) {
+      const data = fs.readFileSync(LIMITS_FILE, 'utf8');
+      return JSON.parse(data);
+    }
+  } catch (error) {
+    console.error('Error reading limits file:', error);
+  }
+  return {};
+}
+
+function saveLimitData(data: LimitData) {
+  try {
+    fs.writeFileSync(LIMITS_FILE, JSON.stringify(data, null, 2), 'utf8');
+  } catch (error) {
+    console.error('Error writing limits file:', error);
+  }
+}
+
+function checkAndIncrementLimit(userId: string): { allowed: boolean; remaining: number; count: number } {
+  const data = getLimitData();
+  const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD (Universal UTC-based, resets reliably)
+  
+  if (!data[userId]) {
+    data[userId] = { date: today, count: 0 };
+  }
+  
+  // Reset limit count if stored date is different from today
+  if (data[userId].date !== today) {
+    data[userId].date = today;
+    data[userId].count = 0;
+  }
+  
+  if (data[userId].count >= 5) {
+    return { allowed: false, remaining: 0, count: data[userId].count };
+  }
+  
+  // Increment count
+  data[userId].count += 1;
+  saveLimitData(data);
+  
+  return { allowed: true, remaining: 5 - data[userId].count, count: data[userId].count };
+}
+
+function getLimitStatus(userId: string): { count: number; remaining: number } {
+  const data = getLimitData();
+  const today = new Date().toISOString().split('T')[0];
+  
+  if (!data[userId] || data[userId].date !== today) {
+    return { count: 0, remaining: 5 };
+  }
+  
+  return { count: data[userId].count, remaining: Math.max(0, 5 - data[userId].count) };
+}
 
 // Define request validation schemas
 const ExtractPassportSchema = z.object({
@@ -34,10 +101,68 @@ async function startServer() {
       .replace(/\b(?:vill|village|post|p\.o|thana|upazila|dist|district)\b\s*[\.:-]?\s*/gi, '')
       .trim();
   }
+
+  // API Route for user login
+  app.post('/api/login', (req, res) => {
+    try {
+      const { loginIdentifier, password } = req.body;
+      
+      if (!loginIdentifier || !password) {
+        return res.status(400).json({ success: false, error: 'Email/Mobile or Password missing.' });
+      }
+
+      // Find user matching email or mobileNumber
+      const user = USERS_DATABASE.find(u => 
+        (u.email.toLowerCase() === loginIdentifier.toLowerCase() || u.mobileNumber === loginIdentifier) &&
+        u.password === password
+      );
+
+      if (!user) {
+        return res.status(401).json({ success: false, error: 'ভুল ইমেইল/মোবাইল নাম্বার অথবা পাসওয়ার্ড দিয়েছেন।' });
+      }
+
+      // Safe user info without password
+      const { password: _, ...userSafe } = user;
+      res.json({ success: true, user: userSafe });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message || 'Login failed' });
+    }
+  });
+
+  // API Route for getting current user's daily limit status
+  app.get('/api/limit-status/:userId', (req, res) => {
+    try {
+      const { userId } = req.params;
+      const status = getLimitStatus(userId);
+      res.json({ success: true, ...status, limit: 5 });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message || 'Failed to fetch limit status' });
+    }
+  });
   
   // API Route for passport extraction
   app.post('/api/extract-passport', async (req, res) => {
     try {
+      // Authenticate session via headers or request body
+      const userId = (req.headers['x-user-id'] || req.body.userId)?.toString();
+      if (!userId) {
+        return res.status(410).json({ success: false, error: 'প্রবেশাধিকার পাননি। দয়া করে আগে লগইন করুন।' });
+      }
+
+      const userExists = USERS_DATABASE.some(u => u.id === userId);
+      if (!userExists) {
+        return res.status(410).json({ success: false, error: 'অবৈধ সেশন। দয়া করে আবার লগইন করুন।' });
+      }
+
+      // Enforce 5-Passport Daily Limit
+      const limitCheck = checkAndIncrementLimit(userId);
+      if (!limitCheck.allowed) {
+        return res.status(403).json({ 
+          success: false, 
+          error: 'আপনার দৈনিক ফ্রী লিমিট (৫টি এক্সট্রাকশন) শেষ হয়ে গেছে। দয়া করে ২৪ ঘণ্টা পর আবার ফ্রী ট্রাই করতে পারবেন।' 
+        });
+      }
+
       // Validate input request using Zod
       const parsedBody = ExtractPassportSchema.safeParse(req.body);
       if (!parsedBody.success) {

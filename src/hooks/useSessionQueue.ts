@@ -90,6 +90,17 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
       if (userApiKey) {
         headers['x-api-key'] = userApiKey;
       }
+      try {
+        const stored = localStorage.getItem('passport_extractor_user');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed && parsed.id) {
+            headers['x-user-id'] = parsed.id;
+          }
+        }
+      } catch (e) {
+        console.error('Failed to parse user session', e);
+      }
 
       const controller = new AbortController();
       abortControllersRef.current.add(controller);

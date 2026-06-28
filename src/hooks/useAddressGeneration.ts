@@ -21,12 +21,25 @@ export function useAddressGeneration({
     setIsGeneratingAddresses(true);
     setToast({ message: "Generating realistic addresses with Gemini...", type: "info" });
     try {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'x-gemini-key': userApiKey || '',
+      };
+      try {
+        const stored = localStorage.getItem('passport_extractor_user');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed && parsed.id) {
+            headers['x-user-id'] = parsed.id;
+          }
+        }
+      } catch (e) {
+        console.error('Failed to parse user session', e);
+      }
+
       const response = await fetch('/api/generate-addresses', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-gemini-key': userApiKey || '',
-        },
+        headers,
         body: JSON.stringify({ permanentAddress: data.permanentAddress }),
       });
       if (!response.ok) {
