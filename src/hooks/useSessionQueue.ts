@@ -22,6 +22,12 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
 
   const abortControllersRef = useRef<Set<AbortController>>(new Set());
   const isCancelledRef = useRef<boolean>(false);
+  const queueRef = useRef<QueueItem[]>(queue);
+
+  // Sync queue to queueRef.current to prevent stale closure bugs in asynchronous operations
+  useEffect(() => {
+    queueRef.current = queue;
+  }, [queue]);
 
   const cancelExtraction = useCallback(() => {
     isCancelledRef.current = true;
@@ -32,10 +38,12 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
   }, []);
 
   const extractSingleItem = useCallback(async (itemId: string): Promise<PassportData | null> => {
-    // Current queue state needs to be accessed
-    let currentItem: QueueItem | undefined;
+    // Retrieve current item using queueRef to guarantee synchronous availability
+    const currentItem = queueRef.current.find(q => q.id === itemId);
+
+    if (!currentItem) return null;
+
     setQueue(prev => {
-      currentItem = prev.find(q => q.id === itemId);
       return prev.map(q => q.id === itemId ? { ...q, loading: true, status: 'extracting', error: null } : q);
     });
 
@@ -43,8 +51,6 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
       setLoading(true);
       onError(null);
     }
-
-    if (!currentItem) return null;
 
     const startTime = Date.now();
     try {
@@ -169,7 +175,7 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
     abortControllersRef.current.clear();
     
     setIsBatchProcessing(true);
-    const pendingItems = queue.filter(q => q.status === 'queued' || q.status === 'failed');
+    const pendingItems = queueRef.current.filter(q => q.status === 'queued' || q.status === 'failed');
     
     // Process in parallel, e.g., 3 at a time.
     const concurrency = 3;

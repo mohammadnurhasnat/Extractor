@@ -8,7 +8,7 @@ import { z } from 'zod';
 // Define request validation schemas
 const ExtractPassportSchema = z.object({
   imageBase64: z.string().min(1, 'Image base64 data is required'),
-  mimeType: z.string().regex(/^image\/(jpeg|png|webp)$/i, 'Only JPEG, PNG, and WEBP images are supported'),
+  mimeType: z.string().regex(/^image\/(jpeg|jpg|png|webp)$/i, 'Only JPEG, PNG, and WEBP images are supported'),
 });
 
 const GenerateAddressesSchema = z.object({
@@ -47,7 +47,10 @@ async function startServer() {
         });
       }
 
-      const { imageBase64, mimeType } = parsedBody.data;
+      let { imageBase64, mimeType } = parsedBody.data;
+      if (mimeType.toLowerCase() === 'image/jpg') {
+        mimeType = 'image/jpeg';
+      }
 
       const clientApiKey = req.headers['x-api-key']?.toString() || process.env.GEMINI_API_KEY;
 
