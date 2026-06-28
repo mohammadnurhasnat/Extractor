@@ -321,12 +321,17 @@ export default function App() {
         </main>
       </div>
 
-      {/* Footer */}
-      <div className="fixed bottom-2 right-2 z-40">
-        <div className="bg-white/80 dark:bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-200/50 dark:border-zinc-800/50 shadow-sm flex items-center gap-1.5 text-[11px] font-medium text-slate-500 dark:text-zinc-400 transition-all duration-300 animate-glow-black dark:animate-glow-white">
-          Built with <Heart className="w-3.5 h-3.5 text-red-500 fill-current" /> by <span className="text-slate-700 dark:text-zinc-200 font-semibold tracking-wide ml-0.5">MOHAMMAD NUR HASNAT</span>
+      {/* Footer Section */}
+      <footer className="w-full border-t border-slate-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-950/50 mt-12 py-6 print:hidden">
+        <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-1.5 text-sm font-medium text-slate-500 dark:text-zinc-400">
+            Built with <Heart className="w-4 h-4 text-red-500 fill-current" /> by <span className="text-slate-700 dark:text-zinc-200 font-bold tracking-wide ml-0.5">MOHAMMAD NUR HASNAT</span>
+          </div>
+          <p className="text-xs text-slate-400 dark:text-zinc-500">
+            &copy; {new Date().getFullYear()} Passport Extractor. All rights reserved.
+          </p>
         </div>
-      </div>
+      </footer>
 
       {/* Backup & Restore Modals */}
       <AnimatePresence>
