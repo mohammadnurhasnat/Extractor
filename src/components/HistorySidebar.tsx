@@ -82,57 +82,55 @@ Expiry Date: ${item.data.expiryDate || ''}
           <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1 font-sans font-medium">List of recently processed passport scans.</p>
         </div>
         
-        <div className="flex z-10 flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2.5 w-full xl:w-auto">
-          <div className="flex items-center gap-2 shrink-0">
-            {history.length > 0 && (
-              <button 
-                onClick={(e) => onConfirmDelete(e, 'ALL')}
-                className="relative overflow-hidden group px-3.5 py-1.5 border border-red-500/30 dark:border-red-500/20 bg-red-500/10 rounded-[5px] transition-all duration-300 font-bold text-xs shadow-sm active:scale-95 cursor-pointer flex items-center gap-1.5 shrink-0"
-                title="Delete All Profiles"
-              >
-                <span className="absolute inset-0 w-full h-full bg-red-500 -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></span>
-                <span className="relative z-10 text-red-600 dark:text-red-400 group-hover:text-white transition-colors duration-300 flex items-center gap-1.5">
-                  <Trash2 className="w-3.5 h-3.5" />
-                  <span>Delete All</span>
-                </span>
-              </button>
-            )}
-            
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-stretch sm:items-center justify-end gap-2 sm:gap-2.5 w-full xl:w-auto z-10">
+          {history.length > 0 && (
             <button 
-              onClick={onOpenBackup}
-              className="relative overflow-hidden group px-3.5 py-1.5 border border-amber-500/30 dark:border-amber-500/20 bg-amber-500/10 rounded-[5px] transition-all duration-300 font-bold text-xs shadow-sm active:scale-95 cursor-pointer flex items-center gap-1.5 shrink-0"
-              title="Open Cryptographic Profile Backup"
+              onClick={(e) => onConfirmDelete(e, 'ALL')}
+              className="relative overflow-hidden group px-3.5 py-2 sm:py-1.5 border border-red-500/30 dark:border-red-500/20 bg-red-500/10 rounded-[5px] transition-all duration-300 font-bold text-xs shadow-sm active:scale-95 cursor-pointer flex items-center justify-center sm:justify-start gap-1.5 w-full sm:w-auto"
+              title="Delete All Profiles"
             >
-              <span className="absolute inset-0 w-full h-full bg-amber-500 -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></span>
-              <span className="relative z-10 text-black dark:text-zinc-200 group-hover:text-white dark:group-hover:text-white transition-colors duration-300 flex items-center gap-1.5">
-                <Database className="w-3.5 h-3.5 text-black dark:text-zinc-200 group-hover:text-white dark:group-hover:text-white transition-colors" />
-                <span>Backup</span>
+              <span className="absolute inset-0 w-full h-full bg-red-500 -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></span>
+              <span className="relative z-10 text-red-600 dark:text-red-400 group-hover:text-white transition-colors duration-300 flex items-center gap-1.5">
+                <Trash2 className="w-3.5 h-3.5 shrink-0" />
+                <span className="whitespace-nowrap">Delete All</span>
               </span>
             </button>
-            
-            <button 
-              onClick={onOpenRestore}
-              className="relative overflow-hidden group px-3.5 py-1.5 border border-emerald-500/30 dark:border-emerald-500/20 bg-emerald-500/10 rounded-[5px] transition-all duration-300 font-bold text-xs shadow-sm active:scale-95 cursor-pointer flex items-center gap-1.5 shrink-0"
-              title="Open Secure Data Restore"
-            >
-              <span className="absolute inset-0 w-full h-full bg-emerald-500 -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></span>
-              <span className="relative z-10 text-black dark:text-zinc-200 group-hover:text-white dark:group-hover:text-white transition-colors duration-300 flex items-center gap-1.5">
-                <UploadCloud className="w-3.5 h-3.5 text-black dark:text-zinc-200 group-hover:text-white dark:group-hover:text-white transition-colors" />
-                <span>Restore</span>
-              </span>
-            </button>
-          </div>
+          )}
+          
+          <button 
+            onClick={onOpenBackup}
+            className="relative overflow-hidden group px-3.5 py-2 sm:py-1.5 border border-amber-500/30 dark:border-amber-500/20 bg-amber-500/10 rounded-[5px] transition-all duration-300 font-bold text-xs shadow-sm active:scale-95 cursor-pointer flex items-center justify-center sm:justify-start gap-1.5 w-full sm:w-auto"
+            title="Open Cryptographic Profile Backup"
+          >
+            <span className="absolute inset-0 w-full h-full bg-amber-500 -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></span>
+            <span className="relative z-10 text-black dark:text-zinc-200 group-hover:text-white dark:group-hover:text-white transition-colors duration-300 flex items-center gap-1.5">
+              <Database className="w-3.5 h-3.5 shrink-0 text-black dark:text-zinc-200 group-hover:text-white dark:group-hover:text-white transition-colors" />
+              <span>Backup</span>
+            </span>
+          </button>
+          
+          <button 
+            onClick={onOpenRestore}
+            className="relative overflow-hidden group px-3.5 py-2 sm:py-1.5 border border-emerald-500/30 dark:border-emerald-500/20 bg-emerald-500/10 rounded-[5px] transition-all duration-300 font-bold text-xs shadow-sm active:scale-95 cursor-pointer flex items-center justify-center sm:justify-start gap-1.5 w-full sm:w-auto"
+            title="Open Secure Data Restore"
+          >
+            <span className="absolute inset-0 w-full h-full bg-emerald-500 -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></span>
+            <span className="relative z-10 text-black dark:text-zinc-200 group-hover:text-white dark:group-hover:text-white transition-colors duration-300 flex items-center gap-1.5">
+              <UploadCloud className="w-3.5 h-3.5 shrink-0 text-black dark:text-zinc-200 group-hover:text-white dark:group-hover:text-white transition-colors" />
+              <span>Restore</span>
+            </span>
+          </button>
 
-          <div className="relative flex-1 min-w-[150px] sm:max-w-[260px] w-full">
+          <div className="relative flex-1 min-w-0 sm:min-w-[150px] sm:max-w-[260px] w-full h-full sm:h-auto">
             <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
               <Search className="h-3.5 w-3.5 text-slate-400 dark:text-zinc-550" />
             </div>
             <input
               type="text"
-              placeholder="Search passports..."
+              placeholder="Search..."
               value={searchTerm}
               onChange={(e) => onSearchTermChange(e.target.value)}
-              className="block w-full pl-8.5 pr-2.5 py-1.5 border border-slate-200 dark:border-zinc-805 rounded-xl text-xs bg-slate-50/50 dark:bg-black/30 focus:bg-white dark:focus:bg-black focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white text-slate-850 dark:text-zinc-100 transition-colors placeholder-slate-400 dark:placeholder-zinc-550 font-medium"
+              className="block w-full pl-8 pr-2.5 py-2 sm:py-1.5 border border-slate-200 dark:border-zinc-805 rounded-[5px] text-xs bg-slate-50/50 dark:bg-black/30 focus:bg-white dark:focus:bg-black focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white text-slate-850 dark:text-zinc-100 transition-colors placeholder-slate-400 dark:placeholder-zinc-550 font-medium h-full"
             />
           </div>
         </div>
