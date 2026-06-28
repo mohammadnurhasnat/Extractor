@@ -205,35 +205,35 @@ export function UploadSection(props: UploadSectionProps) {
             </div>
           </div>
         )}
-
-        <SessionQueue
-          queue={props.queue}
-          activeQueueId={props.activeQueueId}
-          isBatchProcessing={props.isBatchProcessing}
-          isOnline={props.isOnline}
-          isZipping={props.isZipping}
-          processEntireQueue={props.processEntireQueue}
-          handleDownloadAllZIP={props.handleDownloadAllZIP}
-          selectQueueItem={props.selectQueueItem}
-          removeFromQueue={props.removeFromQueue}
-          extractSingleItem={props.extractSingleItem}
-          cancelExtraction={props.cancelExtraction}
-        />
-
-        <AnimatePresence>
-          {props.error && (
-            <motion.div 
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="mt-4 p-4 rounded-lg bg-red-50 text-red-700 text-sm flex items-start gap-3 border border-red-100"
-            >
-              <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-              <p>{props.error}</p>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
+
+      <SessionQueue
+        queue={props.queue}
+        activeQueueId={props.activeQueueId}
+        isBatchProcessing={props.isBatchProcessing}
+        isOnline={props.isOnline}
+        isZipping={props.isZipping}
+        processEntireQueue={props.processEntireQueue}
+        handleDownloadAllZIP={props.handleDownloadAllZIP}
+        selectQueueItem={props.selectQueueItem}
+        removeFromQueue={props.removeFromQueue}
+        extractSingleItem={props.extractSingleItem}
+        cancelExtraction={props.cancelExtraction}
+      />
+
+      <AnimatePresence>
+        {props.error && (
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="mt-4 p-4 rounded-lg bg-red-50 text-red-700 text-sm flex items-start gap-3 border border-red-100"
+          >
+            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+            <p>{props.error}</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
       
       <HistorySidebar
         history={props.history}

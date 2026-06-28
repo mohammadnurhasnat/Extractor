@@ -98,11 +98,10 @@ export default function App() {
 
 
 
-  const [resultsTab, setResultsTab] = useState<'profile' | 'undertaking' | 'passport-pdf' | 'photo-studio'>(() => {
+  const [resultsTab, setResultsTab] = useState<'profile' | 'undertaking' | 'passport-pdf'>(() => {
     const saved = localStorage.getItem('passport_active_results_tab');
     if (saved === 'undertaking') return 'undertaking';
     if (saved === 'passport-pdf') return 'passport-pdf';
-    if (saved === 'photo-studio') return 'photo-studio';
     return 'profile';
   });
 

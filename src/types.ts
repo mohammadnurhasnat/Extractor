@@ -30,6 +30,22 @@ export interface PassportData {
   agentLog?: string;
   discrepancyList?: string[];
   customUndertakingDraft?: string;
+  fieldConfidence?: {
+    givenName?: number;
+    surname?: number;
+    gender?: number;
+    dob?: number;
+    birthPlace?: number;
+    fatherName?: number;
+    motherName?: number;
+    spouseName?: number;
+    passportNumber?: number;
+    nidOrBirthCertNumber?: number;
+    issueDate?: number;
+    expiryDate?: number;
+    mobileNumber?: number;
+    permanentAddress?: number;
+  };
 }
 
 export interface HistoryItem {

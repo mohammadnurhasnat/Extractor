@@ -86,20 +86,20 @@ export function PassportDataTab({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-3">
         <DataField label="EMAIL" value={getGeneratedEmail(data)} highlight onValueChange={(val) => updateDataField('email', val)} />
-        <DataField label="DOB" value={data.dob} onValueChange={(val) => updateDataField('dob', val)} />
+        <DataField label="DOB" value={data.dob} confidence={data.fieldConfidence?.dob} onValueChange={(val) => updateDataField('dob', val)} />
         
-        <DataField label="Gender" value={data.gender || ''} onValueChange={(val) => updateDataField('gender', val)} />
+        <DataField label="Gender" value={data.gender || ''} confidence={data.fieldConfidence?.gender} onValueChange={(val) => updateDataField('gender', val)} />
         <div className="hidden sm:block"></div>
         
-        <DataField label="Surname" value={data.surname} onValueChange={(val) => updateDataField('surname', val)} />
-        <DataField label="Given Name" value={data.givenName} onValueChange={(val) => updateDataField('givenName', val)} />
+        <DataField label="Surname" value={data.surname} confidence={data.fieldConfidence?.surname} onValueChange={(val) => updateDataField('surname', val)} />
+        <DataField label="Given Name" value={data.givenName} confidence={data.fieldConfidence?.givenName} onValueChange={(val) => updateDataField('givenName', val)} />
         
-        <DataField label="Town/City of birth/BIRTH PLACE" value={data.birthPlace} onValueChange={(val) => updateDataField('birthPlace', val)} />
-        <DataField label="National Id No/BIRTH CERTIFICATE NO" value={data.nidOrBirthCertNumber} onValueChange={(val) => updateDataField('nidOrBirthCertNumber', val)} />
-        <DataField label="Passport Number" value={data.passportNumber} highlight onValueChange={(val) => updateDataField('passportNumber', val)} />
+        <DataField label="Town/City of birth/BIRTH PLACE" value={data.birthPlace} confidence={data.fieldConfidence?.birthPlace} onValueChange={(val) => updateDataField('birthPlace', val)} />
+        <DataField label="National Id No/BIRTH CERTIFICATE NO" value={data.nidOrBirthCertNumber} confidence={data.fieldConfidence?.nidOrBirthCertNumber} onValueChange={(val) => updateDataField('nidOrBirthCertNumber', val)} />
+        <DataField label="Passport Number" value={data.passportNumber} highlight confidence={data.fieldConfidence?.passportNumber} onValueChange={(val) => updateDataField('passportNumber', val)} />
         <DataField label="Place of Issue" value={data.placeOfIssue || "DHAKA"} onValueChange={(val) => updateDataField('placeOfIssue', val)} />
-        <DataField label="Date of Issue" value={data.issueDate} onValueChange={(val) => updateDataField('issueDate', val)} />
-        <DataField label="Date of Expiry" value={data.expiryDate} warning={isExpiryWarning} onValueChange={(val) => updateDataField('expiryDate', val)} />
+        <DataField label="Date of Issue" value={data.issueDate} confidence={data.fieldConfidence?.issueDate} onValueChange={(val) => updateDataField('issueDate', val)} />
+        <DataField label="Date of Expiry" value={data.expiryDate} warning={isExpiryWarning} confidence={data.fieldConfidence?.expiryDate} onValueChange={(val) => updateDataField('expiryDate', val)} />
         
         <div className="col-span-1 sm:col-span-2 pt-2 border-t border-slate-100 dark:border-zinc-800/50"></div>
         
@@ -116,6 +116,7 @@ export function PassportDataTab({
           <DataField 
             label="Permanent Address (Extracted from Passport)" 
             value={data.permanentAddress || ''} 
+            confidence={data.fieldConfidence?.permanentAddress}
             onValueChange={(val) => updateDataField('permanentAddress', val)} 
           />
         </div>
@@ -126,10 +127,10 @@ export function PassportDataTab({
           <h4 className="text-xs font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider mb-2.5">Additional Information</h4>
         </div>
         
-        <DataField label="Father's Name" value={data.fatherName} onValueChange={(val) => updateDataField('fatherName', val)} />
-        <DataField label="Mother's Name" value={data.motherName} onValueChange={(val) => updateDataField('motherName', val)} />
-        <DataField label="Spouse's Name" value={data.spouseName || "N/A"} onValueChange={(val) => updateDataField('spouseName', val)} />
-        <DataField label="Mobile Number" value={data.mobileNumber ? data.mobileNumber.replace(/^\+88\s*/, '') : ''} onValueChange={(val) => updateDataField('mobileNumber', val)} />
+        <DataField label="Father's Name" value={data.fatherName} confidence={data.fieldConfidence?.fatherName} onValueChange={(val) => updateDataField('fatherName', val)} />
+        <DataField label="Mother's Name" value={data.motherName} confidence={data.fieldConfidence?.motherName} onValueChange={(val) => updateDataField('motherName', val)} />
+        <DataField label="Spouse's Name" value={data.spouseName || "N/A"} confidence={data.fieldConfidence?.spouseName} onValueChange={(val) => updateDataField('spouseName', val)} />
+        <DataField label="Mobile Number" value={data.mobileNumber ? data.mobileNumber.replace(/^\+88\s*/, '') : ''} confidence={data.fieldConfidence?.mobileNumber} onValueChange={(val) => updateDataField('mobileNumber', val)} />
         <DataField label="District of Birth" value={data.birthPlaceDistrict || data.birthPlace || ''} onValueChange={(val) => updateDataField('birthPlaceDistrict', val)} />
 
         <div className="col-span-1 sm:col-span-2 pt-3 border-t border-slate-100 dark:border-zinc-800/50 mt-2">

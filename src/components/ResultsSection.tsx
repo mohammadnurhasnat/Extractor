@@ -4,14 +4,13 @@ import { FileText } from 'lucide-react';
 import { PassportDataTab } from './PassportDataTab';
 import { UndertakingFormTab } from './UndertakingFormTab';
 import { PassportImagePdfTab } from './PassportImagePdfTab';
-import { PhotoStudioTab } from './PhotoStudioTab';
 import { PassportData, UndertakingFormData, QueueItem } from '../types';
 
 interface ResultsSectionProps {
   data: PassportData | null;
   activeItem: QueueItem | null;
-  resultsTab: 'profile' | 'undertaking' | 'passport-pdf' | 'photo-studio';
-  setResultsTab: (tab: 'profile' | 'undertaking' | 'passport-pdf' | 'photo-studio') => void;
+  resultsTab: 'profile' | 'undertaking' | 'passport-pdf';
+  setResultsTab: (tab: 'profile' | 'undertaking' | 'passport-pdf') => void;
   isUndertakingConfigured: boolean;
   undertakingData: UndertakingFormData | null;
   updateDataField: (field: keyof PassportData, value: string) => void;
@@ -75,7 +74,7 @@ export function ResultsSection({
 
             {/* TABS SELECTOR */}
             {(data && isUndertakingConfigured && undertakingData) || activeItem ? (
-              <div className="grid grid-cols-2 sm:grid-cols-4 bg-slate-100/60 dark:bg-zinc-950/65 p-1.5 rounded-2xl mb-6 print:hidden gap-1.5 w-full text-center">
+              <div className="grid grid-cols-3 bg-slate-100/60 dark:bg-zinc-950/65 p-1.5 rounded-2xl mb-6 print:hidden gap-1.5 w-full text-center">
                 {data && (
                   <button
                     onClick={() => setResultsTab('profile')}
@@ -112,24 +111,10 @@ export function ResultsSection({
                     <span className="relative z-10">Image to PDF</span>
                   </button>
                 )}
-                {data && (
-                  <button
-                    onClick={() => setResultsTab('photo-studio')}
-                    className={`slide-btn slide-btn-purple text-center py-2 px-1 rounded-xl text-xs sm:text-xs font-extrabold cursor-pointer transition-none border ${
-                      resultsTab === 'photo-studio'
-                        ? 'active shadow-[0_2px_10px_rgba(0,0,0,0.02)] font-black border-[#2DD4BF]/50'
-                        : 'border-slate-205 dark:border-zinc-800'
-                     }`}
-                  >
-                    <span className="relative z-10">Photo Studio</span>
-                  </button>
-                )}
               </div>
             ) : null}
 
-            {resultsTab === 'photo-studio' ? (
-              <PhotoStudioTab />
-            ) : resultsTab === 'profile' && data ? (
+            {resultsTab === 'profile' && data ? (
               <PassportDataTab
                 data={data}
                 updateDataField={updateDataField}

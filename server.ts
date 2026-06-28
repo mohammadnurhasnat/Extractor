@@ -83,7 +83,7 @@ INSTRUCTIONS:
    - Core visual shapes: Carefully differentiate 'O' vs '0' and 'I' vs '1'.
    - IMPORTANT: Format dob, issueDate, and expiryDate strictly as DD/MM/YYYY (e.g. 15/08/1990).
 2. MRZ: Read raw MRZ lines into rawMrz array. Populate validation fields (passportNumberChecksum, dobChecksum, expiryDateChecksum, compositeChecksum) with "Pass" or "Fail".
-3. Security Checks: Match visual details with MRZ properties. List any discrepancies found under discrepancies. Determine overall confidenceScore (0-100).
+3. Security & Confidence: Match visual details with MRZ properties. List any discrepancies found under discrepancies. Determine overall confidenceScore (0-100). Also estimate individual fieldConfidence scores (0-100) for every field in finalData based on image legibility and MRZ cross-checks.
 4. Undertaking: Set customUndertakingDraft to a very short 1-sentence string (e.g., "Full verification of passport data completed.") to optimize processing speed.
 5. Address Rules: Base address structures on the permanentAddress classification:
    - Cat 1 (Inside Dhaka District): presentAddress is equal to permanentAddress. Create Dhaka commercial addresses for businessAddressDhaka, officeAddressDhaka. Create local versions for businessAddressLocal, officeAddressLocal.
@@ -118,6 +118,29 @@ INSTRUCTIONS:
               "spouseName", "passportNumber", "nidOrBirthCertNumber", "issueDate", "expiryDate", "gender", "permanentAddress", "mobileNumber"
             ]
           },
+          fieldConfidence: {
+            type: Type.OBJECT,
+            properties: {
+              givenName: { type: Type.INTEGER },
+              surname: { type: Type.INTEGER },
+              dob: { type: Type.INTEGER },
+              birthPlace: { type: Type.INTEGER },
+              fatherName: { type: Type.INTEGER },
+              motherName: { type: Type.INTEGER },
+              spouseName: { type: Type.INTEGER },
+              passportNumber: { type: Type.INTEGER },
+              nidOrBirthCertNumber: { type: Type.INTEGER },
+              issueDate: { type: Type.INTEGER },
+              expiryDate: { type: Type.INTEGER },
+              gender: { type: Type.INTEGER },
+              permanentAddress: { type: Type.INTEGER },
+              mobileNumber: { type: Type.INTEGER }
+            },
+            required: [
+              "givenName", "surname", "dob", "birthPlace", "fatherName", "motherName",
+              "spouseName", "passportNumber", "nidOrBirthCertNumber", "issueDate", "expiryDate", "gender", "permanentAddress", "mobileNumber"
+            ]
+          },
           mrzValidation: {
             type: Type.OBJECT,
             properties: {
@@ -144,7 +167,7 @@ INSTRUCTIONS:
             required: ["presentAddress", "businessAddressDhaka", "businessAddressLocal", "officeAddressDhaka", "officeAddressLocal"]
           }
         },
-        required: ["finalData", "mrzValidation", "discrepancies", "confidenceScore", "customUndertakingDraft", "generatedAddresses"]
+        required: ["finalData", "fieldConfidence", "mrzValidation", "discrepancies", "confidenceScore", "customUndertakingDraft", "generatedAddresses"]
       };
 
       let pipelineResponse;
@@ -195,6 +218,7 @@ INSTRUCTIONS:
 
       const result = {
         ...pipelineData.finalData,
+        fieldConfidence: pipelineData.fieldConfidence,
         discrepancyList: pipelineData.discrepancies,
         customUndertakingDraft: pipelineData.customUndertakingDraft || "",
         permanentAddress: cleanAddressPrefixes(pipelineData.finalData.permanentAddress),

@@ -6,10 +6,11 @@ interface DataFieldProps {
   value: string;
   highlight?: boolean;
   warning?: boolean;
+  confidence?: number;
   onValueChange?: (newValue: string) => void;
 }
 
-export function DataField({ label, value, highlight = false, warning = false, onValueChange }: DataFieldProps) {
+export function DataField({ label, value, highlight = false, warning = false, confidence, onValueChange }: DataFieldProps) {
   const [copied, setCopied] = useState(false);
   const [persistentCopied, setPersistentCopied] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -100,7 +101,35 @@ export function DataField({ label, value, highlight = false, warning = false, on
   return (
     <div className="flex flex-col group/field">
       <div className="flex items-center justify-between mb-1.5 px-0.5">
-        <span className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">{label}</span>
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">{label}</span>
+          {typeof confidence === 'number' && (
+            <span className={`inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
+              confidence >= 85
+                ? 'text-emerald-650 dark:text-emerald-450 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100/50 dark:border-emerald-900/30'
+                : confidence >= 70
+                  ? 'text-amber-650 dark:text-amber-450 bg-amber-50 dark:bg-amber-950/20 border border-amber-100/50 dark:border-amber-900/30'
+                  : 'text-rose-650 dark:text-rose-450 bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/30 animate-pulse'
+            }`}>
+              {confidence >= 85 ? (
+                <>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                  {confidence}% Match
+                </>
+              ) : confidence >= 70 ? (
+                <>
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
+                  {confidence}% Match
+                </>
+              ) : (
+                <>
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0 animate-ping" />
+                  {confidence}% - Verify
+                </>
+              )}
+            </span>
+          )}
+        </div>
         {onValueChange && !isEditing && value && (
           <span className="text-[9px] text-blue-500 font-semibold opacity-0 group-hover/field:opacity-100 transition-opacity whitespace-nowrap hidden sm:inline-flex items-center gap-1">
             <span className="w-1 h-1 rounded-full bg-blue-500 animate-pulse" /> Editable field
@@ -116,9 +145,11 @@ export function DataField({ label, value, highlight = false, warning = false, on
             ? 'bg-rose-500/5 dark:bg-rose-950/20 border-red-500 dark:border-red-400 text-red-950 dark:text-red-200'
             : hasValidationError
               ? 'bg-rose-500/5 dark:bg-rose-500/10 border-red-500/70 dark:border-red-500/40 text-red-900 dark:text-red-300 shadow-[0_0_8px_rgba(239,68,68,0.06)]'
-              : highlight 
-                ? 'bg-blue-50/70 dark:bg-blue-950/20 border-blue-250 dark:border-blue-900/40 text-blue-950 dark:text-blue-150 ring-1 ring-blue-500/5' 
-                : 'bg-white dark:bg-zinc-950/50 border-slate-200 dark:border-zinc-800 hover:border-slate-350 dark:hover:border-zinc-700 text-slate-800 dark:text-zinc-100'}
+              : typeof confidence === 'number' && confidence < 70
+                ? 'bg-rose-50/40 dark:bg-rose-950/10 border-rose-200 dark:border-rose-900/40 text-rose-950 dark:text-rose-200 shadow-[0_0_8px_rgba(239,68,68,0.03)]'
+                : highlight 
+                  ? 'bg-blue-50/70 dark:bg-blue-950/20 border-blue-250 dark:border-blue-900/40 text-blue-950 dark:text-blue-150 ring-1 ring-blue-500/5' 
+                  : 'bg-white dark:bg-zinc-950/50 border-slate-200 dark:border-zinc-800 hover:border-slate-350 dark:hover:border-zinc-700 text-slate-800 dark:text-zinc-100'}
         ${!value && !isEditing ? 'italic opacity-60' : ''}
       `}>
         {isEditing ? (
@@ -195,11 +226,22 @@ export function DataField({ label, value, highlight = false, warning = false, on
             </div>
           </div>
         )}
+
+        {/* Underline accent representing confidence status */}
+        {typeof confidence === 'number' && !copied && !persistentCopied && (
+          <div className={`absolute bottom-0 left-0 right-0 h-[2.5px] ${
+            confidence >= 85 
+              ? 'bg-emerald-500/60 dark:bg-emerald-500/40' 
+              : confidence >= 70 
+                ? 'bg-amber-500/70 dark:bg-amber-500/50' 
+                : 'bg-rose-500 animate-pulse'
+          }`} />
+        )}
       </div>
       
-      {hasValidationError && value && (
+      {((hasValidationError) || (typeof confidence === 'number' && confidence < 70)) && value && (
         <span className="text-[11px] font-semibold text-rose-500 dark:text-rose-400 mt-1 flex items-center gap-1 animate-pulse px-0.5">
-          ⚠️ {errorMessage}
+          ⚠️ {hasValidationError ? errorMessage : `Needs Verification: AI extraction confidence is low (${confidence}%).`}
         </span>
       )}
     </div>
