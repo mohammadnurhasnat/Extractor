@@ -73,15 +73,14 @@ export const generatePassportImagePDF = async (imageSource: File | Blob | string
       const file = await ensureFileObject(imageSource, filename);
       let compressedFile = file;
       
-      // If original file is already clean and under 500 KB, we do not need to compress it at all.
-      // This preserves 100% of the original high-resolution visual clarity.
-      // If it is larger than 500 KB, we compress with extremely high-quality thresholds to hit 300kb - 350kb beautifully.
-      if (file.size > 500 * 1024) {
+      // If original file is already clean and under 400 KB, we do not need to compress it at all.
+      // If it is larger than 400 KB, we compress to land in the 200kb - 350kb range.
+      if (file.size > 400 * 1024) {
         const options = {
-          maxSizeMB: 0.4,           // Intended to land close to ~300kb-350kb for larger photographs
-          maxWidthOrHeight: 2560,    // High resolution max boundary
-          useWebWorker: false,       // Prevent hanging in dev servers/certain browsers
-          initialQuality: 0.98      // Superior visual detail
+          maxSizeMB: 0.28,           // Target for ~280kb image, which will result in ~280kb-350kb PDF
+          maxWidthOrHeight: 2000,    // Sufficient resolution for passport
+          useWebWorker: false,
+          initialQuality: 0.9       // High quality
         };
         try {
           compressedFile = await imageCompression(file, options);
