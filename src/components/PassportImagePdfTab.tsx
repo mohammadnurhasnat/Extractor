@@ -10,7 +10,7 @@ interface PassportImagePdfTabProps {
 export function PassportImagePdfTab({ activeItem }: PassportImagePdfTabProps) {
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const isHistoryMock = activeItem?.file && activeItem.file.size === 0;
+  const isHistoryMock = activeItem?.file && activeItem.file.size === 0 && !activeItem.preview;
 
   if (!activeItem || (!activeItem.file && !activeItem.preview) || isHistoryMock) {
     return (
@@ -30,10 +30,11 @@ export function PassportImagePdfTab({ activeItem }: PassportImagePdfTabProps) {
   }
 
   const handleDownload = async () => {
-    if (!activeItem.file) return;
+    const source = activeItem.file || activeItem.preview;
+    if (!source) return;
     setIsGenerating(true);
     try {
-      await generatePassportImagePDF(activeItem.file, activeItem.data);
+      await generatePassportImagePDF(source, activeItem.data);
     } catch (e) {
       console.error(e);
       alert('Failed to generate PDF');
@@ -57,7 +58,7 @@ export function PassportImagePdfTab({ activeItem }: PassportImagePdfTabProps) {
         )}
       </div>
 
-      {activeItem.file ? (
+      {activeItem.file || activeItem.preview ? (
         <button
           onClick={handleDownload}
           disabled={isGenerating}

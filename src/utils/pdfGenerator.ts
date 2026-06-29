@@ -8,29 +8,89 @@ import {
   getJobRole
 } from './addressUtils';
 
-export const generatePassportImagePDF = async (file: File, passportData?: PassportData | null): Promise<void> => {
-  return new Promise(async (resolve, reject) => {
-    let compressedFile = file;
-    
-    // If original file is already clean and under 500 KB, we do not need to compress it at all.
-    // This preserves 100% of the original high-resolution visual clarity.
-    // If it is larger than 500 KB, we compress with extremely high-quality thresholds to hit 300kb - 350kb beautifully.
-    if (file.size > 500 * 1024) {
-      const options = {
-        maxSizeMB: 0.4,           // Intended to land close to ~300kb-350kb for larger photographs
-        maxWidthOrHeight: 2560,    // High resolution max boundary
-        useWebWorker: false,       // Prevent hanging in dev servers/certain browsers
-        initialQuality: 0.98      // Superior visual detail
-      };
+async function ensureFileObject(imageSource: File | Blob | string, defaultFilename: string = 'passport.jpg'): Promise<File> {
+  if (imageSource instanceof File) {
+    return imageSource;
+  }
+  
+  if (imageSource instanceof Blob) {
+    return new File([imageSource], defaultFilename, { type: imageSource.type || 'image/jpeg' });
+  }
+  
+  if (typeof imageSource === 'string') {
+    if (imageSource.startsWith('data:')) {
+      const arr = imageSource.split(',');
+      const mimeMatch = arr[0].match(/:(.*?);/);
+      const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
       try {
-        compressedFile = await imageCompression(file, options);
-      } catch (compressErr) {
-        console.warn('Image compression failed, falling back to original quality:', compressErr);
-        compressedFile = file;
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) {
+          u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new File([u8arr], defaultFilename, { type: mime });
+      } catch (err) {
+        console.error('Failed to decode base64 string to File:', err);
+        throw new Error('Invalid base64 image data');
+      }
+    } else if (imageSource.startsWith('blob:')) {
+      try {
+        const response = await fetch(imageSource);
+        const blob = await response.blob();
+        return new File([blob], defaultFilename, { type: blob.type || 'image/jpeg' });
+      } catch (err) {
+        console.error('Failed to fetch blob URL:', err);
+        throw new Error('Failed to resolve blob URL to file');
+      }
+    } else {
+      // Try to treat as raw base64 string without data prefix
+      try {
+        const mime = 'image/jpeg';
+        const bstr = atob(imageSource);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) {
+          u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new File([u8arr], defaultFilename, { type: mime });
+      } catch (err) {
+        console.error('Failed to parse image source string:', err);
+        throw new Error('Unsupported image source format');
       }
     }
-    
+  }
+  
+  throw new Error('Invalid image source type');
+}
+
+export const generatePassportImagePDF = async (imageSource: File | Blob | string, passportData?: PassportData | null): Promise<void> => {
+  return new Promise(async (resolve, reject) => {
     try {
+      const filename = passportData?.passportNumber 
+        ? `Passport_${passportData.passportNumber}.jpg`
+        : 'Passport.jpg';
+      const file = await ensureFileObject(imageSource, filename);
+      let compressedFile = file;
+      
+      // If original file is already clean and under 500 KB, we do not need to compress it at all.
+      // This preserves 100% of the original high-resolution visual clarity.
+      // If it is larger than 500 KB, we compress with extremely high-quality thresholds to hit 300kb - 350kb beautifully.
+      if (file.size > 500 * 1024) {
+        const options = {
+          maxSizeMB: 0.4,           // Intended to land close to ~300kb-350kb for larger photographs
+          maxWidthOrHeight: 2560,    // High resolution max boundary
+          useWebWorker: false,       // Prevent hanging in dev servers/certain browsers
+          initialQuality: 0.98      // Superior visual detail
+        };
+        try {
+          compressedFile = await imageCompression(file, options);
+        } catch (compressErr) {
+          console.warn('Image compression failed, falling back to original quality:', compressErr);
+          compressedFile = file;
+        }
+      }
+      
       // Read the file as Data URL
       const reader = new FileReader();
       
