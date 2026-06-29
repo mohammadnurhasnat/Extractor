@@ -677,9 +677,15 @@ async function startServer() {
 Extract passport data, read and validate Machine-Readable Zone (MRZ) checksums, compute confidence scores, highlight structural discrepancies, and suggest Bangladeshi addresses.
 
 INSTRUCTIONS:
-1. OCR: Extract core properties: givenName, surname, dob, birthPlace, fatherName, motherName, spouseName, passportNumber, nidOrBirthCertNumber, issueDate, expiryDate, gender (Male/Female), permanentAddress, mobileNumber. Ensure permanentAddress captures the full address including the District name, which is usually at the bottom of the address block.
+1. OCR: Extract core properties: givenName, surname, dob, birthPlace, fatherName, motherName, spouseName, passportNumber, nidOrBirthCertNumber, issueDate, expiryDate, gender (Male/Female), permanentAddress, mobileNumber.
    - Core visual shapes: Carefully differentiate 'O' vs '0' and 'I' vs '1'.
    - IMPORTANT: Format dob, issueDate, and expiryDate strictly as DD/MM/YYYY (e.g. 15/08/1990).
+   - permanentAddress format requirement: It MUST be formatted as exactly four comma-separated sections:
+     1st section: Village name (e.g., Goalpur)
+     2nd section: Police station / Thana name (e.g., Mithamain)
+     3rd section: Post office name (e.g., Goalpur)
+     4th section: District name (e.g., Kishoreganj)
+     Ensure all 4 fields are populated and the district name is never missing in the final output.
 2. MRZ: Read raw MRZ lines into rawMrz array. Populate validation fields (passportNumberChecksum, dobChecksum, expiryDateChecksum, compositeChecksum) with "Pass" or "Fail".
 3. Security & Confidence: Match visual details with MRZ properties. List any discrepancies found under discrepancies. Determine overall confidenceScore (0-100). Also estimate individual fieldConfidence scores (0-100) for every field in finalData based on image legibility and MRZ cross-checks.
 4. Undertaking: Set customUndertakingDraft to a very short 1-sentence string (e.g., "Full verification of passport data completed.") to optimize processing speed.
@@ -688,7 +694,7 @@ INSTRUCTIONS:
    - Cat 2 (Dhaka Division, but not Dhaka District): Create a Dhaka City address for presentAddress, businessAddressDhaka, officeAddressDhaka. Create matching local addresses for local fields.
    - Cat 3 (Outside Dhaka Division): Create a Dhaka City address for presentAddress, businessAddressDhaka, officeAddressDhaka. Create matching local addresses for local fields.
    * Dhaka format: "House X, Road Y, [Area], Dhaka-[Postcode]" (No excessive building titles, commercial center tags, or complex names).
-   * Rules for All addresses: Do NOT include prefix labels or structural tags like 'Vill:', 'Post:', 'Thana:', 'Dist:', 'dist:', 'vill', 'post', 'thana', or 'dist'. Write clean comma-separated names of locations e.g. "Mithamain, Mithamain, Kishoreganj-2370" instead of "Vill: Mithamain, Post: Mithamain, Dist: Kishoreganj-2370".`;
+   * Rules for All addresses: Do NOT include prefix labels or structural tags like 'Vill:', 'Post:', 'Thana:', 'Dist:', 'dist:', 'vill', 'post', 'thana', or 'dist'. Write clean comma-separated names of locations strictly following the 4-section format: "Goalpur, Mithamain, Goalpur, Kishoreganj" instead of "Vill: Goalpur, Thana: Mithamain, Post: Goalpur, Dist: Kishoreganj". Ensure the district name is always added at the very end.`;
 
       const responseSchema = {
         type: Type.OBJECT,
@@ -926,7 +932,7 @@ CRITICAL ADDRESS FORMATTING MANDATES:
 - LOCAL/RURAL ADDRESSES OUTSIDE DHAKA (businessAddressLocal, officeAddressLocal if permanentAddress is outside Dhaka):
   * Do NOT use Dhaka-style urban prefixes like "House/Holding/Plot/Block" or "Sector" for village/local areas, as it looks artificial and incorrect.
   * Do NOT append words like "Sadar", "Upazila", or other administrative clutter (e.g., write "Mithamain" instead of "Mithamain Sadar" or "Mithamain Upazila").
-  * Do NOT include prefix labels or structural tags like 'Vill:', 'Post:', 'Thana:', 'Dist:', 'dist:', 'vill', 'post', 'thana', or 'dist'. Write clean comma-separated names of locations e.g. "Mithamain, Mithamain, Kishoreganj-2370" instead of "Vill: Mithamain, Post: Mithamain, Dist: Kishoreganj-2370" (Ensure the District name is ALWAYS included in these local addresses).
+  * Do NOT include prefix labels or structural tags like 'Vill:', 'Post:', 'Thana:', 'Dist:', 'dist:', 'vill', 'post', 'thana', or 'dist'. Write clean comma-separated names of locations strictly following the 4-section format: "Goalpur, Mithamain, Goalpur, Kishoreganj" instead of "Vill: Goalpur, Thana: Mithamain, Post: Goalpur, Dist: Kishoreganj". Ensure the district name is ALWAYS added as the last/4th section, and is never missing.
   * Keep it short, authentic, uncluttered, and highly natural. Do not use placeholders like "[Insert Road]".
 - Return the output strictly in the requested JSON structure.`
         }

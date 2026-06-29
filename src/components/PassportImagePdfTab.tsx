@@ -10,11 +10,21 @@ interface PassportImagePdfTabProps {
 export function PassportImagePdfTab({ activeItem }: PassportImagePdfTabProps) {
   const [isGenerating, setIsGenerating] = useState(false);
 
-  if (!activeItem || (!activeItem.file && !activeItem.preview)) {
+  const isHistoryMock = activeItem?.file && activeItem.file.size === 0;
+
+  if (!activeItem || (!activeItem.file && !activeItem.preview) || isHistoryMock) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 text-slate-400 dark:text-zinc-500">
-        <FileImage className="w-12 h-12 mb-4 opacity-50" />
-        <p>No passport image selected</p>
+      <div className="flex flex-col items-center justify-center min-h-[300px] text-slate-400 dark:text-zinc-500 max-w-sm mx-auto text-center p-6">
+        <div className="w-16 h-16 bg-amber-50 dark:bg-amber-950/20 rounded-2xl flex items-center justify-center mb-4">
+          <FileImage className="w-8 h-8 text-amber-500 opacity-80" />
+        </div>
+        <h3 className="font-extrabold text-slate-800 dark:text-zinc-200 text-lg">Image Not in History</h3>
+        <p className="text-xs text-slate-500 dark:text-zinc-400 mt-2 leading-relaxed">
+          Since this passport record was loaded from your History/Backup, the original passport image is not stored on our server or browser cache. 
+        </p>
+        <p className="text-xs text-slate-500 dark:text-zinc-400 mt-2 leading-relaxed font-semibold text-teal-600 dark:text-teal-400">
+          You can still download the optimized text report or professional PDF report from the Passport Profile tab!
+        </p>
       </div>
     );
   }

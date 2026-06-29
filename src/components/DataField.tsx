@@ -44,7 +44,7 @@ export function DataField({ label, value, highlight = false, warning = false, co
     if (!value) return;
     navigator.clipboard.writeText(value);
     setCopied(true);
-    setTimeout(() => setCopied(false), 8000);
+    setTimeout(() => setCopied(false), 2000);
 
     if (typeof window !== 'undefined') {
       const fieldKey = `${label}_${value}`;
@@ -203,25 +203,32 @@ export function DataField({ label, value, highlight = false, warning = false, co
               {onValueChange && (
                 <button
                   onClick={handleStartEdit}
-                  className="p-1.5 rounded-lg transition-all text-slate-400 opacity-100 sm:opacity-0 group-hover/field:opacity-100 hover:text-blue-650 hover:bg-blue-50/80 dark:hover:text-blue-400 dark:hover:bg-blue-950/40"
+                  className="p-2 rounded-lg transition-all text-slate-400 opacity-100 sm:opacity-0 group-hover/field:opacity-100 hover:text-blue-650 hover:bg-blue-50/80 dark:hover:text-blue-400 dark:hover:bg-blue-950/40 cursor-pointer"
                   title="Edit Field"
                 >
-                  <Pencil className="w-3.5 h-3.5" />
+                  <Pencil className="w-4.5 h-4.5" />
                 </button>
               )}
               {value && (
-                <button
-                  onClick={handleCopy}
-                  className={`
-                    p-1.5 rounded-lg transition-all
-                    ${copied || persistentCopied
-                      ? 'text-emerald-700 bg-emerald-100/50 dark:text-orange-350 dark:bg-orange-950/40' 
-                      : 'text-slate-400 opacity-100 sm:opacity-0 group-hover/field:opacity-100 hover:text-slate-600 hover:bg-slate-100 dark:hover:text-zinc-300 dark:hover:bg-zinc-800'}
-                  `}
-                  title="Copy"
-                >
-                  {copied ? <Check className="w-3.5 h-3.5 animate-bounce" /> : <Copy className="w-3.5 h-3.5" />}
-                </button>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={handleCopy}
+                    className={`
+                      p-2 rounded-lg transition-all cursor-pointer
+                      ${copied || persistentCopied
+                        ? 'text-emerald-700 bg-emerald-100/50 dark:text-orange-350 dark:bg-orange-950/40' 
+                        : 'text-slate-400 opacity-100 sm:opacity-0 group-hover/field:opacity-100 hover:text-slate-600 hover:bg-slate-100 dark:hover:text-zinc-300 dark:hover:bg-zinc-800'}
+                    `}
+                    title="Copy"
+                  >
+                    <Copy className="w-4.5 h-4.5" />
+                  </button>
+                  {copied && (
+                    <span className="text-emerald-650 dark:text-emerald-450 animate-in fade-in zoom-in duration-205 shrink-0" title="Copied!">
+                      <Check className="w-4.5 h-4.5 font-bold" />
+                    </span>
+                  )}
+                </div>
               )}
             </div>
           </div>

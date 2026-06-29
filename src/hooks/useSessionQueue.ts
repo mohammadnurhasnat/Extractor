@@ -4,6 +4,20 @@ import imageCompression from 'browser-image-compression';
 import JSZip from 'jszip';
 import { generateDataText, normalizeGender } from '../utils/addressUtils';
 import { getPDFDocument } from '../utils/pdfGenerator';
+import { decryptData } from '../utils/crypto';
+
+function dataURLtoFile(dataurl: string, filename: string): File {
+  const arr = dataurl.split(',');
+  const mimeMatch = arr[0].match(/:(.*?);/);
+  const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new File([u8arr], filename, { type: mime });
+}
 
 interface QueueStateProps {
   isOnline: boolean;
@@ -14,8 +28,46 @@ interface QueueStateProps {
 }
 
 export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectData, onError }: QueueStateProps) {
-  const [queue, setQueue] = useState<QueueItem[]>([]);
-  const [activeQueueId, setActiveQueueId] = useState<string | null>(null);
+  const [queue, setQueue] = useState<QueueItem[]>(() => {
+    try {
+      const savedPreview = localStorage.getItem('passport_active_preview');
+      const savedDataStr = localStorage.getItem('passport_active_data');
+      if (savedPreview && savedPreview.startsWith('data:')) {
+        let name = 'Passport.jpg';
+        let decodedData = null;
+        if (savedDataStr) {
+          decodedData = decryptData(savedDataStr);
+          if (decodedData && decodedData.passportNumber) {
+            name = `Passport_${decodedData.passportNumber}.jpg`;
+          }
+        }
+        const fileObj = dataURLtoFile(savedPreview, name);
+        return [{
+          id: 'restored_active',
+          file: fileObj,
+          preview: savedPreview,
+          loading: false,
+          error: null,
+          status: 'completed',
+          data: decodedData || undefined
+        }];
+      }
+    } catch (e) {
+      console.error("Failed to restore queue", e);
+    }
+    return [];
+  });
+  const [activeQueueId, setActiveQueueId] = useState<string | null>(() => {
+    try {
+      const savedPreview = localStorage.getItem('passport_active_preview');
+      if (savedPreview && savedPreview.startsWith('data:')) {
+        return 'restored_active';
+      }
+    } catch (e) {
+      console.error("Failed to restore activeQueueId", e);
+    }
+    return null;
+  });
   const [isBatchProcessing, setIsBatchProcessing] = useState(false);
   const [isZipping, setIsZipping] = useState(false);
   const [loading, setLoading] = useState(false);

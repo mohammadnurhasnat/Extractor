@@ -268,7 +268,38 @@ export default function App() {
     };
   }, [currentUser]);
 
-  const [file, setFile] = useState<File | null>(null);
+function dataURLtoFile(dataurl: string, filename: string): File {
+  const arr = dataurl.split(',');
+  const mimeMatch = arr[0].match(/:(.*?);/);
+  const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new File([u8arr], filename, { type: mime });
+}
+
+  const [file, setFile] = useState<File | null>(() => {
+    try {
+      const savedPreview = localStorage.getItem('passport_active_preview');
+      const savedDataStr = localStorage.getItem('passport_active_data');
+      if (savedPreview && savedPreview.startsWith('data:')) {
+        let name = 'Passport.jpg';
+        if (savedDataStr) {
+          const decoded = decryptData(savedDataStr);
+          if (decoded && decoded.passportNumber) {
+            name = `Passport_${decoded.passportNumber}.jpg`;
+          }
+        }
+        return dataURLtoFile(savedPreview, name);
+      }
+    } catch (e) {
+      console.error("Failed to reconstruct file on load", e);
+    }
+    return null;
+  });
   const [preview, setPreview] = useState<string | null>(() => {
     return localStorage.getItem('passport_active_preview') || null;
   });
@@ -295,11 +326,21 @@ export default function App() {
 
   useEffect(() => {
     if (preview) {
-      localStorage.setItem('passport_active_preview', preview);
+      if (preview.startsWith('blob:') && file) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          if (reader.result) {
+            localStorage.setItem('passport_active_preview', reader.result as string);
+          }
+        };
+        reader.readAsDataURL(file);
+      } else {
+        localStorage.setItem('passport_active_preview', preview);
+      }
     } else {
       localStorage.removeItem('passport_active_preview');
     }
-  }, [preview]);
+  }, [preview, file]);
   
   const {
     isDarkMode, setIsDarkMode,

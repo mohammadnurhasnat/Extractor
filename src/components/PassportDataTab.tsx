@@ -58,14 +58,14 @@ export function PassportDataTab({
         <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto xl:justify-end">
           <button 
             onClick={handleCopyAll}
-            className="slide-btn slide-btn-slate flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg cursor-pointer"
+            className="slide-btn slide-btn-slate flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg cursor-pointer shadow-sm hover:shadow"
           >
             {isCopied ? (
-              <Check className="w-3.5 h-3.5 text-emerald-500 relative z-10" />
+              <Check className="w-4.5 h-4.5 text-emerald-500 relative z-10 font-bold" />
             ) : (
-              <Copy className="w-3.5 h-3.5 relative z-10" />
+              <Copy className="w-4.5 h-4.5 relative z-10" />
             )}
-            <span className="relative z-10">{isCopied ? "Copied" : "Copy All"}</span>
+            <span className="relative z-10">{isCopied ? "Copied!" : "Copy All"}</span>
           </button>
           <button 
             onClick={handleDownloadText}
