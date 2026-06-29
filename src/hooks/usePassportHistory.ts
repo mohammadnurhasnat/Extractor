@@ -1,35 +1,84 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { HistoryItem, PassportData } from '../types';
 import { encryptData, decryptData } from '../utils/crypto';
+import { db } from '../lib/firebase';
+import { collection, doc, setDoc, deleteDoc, getDocs, writeBatch, query, orderBy, onSnapshot } from 'firebase/firestore';
 
-export function usePassportHistory(options?: {
+export function usePassportHistory(userId: string | null, options?: {
   onItemAdded?: (item: HistoryItem) => void;
   onItemDeleted?: (id: string) => void;
 }) {
-  const [history, setInternalHistory] = useState<HistoryItem[]>(() => {
-    try {
-      const saved = localStorage.getItem('passport_core_history');
-      if (saved && saved !== 'undefined' && saved.trim() !== '') {
-        const decrypted = decryptData(saved);
-        return Array.isArray(decrypted) ? decrypted : [];
-      }
-    } catch (e) {
-      console.error("Failed to load history", e);
-    }
-    return [];
-  });
-  
+  const [history, setInternalHistory] = useState<HistoryItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
-  const saveHistory = useCallback((newHistory: HistoryItem[]) => {
-    setInternalHistory(newHistory);
-    localStorage.setItem('passport_core_history', encryptData(newHistory));
-  }, []);
+  // Fallback to local storage if no user
+  useEffect(() => {
+    if (!userId) {
+      try {
+        const saved = localStorage.getItem('passport_core_history');
+        if (saved && saved !== 'undefined' && saved.trim() !== '') {
+          const decrypted = decryptData(saved);
+          setInternalHistory(Array.isArray(decrypted) ? decrypted : []);
+        } else {
+          setInternalHistory([]);
+        }
+      } catch (e) {
+        console.error("Failed to load history from local storage", e);
+      }
+      return;
+    }
 
-  const addToHistory = useCallback((data: PassportData): PassportData => {
+    // Load from Firestore if user exists
+    const historyRef = collection(db, `users/${userId}/history`);
+    const q = query(historyRef, orderBy('timestamp', 'desc'));
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const fetchedHistory: HistoryItem[] = [];
+      snapshot.forEach((doc) => {
+        // Data might be encrypted if we want to store securely, but let's just store as-is or encrypt before save.
+        // Actually, to keep it simple and searchable (partially), we could store raw. 
+        // But for privacy, maybe encrypt? Let's assume raw or parsed.
+        // The previous code encrypted it in local storage. Let's keep it raw in Firestore, protected by security rules.
+        const data = doc.data() as HistoryItem;
+        fetchedHistory.push(data);
+      });
+      setInternalHistory(fetchedHistory);
+    }, (error) => {
+      console.error("Error fetching history from Firestore:", error);
+    });
+
+    return () => unsubscribe();
+  }, [userId]);
+
+  const saveHistory = useCallback(async (newHistory: HistoryItem[]) => {
+    setInternalHistory(newHistory);
+    if (!userId) {
+      localStorage.setItem('passport_core_history', encryptData(newHistory));
+      return;
+    }
+    
+    // We should probably handle this better, but this is a direct replacement for setHistory
+    const batch = writeBatch(db);
+    const historyRef = collection(db, `users/${userId}/history`);
+    
+    newHistory.forEach(item => {
+      const docRef = doc(historyRef, item.id);
+      batch.set(docRef, item);
+    });
+    
+    try {
+      await batch.commit();
+    } catch (e) {
+      console.error("Error saving history batch:", e);
+    }
+  }, [userId]);
+
+  const addToHistory = useCallback(async (data: PassportData): Promise<PassportData> => {
     let returnData: PassportData = data;
-    setInternalHistory(prev => {
+    
+    // We update local state optimistically, then write to Firebase (or localStorage)
+    const updateLogic = (prev: HistoryItem[]) => {
       const existingItemIndex = prev.findIndex(item => 
          item.data.passportNumber && 
          data.passportNumber && 
@@ -37,6 +86,8 @@ export function usePassportHistory(options?: {
       );
 
       let newHistory: HistoryItem[];
+      let updatedOldItem: HistoryItem | null = null;
+      let newItem: HistoryItem | null = null;
 
       if (existingItemIndex >= 0) {
         const existingItem = prev[existingItemIndex];
@@ -47,7 +98,7 @@ export function usePassportHistory(options?: {
           extractionTime: data.extractionTime || existingItem.data.extractionTime || existingItem.extractionTime
         };
 
-        const updatedOldItem: HistoryItem = {
+        updatedOldItem = {
           ...existingItem,
           timestamp: Date.now(),
           data: updatedData,
@@ -57,14 +108,10 @@ export function usePassportHistory(options?: {
 
         const filtered = prev.filter((_, idx) => idx !== existingItemIndex);
         newHistory = [updatedOldItem, ...filtered];
-
-        if (options?.onItemAdded) {
-          options.onItemAdded(updatedOldItem);
-        }
       } else {
         const id = Date.now().toString();
         const timestamp = Date.now();
-        const newItem: HistoryItem = { 
+        newItem = { 
           id, 
           timestamp, 
           data, 
@@ -72,32 +119,79 @@ export function usePassportHistory(options?: {
         };
         
         newHistory = [newItem, ...prev];
+      }
+      
+      return { newHistory, updatedOldItem, newItem };
+    };
 
-        if (options?.onItemAdded) {
-          options.onItemAdded(newItem);
+    setInternalHistory(prev => {
+      const { newHistory, updatedOldItem, newItem } = updateLogic(prev);
+      
+      // Handle side effects outside state update, but for now we do it here or immediately after.
+      // Since setInternalHistory doesn't allow async inside easily without messy closures,
+      // we'll just run it synchronously for UI, and fire the DB write.
+      
+      if (!userId) {
+        localStorage.setItem('passport_core_history', encryptData(newHistory));
+      } else {
+        // Fire and forget DB write
+        const itemToSave = updatedOldItem || newItem;
+        if (itemToSave) {
+          const docRef = doc(db, `users/${userId}/history`, itemToSave.id);
+          setDoc(docRef, itemToSave).catch(console.error);
         }
       }
 
-      localStorage.setItem('passport_core_history', encryptData(newHistory));
+      if (updatedOldItem && options?.onItemAdded) options.onItemAdded(updatedOldItem);
+      if (newItem && options?.onItemAdded) options.onItemAdded(newItem);
+
       return newHistory;
     });
-    return returnData;
-  }, [options]);
 
-  const deleteHistoryItem = useCallback((id: string) => {
-    const newHistory = history.filter(item => item.id !== id);
-    setInternalHistory(newHistory);
-    localStorage.setItem('passport_core_history', encryptData(newHistory));
+    return returnData;
+  }, [userId, options]);
+
+  const deleteHistoryItem = useCallback(async (id: string) => {
+    setInternalHistory(prev => {
+      const newHistory = prev.filter(item => item.id !== id);
+      if (!userId) {
+        localStorage.setItem('passport_core_history', encryptData(newHistory));
+      }
+      return newHistory;
+    });
+
+    if (userId) {
+      try {
+        await deleteDoc(doc(db, `users/${userId}/history`, id));
+      } catch (e) {
+        console.error("Error deleting document:", e);
+      }
+    }
 
     if (options?.onItemDeleted) {
       options.onItemDeleted(id);
     }
-  }, [history, options]);
+  }, [userId, options]);
 
-  const clearHistory = useCallback(() => {
+  const clearHistory = useCallback(async () => {
+    // Delete all from firestore
+    if (userId) {
+      try {
+        const historyRef = collection(db, `users/${userId}/history`);
+        const snapshot = await getDocs(historyRef);
+        const batch = writeBatch(db);
+        snapshot.docs.forEach(doc => {
+          batch.delete(doc.ref);
+        });
+        await batch.commit();
+      } catch (e) {
+        console.error("Error clearing history:", e);
+      }
+    } else {
+      localStorage.setItem('passport_core_history', encryptData([]));
+    }
     setInternalHistory([]);
-    localStorage.setItem('passport_core_history', encryptData([]));
-  }, []);
+  }, [userId]);
 
   return {
     history, setHistory: saveHistory,

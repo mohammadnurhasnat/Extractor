@@ -35,7 +35,7 @@ import { LogoutConfirmModal } from './components/LogoutConfirmModal';
 // Utilities
 import { generateDataText } from './utils/addressUtils';
 import { generatePDF, getPDFDocument, generateUndertakingPDF } from './utils/pdfGenerator';
-import { signInWithGooglePopup, logoutGoogle } from './lib/firebase';
+import { logoutGoogle } from './lib/firebase';
 
 import { useUndertakingState } from './hooks/useUndertakingState';
 import { useSessionQueue } from './hooks/useSessionQueue';
@@ -146,38 +146,6 @@ export default function App() {
       }
     } catch (err) {
       setLoginError('Could not connect to the server. Please try again.');
-    } finally {
-      setIsLoggingIn(false);
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    setLoginError(null);
-    setIsLoggingIn(true);
-    try {
-      const result = await signInWithGooglePopup();
-      if (!result?.user) throw new Error('Google authentication failed.');
-      
-      const response = await fetch('/api/google-login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: result.user.email,
-          name: result.user.displayName,
-          photoURL: result.user.photoURL,
-        })
-      });
-      const data = await response.json();
-      if (response.ok && data.success) {
-        localStorage.setItem('passport_extractor_user', JSON.stringify(data.user));
-        setCurrentUser(data.user);
-        setToast({ message: `Welcome ${data.user.name}! Google Login successful.`, type: 'success' });
-      } else {
-        setLoginError(data.error || 'Google login failed.');
-      }
-    } catch (err: any) {
-      console.error(err);
-      setLoginError(err.message || 'Could not connect to Google or the server. Please try again.');
     } finally {
       setIsLoggingIn(false);
     }
@@ -358,7 +326,7 @@ function dataURLtoFile(dataurl: string, filename: string): File {
     clearHistory,
     searchTerm, setSearchTerm,
     itemToDelete, setItemToDelete
-  } = usePassportHistory();
+  } = usePassportHistory(currentUser?.id || null);
 
 
 
@@ -659,7 +627,6 @@ function dataURLtoFile(dataurl: string, filename: string): File {
             loginError={loginError}
             isLoggingIn={isLoggingIn}
             handleLogin={handleLogin}
-            onGoogleLogin={handleGoogleLogin}
           />
         )}
       </AnimatePresence>
