@@ -49,7 +49,7 @@ export function ResultsSection({
   const hasContent = !!data;
 
   return (
-    <div className="lg:col-span-7 print:w-full print:col-span-12">
+    <div className="lg:col-span-7 print:w-full print:col-span-12 lg:max-h-[calc(100vh-130px)] lg:overflow-y-auto overscroll-contain pr-1.5 scrollbar-thin">
       {hasContent ? (
         <div id="printable-results-card" className="bg-white/70 dark:bg-zinc-900/70 backdrop-blur-md p-6 rounded-2xl shadow-sm border border-slate-200/60 dark:border-zinc-800/60 transition-all sticky top-6 print:relative print:top-0 print:border-none print:shadow-none print:bg-transparent print:p-0 print:m-0 w-full min-h-[500px]">
           <motion.div 

@@ -33,7 +33,7 @@ export function SessionQueue({
   if (queue.length === 0) return null;
 
   return (
-    <div className="mt-6 border-t border-slate-200/50 dark:border-zinc-800/50 pt-5">
+    <div className="shrink-0 mt-6 border-t border-slate-200/50 dark:border-zinc-800/50 pt-5">
       <div className="flex items-center justify-between mb-3.5">
         <div className="flex items-center gap-1.5 min-w-0">
           <h3 className="text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider shrink-0">

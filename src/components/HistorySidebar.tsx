@@ -73,7 +73,7 @@ Expiry Date: ${item.data.expiryDate || ''}
   };
 
   return (
-    <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl p-5 sm:p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-205 dark:border-zinc-805/80 min-h-[300px] flex flex-col transition-all duration-350">
+    <div className="shrink-0 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl p-5 sm:p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-205 dark:border-zinc-805/80 min-h-[300px] flex flex-col transition-all duration-350">
       <div className="flex flex-col xl:flex-row xl:items-center justify-between mb-5 pb-4 border-b border-slate-100 dark:border-zinc-800/50 gap-4">
         <div>
           <h3 className="font-bold text-lg flex items-center gap-2 text-slate-800 dark:text-zinc-100">
@@ -137,18 +137,18 @@ Expiry Date: ${item.data.expiryDate || ''}
       </div>
 
       {/* Extraction Counter Badges */}
-      <div className="grid grid-cols-3 gap-2.5 mb-5 font-sans">
-        <div className="bg-blue-50/40 dark:bg-blue-950/15 border border-blue-100/30 dark:border-blue-900/20 rounded-2xl p-3 flex flex-col items-center justify-center text-center transition-transform hover:scale-102">
-          <span className="text-[9px] font-extrabold uppercase tracking-widest text-blue-600 dark:text-blue-450">Today</span>
-          <span className="text-xl font-extrabold text-blue-700 dark:text-blue-300 leading-none mt-1.5">{todayCount}</span>
+      <div className="grid grid-cols-3 gap-1.5 mb-3 font-sans">
+        <div className="bg-blue-50/40 dark:bg-blue-950/15 border border-blue-100/30 dark:border-blue-900/20 rounded-xl p-1.5 flex flex-col items-center justify-center text-center transition-transform hover:scale-102">
+          <span className="text-[8px] font-extrabold uppercase tracking-wider text-blue-600 dark:text-blue-450">Today</span>
+          <span className="text-sm font-extrabold text-blue-700 dark:text-blue-300 leading-none mt-1">{todayCount}</span>
         </div>
-        <div className="bg-purple-50/40 dark:bg-purple-950/15 border border-purple-100/30 dark:border-purple-900/20 rounded-2xl p-3 flex flex-col items-center justify-center text-center transition-transform hover:scale-102">
-          <span className="text-[9px] font-extrabold uppercase tracking-widest text-purple-600 dark:text-purple-450">This Month</span>
-          <span className="text-xl font-extrabold text-purple-700 dark:text-purple-300 leading-none mt-1.5">{monthCount}</span>
+        <div className="bg-purple-50/40 dark:bg-purple-950/15 border border-purple-100/30 dark:border-purple-900/20 rounded-xl p-1.5 flex flex-col items-center justify-center text-center transition-transform hover:scale-102">
+          <span className="text-[8px] font-extrabold uppercase tracking-wider text-purple-600 dark:text-purple-450">This Month</span>
+          <span className="text-sm font-extrabold text-purple-700 dark:text-purple-300 leading-none mt-1">{monthCount}</span>
         </div>
-        <div className="bg-emerald-50/40 dark:bg-emerald-950/15 border border-emerald-100/30 dark:border-emerald-900/20 rounded-2xl p-3 flex flex-col items-center justify-center text-center transition-transform hover:scale-102">
-          <span className="text-[9px] font-extrabold uppercase tracking-widest text-emerald-600 dark:text-emerald-450">Total Scans</span>
-          <span className="text-xl font-extrabold text-emerald-700 dark:text-emerald-300 leading-none mt-1.5">{totalCount}</span>
+        <div className="bg-emerald-50/40 dark:bg-emerald-950/15 border border-emerald-100/30 dark:border-emerald-900/20 rounded-xl p-1.5 flex flex-col items-center justify-center text-center transition-transform hover:scale-102">
+          <span className="text-[8px] font-extrabold uppercase tracking-wider text-emerald-600 dark:text-emerald-450">Total Scans</span>
+          <span className="text-sm font-extrabold text-emerald-700 dark:text-emerald-300 leading-none mt-1">{totalCount}</span>
         </div>
       </div>
       
@@ -172,42 +172,34 @@ Expiry Date: ${item.data.expiryDate || ''}
           <p className="text-[12px] text-slate-500 dark:text-zinc-450 max-w-[200px] relative z-10 leading-relaxed font-medium">Try adjusting your search terms or clearing the filter.</p>
         </div>
       ) : (
-        <div className="overflow-y-auto pr-1 space-y-2.5 pb-2 scrollbar-thin max-h-[300px]">
+        <div className="overflow-y-auto overscroll-contain scroll-smooth pr-1 space-y-1 pb-2 scrollbar-thin max-h-[300px]">
           {filteredHistory.map(item => (
             <div 
               key={item.id} 
               onClick={() => onLoadItem(item)}
-              className="cursor-pointer group relative flex items-center justify-between p-3.5 rounded-xl border border-slate-100 dark:border-zinc-800/80 bg-white dark:bg-zinc-950/40 hover:bg-gradient-to-r hover:from-blue-50/40 hover:to-transparent dark:hover:from-zinc-850/35 dark:hover:to-transparent hover:border-blue-200 dark:hover:border-zinc-700 transition-all duration-300 shadow-sm"
+              className="cursor-pointer group relative flex items-center justify-between py-1 px-2.5 rounded-md border border-slate-100 dark:border-zinc-800/80 bg-white dark:bg-zinc-950/40 hover:bg-gradient-to-r hover:from-blue-50/40 hover:to-transparent dark:hover:from-zinc-850/35 dark:hover:to-transparent hover:border-blue-200 dark:hover:border-zinc-700 transition-all duration-300 shadow-sm min-h-[28px]"
             >
-              <div className="flex flex-col mr-6 overflow-hidden">
-                <span className="font-bold text-[14px] leading-tight text-slate-850 dark:text-zinc-200 group-hover:text-blue-600 dark:group-hover:text-blue-450 transition-colors truncate font-sans flex items-center gap-2">
+              <div className="flex items-center gap-1.5 mr-6 overflow-hidden flex-wrap min-w-0 flex-1">
+                <span className="font-bold text-[12.5px] leading-none text-slate-850 dark:text-zinc-200 group-hover:text-blue-600 dark:group-hover:text-blue-450 transition-colors truncate font-sans shrink-0 max-w-[130px] sm:max-w-[165px]">
                   {item.data.givenName} {item.data.surname}
-                  {history.length > 0 && item.id === history[0].id && (
-                    <span className="text-[8px] bg-emerald-100/50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-450 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider border border-emerald-200/40 dark:border-emerald-800/20 whitespace-nowrap">
-                      Last Used
-                    </span>
-                  )}
                 </span>
-                <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-slate-600 dark:text-zinc-400 rounded-md font-mono">
-                    {item.data.passportNumber || "Unknown ID"}
+                {item.data.passportNumber && (
+                  <span className="text-[9px] font-bold px-1.5 py-0.5 bg-slate-50 dark:bg-zinc-900 border border-slate-200/50 dark:border-zinc-800/80 text-slate-600 dark:text-zinc-400 rounded-sm font-mono shrink-0 leading-none">
+                    {item.data.passportNumber}
                   </span>
-                  <span className="text-[10px] text-slate-500 dark:text-zinc-450 font-medium bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 px-1.5 py-0.5 rounded-md truncate max-w-[150px] font-mono">
-                    {getGeneratedEmail(item.data)}
+                )}
+                {(item.extractionTime || item.data.extractionTime) && (
+                  <span className="text-[9px] font-bold px-1 py-0.5 bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200/40 dark:border-blue-900/30 text-blue-600 dark:text-blue-450 rounded-sm font-mono shrink-0 leading-none">
+                    ⚡{((item.extractionTime || item.data.extractionTime)!).toFixed(1)}s
                   </span>
-                  {(item.extractionTime || item.data.extractionTime) && (
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200/40 dark:border-blue-900/30 text-blue-600 dark:text-blue-450 rounded-md font-mono flex items-center gap-1">
-                      ⚡ {(item.extractionTime || item.data.extractionTime)!.toFixed(1)}s
-                    </span>
-                  )}
-                </div>
+                )}
               </div>
               <button 
                 onClick={(e) => onConfirmDelete(e, item.id)}
-                className="opacity-0 group-hover:opacity-100 absolute right-3 p-1.5 text-slate-400 dark:text-zinc-550 hover:text-red-600 dark:hover:text-red-400 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg transition-all shadow-sm shrink-0 cursor-pointer border border-transparent hover:border-slate-200 dark:hover:border-zinc-700"
+                className="opacity-0 group-hover:opacity-100 absolute right-2 p-0.5 text-slate-400 dark:text-zinc-550 hover:text-red-600 dark:hover:text-red-400 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded transition-all shadow-sm shrink-0 cursor-pointer"
                 title="Delete from history"
               >
-                <Trash2 className="w-3.5 h-3.5" />
+                <Trash2 className="w-2.5 h-2.5" />
               </button>
             </div>
           ))}

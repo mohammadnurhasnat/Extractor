@@ -55,8 +55,8 @@ interface UploadSectionProps {
 
 export function UploadSection(props: UploadSectionProps) {
   return (
-    <div className="lg:col-span-5 flex flex-col gap-6 print:hidden">
-      <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-205 dark:border-zinc-800/80 transition-all duration-300">
+    <div className="lg:col-span-5 flex flex-col gap-6 print:hidden lg:max-h-[calc(100vh-130px)] lg:overflow-y-auto overscroll-contain pr-2.5 scrollbar-thin">
+      <div className="shrink-0 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-205 dark:border-zinc-800/80 transition-all duration-300">
         <div className="flex items-start justify-between mb-2">
           <div>
             <h2 className="text-lg font-bold flex items-center gap-2 text-slate-800 dark:text-zinc-100">

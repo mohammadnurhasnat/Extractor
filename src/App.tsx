@@ -504,7 +504,7 @@ function dataURLtoFile(dataurl: string, filename: string): File {
   } = useExporterHelpers({ data, undertakingData, setToast });
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 font-sans text-slate-900 dark:text-zinc-50 pb-12 selection:bg-blue-100/50 dark:selection:bg-blue-900/50 transition-colors relative">
+    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 font-sans text-slate-900 dark:text-zinc-50 pb-4 selection:bg-blue-100/50 dark:selection:bg-blue-900/50 transition-colors relative">
       {/* Global Progress Bar */}
       <GlobalProgress loading={loading} />
 
@@ -606,12 +606,12 @@ function dataURLtoFile(dataurl: string, filename: string): File {
       </div>
 
       {/* Footer Section */}
-      <footer className="w-full border-t border-slate-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-950/50 mt-12 py-6 print:hidden">
-        <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-1.5 text-sm font-medium text-slate-500 dark:text-zinc-400">
-            Built with <Heart className="w-4 h-4 text-red-500 fill-current" /> by <span className="text-slate-700 dark:text-zinc-200 font-bold tracking-wide ml-0.5">MOHAMMAD NUR HASNAT</span>
+      <footer className="w-full border-t border-slate-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-950/50 mt-6 py-2.5 print:hidden">
+        <div className="container mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-zinc-400">
+            Built with <Heart className="w-3 h-3 text-red-500 fill-current" /> by <span className="text-slate-700 dark:text-zinc-200 font-bold tracking-wide ml-0.5">MOHAMMAD NUR HASNAT</span>
           </div>
-          <p className="text-xs text-slate-400 dark:text-zinc-500">
+          <p className="text-[11px] text-slate-400 dark:text-zinc-500">
             &copy; {new Date().getFullYear()} Passport Extractor. All rights reserved.
           </p>
         </div>
