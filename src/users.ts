@@ -31,11 +31,11 @@ export const USERS_DATABASE: User[] = [
   },
 
    {
-    id: "user_RANA",
-    email: "mohammad@gmail.com",
-    mobileNumber: "01800000000",
-    password: "123",
-    name: "MOHAMMAD"
+    id: "user_badsha_badhon",
+    email: "badhon@gmail.com",
+    mobileNumber: "01315002034",
+    password: "12345678",
+    name: "Badsha Badhon"
   }
   // ➕ নতুন ইউজার যোগ করতে চাইলে নিচের ব্র্যাকেটের ভেতরের অংশটি আন-কমেন্ট করে কপি-পেস্ট করে বসিয়ে দিন:
   /*

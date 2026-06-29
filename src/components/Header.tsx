@@ -67,7 +67,7 @@ export const Header: React.FC<HeaderProps> = ({
                   {profilePicture ? (
                     <img src={profilePicture} alt="Avatar" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                   ) : (
-                    <span className="text-[8px] font-black text-white">{initials}</span>
+                    <User className="w-3.5 h-3.5 text-white" />
                   )}
                 </div>
 

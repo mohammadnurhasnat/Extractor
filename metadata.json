@@ -1,9 +1,7 @@
 {
   "name": "CTO Architect AI",
   "description": "An expert AI passport extractor and Indian visa undertaking form editor/generator.",
-  "requestFramePermissions": [
-    "camera"
-  ],
+  "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
   ]

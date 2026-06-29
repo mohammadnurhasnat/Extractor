@@ -68,29 +68,29 @@ export function UploadSection(props: UploadSectionProps) {
         </div>
         
         {!props.preview ? (
-          <div className="border-2 border-dashed border-slate-300 dark:border-zinc-700/80 rounded-2xl bg-slate-50/50 dark:bg-black/40 hover:bg-slate-100/60 dark:hover:bg-zinc-805/80 hover:border-blue-400 dark:hover:border-blue-500/50 transition-all duration-300 group flex flex-col items-center justify-center text-center h-48 relative overflow-hidden shadow-inner cursor-pointer" onClick={() => props.fileInputRef.current?.click()}>
-            <input 
-               type="file" 
-               ref={props.fileInputRef} 
-               className="hidden" 
-               accept="image/jpeg, image/png, image/webp" 
-               onChange={props.handleFileChange}
-               multiple
-            />
-            {/* Ambient Background Glow inside Dropbox */}
-            <div className="absolute w-32 h-32 bg-blue-400/5 dark:bg-blue-500/5 rounded-full blur-2xl top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
-            
-            <div className="flex flex-col items-center justify-center p-4 w-full h-full relative z-10">
-              <div className="w-12 h-12 bg-white dark:bg-zinc-900 rounded-2xl shadow-sm hover:shadow flex items-center justify-center mb-2.5 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 border border-slate-100 dark:border-zinc-800">
-                <UploadCloud className="w-6 h-6 text-blue-500 dark:text-blue-400" />
+            <div className="border-2 border-dashed border-slate-300 dark:border-zinc-700/80 rounded-2xl bg-slate-50/50 dark:bg-black/40 hover:bg-slate-100/60 dark:hover:bg-zinc-805/80 hover:border-blue-400 dark:hover:border-blue-500/50 transition-all duration-300 group flex flex-col items-center justify-center text-center min-h-[220px] p-6 relative overflow-hidden shadow-inner cursor-pointer" onClick={() => props.fileInputRef.current?.click()}>
+              <input 
+                 type="file" 
+                 ref={props.fileInputRef} 
+                 className="hidden" 
+                 accept="image/jpeg, image/png, image/webp" 
+                 onChange={props.handleFileChange}
+                 multiple
+              />
+              {/* Ambient Background Glow inside Dropbox */}
+              <div className="absolute w-32 h-32 bg-blue-400/5 dark:bg-blue-500/5 rounded-full blur-2xl top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
+              
+              <div className="flex flex-col items-center justify-center p-4 w-full h-full relative z-10">
+                <div className="w-16 h-16 bg-white dark:bg-zinc-900 rounded-2xl shadow-sm hover:shadow flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 border border-slate-100 dark:border-zinc-800">
+                  <UploadCloud className="w-8 h-8 text-blue-500 dark:text-blue-400" />
+                </div>
+                <p className="font-bold text-slate-705 dark:text-zinc-200 text-sm sm:text-base">Tap to select passport image</p>
+                <p className="text-xs text-slate-400 dark:text-zinc-500 font-medium mt-1">or drag and drop files here</p>
+                <p className="text-[10px] sm:text-xs text-slate-400 dark:text-zinc-500 mt-4 bg-slate-150/50 dark:bg-zinc-900/80 border border-slate-200/50 dark:border-zinc-800 px-3 py-1 rounded-full font-mono">
+                  JPEG, PNG, WEBP (Supports multiple files)
+                </p>
               </div>
-              <p className="font-bold text-slate-705 dark:text-zinc-200 text-xs sm:text-sm">Click to select passport image</p>
-              <p className="text-[11px] text-slate-400 dark:text-zinc-500 font-medium mt-0.5">or drag and drop files here</p>
-              <p className="text-[9px] text-slate-400 dark:text-zinc-500 mt-2.5 bg-slate-150/50 dark:bg-zinc-900/80 border border-slate-200/50 dark:border-zinc-800 px-2.5 py-0.5 rounded-full font-mono">
-                JPEG, PNG, WEBP (Supports multiple files)
-              </p>
             </div>
-          </div>
         ) : (
           <div className="flex flex-col gap-4">
             <div 
@@ -166,20 +166,20 @@ export function UploadSection(props: UploadSectionProps) {
               </div>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <button 
                 onClick={props.clearAll}
                 disabled={props.loading || props.isBatchProcessing}
-                className="slide-btn slide-btn-purple flex-1 py-2.5 px-4 rounded-xl font-bold text-xs sm:text-sm cursor-pointer disabled:opacity-50"
+                className="slide-btn slide-btn-purple w-full sm:flex-1 py-3 px-4 rounded-xl font-bold text-sm cursor-pointer disabled:opacity-50 min-h-[48px]"
               >
                 <span className="relative z-10">Clear All</span>
               </button>
               {!props.data && (
-                <div className="flex-[2] flex flex-col gap-2">
+                <div className="w-full sm:flex-[2] flex flex-col gap-2">
                   <button 
                     onClick={props.loading || props.isBatchProcessing ? props.cancelExtraction : props.extractData}
                     disabled={!props.isOnline && !props.loading && !props.isBatchProcessing}
-                    className={`slide-btn w-full py-2.5 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer ${
+                    className={`slide-btn w-full py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 cursor-pointer min-h-[48px] ${
                       props.loading || props.isBatchProcessing
                         ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100 dark:bg-red-950/30 dark:text-red-400 dark:border-red-900/50 dark:hover:bg-red-900/40' 
                         : !props.isOnline 

@@ -9,6 +9,43 @@ import { USERS_DATABASE } from './src/users';
 
 const LIMITS_FILE = path.join(process.cwd(), 'limits_store.json');
 const USERS_STORE_FILE = path.join(process.cwd(), 'users_store.json');
+const AUDIT_LOGS_FILE = path.join(process.cwd(), 'audit_logs.json');
+
+export interface AuditLog {
+  id: string;
+  timestamp: string;
+  action: 'LOGIN' | 'EXTRACTION' | 'LIMIT_CHANGE' | 'USER_ADDED' | 'USER_EDITED' | 'USER_DELETED' | 'USER_SUSPENDED';
+  userId: string;
+  details: string;
+}
+
+function getAuditLogs(): AuditLog[] {
+  try {
+    if (fs.existsSync(AUDIT_LOGS_FILE)) {
+      const data = fs.readFileSync(AUDIT_LOGS_FILE, 'utf8');
+      return JSON.parse(data);
+    }
+  } catch (error) {
+    console.error('Error reading audit logs file:', error);
+  }
+  return [];
+}
+
+function appendAuditLog(log: Omit<AuditLog, 'id' | 'timestamp'>) {
+  try {
+    const logs = getAuditLogs();
+    const newLog: AuditLog = {
+      ...log,
+      id: Math.random().toString(36).substr(2, 9),
+      timestamp: new Date().toISOString()
+    };
+    // Keep last 1000 logs
+    const updatedLogs = [newLog, ...logs].slice(0, 1000);
+    fs.writeFileSync(AUDIT_LOGS_FILE, JSON.stringify(updatedLogs, null, 2), 'utf8');
+  } catch (error) {
+    console.error('Error writing audit logs file:', error);
+  }
+}
 
 // Helper to dynamically parse user array from src/users.ts file content
 function parseUsersTsContent(content: string): any[] {
@@ -224,6 +261,48 @@ async function startServer() {
       .trim();
   }
 
+  // API Route for Google Login
+  app.post('/api/google-login', (req, res) => {
+    try {
+      const { email, name, photoURL } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ success: false, error: 'Email missing.' });
+      }
+
+      const users = getUsersStore();
+      // Find user matching email
+      let user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+
+      if (user) {
+        if (user.isSuspended) {
+          return res.status(403).json({ success: false, error: 'আপনার অ্যাকাউন্টটি স্থগিত করা হয়েছে। Users have been suspended. Now, contact support.' });
+        }
+        // Update user name/photo if needed, but not strictly necessary
+        return res.json({ success: true, user });
+      } else {
+        // Automatically register the user if they log in via Google
+        const newUser = {
+          id: 'user_' + Date.now(),
+          email: email,
+          name: name || 'Google User',
+          mobileNumber: '',
+          password: '', // No password for Google users
+          role: 'user' as 'user' | 'admin',
+          createdAt: new Date().toISOString()
+        };
+        
+        users.push(newUser);
+        saveUsersStore(users);
+        
+        return res.json({ success: true, user: newUser });
+      }
+    } catch (error) {
+      console.error('Google Login Error:', error);
+      res.status(500).json({ success: false, error: 'Internal server error.' });
+    }
+  });
+
   // API Route for user login
   app.post('/api/login', (req, res) => {
     try {
@@ -250,6 +329,9 @@ async function startServer() {
 
       // Safe user info without password
       const { password: _, ...userSafe } = user;
+      
+      appendAuditLog({ userId: user.id, action: 'LOGIN', details: `User logged in from ${req.ip}` });
+      
       res.json({ success: true, user: userSafe });
     } catch (error: any) {
       res.status(500).json({ success: false, error: error.message || 'Login failed' });
@@ -318,6 +400,8 @@ async function startServer() {
       // 1. Save to Dynamic store (automatically syncs to src/users.ts)
       users.push(newUser);
       saveUsersStore(users);
+      
+      appendAuditLog({ userId: adminId, action: 'USER_ADDED', details: `Added new user ${newUser.id} (${newUser.email})` });
 
       res.json({ success: true, user: newUser });
     } catch (error: any) {
@@ -352,6 +436,8 @@ async function startServer() {
       // Update in users store
       users[targetUserIndex].dailyLimit = newLimit;
       saveUsersStore(users);
+      
+      appendAuditLog({ userId: adminId, action: 'LIMIT_CHANGE', details: `Changed daily limit for user ${userId} to ${newLimit}` });
 
       res.json({ success: true, user: users[targetUserIndex] });
     } catch (error: any) {
@@ -390,6 +476,8 @@ async function startServer() {
 
       users[targetUserIndex].isSuspended = !!isSuspended;
       saveUsersStore(users);
+      
+      appendAuditLog({ userId: adminId, action: 'USER_SUSPENDED', details: `${isSuspended ? 'Suspended' : 'Unsuspended'} user ${userId}` });
 
       res.json({ success: true, user: users[targetUserIndex] });
     } catch (error: any) {
@@ -428,6 +516,8 @@ async function startServer() {
 
       users.splice(targetUserIndex, 1);
       saveUsersStore(users);
+      
+      appendAuditLog({ userId: adminId, action: 'USER_DELETED', details: `Deleted user ${userId}` });
 
       res.json({ success: true });
     } catch (error: any) {
@@ -478,10 +568,33 @@ async function startServer() {
       }
 
       saveUsersStore(users);
+      
+      appendAuditLog({ userId: adminId, action: 'USER_EDITED', details: `Edited details of user ${userId}` });
 
       res.json({ success: true, user: users[targetUserIndex] });
     } catch (error: any) {
       res.status(500).json({ success: false, error: error.message || 'Failed to edit user.' });
+    }
+  });
+
+  // API Route to fetch audit logs (Admin only)
+  app.get('/api/admin/audit-logs', (req, res) => {
+    try {
+      const adminId = req.headers['x-user-id']?.toString();
+      if (!adminId) {
+        return res.status(403).json({ success: false, error: 'Access denied. Please log in.' });
+      }
+      
+      const users = getUsersStore();
+      const adminUser = users.find(u => u.id === adminId);
+      if (!adminUser || adminUser.email.toLowerCase() !== 'mohammadnurhasnat@gmail.com') {
+        return res.status(403).json({ success: false, error: 'Access denied.' });
+      }
+
+      const logs = getAuditLogs();
+      res.json({ success: true, logs });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message || 'Failed to fetch audit logs.' });
     }
   });
 
@@ -520,6 +633,8 @@ async function startServer() {
           error: 'আপনার দৈনিক ফ্রী লিমিট (৫টি এক্সট্রাকশন) শেষ হয়ে গেছে। দয়া করে ২৪ ঘণ্টা পর আবার ফ্রী ট্রাই করতে পারবেন।' 
         });
       }
+
+      appendAuditLog({ userId: userId, action: 'EXTRACTION', details: 'Extracted a passport' });
 
       // Validate input request using Zod
       const parsedBody = ExtractPassportSchema.safeParse(req.body);
@@ -562,7 +677,7 @@ async function startServer() {
 Extract passport data, read and validate Machine-Readable Zone (MRZ) checksums, compute confidence scores, highlight structural discrepancies, and suggest Bangladeshi addresses.
 
 INSTRUCTIONS:
-1. OCR: Extract core properties: givenName, surname, dob, birthPlace, fatherName, motherName, spouseName, passportNumber, nidOrBirthCertNumber, issueDate, expiryDate, gender (Male/Female), permanentAddress, mobileNumber.
+1. OCR: Extract core properties: givenName, surname, dob, birthPlace, fatherName, motherName, spouseName, passportNumber, nidOrBirthCertNumber, issueDate, expiryDate, gender (Male/Female), permanentAddress, mobileNumber. Ensure permanentAddress captures the full address including the District name, which is usually at the bottom of the address block.
    - Core visual shapes: Carefully differentiate 'O' vs '0' and 'I' vs '1'.
    - IMPORTANT: Format dob, issueDate, and expiryDate strictly as DD/MM/YYYY (e.g. 15/08/1990).
 2. MRZ: Read raw MRZ lines into rawMrz array. Populate validation fields (passportNumberChecksum, dobChecksum, expiryDateChecksum, compositeChecksum) with "Pass" or "Fail".

@@ -74,11 +74,11 @@ export function ResultsSection({
 
             {/* TABS SELECTOR */}
             {(data && isUndertakingConfigured && undertakingData) || activeItem ? (
-              <div className="grid grid-cols-3 bg-slate-100/60 dark:bg-zinc-950/65 p-1.5 rounded-2xl mb-6 print:hidden gap-1.5 w-full text-center">
+              <div className="flex flex-col sm:grid sm:grid-cols-3 bg-slate-100/60 dark:bg-zinc-950/65 p-2 rounded-2xl mb-6 print:hidden gap-2 w-full text-center">
                 {data && (
                   <button
                     onClick={() => setResultsTab('profile')}
-                    className={`slide-btn slide-btn-purple text-center py-2 px-1 rounded-xl text-xs sm:text-xs font-extrabold cursor-pointer transition-none border ${
+                    className={`slide-btn slide-btn-purple text-center py-3 px-2 rounded-xl text-sm font-extrabold cursor-pointer transition-none border min-h-[48px] ${
                       resultsTab === 'profile'
                         ? 'active shadow-[0_2px_10px_rgba(0,0,0,0.02)] font-black border-[#2DD4BF]/50'
                         : 'border-slate-205 dark:border-zinc-800'
@@ -90,7 +90,7 @@ export function ResultsSection({
                 {data && isUndertakingConfigured && undertakingData && (
                   <button
                     onClick={() => setResultsTab('undertaking')}
-                    className={`slide-btn slide-btn-purple text-center py-2 px-1 rounded-xl text-xs sm:text-xs font-extrabold cursor-pointer transition-none border ${
+                    className={`slide-btn slide-btn-purple text-center py-3 px-2 rounded-xl text-sm font-extrabold cursor-pointer transition-none border min-h-[48px] ${
                       resultsTab === 'undertaking'
                         ? 'active shadow-[0_2px_10px_rgba(0,0,0,0.02)] font-black border-[#2DD4BF]/50'
                         : 'border-slate-205 dark:border-zinc-800'
@@ -102,7 +102,7 @@ export function ResultsSection({
                 {activeItem && (
                   <button
                     onClick={() => setResultsTab('passport-pdf')}
-                    className={`slide-btn slide-btn-purple text-center py-2 px-1 rounded-xl text-xs sm:text-xs font-extrabold cursor-pointer transition-none border ${
+                    className={`slide-btn slide-btn-purple text-center py-3 px-2 rounded-xl text-sm font-extrabold cursor-pointer transition-none border min-h-[48px] ${
                       resultsTab === 'passport-pdf'
                         ? 'active shadow-[0_2px_10px_rgba(0,0,0,0.02)] font-black border-[#2DD4BF]/50'
                         : 'border-slate-205 dark:border-zinc-800'

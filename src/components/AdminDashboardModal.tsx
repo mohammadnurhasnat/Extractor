@@ -1,0 +1,578 @@
+import React, { useState, useEffect } from 'react';
+import { Users, X, Loader2, Plus, ShieldCheck, History } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
+
+interface AdminDashboardModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  currentUser: any;
+  setToast: (toast: any) => void;
+}
+
+export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen, onClose, currentUser, setToast }) => {
+  useLockBodyScroll(isOpen);
+  const [activeTab, setActiveTab] = useState<'users' | 'audit'>('users');
+  
+  // Users State
+  const [adminUsersList, setAdminUsersList] = useState<any[]>([]);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+  const [adminUsersError, setAdminUsersError] = useState<string | null>(null);
+  const [isAdminAddingUser, setIsAdminAddingUser] = useState(false);
+  
+  // Add User State
+  const [newUserName, setNewUserName] = useState('');
+  const [newUserMobileNumber, setNewUserMobileNumber] = useState('');
+  const [newUserEmail, setNewUserEmail] = useState('');
+  const [newUserPassword, setNewUserPassword] = useState('');
+  const [isSavingUser, setIsSavingUser] = useState(false);
+
+  // User Detail / Edit State
+  const [selectedUserForModal, setSelectedUserForModal] = useState<any | null>(null);
+  const [isEditingSelectedUser, setIsEditingSelectedUser] = useState(false);
+  const [editUserName, setEditUserName] = useState('');
+  const [editUserEmail, setEditUserEmail] = useState('');
+  const [editUserMobileNumber, setEditUserMobileNumber] = useState('');
+  const [editUserPassword, setEditUserPassword] = useState('');
+  const [editUserDailyLimit, setEditUserDailyLimit] = useState(5);
+  const [isUpdatingUserDetail, setIsUpdatingUserDetail] = useState(false);
+
+  // Audit Logs State
+  const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [isLoadingLogs, setIsLoadingLogs] = useState(false);
+
+  useEffect(() => {
+    if (isOpen && currentUser) {
+      if (activeTab === 'users') {
+        fetchAdminUsers();
+      } else {
+        fetchAuditLogs();
+      }
+    }
+  }, [isOpen, activeTab, currentUser]);
+
+  const fetchAdminUsers = async () => {
+    setIsLoadingUsers(true);
+    setAdminUsersError(null);
+    try {
+      const response = await fetch('/api/admin/users', {
+        headers: { 'x-user-id': currentUser.id }
+      });
+      const result = await response.json();
+      if (response.ok && result.success) {
+        setAdminUsersList(result.users);
+      } else {
+        setAdminUsersError(result.error || 'Failed to fetch registered users.');
+      }
+    } catch (err) {
+      setAdminUsersError('Network error while fetching registered users.');
+    } finally {
+      setIsLoadingUsers(false);
+    }
+  };
+
+  const fetchAuditLogs = async () => {
+    setIsLoadingLogs(true);
+    try {
+      const response = await fetch('/api/admin/audit-logs', {
+        headers: { 'x-user-id': currentUser.id }
+      });
+      const result = await response.json();
+      if (response.ok && result.success) {
+        setAuditLogs(result.logs);
+      } else {
+        setToast({ message: result.error || 'Failed to fetch audit logs.', type: 'error' });
+      }
+    } catch (err) {
+      setToast({ message: 'Network error fetching logs.', type: 'error' });
+    } finally {
+      setIsLoadingLogs(false);
+    }
+  };
+
+  const handleUpdateUserLimit = async (userId: string, newLimit: number) => {
+    try {
+      const response = await fetch('/api/admin/update-user-limit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': currentUser.id
+        },
+        body: JSON.stringify({ userId, newLimit })
+      });
+      const result = await response.json();
+      if (response.ok && result.success) {
+        setAdminUsersList(prev => prev.map(u => u.id === userId ? { ...u, dailyLimit: newLimit } : u));
+        setToast({ message: 'ব্যবহারকারীর লিমিট সফলভাবে আপডেট করা হয়েছে! (Limit updated successfully!)', type: 'success' });
+      } else {
+        setToast({ message: result.error || 'Failed to update user limit.', type: 'error' });
+      }
+    } catch (err) {
+      setToast({ message: 'Network error. Please try again.', type: 'error' });
+    }
+  };
+
+  const handleToggleSuspendUser = async (userId: string, currentStatus: boolean) => {
+    try {
+      const response = await fetch('/api/admin/toggle-suspend', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': currentUser.id
+        },
+        body: JSON.stringify({ userId, isSuspended: !currentStatus })
+      });
+      const result = await response.json();
+      if (response.ok && result.success) {
+        setAdminUsersList(prev => prev.map(u => u.id === userId ? { ...u, isSuspended: !currentStatus } : u));
+        setToast({ 
+          message: !currentStatus 
+            ? 'ব্যবহারকারীকে সাময়িকভাবে স্থগিত করা হয়েছে! (User suspended successfully!)' 
+            : 'ব্যবহারকারীর স্থগিতাদেশ প্রত্যাহার করা হয়েছে! (User unsuspended successfully!)', 
+          type: 'success' 
+        });
+      } else {
+        setToast({ message: result.error || 'Failed to toggle suspension.', type: 'error' });
+      }
+    } catch (err) {
+      setToast({ message: 'Network error. Please try again.', type: 'error' });
+    }
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    if (!window.confirm('আপনি কি নিশ্চিত যে এই ব্যবহারকারীকে মুছে ফেলতে চান? (Are you sure you want to delete this user?)')) {
+      return;
+    }
+    try {
+      const response = await fetch('/api/admin/delete-user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': currentUser.id
+        },
+        body: JSON.stringify({ userId })
+      });
+      const result = await response.json();
+      if (response.ok && result.success) {
+        setAdminUsersList(prev => prev.filter(u => u.id !== userId));
+        setToast({ message: 'ব্যবহারকারীকে সফলভাবে মুছে ফেলা হয়েছে! (User deleted successfully!)', type: 'success' });
+      } else {
+        setToast({ message: result.error || 'Failed to delete user.', type: 'error' });
+      }
+    } catch (err) {
+      setToast({ message: 'Network error. Please try again.', type: 'error' });
+    }
+  };
+
+  const handleAddUserSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newUserName || !newUserMobileNumber || !newUserPassword) {
+      setToast({ message: 'নাম, মোবাইল নাম্বার এবং পাসওয়ার্ড প্রদান করা আবশ্যক। (Name, Mobile, and Password are required.)', type: 'error' });
+      return;
+    }
+
+    setIsSavingUser(true);
+    try {
+      const response = await fetch('/api/admin/add-user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': currentUser.id
+        },
+        body: JSON.stringify({
+          name: newUserName,
+          mobileNumber: newUserMobileNumber,
+          email: newUserEmail,
+          password: newUserPassword
+        })
+      });
+      const result = await response.json();
+      
+      if (response.ok && result.success) {
+        setToast({ message: 'নতুন ব্যবহারকারী সফলভাবে যুক্ত করা হয়েছে! (New user added successfully!)', type: 'success' });
+        setNewUserName('');
+        setNewUserMobileNumber('');
+        setNewUserEmail('');
+        setNewUserPassword('');
+        setIsAdminAddingUser(false);
+        fetchAdminUsers();
+      } else {
+        setToast({ message: result.error || 'Failed to add user.', type: 'error' });
+      }
+    } catch (err) {
+      setToast({ message: 'Network error. Please try again.', type: 'error' });
+    } finally {
+      setIsSavingUser(false);
+    }
+  };
+
+  const handleOpenUserDetailModal = (user: any) => {
+    setSelectedUserForModal(user);
+    setEditUserName(user.name);
+    setEditUserEmail(user.email || '');
+    setEditUserMobileNumber(user.mobileNumber);
+    setEditUserPassword(user.password);
+    setEditUserDailyLimit(user.dailyLimit ?? 5);
+    setIsEditingSelectedUser(false);
+  };
+
+  const handleEditUserSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedUserForModal) return;
+    
+    setIsUpdatingUserDetail(true);
+    try {
+      const response = await fetch('/api/admin/edit-user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': currentUser.id
+        },
+        body: JSON.stringify({
+          userId: selectedUserForModal.id,
+          name: editUserName,
+          email: editUserEmail,
+          mobileNumber: editUserMobileNumber,
+          password: editUserPassword,
+          dailyLimit: editUserDailyLimit
+        })
+      });
+      const result = await response.json();
+      if (response.ok && result.success) {
+        setToast({ message: 'ব্যবহারকারীর তথ্য সফলভাবে আপডেট করা হয়েছে! (User updated successfully!)', type: 'success' });
+        setSelectedUserForModal({
+          ...selectedUserForModal,
+          name: editUserName,
+          email: editUserEmail,
+          mobileNumber: editUserMobileNumber,
+          password: editUserPassword,
+          dailyLimit: editUserDailyLimit
+        });
+        setIsEditingSelectedUser(false);
+        fetchAdminUsers();
+      } else {
+        setToast({ message: result.error || 'Failed to update user.', type: 'error' });
+      }
+    } catch (err) {
+      setToast({ message: 'Network error. Please try again.', type: 'error' });
+    } finally {
+      setIsUpdatingUserDetail(false);
+    }
+  };
+
+  const handleDeleteFromPopup = async () => {
+    if (!selectedUserForModal) return;
+    const userId = selectedUserForModal.id;
+    if (!window.confirm('আপনি কি নিশ্চিত যে এই ব্যবহারকারীকে মুছে ফেলতে চান?')) return;
+    
+    try {
+      const response = await fetch('/api/admin/delete-user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': currentUser.id
+        },
+        body: JSON.stringify({ userId })
+      });
+      const result = await response.json();
+      if (response.ok && result.success) {
+        setAdminUsersList(prev => prev.filter(u => u.id !== userId));
+        setToast({ message: 'ব্যবহারকারীকে সফলভাবে মুছে ফেলা হয়েছে!', type: 'success' });
+        setSelectedUserForModal(null);
+      } else {
+        setToast({ message: result.error || 'Failed to delete user.', type: 'error' });
+      }
+    } catch (err) {
+      setToast({ message: 'Network error. Please try again.', type: 'error' });
+    }
+  };
+
+  const handleToggleSuspendFromPopup = async () => {
+    if (!selectedUserForModal) return;
+    const userId = selectedUserForModal.id;
+    const currentStatus = !!selectedUserForModal.isSuspended;
+    try {
+      const response = await fetch('/api/admin/toggle-suspend', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': currentUser.id
+        },
+        body: JSON.stringify({ userId, isSuspended: !currentStatus })
+      });
+      const result = await response.json();
+      if (response.ok && result.success) {
+        setAdminUsersList(prev => prev.map(u => u.id === userId ? { ...u, isSuspended: !currentStatus } : u));
+        setSelectedUserForModal(prev => prev ? { ...prev, isSuspended: !currentStatus } : null);
+        setToast({ message: 'Status updated successfully!', type: 'success' });
+      } else {
+        setToast({ message: result.error || 'Failed to toggle suspension.', type: 'error' });
+      }
+    } catch (err) {
+      setToast({ message: 'Network error. Please try again.', type: 'error' });
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <>
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 dark:bg-black/85 backdrop-blur-md">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 15 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 15 }}
+          transition={{ type: "spring", duration: 0.35 }}
+          className="relative bg-white dark:bg-zinc-950 shadow-[0_32px_64px_rgba(30,41,59,0.25)] border border-slate-200 dark:border-zinc-800 flex flex-col overflow-hidden w-full max-w-3xl rounded-[5px] text-black dark:text-white"
+        >
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-500" />
+          
+          {/* Header */}
+          <div className="p-3 border-b border-slate-100 dark:border-zinc-900/80 flex items-center justify-between bg-white/60 dark:bg-zinc-950/60 relative z-10">
+            <div className="flex gap-4 items-center">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 bg-blue-500/10 rounded-[3px] text-blue-600 dark:text-blue-400">
+                  <ShieldCheck className="w-4 h-4" />
+                </div>
+                <h3 className="font-extrabold text-sm tracking-tight text-black dark:text-white uppercase">
+                  Admin Dashboard
+                </h3>
+              </div>
+              
+              <div className="flex gap-2 bg-slate-100 dark:bg-zinc-900 p-1 rounded">
+                <button
+                  onClick={() => setActiveTab('users')}
+                  className={`px-3 py-1 text-xs font-bold rounded ${activeTab === 'users' ? 'bg-white dark:bg-zinc-800 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-slate-500 dark:text-zinc-400'}`}
+                >
+                  <Users className="w-3 h-3 inline-block mr-1" />
+                  Users
+                </button>
+                <button
+                  onClick={() => setActiveTab('audit')}
+                  className={`px-3 py-1 text-xs font-bold rounded ${activeTab === 'audit' ? 'bg-white dark:bg-zinc-800 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-slate-500 dark:text-zinc-400'}`}
+                >
+                  <History className="w-3 h-3 inline-block mr-1" />
+                  Audit Logs
+                </button>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-1 rounded-[3px] hover:bg-slate-100 dark:hover:bg-zinc-900 text-slate-400 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="p-4 h-[60vh] overflow-y-auto relative z-10">
+            {activeTab === 'users' ? (
+              isAdminAddingUser ? (
+                <form onSubmit={handleAddUserSubmit} className="space-y-4">
+                  <h4 className="text-xs font-extrabold text-slate-400 dark:text-zinc-500 uppercase tracking-wider border-b border-slate-100 dark:border-zinc-900/50 pb-1 mb-2">
+                    Create New Portal User
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Full Name</label>
+                      <input type="text" required value={newUserName} onChange={e => setNewUserName(e.target.value)} className="w-full px-3 py-2 border rounded-[5px] text-xs bg-white dark:bg-black/40 border-slate-200 dark:border-zinc-800 focus:ring-1 focus:ring-blue-500 font-medium" />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Mobile Number</label>
+                      <input type="text" required value={newUserMobileNumber} onChange={e => setNewUserMobileNumber(e.target.value)} className="w-full px-3 py-2 border rounded-[5px] text-xs bg-white dark:bg-black/40 border-slate-200 dark:border-zinc-800 focus:ring-1 focus:ring-blue-500 font-medium" />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Email Address</label>
+                      <input type="email" value={newUserEmail} onChange={e => setNewUserEmail(e.target.value)} className="w-full px-3 py-2 border rounded-[5px] text-xs bg-white dark:bg-black/40 border-slate-200 dark:border-zinc-800 focus:ring-1 focus:ring-blue-500 font-medium" />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Passcode</label>
+                      <input type="password" required value={newUserPassword} onChange={e => setNewUserPassword(e.target.value)} className="w-full px-3 py-2 border rounded-[5px] text-xs bg-white dark:bg-black/40 border-slate-200 dark:border-zinc-800 focus:ring-1 focus:ring-blue-500 font-medium" />
+                    </div>
+                  </div>
+                  <div className="flex gap-2 justify-end border-t border-slate-100 dark:border-zinc-900/50 pt-3 mt-4">
+                    <button type="button" onClick={() => setIsAdminAddingUser(false)} className="px-3 py-2 text-xs font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-zinc-900 rounded-[5px]">Cancel</button>
+                    <button type="submit" disabled={isSavingUser} className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-extrabold rounded-[5px] shadow-sm disabled:opacity-50 flex items-center gap-1.5">
+                      {isSavingUser ? <Loader2 className="w-3 h-3 animate-spin" /> : null} Save User
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-zinc-900/50">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Active registered user accounts</p>
+                    <button onClick={() => setIsAdminAddingUser(true)} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-[11px] rounded-[5px] shadow-sm">
+                      <Plus className="w-3.5 h-3.5" /> Add User
+                    </button>
+                  </div>
+                  {isLoadingUsers ? (
+                    <div className="flex flex-col items-center justify-center py-10 gap-2"><Loader2 className="w-6 h-6 animate-spin text-blue-500" /></div>
+                  ) : adminUsersError ? (
+                    <div className="text-rose-500 text-center text-xs">{adminUsersError}</div>
+                  ) : (
+                    <div className="overflow-x-auto border border-slate-100 dark:border-zinc-900 rounded-[5px]">
+                      <table className="w-full text-left border-collapse">
+                        <thead>
+                          <tr className="bg-slate-50 dark:bg-zinc-900/50 border-b border-slate-100 dark:border-zinc-900 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                            <th className="p-2.5">Profile Name</th>
+                            <th className="p-2.5">Mobile Number</th>
+                            <th className="p-2.5">Email</th>
+                            <th className="p-2.5">Passcode</th>
+                            <th className="p-2.5">Daily Limit</th>
+                            <th className="p-2.5 text-right">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 dark:divide-zinc-900">
+                          {adminUsersList.map(user => {
+                            const isUserAdmin = user.email && user.email.toLowerCase() === 'mohammadnurhasnat@gmail.com';
+                            return (
+                              <tr key={user.id} onClick={() => handleOpenUserDetailModal(user)} className="text-xs font-medium hover:bg-slate-50 dark:hover:bg-zinc-900/30 cursor-pointer">
+                                <td className="p-2.5 flex items-center gap-1.5">
+                                  <span>{user.name}</span>
+                                  {user.isSuspended && <span className="text-[8px] font-black bg-rose-500/10 text-rose-600 px-1 py-0.5 rounded">Suspended</span>}
+                                </td>
+                                <td className="p-2.5 font-mono">{user.mobileNumber}</td>
+                                <td className="p-2.5">{user.email || 'none'}</td>
+                                <td className="p-2.5 font-mono font-bold text-blue-500">{user.password}</td>
+                                <td className="p-2.5" onClick={e => e.stopPropagation()}>
+                                  {isUserAdmin ? <span className="text-[10px] font-bold text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded">No Limit</span> : (
+                                    <div className="flex items-center gap-1.5">
+                                      <button onClick={() => handleUpdateUserLimit(user.id, Math.max(0, (user.dailyLimit ?? 5) - 1))} className="w-5 h-5 border rounded flex justify-center items-center font-bold">-</button>
+                                      <span className="w-5 text-center font-mono font-bold">{user.dailyLimit ?? 5}</span>
+                                      <button onClick={() => handleUpdateUserLimit(user.id, (user.dailyLimit ?? 5) + 1)} className="w-5 h-5 border rounded flex justify-center items-center font-bold">+</button>
+                                    </div>
+                                  )}
+                                </td>
+                                <td className="p-2.5 text-right" onClick={e => e.stopPropagation()}>
+                                  {!isUserAdmin && (
+                                    <div className="flex items-center justify-end gap-1.5">
+                                      <button onClick={() => handleToggleSuspendUser(user.id, !!user.isSuspended)} className={`px-1.5 py-0.5 text-[9px] font-bold rounded ${user.isSuspended ? 'bg-emerald-500/10 text-emerald-600' : 'bg-amber-500/10 text-amber-600'}`}>{user.isSuspended ? 'Unsuspend' : 'Suspend'}</button>
+                                      <button onClick={() => handleDeleteUser(user.id)} className="px-1.5 py-0.5 text-[9px] font-bold bg-rose-500/10 text-rose-600 rounded">Delete</button>
+                                    </div>
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )
+            ) : (
+              <div className="space-y-3">
+                <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-zinc-900/50">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">System Audit Logs</p>
+                  <button onClick={fetchAuditLogs} className="text-xs font-bold text-blue-500 hover:underline">Refresh</button>
+                </div>
+                {isLoadingLogs ? (
+                  <div className="flex justify-center py-10"><Loader2 className="w-6 h-6 animate-spin text-blue-500" /></div>
+                ) : auditLogs.length === 0 ? (
+                  <div className="text-center py-10 text-slate-400 text-xs">No audit logs found.</div>
+                ) : (
+                  <div className="overflow-x-auto border border-slate-100 dark:border-zinc-900 rounded-[5px]">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-slate-50 dark:bg-zinc-900/50 border-b border-slate-100 dark:border-zinc-900 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                          <th className="p-2.5 w-32">Time</th>
+                          <th className="p-2.5 w-32">Action</th>
+                          <th className="p-2.5 w-32">User ID</th>
+                          <th className="p-2.5">Details</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-zinc-900 text-xs">
+                        {auditLogs.map((log: any) => (
+                          <tr key={log.id} className="hover:bg-slate-50 dark:hover:bg-zinc-900/30">
+                            <td className="p-2.5 text-slate-500">{new Date(log.timestamp).toLocaleString()}</td>
+                            <td className="p-2.5">
+                              <span className={`px-1.5 py-0.5 rounded font-bold text-[9px] ${
+                                log.action === 'LOGIN' ? 'bg-blue-500/10 text-blue-600' :
+                                log.action === 'EXTRACTION' ? 'bg-emerald-500/10 text-emerald-600' :
+                                'bg-amber-500/10 text-amber-600'
+                              }`}>
+                                {log.action}
+                              </span>
+                            </td>
+                            <td className="p-2.5 font-mono text-slate-600 dark:text-slate-300">{log.userId}</td>
+                            <td className="p-2.5">{log.details}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </motion.div>
+      </div>
+
+      <AnimatePresence>
+        {selectedUserForModal && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-950/75 dark:bg-black/85 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              className="relative bg-white dark:bg-zinc-950 shadow-[0_32px_64px_rgba(30,41,59,0.3)] border border-slate-200 dark:border-zinc-800 flex flex-col overflow-hidden w-full max-w-md rounded-[5px]"
+            >
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500" />
+              <div className="p-3.5 border-b border-slate-100 dark:border-zinc-900 flex justify-between bg-white/60 dark:bg-zinc-950/60">
+                <h3 className="font-extrabold text-xs uppercase">{isEditingSelectedUser ? 'Edit User' : 'User Information'}</h3>
+                <button onClick={() => setSelectedUserForModal(null)} className="p-1"><X className="w-4 h-4" /></button>
+              </div>
+              <div className="p-5 max-h-[70vh] overflow-y-auto">
+                {isEditingSelectedUser ? (
+                  <form onSubmit={handleEditUserSubmit} className="space-y-4">
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Full Name</label>
+                        <input type="text" required value={editUserName} onChange={e => setEditUserName(e.target.value)} className="w-full px-3 py-2 border rounded-[5px] text-xs bg-white dark:bg-black/40 border-slate-200 dark:border-zinc-800 focus:ring-1 focus:ring-emerald-500" />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Mobile</label>
+                        <input type="text" required value={editUserMobileNumber} onChange={e => setEditUserMobileNumber(e.target.value)} className="w-full px-3 py-2 border rounded-[5px] text-xs bg-white dark:bg-black/40 border-slate-200 dark:border-zinc-800 focus:ring-1 focus:ring-emerald-500" />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Email</label>
+                        <input type="email" value={editUserEmail} onChange={e => setEditUserEmail(e.target.value)} className="w-full px-3 py-2 border rounded-[5px] text-xs bg-white dark:bg-black/40 border-slate-200 dark:border-zinc-800 focus:ring-1 focus:ring-emerald-500" />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Passcode</label>
+                        <input type="text" required value={editUserPassword} onChange={e => setEditUserPassword(e.target.value)} className="w-full px-3 py-2 border rounded-[5px] text-xs bg-white dark:bg-black/40 border-slate-200 dark:border-zinc-800 focus:ring-1 focus:ring-emerald-500" />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Daily Limit</label>
+                        <input type="number" required value={editUserDailyLimit} onChange={e => setEditUserDailyLimit(parseInt(e.target.value))} className="w-full px-3 py-2 border rounded-[5px] text-xs bg-white dark:bg-black/40 border-slate-200 dark:border-zinc-800 focus:ring-1 focus:ring-emerald-500" />
+                      </div>
+                    </div>
+                    <div className="flex justify-end gap-2 pt-4">
+                      <button type="button" onClick={() => setIsEditingSelectedUser(false)} className="px-4 py-2 text-xs font-bold">Cancel</button>
+                      <button type="submit" disabled={isUpdatingUserDetail} className="px-4 py-2 bg-emerald-600 text-white font-bold rounded-[5px]">Save</button>
+                    </div>
+                  </form>
+                ) : (
+                  <div className="space-y-4">
+                    <h4 className="font-bold">{selectedUserForModal.name}</h4>
+                    <p className="text-xs font-mono">{selectedUserForModal.id}</p>
+                    <div className="grid grid-cols-2 gap-4 text-xs">
+                      <div><span className="block font-bold text-[10px] uppercase text-slate-400">Mobile</span>{selectedUserForModal.mobileNumber}</div>
+                      <div><span className="block font-bold text-[10px] uppercase text-slate-400">Email</span>{selectedUserForModal.email || 'None'}</div>
+                      <div><span className="block font-bold text-[10px] uppercase text-slate-400">Passcode</span>{selectedUserForModal.password}</div>
+                      <div><span className="block font-bold text-[10px] uppercase text-slate-400">Daily Limit</span>{selectedUserForModal.dailyLimit ?? 5}</div>
+                    </div>
+                    <div className="flex gap-2 pt-4 border-t border-slate-100 dark:border-zinc-900">
+                      <button onClick={handleDeleteFromPopup} className="flex-1 py-2 text-rose-600 border border-rose-200 font-bold rounded">Delete</button>
+                      <button onClick={handleToggleSuspendFromPopup} className="flex-1 py-2 text-amber-600 border border-amber-200 font-bold rounded">{selectedUserForModal.isSuspended ? 'Unsuspend' : 'Suspend'}</button>
+                      <button onClick={() => setIsEditingSelectedUser(true)} className="flex-1 py-2 bg-blue-600 text-white font-bold rounded">Edit</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+};

@@ -5,6 +5,7 @@ import {
 import { motion } from 'motion/react';
 import { HistoryItem, PassportData } from '../types';
 import { decryptData } from '../utils/crypto';
+import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
 
 interface RestoreModalProps {
   isOpen: boolean;
@@ -28,6 +29,7 @@ export function RestoreModal({
   setHistory,
   setToast
 }: RestoreModalProps) {
+  useLockBodyScroll(isOpen);
   const [isDragging, setIsDragging] = useState(false);
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
   const [parsedData, setParsedData] = useState<BackupPayload | null>(null);

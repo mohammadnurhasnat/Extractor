@@ -1,0 +1,210 @@
+import React, { useState } from 'react';
+import { ShieldCheck, AlertCircle, Loader2, Key } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
+
+// 📱 Original official high-fidelity WhatsApp SVG Icon
+const WhatsAppIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg 
+    viewBox="0 0 24 24" 
+    fill="currentColor" 
+    className="w-4 h-4 shrink-0 transition-all duration-300 group-hover:scale-110"
+    {...props}
+  >
+    <path d="M12.031 6.172c-2.656 0-4.817 2.16-4.817 4.817 0 .852.224 1.652.615 2.347l-.653 2.392 2.447-.642c.67.365 1.433.573 2.247.573 2.656 0 4.817-2.16 4.817-4.817s-2.16-4.817-4.817-4.817zm2.648 7.102c-.12.339-.597.625-.916.696-.248.055-.572.089-1.571-.327-1.28-.533-2.105-1.832-2.169-1.917-.064-.085-.516-.685-.516-1.306 0-.622.326-.928.443-1.048.117-.12.254-.15.339-.15.085 0 .17 0 .243.004.081.004.19-.032.29.21.104.252.357.868.389.933.032.065.052.14.01.225-.042.085-.064.138-.127.213-.064.074-.134.166-.191.223-.065.065-.132.134-.057.263.075.129.335.553.72.896.496.442.914.58 1.043.645.129.065.203.054.279-.032.075-.085.322-.375.408-.503.086-.129.17-.107.288-.064.118.043.747.352.875.416.128.064.214.096.246.15.032.054.032.31-.089.65zm-2.671-13.264C5.397.01.06 5.348.06 11.957c.001 2.112.548 4.17 1.587 5.974L0 24l6.335-1.662c1.746.953 3.71 1.455 5.673 1.456 6.613 0 11.95-5.341 11.95-11.953 0-3.204-1.245-6.216-3.513-8.484C18.22.135 15.21.01 12.008.01zm5.513 14.29c-.324-.162-1.917-.946-2.21-1.053-.293-.108-.507-.162-.72.162-.213.324-.827 1.053-1.013 1.267-.187.213-.373.24-.697.078-.324-.162-1.37-.505-2.61-1.611-.965-.86-1.617-1.923-1.806-2.247-.189-.324-.02-.5-.182-.661-.147-.146-.324-.378-.487-.568-.162-.189-.217-.324-.324-.54-.108-.217-.053-.405-.027-.567.027-.162.213-.513.32-.675.107-.162.143-.27.213-.405.071-.135.035-.253-.018-.36-.053-.107-.507-1.222-.693-1.67-.182-.438-.363-.378-.507-.385-.13-.006-.28-.008-.43-.008-.15 0-.394.056-.6.281-.206.225-.788.77-.788 1.877s.804 2.17 1.916 2.32c.112.015 1.8 2.75 4.362 3.855.61.264 1.086.42 1.457.538.613.195 1.172.167 1.613.101.492-.074 1.517-.619 1.73-1.217.213-.598.213-1.11.15-1.217-.063-.108-.231-.162-.555-.324z" />
+  </svg>
+);
+
+const GoogleIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    className="w-4 h-4 shrink-0"
+    {...props}
+  >
+    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+  </svg>
+);
+
+interface LoginModalProps {
+  loginIdentifier: string;
+  setLoginIdentifier: (val: string) => void;
+  loginPassword: string;
+  setLoginPassword: (val: string) => void;
+  loginError: string | null;
+  isLoggingIn: boolean;
+  handleLogin: (e: React.FormEvent) => void;
+  onGoogleLogin?: () => void;
+}
+
+export function LoginModal({
+  loginIdentifier,
+  setLoginIdentifier,
+  loginPassword,
+  setLoginPassword,
+  loginError,
+  isLoggingIn,
+  handleLogin,
+  onGoogleLogin
+}: LoginModalProps) {
+  useLockBodyScroll(true);
+  const [hoverColor, setHoverColor] = useState('#2563eb');
+
+  const handleButtonMouseEnter = () => {
+    const colors = ['#2563eb', '#4f46e5', '#db2777', '#ea580c', '#16a34a', '#0891b2', '#7c3aed'];
+    setHoverColor(colors[Math.floor(Math.random() * colors.length)]);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 dark:bg-black/80 backdrop-blur-xl">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 12 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 12 }}
+        transition={{ type: "spring", duration: 0.35 }}
+        className="relative bg-white dark:bg-[#0a0a0a] shadow-[0_0_50px_rgba(37,99,235,0.15)] dark:shadow-[0_0_50px_rgba(37,99,235,0.08)] border border-slate-300 dark:border-zinc-800 flex flex-col overflow-hidden w-full max-w-[350px] sm:max-w-[420px] rounded-[12px] text-black dark:text-white transition-all duration-300"
+      >
+        {/* Top Accent line */}
+        <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-blue-500 to-indigo-500" />
+
+        {/* Header */}
+        <div className="p-3.5 border-b border-slate-200 dark:border-zinc-800/80 flex items-center justify-between bg-slate-50 dark:bg-zinc-900/60 relative z-10">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-blue-500 animate-pulse" />
+            <span className="font-bold text-[10px] tracking-widest text-slate-500 dark:text-zinc-400 uppercase">
+              SECURE PORTAL
+            </span>
+          </div>
+          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+        </div>
+
+        {/* Title */}
+        <div className="px-5 pt-6 text-center relative z-10">
+          <h2 className="text-lg sm:text-xl font-black tracking-tight text-slate-900 dark:text-zinc-50 leading-tight">
+            Login Verification
+          </h2>
+        </div>
+
+        {loginError && (
+          <div className="mx-5 mt-3 p-2.5 bg-rose-500/5 border border-rose-500/15 rounded-[4px] flex items-start gap-1.5 text-[10px] font-bold text-rose-600 dark:text-rose-400 relative z-10">
+            <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+            <span>{loginError}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleLogin} className="p-6 space-y-4.5 relative z-10">
+          <div className="mb-4">
+            <label className="block text-[10px] font-bold text-slate-600 dark:text-zinc-400 uppercase tracking-wider mb-1.5 px-0.5">
+              Email or Mobile Number
+            </label>
+            <input
+              type="text"
+              required
+              value={loginIdentifier}
+              onChange={(e) => setLoginIdentifier(e.target.value)}
+              placeholder="e.g. admin@example.com or 017xxxxxxxx"
+              className="block w-full px-3.5 py-2.5 border border-slate-300 dark:border-zinc-700 rounded-[5px] text-xs bg-slate-50 dark:bg-zinc-900 focus:bg-white dark:focus:bg-black focus:outline-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-slate-900 dark:text-white font-semibold transition-all placeholder-slate-400 dark:placeholder-zinc-500 shadow-sm"
+            />
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-[10px] font-bold text-slate-600 dark:text-zinc-400 uppercase tracking-wider mb-1.5 px-0.5">
+              Security Password
+            </label>
+            <input
+              type="password"
+              required
+              value={loginPassword}
+              onChange={(e) => setLoginPassword(e.target.value)}
+              placeholder="••••••••"
+              className="block w-full px-3.5 py-2.5 border border-slate-300 dark:border-zinc-700 rounded-[5px] text-xs bg-slate-50 dark:bg-zinc-900 focus:bg-white dark:focus:bg-black focus:outline-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-slate-900 dark:text-white font-semibold transition-all placeholder-slate-400 dark:placeholder-zinc-500 shadow-sm"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={isLoggingIn}
+            onMouseEnter={handleButtonMouseEnter}
+            className="relative overflow-hidden group w-full py-2.5 rounded-[5px] shadow-sm transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed active:scale-[0.98] cursor-pointer flex items-center justify-center gap-1.5 mt-3 border text-xs font-bold"
+            style={{
+              borderColor: hoverColor + '30',
+              backgroundColor: hoverColor + '08'
+            }}
+          >
+            <span 
+              className="absolute inset-0 w-full h-full -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0" 
+              style={{ backgroundColor: hoverColor }}
+            />
+            <span className="relative z-10 transition-colors duration-300 flex items-center gap-1.5 text-slate-800 dark:text-zinc-200 group-hover:text-white dark:group-hover:text-white font-black text-xs uppercase tracking-wider">
+              {isLoggingIn ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Verifying...</span>
+                </>
+              ) : (
+                <>
+                  <Key className="w-3.5 h-3.5" />
+                  <span>Login</span>
+                </>
+              )}
+            </span>
+          </button>
+
+          <div className="flex items-center gap-3 my-4">
+            <div className="h-px bg-slate-300 dark:bg-zinc-700 flex-1"></div>
+            <span className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-widest">OR</span>
+            <div className="h-px bg-slate-300 dark:bg-zinc-700 flex-1"></div>
+          </div>
+
+          <button
+            type="button"
+            onClick={onGoogleLogin}
+            disabled={isLoggingIn}
+            className="relative overflow-hidden w-full py-2.5 rounded-[5px] shadow-sm transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 mt-3 border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800"
+          >
+            <GoogleIcon className="w-4 h-4" />
+            <span className="text-slate-800 dark:text-zinc-200 font-bold text-xs">
+              Continue with Google
+            </span>
+          </button>
+
+          {/* WhatsApp Support Section */}
+          <div className="mt-5 text-center flex flex-col items-center justify-center gap-2.5 border-t border-slate-200 dark:border-zinc-800/80 pt-5">
+            <span className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 leading-normal px-2">
+              Need an account? Click WhatsApp icon for Username & Passcode.
+            </span>
+            <a
+              href="https://wa.me/8801861186863"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="relative overflow-hidden group inline-flex items-center justify-center gap-2 px-5 py-2 border border-emerald-500/25 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 font-bold text-[10px] rounded-[5px] shadow-sm transition-all duration-300 active:scale-95 cursor-pointer hover:shadow-emerald-500/10"
+            >
+              {/* Slide effect background fill */}
+              <span className="absolute inset-0 w-full h-full bg-emerald-600 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0" />
+              
+              {/* Content container */}
+              <span className="relative z-10 flex items-center gap-1.5 transition-colors duration-300 group-hover:text-white uppercase tracking-wider">
+                <WhatsAppIcon className="w-3.5 h-3.5" />
+                <span>WhatsApp</span>
+              </span>
+            </a>
+          </div>
+        </form>
+
+        {/* Footer */}
+        <div className="px-4 py-3 border-t border-slate-100 dark:border-zinc-900/80 bg-white/60 dark:bg-zinc-950/60 relative z-10 flex items-center justify-between text-[9px] text-slate-400 dark:text-zinc-500 font-bold uppercase">
+          <div className="flex items-center gap-1">
+            <ShieldCheck className="w-3.5 h-3.5 text-blue-500" />
+            <span>SECURE CONNECTION</span>
+          </div>
+          <div>
+            <span>AUTHORIZED ONLY</span>
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  );
+}

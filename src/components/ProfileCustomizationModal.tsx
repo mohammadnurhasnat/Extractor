@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Camera, Upload, Check, RefreshCw, ShieldAlert } from 'lucide-react';
+import { X, User, Upload, Check, RefreshCw, ShieldAlert } from 'lucide-react';
+import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
 
 interface ProfileCustomizationModalProps {
   isOpen: boolean;
@@ -16,12 +17,7 @@ export const ProfileCustomizationModal: React.FC<ProfileCustomizationModalProps>
   profilePicture,
   onSaveProfilePicture
 }) => {
-  const [isCameraActive, setIsCameraActive] = useState(false);
-  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
-  const [cameraError, setCameraError] = useState<string | null>(null);
-  
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  useLockBodyScroll(isOpen);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const gradientOptions = [
@@ -32,72 +28,6 @@ export const ProfileCustomizationModal: React.FC<ProfileCustomizationModalProps>
     { name: 'Gold Rush', colors: ['#f59e0b', '#d97706', '#78350f'] },
     { name: 'Volcanic Ash', colors: ['#4b5563', '#1f2937', '#111827'] }
   ];
-
-  // Stop camera stream on unmount or modal close
-  useEffect(() => {
-    return () => {
-      stopCamera();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!isOpen) {
-      stopCamera();
-    }
-  }, [isOpen]);
-
-  const startCamera = async () => {
-    setCameraError(null);
-    setIsCameraActive(true);
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 160, height: 160, facingMode: 'user' },
-        audio: false
-      });
-      setCameraStream(stream);
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.play().catch(err => {
-          console.error("Video play error:", err);
-        });
-      }
-    } catch (err: any) {
-      console.error('Failed to access camera:', err);
-      setCameraError('ক্যামেরা চালু করতে সমস্যা হয়েছে। দয়া করে ক্যামেরা ব্যবহারের অনুমতি দিন। (Unable to access camera. Please allow permission.)');
-      setIsCameraActive(false);
-    }
-  };
-
-  const stopCamera = () => {
-    if (cameraStream) {
-      cameraStream.getTracks().forEach(track => track.stop());
-      setCameraStream(null);
-    }
-    setIsCameraActive(false);
-  };
-
-  const capturePhoto = () => {
-    if (videoRef.current && canvasRef.current) {
-      const video = videoRef.current;
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        canvas.width = 160;
-        canvas.height = 160;
-        
-        // Square center crop logic
-        const size = Math.min(video.videoWidth, video.videoHeight);
-        const sx = (video.videoWidth - size) / 2;
-        const sy = (video.videoHeight - size) / 2;
-        
-        ctx.drawImage(video, sx, sy, size, size, 0, 0, 160, 160);
-        
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-        onSaveProfilePicture(dataUrl);
-        stopCamera();
-      }
-    }
-  };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -134,23 +64,24 @@ export const ProfileCustomizationModal: React.FC<ProfileCustomizationModalProps>
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, 160, 160);
       
-      // Initials
-      const initials = currentUser 
-        ? currentUser.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() 
-        : 'EX';
-        
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 55px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      
       // Shadow for professional touch
-      ctx.shadowColor = 'rgba(0,0,0,0.15)';
+      ctx.shadowColor = 'rgba(0,0,0,0.2)';
       ctx.shadowBlur = 8;
-      ctx.shadowOffsetX = 2;
+      ctx.shadowOffsetX = 1;
       ctx.shadowOffsetY = 2;
       
-      ctx.fillText(initials, 80, 80);
+      // Draw procedural human avatar silhouette
+      ctx.fillStyle = '#ffffff';
+      
+      // Head
+      ctx.beginPath();
+      ctx.arc(80, 62, 22, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Shoulders / torso
+      ctx.beginPath();
+      ctx.arc(80, 138, 44, Math.PI, 0);
+      ctx.fill();
       
       const dataUrl = canvas.toDataURL('image/png');
       onSaveProfilePicture(dataUrl);
@@ -159,7 +90,6 @@ export const ProfileCustomizationModal: React.FC<ProfileCustomizationModalProps>
 
   if (!isOpen || !currentUser) return null;
 
-  const initials = currentUser.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
   const isAdmin = currentUser.email.toLowerCase() === 'mohammadnurhasnat@gmail.com';
 
   if (isAdmin) {
@@ -226,9 +156,6 @@ export const ProfileCustomizationModal: React.FC<ProfileCustomizationModalProps>
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 dark:bg-black/85 backdrop-blur-md">
-      {/* Hidden processing canvas */}
-      <canvas ref={canvasRef} className="hidden" />
-
       <div className="relative bg-white dark:bg-zinc-950 shadow-[0_32px_64px_rgba(30,41,59,0.25)] border border-slate-200 dark:border-zinc-800 flex flex-col overflow-hidden w-full max-w-md rounded-[5px] text-black dark:text-white">
         {/* Top Accent line */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-500" />
@@ -261,15 +188,7 @@ export const ProfileCustomizationModal: React.FC<ProfileCustomizationModalProps>
           {/* Section 1: Dynamic Avatar Preview */}
           <div className="flex flex-col items-center justify-center py-2 bg-slate-50/50 dark:bg-zinc-900/10 border border-dashed border-slate-200/60 dark:border-zinc-800/60 rounded-[5px]">
             <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-blue-500/20 shadow-md">
-              {isCameraActive ? (
-                <video 
-                  ref={videoRef} 
-                  autoPlay 
-                  playsInline 
-                  muted
-                  className="w-full h-full object-cover scale-x-[-1]"
-                />
-              ) : profilePicture ? (
+              {profilePicture ? (
                 <img 
                   src={profilePicture} 
                   alt="Profile" 
@@ -277,8 +196,8 @@ export const ProfileCustomizationModal: React.FC<ProfileCustomizationModalProps>
                   referrerPolicy="no-referrer"
                 />
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-extrabold text-2xl">
-                  {initials}
+                <div className="w-full h-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white">
+                  <User className="w-10 h-10" />
                 </div>
               )}
             </div>
@@ -291,31 +210,13 @@ export const ProfileCustomizationModal: React.FC<ProfileCustomizationModalProps>
             </p>
           </div>
 
-          {/* Section 2: Upload or Camera Interface */}
+          {/* Section 2: File Upload Interface */}
           <div className="space-y-2.5">
             <h4 className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">
-              Method 1: Live Capture or File Upload
+              Method 1: File Upload
             </h4>
             
-            <div className="grid grid-cols-2 gap-2">
-              {isCameraActive ? (
-                <button
-                  onClick={capturePhoto}
-                  className="py-2 px-3 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-extrabold rounded-[5px] shadow-sm flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
-                >
-                  <Check className="w-3.5 h-3.5" />
-                  <span>ছবি তুলুন (Capture)</span>
-                </button>
-              ) : (
-                <button
-                  onClick={startCamera}
-                  className="py-2 px-3 bg-slate-900 hover:bg-slate-800 text-white border border-zinc-700/80 text-xs font-extrabold rounded-[5px] shadow-sm flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
-                >
-                  <Camera className="w-3.5 h-3.5 text-blue-500" />
-                  <span>লাইভ ক্যামেরা</span>
-                </button>
-              )}
-
+            <div>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -325,31 +226,12 @@ export const ProfileCustomizationModal: React.FC<ProfileCustomizationModalProps>
               />
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="py-2 px-3 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 dark:bg-zinc-950 dark:hover:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-200 text-xs font-extrabold rounded-[5px] shadow-sm flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+                className="w-full py-2.5 px-3 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 dark:bg-zinc-950 dark:hover:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-200 text-xs font-extrabold rounded-[5px] shadow-sm flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
               >
                 <Upload className="w-3.5 h-3.5 text-blue-500" />
-                <span>ফাইল আপলোড</span>
+                <span>ফাইল আপলোড করুন (Upload Photo)</span>
               </button>
             </div>
-
-            {isCameraActive && (
-              <div className="flex items-center justify-between p-2 bg-indigo-500/5 border border-indigo-500/20 rounded-[5px] text-[10px] text-indigo-600 dark:text-indigo-400 font-bold">
-                <span>📷 ক্যামেরা চালু আছে...</span>
-                <button 
-                  onClick={stopCamera}
-                  className="hover:underline cursor-pointer uppercase"
-                >
-                  বন্ধ করুন (Cancel)
-                </button>
-              </div>
-            )}
-
-            {cameraError && (
-              <div className="p-2.5 bg-rose-500/5 border border-rose-500/10 rounded-[5px] text-[10px] text-rose-600 dark:text-rose-400 font-bold flex items-start gap-1.5">
-                <ShieldAlert className="w-3.5 h-3.5 shrink-0" />
-                <span>{cameraError}</span>
-              </div>
-            )}
           </div>
 
           {/* Section 3: Generated Gradient Avatars */}
@@ -369,9 +251,7 @@ export const ProfileCustomizationModal: React.FC<ProfileCustomizationModalProps>
                   }}
                   title={opt.name}
                 >
-                  <span className="text-white font-extrabold text-sm tracking-widest drop-shadow-sm">
-                    {initials}
-                  </span>
+                  <User className="w-5 h-5 text-white/95 drop-shadow" />
                   <span className="text-[8px] text-white/70 font-semibold truncate max-w-full px-1 mt-0.5 uppercase">
                     {opt.name.split(' ')[0]}
                   </span>
