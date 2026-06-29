@@ -1,5 +1,4 @@
-import React from 'react';
-import { CheckCircle2, Check, Copy, Download, FileText } from 'lucide-react';
+import { CheckCircle2, Check, Copy, Download, FileText, Braces } from 'lucide-react';
 import { PassportData } from '../types';
 import { DataField } from './DataField';
 import {
@@ -15,6 +14,7 @@ interface PassportDataTabProps {
   handleCopyAll: () => void;
   handleDownloadText: () => void;
   handleDownloadPDF: () => void;
+  handleDownloadJSON: () => void;
   isCopied: boolean;
   isGeneratingAddresses?: boolean;
   onGenerateAddresses?: () => void;
@@ -26,6 +26,7 @@ export function PassportDataTab({
   handleCopyAll,
   handleDownloadText,
   handleDownloadPDF,
+  handleDownloadJSON,
   isCopied,
   isGeneratingAddresses = false,
   onGenerateAddresses
@@ -80,6 +81,13 @@ export function PassportDataTab({
           >
             <FileText className="w-3.5 h-3.5 relative z-10" />
             <span className="relative z-10">Download</span>
+          </button>
+          <button 
+            onClick={handleDownloadJSON}
+            className="slide-btn slide-btn-slate flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg cursor-pointer"
+          >
+            <Braces className="w-3.5 h-3.5 relative z-10" />
+            <span className="relative z-10">JSON</span>
           </button>
         </div>
       </div>

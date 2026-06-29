@@ -468,7 +468,8 @@ function dataURLtoFile(dataurl: string, filename: string): File {
     handleCopyAll,
     handleDownloadText,
     handleDownloadPDF,
-    handleDownloadUndertaking
+    handleDownloadUndertaking,
+    handleDownloadJSON
   } = useExporterHelpers({ data, undertakingData, setToast });
 
   return (
@@ -566,6 +567,7 @@ function dataURLtoFile(dataurl: string, filename: string): File {
               setIsUndertakingEditable={setIsUndertakingEditable}
               handleUpdateUndertakingField={handleUpdateUndertakingField}
               handleDownloadUndertaking={handleDownloadUndertaking}
+              handleDownloadJSON={handleDownloadJSON}
               isGeneratingAddresses={isGeneratingAddresses}
               onGenerateAddresses={handleGenerateAddresses}
             />

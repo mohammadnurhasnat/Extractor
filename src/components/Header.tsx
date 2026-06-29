@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sun, Moon, LogOut, User, RefreshCw, Users, ShieldCheck } from 'lucide-react';
+import { Sun, Moon, LogOut, User, RefreshCw, Users, ShieldCheck, Cloud, CloudOff } from 'lucide-react';
 
 interface HeaderProps {
   isDarkMode: boolean;
@@ -10,6 +10,7 @@ interface HeaderProps {
   onOpenAdminUsers?: () => void;
   profilePicture?: string | null;
   onOpenProfile?: () => void;
+  isSynced?: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -20,7 +21,8 @@ export const Header: React.FC<HeaderProps> = ({
   limitStatus,
   onOpenAdminUsers,
   profilePicture,
-  onOpenProfile
+  onOpenProfile,
+  isSynced = true
 }) => {
 
   const isAdmin = currentUser?.email.toLowerCase() === 'mohammadnurhasnat@gmail.com';
@@ -62,26 +64,30 @@ export const Header: React.FC<HeaderProps> = ({
                 className="flex items-center gap-1.5 hover:opacity-85 active:scale-98 transition-all shrink-0 cursor-pointer"
                 title="Edit Profile Settings"
               >
-                {/* Profile Picture Thumbnail */}
-                <div className="w-5.5 h-5.5 rounded-full overflow-hidden border border-blue-500/35 bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shrink-0">
-                  {profilePicture ? (
-                    <img src={profilePicture} alt="Avatar" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                  ) : (
-                    <User className="w-3.5 h-3.5 text-white" />
-                  )}
-                </div>
-
                 {/* Name */}
                 <div className="flex flex-col text-left leading-none">
                   <span className="text-[10px] sm:text-xs font-bold text-slate-700 dark:text-zinc-200 truncate max-w-[70px] sm:max-w-[120px]">
                     {currentUser.name}
                   </span>
                   {/* Real-time Role Badge Indicators */}
-                  <span className={`text-[8px] font-extrabold tracking-wider mt-0.5 uppercase ${
-                    isAdmin ? 'text-amber-600 dark:text-amber-400' : 'text-blue-600 dark:text-blue-400'
-                  }`}>
-                    {isAdmin ? 'ADMIN' : 'VERIFIED'}
-                  </span>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className={`text-[8px] font-extrabold tracking-wider uppercase ${
+                      isAdmin ? 'text-amber-600 dark:text-amber-400' : 'text-blue-600 dark:text-blue-400'
+                    }`}>
+                      {isAdmin ? 'ADMIN' : 'VERIFIED'}
+                    </span>
+                    
+                    <div className="flex items-center gap-0.5" title={isSynced ? 'Safely synced to Firebase Cloud' : 'Pending sync to Firebase Cloud'}>
+                      {isSynced ? (
+                        <Cloud className="w-2.5 h-2.5 text-emerald-500 dark:text-emerald-400" />
+                      ) : (
+                        <CloudOff className="w-2.5 h-2.5 text-slate-400 dark:text-zinc-500" />
+                      )}
+                      <span className={`text-[7px] font-bold uppercase tracking-widest ${isSynced ? 'text-emerald-500 dark:text-emerald-400' : 'text-slate-400 dark:text-zinc-500'}`}>
+                        {isSynced ? 'SYNCED' : 'PENDING'}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </button>
               
