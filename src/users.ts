@@ -36,6 +36,13 @@ export const USERS_DATABASE: User[] = [
     mobileNumber: "01315002034",
     password: "12345678",
     name: "Badsha Badhon"
+  },
+   {
+    id: "user_hasnat",
+    email: "1@2.com",
+    mobileNumber: "01303056050",
+    password: "123",
+    name: "Hasnat"
   }
   // ➕ নতুন ইউজার যোগ করতে চাইলে নিচের ব্র্যাকেটের ভেতরের অংশটি আন-কমেন্ট করে কপি-পেস্ট করে বসিয়ে দিন:
   /*
