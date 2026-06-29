@@ -172,15 +172,15 @@ Expiry Date: ${item.data.expiryDate || ''}
           <p className="text-[12px] text-slate-500 dark:text-zinc-450 max-w-[200px] relative z-10 leading-relaxed font-medium">Try adjusting your search terms or clearing the filter.</p>
         </div>
       ) : (
-        <div className="overflow-y-auto overscroll-contain scroll-smooth pr-1 space-y-1 pb-2 scrollbar-thin max-h-[300px]">
+        <div className="overflow-y-auto overscroll-contain scroll-smooth pr-1 space-y-1.5 pb-2 scrollbar-thin max-h-[300px]">
           {filteredHistory.map(item => (
             <div 
               key={item.id} 
               onClick={() => onLoadItem(item)}
-              className="cursor-pointer group relative flex items-center justify-between py-1 px-2.5 rounded-md border border-slate-100 dark:border-zinc-800/80 bg-white dark:bg-zinc-950/40 hover:bg-gradient-to-r hover:from-blue-50/40 hover:to-transparent dark:hover:from-zinc-850/35 dark:hover:to-transparent hover:border-blue-200 dark:hover:border-zinc-700 transition-all duration-300 shadow-sm min-h-[28px]"
+              className="cursor-pointer group relative flex items-center justify-between py-1.5 px-3 rounded-md border border-slate-100 dark:border-zinc-800/80 bg-white dark:bg-zinc-950/40 hover:bg-gradient-to-r hover:from-blue-50/40 hover:to-transparent dark:hover:from-zinc-850/35 dark:hover:to-transparent hover:border-blue-200 dark:hover:border-zinc-700 transition-all duration-300 shadow-sm min-h-[34px]"
             >
-              <div className="flex items-center gap-1.5 mr-6 overflow-hidden flex-wrap min-w-0 flex-1">
-                <span className="font-bold text-[12.5px] leading-none text-slate-850 dark:text-zinc-200 group-hover:text-blue-600 dark:group-hover:text-blue-450 transition-colors truncate font-sans shrink-0 max-w-[130px] sm:max-w-[165px]">
+              <div className="flex items-center gap-2 mr-6 overflow-hidden flex-wrap min-w-0 flex-1">
+                <span className="font-bold text-[13px] leading-none text-slate-850 dark:text-zinc-200 group-hover:text-blue-600 dark:group-hover:text-blue-450 transition-colors truncate font-sans shrink-0 max-w-[130px] sm:max-w-[165px]">
                   {item.data.givenName} {item.data.surname}
                 </span>
                 {item.data.passportNumber && (

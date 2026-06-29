@@ -65,16 +65,16 @@ export function LoginModal({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 12 }}
         transition={{ type: "spring", duration: 0.35 }}
-        className="relative bg-white dark:bg-[#0a0a0a] shadow-[0_0_50px_rgba(37,99,235,0.15)] dark:shadow-[0_0_50px_rgba(37,99,235,0.08)] border border-slate-300 dark:border-zinc-800 flex flex-col overflow-hidden w-full max-w-[350px] sm:max-w-[420px] rounded-[12px] text-black dark:text-white transition-all duration-300"
+        className="relative bg-white dark:bg-[#0a0a0a] shadow-[0_0_50px_rgba(37,99,235,0.15)] dark:shadow-[0_0_50px_rgba(37,99,235,0.08)] border border-slate-300 dark:border-zinc-800 flex flex-col overflow-hidden w-full max-w-[280px] sm:max-w-[320px] rounded-[10px] text-black dark:text-white transition-all duration-300"
       >
         {/* Top Accent line */}
-        <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-blue-500 to-indigo-500" />
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-blue-500 to-indigo-500" />
 
         {/* Header */}
-        <div className="p-3.5 border-b border-slate-200 dark:border-zinc-800/80 flex items-center justify-between bg-slate-50 dark:bg-zinc-900/60 relative z-10">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-blue-500 animate-pulse" />
-            <span className="font-bold text-[10px] tracking-widest text-slate-500 dark:text-zinc-400 uppercase">
+        <div className="py-2 px-3 border-b border-slate-200 dark:border-zinc-800/80 flex items-center justify-between bg-slate-50 dark:bg-zinc-900/60 relative z-10">
+          <div className="flex items-center gap-1.5">
+            <ShieldCheck className="w-3.5 h-3.5 text-blue-500 animate-pulse" />
+            <span className="font-bold text-[8.5px] tracking-widest text-slate-500 dark:text-zinc-400 uppercase">
               SECURE PORTAL
             </span>
           </div>
@@ -82,22 +82,22 @@ export function LoginModal({
         </div>
 
         {/* Title */}
-        <div className="px-5 pt-6 text-center relative z-10">
-          <h2 className="text-lg sm:text-xl font-black tracking-tight text-slate-900 dark:text-zinc-50 leading-tight">
+        <div className="px-4 pt-3 text-center relative z-10">
+          <h2 className="text-sm font-black tracking-tight text-slate-900 dark:text-zinc-50 leading-tight">
             Login Verification
           </h2>
         </div>
 
         {loginError && (
-          <div className="mx-5 mt-3 p-2.5 bg-rose-500/5 border border-rose-500/15 rounded-[4px] flex items-start gap-1.5 text-[10px] font-bold text-rose-600 dark:text-rose-400 relative z-10">
-            <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+          <div className="mx-4 mt-2 p-1.5 bg-rose-500/5 border border-rose-500/15 rounded-[4px] flex items-start gap-1 text-[9px] font-semibold text-rose-600 dark:text-rose-400 relative z-10">
+            <AlertCircle className="w-3 h-3 shrink-0 mt-0.5" />
             <span>{loginError}</span>
           </div>
         )}
 
-        <form onSubmit={handleLogin} className="p-6 space-y-4.5 relative z-10">
-          <div className="mb-4">
-            <label className="block text-[10px] font-bold text-slate-600 dark:text-zinc-400 uppercase tracking-wider mb-1.5 px-0.5">
+        <form onSubmit={handleLogin} className="p-4 space-y-2 relative z-10">
+          <div className="mb-2">
+            <label className="block text-[8.5px] font-bold text-slate-600 dark:text-zinc-400 uppercase tracking-wider mb-1 px-0.5">
               Email or Mobile Number
             </label>
             <input
@@ -105,13 +105,13 @@ export function LoginModal({
               required
               value={loginIdentifier}
               onChange={(e) => setLoginIdentifier(e.target.value)}
-              placeholder="e.g. admin@example.com or 017xxxxxxxx"
-              className="block w-full px-3.5 py-2.5 border border-slate-300 dark:border-zinc-700 rounded-[5px] text-xs bg-slate-50 dark:bg-zinc-900 focus:bg-white dark:focus:bg-black focus:outline-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-slate-900 dark:text-white font-semibold transition-all placeholder-slate-400 dark:placeholder-zinc-500 shadow-sm"
+              placeholder="e.g. admin@example.com"
+              className="block w-full px-2.5 py-1.5 border border-slate-300 dark:border-zinc-700 rounded-[4px] text-[11px] bg-slate-50 dark:bg-zinc-900 focus:bg-white dark:focus:bg-black focus:outline-none focus:ring-1 focus:ring-blue-600 dark:focus:ring-blue-500 text-slate-900 dark:text-white font-semibold transition-all placeholder-slate-400 dark:placeholder-zinc-500 shadow-sm"
             />
           </div>
 
-          <div className="mb-4">
-            <label className="block text-[10px] font-bold text-slate-600 dark:text-zinc-400 uppercase tracking-wider mb-1.5 px-0.5">
+          <div className="mb-2">
+            <label className="block text-[8.5px] font-bold text-slate-600 dark:text-zinc-400 uppercase tracking-wider mb-1 px-0.5">
               Security Password
             </label>
             <input
@@ -120,7 +120,7 @@ export function LoginModal({
               value={loginPassword}
               onChange={(e) => setLoginPassword(e.target.value)}
               placeholder="••••••••"
-              className="block w-full px-3.5 py-2.5 border border-slate-300 dark:border-zinc-700 rounded-[5px] text-xs bg-slate-50 dark:bg-zinc-900 focus:bg-white dark:focus:bg-black focus:outline-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-slate-900 dark:text-white font-semibold transition-all placeholder-slate-400 dark:placeholder-zinc-500 shadow-sm"
+              className="block w-full px-2.5 py-1.5 border border-slate-300 dark:border-zinc-700 rounded-[4px] text-[11px] bg-slate-50 dark:bg-zinc-900 focus:bg-white dark:focus:bg-black focus:outline-none focus:ring-1 focus:ring-blue-600 dark:focus:ring-blue-500 text-slate-900 dark:text-white font-semibold transition-all placeholder-slate-400 dark:placeholder-zinc-500 shadow-sm"
             />
           </div>
 
@@ -128,7 +128,7 @@ export function LoginModal({
             type="submit"
             disabled={isLoggingIn}
             onMouseEnter={handleButtonMouseEnter}
-            className="relative overflow-hidden group w-full py-2.5 rounded-[5px] shadow-sm transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed active:scale-[0.98] cursor-pointer flex items-center justify-center gap-1.5 mt-3 border text-xs font-bold"
+            className="relative overflow-hidden group w-full py-1.5 rounded-[4px] shadow-sm transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed active:scale-[0.98] cursor-pointer flex items-center justify-center gap-1 mt-1 border text-[10.5px] font-bold"
             style={{
               borderColor: hoverColor + '30',
               backgroundColor: hoverColor + '08'
@@ -138,24 +138,24 @@ export function LoginModal({
               className="absolute inset-0 w-full h-full -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0" 
               style={{ backgroundColor: hoverColor }}
             />
-            <span className="relative z-10 transition-colors duration-300 flex items-center gap-1.5 text-slate-800 dark:text-zinc-200 group-hover:text-white dark:group-hover:text-white font-black text-xs uppercase tracking-wider">
+            <span className="relative z-10 transition-colors duration-300 flex items-center gap-1 text-slate-800 dark:text-zinc-200 group-hover:text-white dark:group-hover:text-white font-black text-[10.5px] uppercase tracking-wider">
               {isLoggingIn ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
                   <span>Verifying...</span>
                 </>
               ) : (
                 <>
-                  <Key className="w-3.5 h-3.5" />
+                  <Key className="w-3 h-3" />
                   <span>Login</span>
                 </>
               )}
             </span>
           </button>
 
-          <div className="flex items-center gap-3 my-4">
+          <div className="flex items-center gap-2.5 my-2">
             <div className="h-px bg-slate-300 dark:bg-zinc-700 flex-1"></div>
-            <span className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-widest">OR</span>
+            <span className="text-[8.5px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-widest">OR</span>
             <div className="h-px bg-slate-300 dark:bg-zinc-700 flex-1"></div>
           </div>
 
@@ -163,31 +163,31 @@ export function LoginModal({
             type="button"
             onClick={onGoogleLogin}
             disabled={isLoggingIn}
-            className="relative overflow-hidden w-full py-2.5 rounded-[5px] shadow-sm transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 mt-3 border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800"
+            className="relative overflow-hidden w-full py-1.5 rounded-[4px] shadow-sm transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed active:scale-[0.98] cursor-pointer flex items-center justify-center gap-1.5 border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800"
           >
-            <GoogleIcon className="w-4 h-4" />
-            <span className="text-slate-800 dark:text-zinc-200 font-bold text-xs">
+            <GoogleIcon className="w-3.5 h-3.5" />
+            <span className="text-slate-800 dark:text-zinc-200 font-bold text-[10.5px]">
               Continue with Google
             </span>
           </button>
 
           {/* WhatsApp Support Section */}
-          <div className="mt-5 text-center flex flex-col items-center justify-center gap-2.5 border-t border-slate-200 dark:border-zinc-800/80 pt-5">
-            <span className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 leading-normal px-2">
-              Need an account? Click WhatsApp icon for Username & Passcode.
+          <div className="mt-3.5 text-center flex flex-col items-center justify-center gap-2 border-t border-slate-200 dark:border-zinc-800/80 pt-3">
+            <span className="text-[8.5px] font-bold text-slate-500 dark:text-zinc-400 leading-normal px-1">
+              Need an account? Click WhatsApp for Passcode.
             </span>
             <a
               href="https://wa.me/8801861186863"
               target="_blank"
               rel="noopener noreferrer"
-              className="relative overflow-hidden group inline-flex items-center justify-center gap-2 px-5 py-2 border border-emerald-500/25 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 font-bold text-[10px] rounded-[5px] shadow-sm transition-all duration-300 active:scale-95 cursor-pointer hover:shadow-emerald-500/10"
+              className="relative overflow-hidden group inline-flex items-center justify-center gap-1.5 px-3 py-1.5 border border-emerald-500/25 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 font-bold text-[8.5px] rounded-[4px] shadow-sm transition-all duration-300 active:scale-95 cursor-pointer hover:shadow-emerald-500/10"
             >
               {/* Slide effect background fill */}
               <span className="absolute inset-0 w-full h-full bg-emerald-600 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0" />
               
               {/* Content container */}
-              <span className="relative z-10 flex items-center gap-1.5 transition-colors duration-300 group-hover:text-white uppercase tracking-wider">
-                <WhatsAppIcon className="w-3.5 h-3.5" />
+              <span className="relative z-10 flex items-center gap-1 transition-colors duration-300 group-hover:text-white uppercase tracking-wider">
+                <WhatsAppIcon className="w-3 h-3" />
                 <span>WhatsApp</span>
               </span>
             </a>
@@ -195,9 +195,9 @@ export function LoginModal({
         </form>
 
         {/* Footer */}
-        <div className="px-4 py-3 border-t border-slate-100 dark:border-zinc-900/80 bg-white/60 dark:bg-zinc-950/60 relative z-10 flex items-center justify-between text-[9px] text-slate-400 dark:text-zinc-500 font-bold uppercase">
+        <div className="px-3 py-2 border-t border-slate-100 dark:border-zinc-900/80 bg-white/60 dark:bg-zinc-950/60 relative z-10 flex items-center justify-between text-[8px] text-slate-400 dark:text-zinc-500 font-bold uppercase">
           <div className="flex items-center gap-1">
-            <ShieldCheck className="w-3.5 h-3.5 text-blue-500" />
+            <ShieldCheck className="w-3 h-3 text-blue-500" />
             <span>SECURE CONNECTION</span>
           </div>
           <div>
