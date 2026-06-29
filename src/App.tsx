@@ -504,7 +504,7 @@ function dataURLtoFile(dataurl: string, filename: string): File {
   } = useExporterHelpers({ data, undertakingData, setToast });
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 font-sans text-slate-900 dark:text-zinc-50 pb-4 selection:bg-blue-100/50 dark:selection:bg-blue-900/50 transition-colors relative">
+    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 font-sans text-slate-900 dark:text-zinc-50 pb-4 selection:bg-red-200 dark:selection:bg-red-900/50 selection:text-red-900 dark:selection:text-red-100 transition-colors relative">
       {/* Global Progress Bar */}
       <GlobalProgress loading={loading} />
 
