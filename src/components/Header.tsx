@@ -61,10 +61,10 @@ export const Header: React.FC<HeaderProps> = ({
               {/* Interactive Profile Area - Name only beautifully enclosed in a box */}
               <button
                 onClick={onOpenProfile}
-                className="px-2.5 py-1 sm:px-3 sm:py-1.5 bg-white dark:bg-zinc-950 border border-slate-300 dark:border-zinc-700 hover:border-slate-400 dark:hover:border-zinc-500 rounded-[5px] text-slate-800 dark:text-zinc-200 hover:opacity-90 active:scale-98 transition-all shrink-0 cursor-pointer text-xs sm:text-sm font-bold tracking-tight max-w-[100px] sm:max-w-[160px] truncate shadow-xs"
+                className="px-2 py-1 sm:px-2.5 sm:py-1 bg-white dark:bg-zinc-950 border border-slate-300 dark:border-zinc-700 hover:border-slate-400 dark:hover:border-zinc-500 rounded-[5px] text-slate-800 dark:text-zinc-200 hover:opacity-90 active:scale-98 transition-all shrink-0 cursor-pointer text-[10px] sm:text-xs font-bold tracking-tight max-w-[110px] sm:max-w-[160px] leading-tight break-words text-left shadow-xs flex items-center min-h-[28px] sm:min-h-[32px]"
                 title="View Profile Details"
               >
-                {currentUser.name}
+                <span className="line-clamp-2">{currentUser.name}</span>
               </button>
               
               {/* Logout Button */}
