@@ -83,9 +83,6 @@ export const Header: React.FC<HeaderProps> = ({
                       ) : (
                         <CloudOff className="w-2.5 h-2.5 text-slate-400 dark:text-zinc-500" />
                       )}
-                      <span className={`text-[7px] font-bold uppercase tracking-widest ${isSynced ? 'text-emerald-500 dark:text-emerald-400' : 'text-slate-400 dark:text-zinc-500'}`}>
-                        {isSynced ? 'SYNCED' : 'PENDING'}
-                      </span>
                     </div>
                   </div>
                 </div>
@@ -94,7 +91,7 @@ export const Header: React.FC<HeaderProps> = ({
               {/* Logout Button */}
               <button
                 onClick={onLogout}
-                className="p-1 rounded-[3px] text-slate-500 hover:text-rose-600 hover:bg-rose-500/10 dark:text-zinc-400 dark:hover:text-rose-400 transition-all cursor-pointer shrink-0 ml-1"
+                className="w-7 h-7 flex items-center justify-center rounded-none bg-rose-600 hover:bg-rose-700 text-white transition-all cursor-pointer shrink-0 ml-1 shadow-sm"
                 title="Log Out"
                 aria-label="Log out"
               >

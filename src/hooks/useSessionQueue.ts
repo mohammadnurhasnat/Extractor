@@ -22,7 +22,7 @@ function dataURLtoFile(dataurl: string, filename: string): File {
 interface QueueStateProps {
   isOnline: boolean;
   userApiKey: string;
-  addToHistory: (data: PassportData) => PassportData | void;
+  addToHistory: (data: PassportData) => Promise<PassportData> | PassportData | void;
   onSelectData: (data: PassportData | null) => void;
   onError: (error: string | null) => void;
 }
@@ -169,7 +169,14 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
       
       abortControllersRef.current.delete(controller);
       
-      const result = await res.json();
+      const responseText = await res.text();
+      let result: any;
+      try {
+        result = JSON.parse(responseText);
+      } catch (parseErr) {
+        throw new Error(`Server returned invalid response (Status ${res.status}): ${responseText.slice(0, 120)}`);
+      }
+      
       const durationSeconds = parseFloat(((Date.now() - startTime) / 1000).toFixed(2));
       
       if (res.ok && result.success) {
@@ -180,7 +187,7 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
           result.data.extractionTime = durationSeconds;
         }
         
-        const deduplicatedData = addToHistory(result.data) || result.data;
+        const deduplicatedData = (await addToHistory(result.data)) || result.data;
         
         setQueue(prev => prev.map(q => q.id === itemId ? { ...q, loading: false, status: 'completed', error: null, data: deduplicatedData } : q));
         
@@ -199,6 +206,7 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
         return null;
       }
     } catch (err: any) {
+      console.error('Extraction flow error details:', err);
       if (err.name === 'AbortError') {
         const errMsg = 'Extraction cancelled.';
         setQueue(prev => prev.map(q => q.id === itemId ? { ...q, loading: false, status: 'failed', error: errMsg } : q));
@@ -208,7 +216,7 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
         }
         return null;
       }
-      const errMsg = 'Network error: Could not reach the server.';
+      const errMsg = err.message || 'Network error: Could not reach the server.';
       setQueue(prev => prev.map(q => q.id === itemId ? { ...q, loading: false, status: 'failed', error: errMsg } : q));
       if (activeQueueId === itemId) {
         onError(errMsg);

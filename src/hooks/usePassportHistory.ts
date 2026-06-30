@@ -79,11 +79,19 @@ export function usePassportHistory(userId: string | null, options?: {
     
     // We update local state optimistically, then write to Firebase (or localStorage)
     const updateLogic = (prev: HistoryItem[]) => {
-      const existingItemIndex = prev.findIndex(item => 
-         item.data.passportNumber && 
-         data.passportNumber && 
-         item.data.passportNumber.toUpperCase() === data.passportNumber.toUpperCase()
-      );
+      const existingItemIndex = prev.findIndex(item => {
+        const hasSamePassport = item.data.passportNumber && data.passportNumber && item.data.passportNumber.toUpperCase() === data.passportNumber.toUpperCase();
+        
+        // Normalize names for comparison
+        const itemGivenName = (item.data.givenName || '').trim().toUpperCase();
+        const dataGivenName = (data.givenName || '').trim().toUpperCase();
+        const itemSurname = (item.data.surname || '').trim().toUpperCase();
+        const dataSurname = (data.surname || '').trim().toUpperCase();
+        
+        const hasSameName = itemGivenName === dataGivenName && itemSurname === dataSurname;
+        
+        return hasSamePassport && hasSameName;
+      });
 
       let newHistory: HistoryItem[];
       let updatedOldItem: HistoryItem | null = null;

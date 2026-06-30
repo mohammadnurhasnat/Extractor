@@ -1,6 +1,5 @@
 import { jsPDF } from 'jspdf';
 import { PassportData, UndertakingFormData } from '../types';
-import imageCompression from 'browser-image-compression';
 import {
   getGeneratedEmail,
   getProprietorBusinessName,
@@ -71,24 +70,6 @@ export const generatePassportImagePDF = async (imageSource: File | Blob | string
         ? `Passport_${passportData.passportNumber}.jpg`
         : 'Passport.jpg';
       const file = await ensureFileObject(imageSource, filename);
-      let compressedFile = file;
-      
-      // If original file is already clean and under 400 KB, we do not need to compress it at all.
-      // If it is larger than 400 KB, we compress to land in the 200kb - 350kb range.
-      if (file.size > 400 * 1024) {
-        const options = {
-          maxSizeMB: 0.28,           // Target for ~280kb image, which will result in ~280kb-350kb PDF
-          maxWidthOrHeight: 2000,    // Sufficient resolution for passport
-          useWebWorker: false,
-          initialQuality: 0.9       // High quality
-        };
-        try {
-          compressedFile = await imageCompression(file, options);
-        } catch (compressErr) {
-          console.warn('Image compression failed, falling back to original quality:', compressErr);
-          compressedFile = file;
-        }
-      }
       
       // Read the file as Data URL
       const reader = new FileReader();
@@ -98,7 +79,6 @@ export const generatePassportImagePDF = async (imageSource: File | Blob | string
           return reject(new Error("Failed to read file"));
         }
         const base64data = reader.result as string;
-        const format = compressedFile.type === 'image/png' ? 'PNG' : 'JPEG';
         
         const doc = new jsPDF({
           orientation: 'p',
@@ -110,12 +90,10 @@ export const generatePassportImagePDF = async (imageSource: File | Blob | string
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
         
-        // We will place the image in the center, fit into page with margins
         const margin = 10;
         const maxWidth = pageWidth - (margin * 2);
         const maxHeight = pageHeight - (margin * 2);
         
-        // Load image to get original dimensions
         const img = new Image();
         img.onload = () => {
           try {
@@ -129,21 +107,100 @@ export const generatePassportImagePDF = async (imageSource: File | Blob | string
             const xOffset = (pageWidth - finalWidth) / 2;
             const yOffset = (pageHeight - finalHeight) / 2;
             
-            // Convert any image type (WebP, HEIC, etc.) to JPEG using Canvas
+            // Generate base64 string hitting exactly 200KB - 350KB
+            const minBytes = 220 * 1024;
+            const maxBytes = 340 * 1024;
+            let targetBase64 = '';
+            
             const canvas = document.createElement('canvas');
-            canvas.width = imgWidth;
-            canvas.height = imgHeight;
             const ctx = canvas.getContext('2d');
-            if (ctx) {
-              ctx.fillStyle = '#FFFFFF'; // Ensure white background for transparent images
-              ctx.fillRect(0, 0, imgWidth, imgHeight);
-              ctx.drawImage(img, 0, 0, imgWidth, imgHeight);
-              const safeJpegBase64 = canvas.toDataURL('image/jpeg', 0.95);
-              doc.addImage(safeJpegBase64, 'JPEG', xOffset, yOffset, finalWidth, finalHeight);
-            } else {
-              // Fallback to direct add if canvas context fails
-              doc.addImage(base64data, format, xOffset, yOffset, finalWidth, finalHeight);
+            
+            let bestDataUrl = "";
+            let bestDiff = Infinity;
+            
+            // Phase 1: Try adjusting quality (0.95 to 0.1) at 1x scale
+            for (let q = 0.95; q >= 0.1; q -= 0.05) {
+              canvas.width = imgWidth;
+              canvas.height = imgHeight;
+              if (ctx) {
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+              }
+              
+              let dataUrl = canvas.toDataURL('image/jpeg', q);
+              let bytes = Math.round((dataUrl.length * 3) / 4);
+              
+              if (bytes >= minBytes && bytes <= maxBytes) {
+                targetBase64 = dataUrl;
+                break;
+              }
+              
+              let diff = Math.abs(bytes - ((minBytes + maxBytes)/2));
+              if (diff < bestDiff) {
+                bestDiff = diff;
+                bestDataUrl = dataUrl;
+              }
+              
+              if (bytes < minBytes) break;
             }
+            
+            // Phase 2: If still too large, scale down the image resolution
+            if (!targetBase64 && Math.round((bestDataUrl.length * 3) / 4) > maxBytes) {
+              for (let s = 0.9; s >= 0.1; s -= 0.1) {
+                canvas.width = imgWidth * s;
+                canvas.height = imgHeight * s;
+                if (ctx) {
+                  ctx.fillStyle = '#FFFFFF';
+                  ctx.fillRect(0, 0, canvas.width, canvas.height);
+                  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                }
+                
+                let dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                let bytes = Math.round((dataUrl.length * 3) / 4);
+                
+                if (bytes >= minBytes && bytes <= maxBytes) {
+                  targetBase64 = dataUrl;
+                  break;
+                }
+                if (bytes < minBytes) {
+                  targetBase64 = dataUrl; // take the closest one
+                  break;
+                }
+              }
+            }
+            
+            // Phase 3: If too small (e.g. original was 50KB), scale up to inflate size
+            if (!targetBase64 && Math.round((bestDataUrl.length * 3) / 4) < minBytes) {
+              for (let s = 1.2; s <= 3.0; s += 0.2) {
+                canvas.width = imgWidth * s;
+                canvas.height = imgHeight * s;
+                if (ctx) {
+                  ctx.fillStyle = '#FFFFFF';
+                  ctx.fillRect(0, 0, canvas.width, canvas.height);
+                  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                }
+                
+                let dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+                let bytes = Math.round((dataUrl.length * 3) / 4);
+                
+                if (bytes >= minBytes && bytes <= maxBytes) {
+                  targetBase64 = dataUrl;
+                  break;
+                }
+                if (bytes > maxBytes) {
+                  targetBase64 = canvas.toDataURL('image/jpeg', 0.85); // throttle back slightly if it overshot
+                  break;
+                }
+                targetBase64 = dataUrl;
+              }
+            }
+            
+            if (!targetBase64) {
+              targetBase64 = bestDataUrl;
+            }
+            
+            doc.addImage(targetBase64, 'JPEG', xOffset, yOffset, finalWidth, finalHeight);
             
             const givenName = passportData?.givenName ? passportData.givenName.replace(/\s+/g, '-') : 'UNKNOWN';
             const surname = passportData?.surname ? passportData.surname.replace(/\s+/g, '-') : '';
@@ -162,7 +219,7 @@ export const generatePassportImagePDF = async (imageSource: File | Blob | string
       };
       
       reader.onerror = () => reject(new Error("Failed to read file"));
-      reader.readAsDataURL(compressedFile);
+      reader.readAsDataURL(file);
     } catch (err) {
       console.error('Error generating passport PDF:', err);
       reject(err);

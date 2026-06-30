@@ -615,20 +615,23 @@ async function startServer() {
       // Authenticate session via headers or request body
       const userId = (req.headers['x-user-id'] || req.body.userId)?.toString();
       if (!userId) {
-        return res.status(410).json({ success: false, error: 'প্রবেশাধিকার পাননি। দয়া করে আগে লগইন করুন।' });
+        return res.status(200).json({ success: false, error: 'প্রবেশাধিকার পাননি। দয়া করে আগে লগইন করুন।' });
       }
 
       const users = getUsersStore();
-      const userExists = users.some(u => u.id === userId);
-      if (!userExists) {
-        return res.status(410).json({ success: false, error: 'অবৈধ সেশন। দয়া করে আবার লগইন করুন।' });
+      const user = users.find(u => u.id === userId);
+      if (!user) {
+        return res.status(200).json({ success: false, error: 'অবৈধ সেশন। দয়া করে আবার লগইন করুন।' });
       }
 
+      if (user.isSuspended) {
+        return res.status(200).json({ success: false, error: 'আপনার অ্যাকাউন্টটি স্থগিত করা হয়েছে। দয়া করে এডমিনের সাথে যোগাযোগ করুন।' });
+      }
 
       // Enforce 5-Passport Daily Limit
       const limitCheck = checkAndIncrementLimit(userId);
       if (!limitCheck.allowed) {
-        return res.status(403).json({ 
+        return res.status(200).json({ 
           success: false, 
           error: 'আপনার দৈনিক ফ্রী লিমিট (৫টি এক্সট্রাকশন) শেষ হয়ে গেছে। দয়া করে ২৪ ঘণ্টা পর আবার ফ্রী ট্রাই করতে পারবেন।' 
         });
@@ -639,7 +642,7 @@ async function startServer() {
       // Validate input request using Zod
       const parsedBody = ExtractPassportSchema.safeParse(req.body);
       if (!parsedBody.success) {
-        return res.status(400).json({ 
+        return res.status(200).json({ 
           success: false, 
           error: parsedBody.error.issues.map(e => e.message).join(', ') 
         });
@@ -653,7 +656,7 @@ async function startServer() {
       const clientApiKey = req.headers['x-api-key']?.toString() || process.env.GEMINI_API_KEY;
 
       if (!clientApiKey) {
-        return res.status(400).json({ 
+        return res.status(200).json({ 
           success: false,
           error: 'GEMINI_API_KEY is missing. Please set it in your Render Dashboard Environment variables, OR configure it directly in the Extractor UI Settings (gear icon in the top-right of your screen).' 
         });
@@ -669,7 +672,7 @@ async function startServer() {
       });
 
       // We expect the frontend to send just the base64 string without the data URI prefix
-      const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '');
+      const base64Data = imageBase64.includes(',') ? imageBase64.split(',')[1] : imageBase64;
 
       console.log('⚡ High-Speed Dual-Engine Extraction Pipeline Initiated.');
 
@@ -794,9 +797,9 @@ INSTRUCTIONS:
           }
         });
       } catch (err: any) {
-        console.warn('⚠️ Primary gemini-3.1-flash-lite engine error, attempting fast fallback (gemini-flash-latest)...', err.message || err);
+        console.warn('⚠️ Primary gemini-3.1-flash-lite engine error, attempting fast fallback (gemini-3.5-flash)...', err.message || err);
         pipelineResponse = await ai.models.generateContent({
-          model: 'gemini-flash-latest',
+          model: 'gemini-3.5-flash',
           contents: [
             {
               inlineData: {
@@ -879,7 +882,7 @@ INSTRUCTIONS:
         }
       }
 
-      res.status(500).json({ error: errorMessage });
+      res.status(500).json({ success: false, error: errorMessage });
     }
   });
 
@@ -897,7 +900,7 @@ INSTRUCTIONS:
     }
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3.5-flash',
+      model: 'gemini-2.5-flash',
       contents: [
         {
           text: `You are an expert Bangladeshi address generator.

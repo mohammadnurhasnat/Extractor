@@ -430,7 +430,7 @@ function dataURLtoFile(dataurl: string, filename: string): File {
     if (activeQueueId) {
       setQueue(prev => prev.map(q => q.id === activeQueueId ? { ...q, data: updated } : q));
     }
-    setHistory(prev => prev.map(item => {
+    setHistory(history.map(item => {
       if (item.data.passportNumber === data.passportNumber) return { ...item, data: updated };
       return item;
     }));
