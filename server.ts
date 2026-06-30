@@ -101,7 +101,7 @@ async function loadUsersFromFirestore() {
 
     const firebaseConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
     const app = initializeApp(firebaseConfig);
-    db = getFirestore(app);
+    db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 
     console.log("Firebase initialized on server backend. Fetching users from Firestore...");
     const usersCollection = collection(db, 'registered_users');
