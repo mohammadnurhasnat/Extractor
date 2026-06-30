@@ -43,33 +43,117 @@ export const extractMainNamePart = (name: string): string => {
   return mainPart.charAt(0).toUpperCase() + mainPart.slice(1).toLowerCase();
 };
 
-export const generateRandomEnterpriseName = (name: string): string => {
-  const mainName = extractMainNamePart(name);
-  
-  const suffixes = ['International', 'Store', 'Traders', 'Fashion House', 'Boutique House', 'Limited', 'Stationary'];
-  
+const GENERIC_NAMES = [
+  'md', 'md.', 'mohammad', 'mohammed', 'muhammad', 'mst', 'mst.', 'mosammat', 
+  'mr', 'mr.', 'mrs', 'mrs.', 'miss', 'sree', 'shree', 'abdul', 'abdur', 'late', 'late.'
+];
+
+const AUTHENTIC_PERSONAL_NAMES = [
+  'Rahman', 'Islam', 'Ahmed', 'Hasan', 'Khan', 'Ali', 'Uddin', 'Chowdhury', 'Hossain',
+  'Sarker', 'Alam', 'Akter', 'Begum', 'Sultana', 'Jahan', 'Yasmin', 'Khatun',
+  'Anwar', 'Kamal', 'Jamal', 'Rafiq', 'Shafiq', 'Tareq', 'Mizan', 'Masud',
+  'Kabir', 'Zaman', 'Iqbal', 'Faruk', 'Selim', 'Russel', 'Ripon', 'Sohel',
+  'Sajid', 'Nayeem', 'Arif', 'Fahim', 'Tanvir', 'Imran', 'Rayhan', 'Arafat',
+  'Biswas', 'Saha', 'Roy', 'Das', 'Ghosh', 'Dutta', 'Paul', 'Sarkar', 'Banik',
+  'Siddique', 'Talukder', 'Bhuiyan', 'Mazumder', 'Patwary', 'Dewan', 'Munshi'
+];
+
+const ALLOWED_SUFFIXES = [
+  'Traders',
+  'Enterprise',
+  'Holdings',
+  'International',
+  'Distribution',
+  'Trading',
+  'Logistics',
+  'Builders',
+  'Construction',
+  'Engineering Works',
+  'Textile',
+  'Garments',
+  'Agro',
+  'Furniture',
+  'Import Export'
+];
+
+export const getCleanPersonalName = (name: string): string => {
+  if (!name || name === 'Unknown' || name.trim() === '') return '';
+  const tokens = name.split(/\s+/).filter(Boolean);
+  const filtered = tokens.filter(t => !GENERIC_NAMES.includes(t.toLowerCase()));
+  const selected = filtered[0] || tokens[0] || '';
+  if (!selected) return '';
+  return selected.charAt(0).toUpperCase() + selected.slice(1).toLowerCase();
+};
+
+function getDeterministicHash(seedStr: string): number {
   let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  for (let i = 0; i < seedStr.length; i++) {
+    hash = seedStr.charCodeAt(i) + ((hash << 5) - hash);
   }
-  const suffixIndex = Math.abs(hash) % suffixes.length;
-  const suffix = suffixes[suffixIndex];
-  
-  return `${mainName} ${suffix}`;
+  return Math.abs(hash);
+}
+
+export const generateRandomEnterpriseName = (name: string): string => {
+  const hash = getDeterministicHash(name);
+  const personalName = getCleanPersonalName(name) || AUTHENTIC_PERSONAL_NAMES[hash % AUTHENTIC_PERSONAL_NAMES.length];
+  const suffix = ALLOWED_SUFFIXES[hash % ALLOWED_SUFFIXES.length];
+  return `${personalName} ${suffix}`;
 };
 
 export const getProprietorBusinessName = (itemData: PassportData | null): string => {
   if (!itemData) return '';
   if (itemData.proprietorBusinessName) return itemData.proprietorBusinessName;
-  const nameToUse = `${itemData.givenName || ''} ${itemData.surname || ''}`.trim() || 'Unknown';
-  return generateRandomEnterpriseName(nameToUse);
+  
+  const seed = itemData.passportNumber || itemData.givenName || 'business';
+  const hash = getDeterministicHash(seed);
+  
+  let personalName = '';
+  if (itemData.fatherName && itemData.fatherName !== 'Unknown') {
+    personalName = getCleanPersonalName(itemData.fatherName);
+  }
+  if (!personalName && itemData.motherName && itemData.motherName !== 'Unknown') {
+    personalName = getCleanPersonalName(itemData.motherName);
+  }
+  if (!personalName) {
+    personalName = AUTHENTIC_PERSONAL_NAMES[hash % AUTHENTIC_PERSONAL_NAMES.length];
+  }
+
+  const suffix = ALLOWED_SUFFIXES[hash % ALLOWED_SUFFIXES.length];
+  return `${personalName} ${suffix}`;
 };
 
 export const getJobCompanyName = (itemData: PassportData | null): string => {
   if (!itemData) return '';
   if (itemData.jobCompanyName) return itemData.jobCompanyName;
-  const nameToUse = `${itemData.fatherName || ''} ${itemData.motherName || ''}`.trim() || 'Unknown';
-  return generateRandomEnterpriseName(nameToUse);
+  
+  const seed = itemData.passportNumber || itemData.surname || 'company';
+  const hash = getDeterministicHash(seed + '_company');
+  
+  let personalName = '';
+  if (itemData.motherName && itemData.motherName !== 'Unknown') {
+    personalName = getCleanPersonalName(itemData.motherName);
+  }
+  
+  const fatherNameClean = itemData.fatherName ? getCleanPersonalName(itemData.fatherName) : '';
+  if (!personalName || personalName === fatherNameClean) {
+    let nameIndex = hash % AUTHENTIC_PERSONAL_NAMES.length;
+    personalName = AUTHENTIC_PERSONAL_NAMES[nameIndex];
+    if (personalName === fatherNameClean) {
+      personalName = AUTHENTIC_PERSONAL_NAMES[(nameIndex + 1) % AUTHENTIC_PERSONAL_NAMES.length];
+    }
+  }
+
+  const businessSeed = itemData.passportNumber || itemData.givenName || 'business';
+  const businessHash = getDeterministicHash(businessSeed);
+  const businessSuffixIndex = businessHash % ALLOWED_SUFFIXES.length;
+  
+  let companySuffixIndex = hash % ALLOWED_SUFFIXES.length;
+  if (companySuffixIndex === businessSuffixIndex) {
+    companySuffixIndex = (companySuffixIndex + 1) % ALLOWED_SUFFIXES.length;
+  }
+  const suffix = ALLOWED_SUFFIXES[companySuffixIndex];
+  
+  return `${personalName} ${suffix}`;
 };
 
 export const getJobRole = (itemData: PassportData | null): string => {
