@@ -44,7 +44,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         <div className="flex items-center gap-2 sm:gap-4">
           {currentUser && (
-            <div className="flex items-center gap-2 px-2.5 py-1 bg-slate-100/60 dark:bg-zinc-900/60 rounded-[5px] border border-slate-200/50 dark:border-zinc-800/50 max-w-full overflow-hidden">
+            <div className="flex items-center gap-2 px-2.5 py-1 bg-slate-100/60 dark:bg-zinc-900/60 rounded-[5px] border border-slate-200/50 dark:border-zinc-800/50 max-w-full">
               
               {/* Daily Limit - strictly hidden for Admin */}
               {!isAdmin && limitStatus && (
@@ -58,44 +58,23 @@ export const Header: React.FC<HeaderProps> = ({
                 </span>
               )}
               
-              {/* Interactive Profile Area */}
+              {/* Interactive Profile Area - Name only beautifully enclosed in a box */}
               <button
                 onClick={onOpenProfile}
-                className="flex items-center gap-1.5 hover:opacity-85 active:scale-98 transition-all shrink-0 cursor-pointer"
-                title="Edit Profile Settings"
+                className="px-2.5 py-1 sm:px-3 sm:py-1.5 bg-white dark:bg-zinc-950 border border-slate-300 dark:border-zinc-700 hover:border-slate-400 dark:hover:border-zinc-500 rounded-[5px] text-slate-800 dark:text-zinc-200 hover:opacity-90 active:scale-98 transition-all shrink-0 cursor-pointer text-xs sm:text-sm font-bold tracking-tight max-w-[100px] sm:max-w-[160px] truncate shadow-xs"
+                title="View Profile Details"
               >
-                {/* Name */}
-                <div className="flex flex-col text-left leading-none">
-                  <span className="text-[10px] sm:text-xs font-bold text-slate-700 dark:text-zinc-200 truncate max-w-[70px] sm:max-w-[120px]">
-                    {currentUser.name}
-                  </span>
-                  {/* Real-time Role Badge Indicators */}
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    <span className={`text-[8px] font-extrabold tracking-wider uppercase ${
-                      isAdmin ? 'text-amber-600 dark:text-amber-400' : 'text-blue-600 dark:text-blue-400'
-                    }`}>
-                      {isAdmin ? 'ADMIN' : 'VERIFIED'}
-                    </span>
-                    
-                    <div className="flex items-center gap-0.5" title={isSynced ? 'Safely synced to Firebase Cloud' : 'Pending sync to Firebase Cloud'}>
-                      {isSynced ? (
-                        <Cloud className="w-2.5 h-2.5 text-emerald-500 dark:text-emerald-400" />
-                      ) : (
-                        <CloudOff className="w-2.5 h-2.5 text-slate-400 dark:text-zinc-500" />
-                      )}
-                    </div>
-                  </div>
-                </div>
+                {currentUser.name}
               </button>
               
               {/* Logout Button */}
               <button
                 onClick={onLogout}
-                className="w-7 h-7 flex items-center justify-center rounded-none bg-rose-600 hover:bg-rose-700 text-white transition-all cursor-pointer shrink-0 ml-1 shadow-sm"
+                className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-[6px] bg-rose-600 hover:bg-rose-700 text-white transition-all cursor-pointer shrink-0 ml-1 shadow-sm"
                 title="Log Out"
                 aria-label="Log out"
               >
-                <LogOut className="w-3.5 h-3.5" />
+                <LogOut className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
             </div>
           )}
