@@ -83,8 +83,94 @@ function parseUsersTsContent(content: string): any[] {
   return [];
 }
 
+import { initializeApp } from 'firebase/app';
+import { getFirestore, collection, getDocs, doc, setDoc, writeBatch } from 'firebase/firestore';
+
+// Global cache for users
+let cachedUsers: any[] = [];
+let db: any = null;
+
+async function loadUsersFromFirestore() {
+  try {
+    const configPath = path.join(process.cwd(), 'firebase-applet-config.json');
+    if (!fs.existsSync(configPath)) {
+      console.warn("firebase-applet-config.json not found. Using local users store fallbacks.");
+      cachedUsers = getUsersStoreLocal();
+      return;
+    }
+
+    const firebaseConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    const app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+
+    console.log("Firebase initialized on server backend. Fetching users from Firestore...");
+    const usersCollection = collection(db, 'registered_users');
+    const snapshot = await getDocs(usersCollection);
+    
+    const dbUsers: any[] = [];
+    snapshot.forEach((doc) => {
+      dbUsers.push(doc.data());
+    });
+
+    if (dbUsers.length > 0) {
+      console.log(`Successfully loaded ${dbUsers.length} users from Firestore.`);
+      cachedUsers = dbUsers;
+      // Also write locally as backup/fallback
+      saveUsersStoreLocal(cachedUsers);
+    } else {
+      console.log("Firestore 'registered_users' collection is empty. Seeding with default users database...");
+      cachedUsers = getUsersStoreLocal();
+      // Seed to Firestore
+      const batch = writeBatch(db);
+      cachedUsers.forEach((user) => {
+        const docRef = doc(db, 'registered_users', user.id);
+        batch.set(docRef, user);
+      });
+      await batch.commit();
+      console.log("Successfully seeded default users to Firestore.");
+    }
+  } catch (error) {
+    console.error("Failed to load users from Firestore. Falling back to local files:", error);
+    cachedUsers = getUsersStoreLocal();
+  }
+}
+
+async function syncUsersToFirestore(newUsers: typeof USERS_DATABASE) {
+  if (!db) return;
+  try {
+    const usersCollection = collection(db, 'registered_users');
+    const snapshot = await getDocs(usersCollection);
+    const existingIds = snapshot.docs.map(doc => doc.id);
+    const newIds = new Set(newUsers.map(u => u.id));
+    
+    const batch = writeBatch(db);
+    let count = 0;
+    
+    // Delete removed users
+    existingIds.forEach(id => {
+      if (!newIds.has(id)) {
+        const docRef = doc(db, 'registered_users', id);
+        batch.delete(docRef);
+        count++;
+      }
+    });
+    
+    // Set/update all active users
+    newUsers.forEach(user => {
+      const docRef = doc(db, 'registered_users', user.id);
+      batch.set(docRef, user);
+      count++;
+    });
+    
+    await batch.commit();
+    console.log(`Firestore sync completed successfully. Synced ${newUsers.length} users.`);
+  } catch (err) {
+    console.error("Failed to sync users to Firestore:", err);
+  }
+}
+
 // Get dynamic users list, fallback to static USERS_DATABASE
-function getUsersStore(): typeof USERS_DATABASE {
+function getUsersStoreLocal(): typeof USERS_DATABASE {
   const USERS_TS_FILE = path.join(process.cwd(), 'src', 'users.ts');
   try {
     const tsExists = fs.existsSync(USERS_TS_FILE);
@@ -123,6 +209,13 @@ function getUsersStore(): typeof USERS_DATABASE {
   return USERS_DATABASE;
 }
 
+function getUsersStore(): typeof USERS_DATABASE {
+  if (cachedUsers.length > 0) {
+    return cachedUsers;
+  }
+  return getUsersStoreLocal();
+}
+
 function syncUsersStoreToUsersTs(users: typeof USERS_DATABASE) {
   try {
     const filePath = path.join(process.cwd(), 'src', 'users.ts');
@@ -147,7 +240,7 @@ function syncUsersStoreToUsersTs(users: typeof USERS_DATABASE) {
   }
 }
 
-function saveUsersStore(users: typeof USERS_DATABASE) {
+function saveUsersStoreLocal(users: typeof USERS_DATABASE) {
   try {
     // Write to TS file first so its mtime is updated
     syncUsersStoreToUsersTs(users);
@@ -156,6 +249,12 @@ function saveUsersStore(users: typeof USERS_DATABASE) {
   } catch (error) {
     console.error('Error writing users store file:', error);
   }
+}
+
+function saveUsersStore(users: typeof USERS_DATABASE) {
+  cachedUsers = users;
+  saveUsersStoreLocal(users);
+  syncUsersToFirestore(users);
 }
 
 
@@ -242,6 +341,7 @@ const GenerateAddressesSchema = z.object({
 });
 
 async function startServer() {
+  await loadUsersFromFirestore();
   const app = express();
   const PORT = 3000;
 
