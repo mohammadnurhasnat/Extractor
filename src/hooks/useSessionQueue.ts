@@ -22,7 +22,7 @@ function dataURLtoFile(dataurl: string, filename: string): File {
 interface QueueStateProps {
   isOnline: boolean;
   userApiKey: string;
-  addToHistory: (data: PassportData) => Promise<PassportData> | PassportData | void;
+  addToHistory: (data: PassportData, imageBase64?: string) => Promise<PassportData> | PassportData | void;
   onSelectData: (data: PassportData | null) => void;
   onError: (error: string | null) => void;
 }
@@ -187,7 +187,7 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
           result.data.extractionTime = durationSeconds;
         }
         
-        const deduplicatedData = (await addToHistory(result.data)) || result.data;
+        const deduplicatedData = (await addToHistory(result.data, base64String)) || result.data;
         
         setQueue(prev => prev.map(q => q.id === itemId ? { ...q, loading: false, status: 'completed', error: null, data: deduplicatedData } : q));
         

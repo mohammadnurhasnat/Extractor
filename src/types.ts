@@ -53,6 +53,7 @@ export interface HistoryItem {
   timestamp: number;
   data: PassportData;
   extractionTime?: number;
+  imageBase64?: string;
 }
 
 export interface UndertakingFormData {

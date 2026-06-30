@@ -73,7 +73,7 @@ Expiry Date: ${item.data.expiryDate || ''}
   };
 
   return (
-    <div className="shrink-0 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl p-5 sm:p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-205 dark:border-zinc-805/80 min-h-[300px] flex flex-col transition-all duration-350">
+    <div className="shrink-0 bg-gradient-to-br from-white/95 to-violet-50/40 dark:from-zinc-900/95 dark:to-zinc-950/40 backdrop-blur-xl p-5 sm:p-6 rounded-2xl shadow-[0_12px_40px_rgba(139,92,246,0.04)] border-t-[3px] border-t-violet-500 border-x border-b border-slate-200/80 dark:border-zinc-805/80 min-h-[300px] flex flex-col transition-all duration-350">
       <div className="flex flex-col xl:flex-row xl:items-center justify-between mb-5 pb-4 border-b border-slate-100 dark:border-zinc-800/50 gap-4">
         <div>
           <h3 className="font-bold text-lg flex items-center gap-2 text-slate-800 dark:text-zinc-100">

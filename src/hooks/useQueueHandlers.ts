@@ -1,6 +1,19 @@
 import React, { RefObject } from 'react';
 import { QueueItem, HistoryItem, PassportData } from '../types';
 
+function dataURLtoFile(dataurl: string, filename: string): File {
+  const arr = dataurl.split(',');
+  const mimeMatch = arr[0].match(/:(.*?);/);
+  const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new File([u8arr], filename, { type: mime });
+}
+
 interface UseQueueHandlersProps {
   queue: QueueItem[];
   setQueue: React.Dispatch<React.SetStateAction<QueueItem[]>>;
@@ -100,13 +113,35 @@ export function useQueueHandlers({
 
   const loadFromHistory = (item: HistoryItem) => {
     setData(item.data);
-    setPreview(null);
-    setFile(null);
+    
+    const hasImage = item.imageBase64 && item.imageBase64.startsWith('data:');
+    const previewUrl = hasImage ? item.imageBase64! : '';
+    
+    let fileObj: File;
+    if (hasImage) {
+      try {
+        fileObj = dataURLtoFile(item.imageBase64!, `Scanned_${item.data.passportNumber || 'Passport'}.jpg`);
+      } catch (e) {
+        console.error("Failed to convert base64 to File", e);
+        fileObj = new File([], `Scanned_${item.data.passportNumber || 'Passport'}.jpg`, { type: 'image/jpeg' });
+      }
+    } else {
+      fileObj = new File([], `Scanned_${item.data.passportNumber || 'Passport'}.jpg`, { type: 'image/jpeg' });
+    }
+
+    setPreview(previewUrl || null);
+    setFile(fileObj.size > 0 ? fileObj : null);
     setError(null);
+    
     const id = 'hist_' + Date.now();
-    const mockFileObj = new File([], `Scanned_${item.data.passportNumber || 'Passport'}.jpg`, { type: 'image/jpeg' });
     const mockQueueItem: QueueItem = {
-      id, file: mockFileObj, preview: '', loading: false, error: null, status: 'completed', data: item.data
+      id, 
+      file: fileObj, 
+      preview: previewUrl, 
+      loading: false, 
+      error: null, 
+      status: 'completed', 
+      data: item.data
     };
     setQueue([mockQueueItem]);
     setActiveQueueId(id);

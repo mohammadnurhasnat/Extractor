@@ -473,7 +473,14 @@ function dataURLtoFile(dataurl: string, filename: string): File {
   } = useExporterHelpers({ data, undertakingData, setToast });
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 font-sans text-slate-900 dark:text-zinc-50 pb-4 selection:bg-red-200 dark:selection:bg-red-900/50 selection:text-red-900 dark:selection:text-red-100 transition-colors relative">
+    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 font-sans text-slate-900 dark:text-zinc-50 pb-4 selection:bg-red-200 dark:selection:bg-red-900/50 selection:text-red-900 dark:selection:text-red-100 transition-colors relative overflow-hidden">
+      {/* Ambient soft background glows */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 print:hidden">
+        <div className="absolute top-[5%] left-[-10%] w-[40rem] h-[40rem] rounded-full bg-blue-400/8 dark:bg-blue-600/5 blur-[130px] animate-pulse" style={{ animationDuration: '8s' }} />
+        <div className="absolute top-[35%] right-[-5%] w-[35rem] h-[35rem] rounded-full bg-teal-400/8 dark:bg-emerald-600/5 blur-[110px] animate-pulse" style={{ animationDuration: '12s' }} />
+        <div className="absolute bottom-[5%] left-[5%] w-[45rem] h-[45rem] rounded-full bg-violet-400/8 dark:bg-violet-600/5 blur-[140px] animate-pulse" style={{ animationDuration: '10s' }} />
+      </div>
+
       {/* Global Progress Bar */}
       <GlobalProgress loading={loading} />
 

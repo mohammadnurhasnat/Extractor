@@ -74,7 +74,7 @@ export function usePassportHistory(userId: string | null, options?: {
     }
   }, [userId]);
 
-  const addToHistory = useCallback(async (data: PassportData): Promise<PassportData> => {
+  const addToHistory = useCallback(async (data: PassportData, imageBase64?: string): Promise<PassportData> => {
     let returnData: PassportData = data;
     
     // We update local state optimistically, then write to Firebase (or localStorage)
@@ -110,7 +110,8 @@ export function usePassportHistory(userId: string | null, options?: {
           ...existingItem,
           timestamp: Date.now(),
           data: updatedData,
-          extractionTime: data.extractionTime || existingItem.extractionTime
+          extractionTime: data.extractionTime || existingItem.extractionTime,
+          imageBase64: imageBase64 || existingItem.imageBase64
         };
         returnData = updatedData;
 
@@ -123,7 +124,8 @@ export function usePassportHistory(userId: string | null, options?: {
           id, 
           timestamp, 
           data, 
-          extractionTime: data.extractionTime 
+          extractionTime: data.extractionTime,
+          imageBase64: imageBase64
         };
         
         newHistory = [newItem, ...prev];
