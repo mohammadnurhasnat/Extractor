@@ -329,7 +329,7 @@ export const getDelhiHotelForPassport = (passportNumber: string | undefined): Ko
 
 export const KOLKATA_BUSINESSES: KolkataHotel[] = [
   {
-    name: 'M. R. Enterprise',
+    name: 'M R Enterprise',
     address: '111, Kabiguru Sarani (A. G. Road)',
     pincode: 'Kolkata - 700038',
     state: 'WEST BENGAL',
@@ -337,7 +337,7 @@ export const KOLKATA_BUSINESSES: KolkataHotel[] = [
     phone: '+91 98308 18359'
   },
   {
-    name: 'Mallika Enterprise',
+    name: 'MS Mallika Enterprise',
     address: 'Anandanagar, Jhautala',
     pincode: 'Liluah - 711203',
     state: 'WEST BENGAL',
@@ -345,7 +345,7 @@ export const KOLKATA_BUSINESSES: KolkataHotel[] = [
     phone: '+91 87770 34708'
   },
   {
-    name: 'R. M. International',
+    name: 'R M International',
     address: '2/72, Near Uddyogi Club, Azadgarh, Tollygunge',
     pincode: 'Kolkata - 700040',
     state: 'WEST BENGAL',

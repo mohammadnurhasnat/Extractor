@@ -362,7 +362,7 @@ export default function App() {
     let hotelToUse: any = null;
 
     if (utPurpose === 'Tourism') {
-      if (!data.hotelName || data.hotelState !== 'WEST BENGAL' || ['M. R. Enterprise', 'Mallika Enterprise', 'R. M. International'].includes(data.hotelName)) {
+      if (!data.hotelName || data.hotelState !== 'WEST BENGAL' || ['M R Enterprise', 'MS Mallika Enterprise', 'R M International'].includes(data.hotelName)) {
         hotelToUse = getKolkataHotelForPassport(data.passportNumber);
         shouldUpdate = true;
       }
@@ -372,7 +372,7 @@ export default function App() {
         shouldUpdate = true;
       }
     } else if (utPurpose === 'Business') {
-      if (!data.hotelName || !['M. R. Enterprise', 'Mallika Enterprise', 'R. M. International'].includes(data.hotelName)) {
+      if (!data.hotelName || !['M R Enterprise', 'MS Mallika Enterprise', 'R M International'].includes(data.hotelName)) {
         hotelToUse = getKolkataBusinessForPassport(data.passportNumber);
         shouldUpdate = true;
       }
