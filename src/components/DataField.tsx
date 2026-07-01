@@ -153,7 +153,7 @@ export function DataField({ label, value, highlight = false, warning = false, co
       </div>
 
       <div className={`
-        relative rounded-xl text-sm font-medium border transition-all duration-300 flex items-stretch overflow-hidden min-h-[28px] shadow-sm hover:shadow-md
+        relative rounded-xl text-sm font-medium border transition-all duration-300 flex items-stretch overflow-hidden min-h-[25px] shadow-sm hover:shadow-md
         ${copied || persistentCopied
           ? 'bg-emerald-500/10 dark:bg-emerald-550/10 border-emerald-500 dark:border-emerald-500 text-emerald-950 dark:text-emerald-250 ring-1 ring-emerald-500/20'
           : warning
@@ -176,7 +176,7 @@ export function DataField({ label, value, highlight = false, warning = false, co
                 onChange={(e) => setEditValue(e.target.value)}
                 onKeyDown={handleKeyDown}
                 rows={2}
-                className="flex-1 w-full min-w-0 px-3 py-1 text-xs sm:text-sm font-medium bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-600 focus:outline-none resize-none align-middle"
+                className="flex-1 w-full min-w-0 px-3 py-0.5 text-xs sm:text-sm font-medium bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-600 focus:outline-none resize-none align-middle"
               />
             ) : (
               <input
@@ -185,7 +185,7 @@ export function DataField({ label, value, highlight = false, warning = false, co
                 value={editValue}
                 onChange={(e) => setEditValue(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="flex-1 w-full min-w-0 px-3 py-1 text-xs sm:text-sm font-medium bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-600 focus:outline-none self-center"
+                className="flex-1 w-full min-w-0 px-3 py-0.5 text-xs sm:text-sm font-medium bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-600 focus:outline-none self-center"
               />
             )}
             
@@ -210,7 +210,7 @@ export function DataField({ label, value, highlight = false, warning = false, co
           </form>
          ) : (
           <div 
-            className={`flex-1 flex items-center justify-between gap-2 px-3 py-1 w-full min-w-0 ${hasValue ? 'cursor-pointer hover:bg-slate-50/50 dark:hover:bg-zinc-900/30 transition-all duration-150' : 'cursor-default'}`}
+            className={`flex-1 flex items-center justify-between gap-2 px-3 py-0.5 w-full min-w-0 ${hasValue ? 'cursor-pointer hover:bg-slate-50/50 dark:hover:bg-zinc-900/30 transition-all duration-150' : 'cursor-default'}`}
             onMouseUp={(e) => {
               if (isEditing || !hasValue) return;
               

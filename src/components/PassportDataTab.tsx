@@ -167,27 +167,37 @@ export function PassportDataTab({
           </div>
         </div>
 
-        {utPurpose === 'Tourism' && data.hotelName && (
+        {(utPurpose === 'Tourism' || utPurpose === 'Double Entry' || utPurpose === 'Business') && data.hotelName && (
           <>
             <div className="col-span-1 sm:col-span-2 pt-3 border-t border-slate-100 dark:border-zinc-800/50 mt-4">
-              <h4 className="text-xs font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider mb-2.5">Indian Reference (Tourist Visa Hotel)</h4>
+              <h4 className="text-xs font-bold text-amber-650 dark:text-amber-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                Indian Reference ({utPurpose === 'Business' ? 'Kolkata Business' : utPurpose === 'Double Entry' ? 'Delhi Hotel' : 'Kolkata Hotel'} Details)
+              </h4>
             </div>
             
-            <div className="col-span-1 sm:col-span-2 bg-gradient-to-br from-amber-500/5 to-orange-500/5 dark:from-amber-500/10 dark:to-orange-500/10 p-4 rounded-xl border border-amber-500/20 dark:border-amber-500/30 space-y-3">
-              <h5 className="text-sm font-semibold text-slate-700 dark:text-zinc-300 border-b border-slate-200 dark:border-zinc-800/50 pb-2 mb-1 flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
-                Kolkata Hotel Details (Reference Name in India)
+            <div className="col-span-1 sm:col-span-2 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-orange-500/5 dark:from-amber-950/30 dark:via-amber-950/20 dark:to-orange-950/10 p-5 rounded-2xl border-2 border-amber-500 dark:border-amber-500/60 shadow-[0_4px_25px_rgba(245,158,11,0.12)] space-y-3.5 relative overflow-hidden group">
+              {/* Highlight badge tag */}
+              <div className="absolute top-0 right-0 bg-gradient-to-r from-amber-500 to-orange-500 dark:from-amber-600 dark:to-orange-600 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-bl-xl shadow-sm z-10 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
+                {utPurpose === 'Business' ? 'BUSINESS DETAILS' : utPurpose === 'Double Entry' ? 'DELHI HOTEL' : 'KOLKATA HOTEL'}
+              </div>
+
+              <h5 className="text-sm font-extrabold text-slate-800 dark:text-zinc-100 border-b border-amber-200/50 dark:border-zinc-800 pb-2 mb-1 flex items-center gap-1.5 pr-20">
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse shadow-sm shadow-amber-500/50"></span>
+                {utPurpose === 'Business' ? 'Kolkata Business Details' : `${utPurpose === 'Double Entry' ? 'Delhi' : 'Kolkata'} Hotel Details`} (Reference Name in India)
               </h5>
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="col-span-1 md:col-span-2">
-                  <DataField label="Reference Name in India" value={data.hotelName || ''} onValueChange={(val) => updateDataField('hotelName', val)} />
+                  <DataField label="Reference Name in India" value={data.hotelName || ''} highlight onValueChange={(val) => updateDataField('hotelName', val)} />
                 </div>
                 <div className="col-span-1 md:col-span-2">
-                  <DataField label="Address" value={data.hotelAddress || ''} onValueChange={(val) => updateDataField('hotelAddress', val)} />
+                  <DataField label="Address" value={data.hotelAddress || ''} highlight onValueChange={(val) => updateDataField('hotelAddress', val)} />
                 </div>
-                <DataField label="State" value={data.hotelState || ''} onValueChange={(val) => updateDataField('hotelState', val)} />
-                <DataField label="District" value={data.hotelDistrict || ''} onValueChange={(val) => updateDataField('hotelDistrict', val)} />
-                <DataField label="Phone" value={data.hotelPhone || ''} onValueChange={(val) => updateDataField('hotelPhone', val)} />
+                <DataField label="State" value={data.hotelState || ''} highlight onValueChange={(val) => updateDataField('hotelState', val)} />
+                <DataField label="District" value={data.hotelDistrict || ''} highlight onValueChange={(val) => updateDataField('hotelDistrict', val)} />
+                <DataField label="Phone" value={data.hotelPhone || ''} highlight onValueChange={(val) => updateDataField('hotelPhone', val)} />
               </div>
             </div>
           </>

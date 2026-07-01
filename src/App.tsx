@@ -33,7 +33,7 @@ import { LoginModal } from './components/LoginModal';
 import { LogoutConfirmModal } from './components/LogoutConfirmModal';
 
 // Utilities
-import { generateDataText, getKolkataHotelForPassport, getDelhiHotelForPassport } from './utils/addressUtils';
+import { generateDataText, getKolkataHotelForPassport, getDelhiHotelForPassport, getKolkataBusinessForPassport } from './utils/addressUtils';
 import { generatePDF, getPDFDocument, generateUndertakingPDF } from './utils/pdfGenerator';
 import { logoutGoogle } from './lib/firebase';
 
@@ -362,13 +362,18 @@ export default function App() {
     let hotelToUse: any = null;
 
     if (utPurpose === 'Tourism') {
-      if (!data.hotelName || data.hotelState !== 'WEST BENGAL') {
+      if (!data.hotelName || data.hotelState !== 'WEST BENGAL' || ['M. R. Enterprise', 'Mallika Enterprise', 'R. M. International'].includes(data.hotelName)) {
         hotelToUse = getKolkataHotelForPassport(data.passportNumber);
         shouldUpdate = true;
       }
     } else if (utPurpose === 'Double Entry') {
       if (!data.hotelName || data.hotelState !== 'DELHI') {
         hotelToUse = getDelhiHotelForPassport(data.passportNumber);
+        shouldUpdate = true;
+      }
+    } else if (utPurpose === 'Business') {
+      if (!data.hotelName || !['M. R. Enterprise', 'Mallika Enterprise', 'R. M. International'].includes(data.hotelName)) {
+        hotelToUse = getKolkataBusinessForPassport(data.passportNumber);
         shouldUpdate = true;
       }
     }

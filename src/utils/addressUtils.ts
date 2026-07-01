@@ -327,6 +327,39 @@ export const getDelhiHotelForPassport = (passportNumber: string | undefined): Ko
   return DELHI_HOTELS[hash % DELHI_HOTELS.length];
 };
 
+export const KOLKATA_BUSINESSES: KolkataHotel[] = [
+  {
+    name: 'M. R. Enterprise',
+    address: '111, Kabiguru Sarani (A. G. Road)',
+    pincode: 'Kolkata - 700038',
+    state: 'WEST BENGAL',
+    district: 'KOLKATA',
+    phone: '+91 98308 18359'
+  },
+  {
+    name: 'Mallika Enterprise',
+    address: 'Anandanagar, Jhautala',
+    pincode: 'Liluah - 711203',
+    state: 'WEST BENGAL',
+    district: 'KOLKATA',
+    phone: '+91 87770 34708'
+  },
+  {
+    name: 'R. M. International',
+    address: '2/72, Near Uddyogi Club, Azadgarh, Tollygunge',
+    pincode: 'Kolkata - 700040',
+    state: 'WEST BENGAL',
+    district: 'KOLKATA',
+    phone: '+91 82749 50443'
+  }
+];
+
+export const getKolkataBusinessForPassport = (passportNumber: string | undefined): KolkataHotel => {
+  const seed = passportNumber || 'business_default_seed';
+  const hash = getDeterministicHash(seed);
+  return KOLKATA_BUSINESSES[hash % KOLKATA_BUSINESSES.length];
+};
+
 export const generateDataText = (itemData: PassportData | null): string => {
   if (!itemData) return '';
   
@@ -371,7 +404,7 @@ Office Address (Permanent): ${itemData.officeAddressLocal || 'N/A'}
 
   if (itemData.hotelName) {
     text += `
-=== INDIAN REFERENCE (KOLKATA HOTEL) ===
+=== INDIAN REFERENCE ===
 Reference Name in India: ${itemData.hotelName}
 Address: ${itemData.hotelAddress || 'N/A'}
 Address line 2 / Pincode: ${itemData.hotelPinCode || 'N/A'}
