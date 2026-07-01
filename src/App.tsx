@@ -33,7 +33,7 @@ import { LoginModal } from './components/LoginModal';
 import { LogoutConfirmModal } from './components/LogoutConfirmModal';
 
 // Utilities
-import { generateDataText, getKolkataHotelForPassport } from './utils/addressUtils';
+import { generateDataText, getKolkataHotelForPassport, getDelhiHotelForPassport } from './utils/addressUtils';
 import { generatePDF, getPDFDocument, generateUndertakingPDF } from './utils/pdfGenerator';
 import { logoutGoogle } from './lib/firebase';
 
@@ -356,23 +356,39 @@ export default function App() {
   }, [loading]);
 
   useEffect(() => {
-    if (data && utPurpose === 'Tourism' && !data.hotelName) {
-      const hotel = getKolkataHotelForPassport(data.passportNumber);
+    if (!data) return;
+
+    let shouldUpdate = false;
+    let hotelToUse: any = null;
+
+    if (utPurpose === 'Tourism') {
+      if (!data.hotelName || data.hotelState !== 'WEST BENGAL') {
+        hotelToUse = getKolkataHotelForPassport(data.passportNumber);
+        shouldUpdate = true;
+      }
+    } else if (utPurpose === 'Double Entry') {
+      if (!data.hotelName || data.hotelState !== 'DELHI') {
+        hotelToUse = getDelhiHotelForPassport(data.passportNumber);
+        shouldUpdate = true;
+      }
+    }
+
+    if (shouldUpdate && hotelToUse) {
       const updated = {
         ...data,
-        hotelName: hotel.name,
-        hotelAddress: hotel.address,
-        hotelPinCode: hotel.pincode,
-        hotelState: hotel.state,
-        hotelDistrict: hotel.district,
-        hotelPhone: hotel.phone
+        hotelName: hotelToUse.name,
+        hotelAddress: hotelToUse.address + ', ' + hotelToUse.pincode,
+        hotelPinCode: hotelToUse.pincode,
+        hotelState: hotelToUse.state,
+        hotelDistrict: hotelToUse.district,
+        hotelPhone: hotelToUse.phone
       };
       setData(updated);
       if (activeQueueId) {
         setQueue(prev => prev.map(q => q.id === activeQueueId ? { ...q, data: updated } : q));
       }
     }
-  }, [data, utPurpose, activeQueueId, setQueue]);
+  }, [data?.passportNumber, data?.hotelName, data?.hotelState, utPurpose, activeQueueId, setQueue]);
 
   const updateDataField = (field: keyof PassportData, newValue: string) => {
     if (!data) return;

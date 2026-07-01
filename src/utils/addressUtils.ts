@@ -270,6 +270,63 @@ export const getKolkataHotelForPassport = (passportNumber: string | undefined): 
   return KOLKATA_HOTELS[hash % KOLKATA_HOTELS.length];
 };
 
+export const DELHI_HOTELS: KolkataHotel[] = [
+  {
+    name: 'The Oberoi, New Delhi',
+    address: 'Dr. Zakir Hussain Marg, Delhi Golf Club, Golf Links',
+    pincode: 'Delhi - 110003',
+    state: 'DELHI',
+    district: 'NEW DELHI',
+    phone: '+91 11 6911 0606'
+  },
+  {
+    name: 'Taj Palace, New Delhi',
+    address: '2, Sardar Patel Marg, Chanakyapuri',
+    pincode: 'Delhi - 110021',
+    state: 'DELHI',
+    district: 'NEW DELHI',
+    phone: '+91 11 2611 0202'
+  },
+  {
+    name: 'The Lalit New Delhi',
+    address: 'Fire Brigade Lane, Barakhamba',
+    pincode: 'Delhi - 110001',
+    state: 'DELHI',
+    district: 'NEW DELHI',
+    phone: '+91 11 4444 7777'
+  },
+  {
+    name: 'Shangri-La Eros New Delhi',
+    address: '19, Ashoka Road, Janpath, Connaught Place',
+    pincode: 'Delhi - 110001',
+    state: 'DELHI',
+    district: 'NEW DELHI',
+    phone: '+91 11 4119 1919'
+  },
+  {
+    name: 'Le Méridien New Delhi',
+    address: 'Windsor Place, Connaught Place',
+    pincode: 'Delhi - 110001',
+    state: 'DELHI',
+    district: 'NEW DELHI',
+    phone: '+91 11 4502 0200'
+  },
+  {
+    name: 'The Leela Palace New Delhi',
+    address: 'Africa Avenue, Diplomatic Enclave, Chanakyapuri',
+    pincode: 'Delhi - 110023',
+    state: 'DELHI',
+    district: 'NEW DELHI',
+    phone: '+91 11 3933 1234'
+  }
+];
+
+export const getDelhiHotelForPassport = (passportNumber: string | undefined): KolkataHotel => {
+  const seed = passportNumber || 'hotel_delhi_default_seed';
+  const hash = getDeterministicHash(seed);
+  return DELHI_HOTELS[hash % DELHI_HOTELS.length];
+};
+
 export const generateDataText = (itemData: PassportData | null): string => {
   if (!itemData) return '';
   

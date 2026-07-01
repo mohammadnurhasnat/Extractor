@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { HistoryItem, PassportData } from '../types';
 import { encryptData, decryptData } from '../utils/crypto';
 import { db } from '../lib/firebase';
@@ -12,6 +12,12 @@ export function usePassportHistory(userId: string | null, options?: {
   const [searchTerm, setSearchTerm] = useState('');
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
+  const latestHistoryRef = useRef<HistoryItem[]>([]);
+
+  useEffect(() => {
+    latestHistoryRef.current = history;
+  }, [history]);
+
   // Fallback to local storage if no user
   useEffect(() => {
     if (!userId) {
@@ -19,9 +25,12 @@ export function usePassportHistory(userId: string | null, options?: {
         const saved = localStorage.getItem('passport_core_history');
         if (saved && saved !== 'undefined' && saved.trim() !== '') {
           const decrypted = decryptData(saved);
-          setInternalHistory(Array.isArray(decrypted) ? decrypted : []);
+          const historyArr = Array.isArray(decrypted) ? decrypted : [];
+          setInternalHistory(historyArr);
+          latestHistoryRef.current = historyArr;
         } else {
           setInternalHistory([]);
+          latestHistoryRef.current = [];
         }
       } catch (e) {
         console.error("Failed to load history from local storage", e);
@@ -36,14 +45,11 @@ export function usePassportHistory(userId: string | null, options?: {
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const fetchedHistory: HistoryItem[] = [];
       snapshot.forEach((doc) => {
-        // Data might be encrypted if we want to store securely, but let's just store as-is or encrypt before save.
-        // Actually, to keep it simple and searchable (partially), we could store raw. 
-        // But for privacy, maybe encrypt? Let's assume raw or parsed.
-        // The previous code encrypted it in local storage. Let's keep it raw in Firestore, protected by security rules.
         const data = doc.data() as HistoryItem;
         fetchedHistory.push(data);
       });
       setInternalHistory(fetchedHistory);
+      latestHistoryRef.current = fetchedHistory;
     }, (error) => {
       console.error("Error fetching history from Firestore:", error);
     });
@@ -53,12 +59,12 @@ export function usePassportHistory(userId: string | null, options?: {
 
   const saveHistory = useCallback(async (newHistory: HistoryItem[]) => {
     setInternalHistory(newHistory);
+    latestHistoryRef.current = newHistory;
     if (!userId) {
       localStorage.setItem('passport_core_history', encryptData(newHistory));
       return;
     }
     
-    // We should probably handle this better, but this is a direct replacement for setHistory
     const batch = writeBatch(db);
     const historyRef = collection(db, `users/${userId}/history`);
     
@@ -75,90 +81,81 @@ export function usePassportHistory(userId: string | null, options?: {
   }, [userId]);
 
   const addToHistory = useCallback(async (data: PassportData, imageBase64?: string): Promise<PassportData> => {
-    let returnData: PassportData = data;
+    const prevHistory = latestHistoryRef.current;
     
-    // We update local state optimistically, then write to Firebase (or localStorage)
-    const updateLogic = (prev: HistoryItem[]) => {
-      const existingItemIndex = prev.findIndex(item => {
-        const hasSamePassport = item.data.passportNumber && data.passportNumber && item.data.passportNumber.toUpperCase() === data.passportNumber.toUpperCase();
-        
-        // Normalize names for comparison
-        const itemGivenName = (item.data.givenName || '').trim().toUpperCase();
-        const dataGivenName = (data.givenName || '').trim().toUpperCase();
-        const itemSurname = (item.data.surname || '').trim().toUpperCase();
-        const dataSurname = (data.surname || '').trim().toUpperCase();
-        
-        const hasSameName = itemGivenName === dataGivenName && itemSurname === dataSurname;
-        
-        return hasSamePassport && hasSameName;
-      });
-
-      let newHistory: HistoryItem[];
-      let updatedOldItem: HistoryItem | null = null;
-      let newItem: HistoryItem | null = null;
-
-      if (existingItemIndex >= 0) {
-        const existingItem = prev[existingItemIndex];
-        
-        const updatedData = {
-          ...existingItem.data,
-          ...data,
-          extractionTime: data.extractionTime || existingItem.data.extractionTime || existingItem.extractionTime
-        };
-
-        updatedOldItem = {
-          ...existingItem,
-          timestamp: Date.now(),
-          data: updatedData,
-          extractionTime: data.extractionTime || existingItem.extractionTime,
-          imageBase64: imageBase64 || existingItem.imageBase64
-        };
-        returnData = updatedData;
-
-        const filtered = prev.filter((_, idx) => idx !== existingItemIndex);
-        newHistory = [updatedOldItem, ...filtered];
-      } else {
-        const id = Date.now().toString();
-        const timestamp = Date.now();
-        newItem = { 
-          id, 
-          timestamp, 
-          data, 
-          extractionTime: data.extractionTime,
-          imageBase64: imageBase64
-        };
-        
-        newHistory = [newItem, ...prev];
+    // Find if passport already exists using passport number as primary identifier
+    const existingItemIndex = prevHistory.findIndex(item => {
+      const itemPass = (item.data.passportNumber || '').trim().toUpperCase();
+      const dataPass = (data.passportNumber || '').trim().toUpperCase();
+      
+      const hasSamePassport = itemPass && dataPass && itemPass === dataPass;
+      
+      const itemGivenName = (item.data.givenName || '').trim().toUpperCase();
+      const dataGivenName = (data.givenName || '').trim().toUpperCase();
+      const itemSurname = (item.data.surname || '').trim().toUpperCase();
+      const dataSurname = (data.surname || '').trim().toUpperCase();
+      
+      const hasSameName = itemGivenName && dataGivenName && itemGivenName === dataGivenName && itemSurname === dataSurname;
+      
+      if (itemPass && dataPass) {
+        return hasSamePassport; // Unique identifier is the passport number!
       }
-      
-      return { newHistory, updatedOldItem, newItem };
-    };
-
-    setInternalHistory(prev => {
-      const { newHistory, updatedOldItem, newItem } = updateLogic(prev);
-      
-      // Handle side effects outside state update, but for now we do it here or immediately after.
-      // Since setInternalHistory doesn't allow async inside easily without messy closures,
-      // we'll just run it synchronously for UI, and fire the DB write.
-      
-      if (!userId) {
-        localStorage.setItem('passport_core_history', encryptData(newHistory));
-      } else {
-        // Fire and forget DB write
-        const itemToSave = updatedOldItem || newItem;
-        if (itemToSave) {
-          const docRef = doc(db, `users/${userId}/history`, itemToSave.id);
-          setDoc(docRef, itemToSave).catch(console.error);
-        }
-      }
-
-      if (updatedOldItem && options?.onItemAdded) options.onItemAdded(updatedOldItem);
-      if (newItem && options?.onItemAdded) options.onItemAdded(newItem);
-
-      return newHistory;
+      return hasSameName; // Fallback to name match if passport number is missing
     });
 
-    return returnData;
+    const timestamp = Date.now();
+    let itemToSave: HistoryItem;
+    let updatedHistory: HistoryItem[];
+
+    if (existingItemIndex >= 0) {
+      const existingItem = prevHistory[existingItemIndex];
+      const updatedData = {
+        ...existingItem.data,
+        ...data,
+        extractionTime: data.extractionTime || existingItem.data.extractionTime || existingItem.extractionTime
+      };
+
+      itemToSave = {
+        ...existingItem,
+        timestamp,
+        data: updatedData,
+        extractionTime: data.extractionTime || existingItem.extractionTime,
+        imageBase64: imageBase64 || existingItem.imageBase64
+      };
+
+      const filtered = prevHistory.filter((_, idx) => idx !== existingItemIndex);
+      updatedHistory = [itemToSave, ...filtered];
+    } else {
+      itemToSave = {
+        id: 'hist_' + Date.now().toString() + '_' + Math.random().toString(36).substring(2, 7),
+        timestamp,
+        data,
+        extractionTime: data.extractionTime,
+        imageBase64: imageBase64
+      };
+      updatedHistory = [itemToSave, ...prevHistory];
+    }
+
+    // Update state and local storage immediately
+    setInternalHistory(updatedHistory);
+    latestHistoryRef.current = updatedHistory;
+
+    if (!userId) {
+      localStorage.setItem('passport_core_history', encryptData(updatedHistory));
+    } else {
+      try {
+        const docRef = doc(db, `users/${userId}/history`, itemToSave.id);
+        await setDoc(docRef, itemToSave);
+      } catch (err) {
+        console.error("Failed to save history to Firestore:", err);
+      }
+    }
+
+    if (options?.onItemAdded) {
+      options.onItemAdded(itemToSave);
+    }
+
+    return itemToSave.data;
   }, [userId, options]);
 
   const deleteHistoryItem = useCallback(async (id: string) => {

@@ -1046,19 +1046,19 @@ Category 1: If the permanent address is inside DHAKA DISTRICT (e.g. Dhaka city a
    - permanentAddress: Keep it exactly as "${permanentAddress}".
    - presentAddress: MUST be exactly equal to the permanentAddress.
    - businessAddressDhaka & officeAddressDhaka: These 2 addresses MUST be realistic, proper, and complete random commercial/office addresses inside DHAKA CITY (e.g., Dhanmondi, Gulshan, Uttara, Mirpur, Motijheel, Badda, Malibagh, Mogbazar, etc.). They must be distinct from each other and randomly chosen.
-   - businessAddressLocal & officeAddressLocal: These 2 addresses MUST be realistic, proper, and complete random addresses near the permanent address (within the same local area, district, or town, but with different local descriptors). They must be distinct from each other. You MUST explicitly append the District name to the end of these addresses.
+   - businessAddressLocal & officeAddressLocal: These 2 addresses MUST be realistic, proper, and complete random addresses near the permanent address (within the same local area, district, or town, but with different local descriptors). They must be distinct from each other. You MUST explicitly append the District name WITH 4-DIGIT POSTAL CODE (e.g., Kishoreganj-2370) to the end of these addresses.
 
 Category 2: If the permanent address is inside DHAKA DIVISION but NOT Dhaka District (e.g., Gazipur, Narayanganj, Tangail, Faridpur, Manikganj, Munshiganj, Narsingdi, Madaripur, Gopalganj, Rajbari, Shariatpur, Kishoreganj):
    - permanentAddress: Keep it exactly as "${permanentAddress}".
    - presentAddress: MUST be a realistic, proper, and complete random address inside DHAKA CITY (distinct from permanentAddress).
    - businessAddressDhaka & officeAddressDhaka: These 2 addresses MUST be realistic, proper, and complete random addresses inside DHAKA CITY.
-   - businessAddressLocal & officeAddressLocal: These 2 addresses MUST be realistic, proper, and complete random addresses near the permanent address. You MUST explicitly append the District name (e.g. "Faridpur") to the end of these addresses.
+   - businessAddressLocal & officeAddressLocal: These 2 addresses MUST be realistic, proper, and complete random addresses near the permanent address. You MUST explicitly append the District name with 4-digit postal code (e.g. "Faridpur-7800") to the end of these addresses.
 
 Category 3: If the permanent address is OUTSIDE DHAKA DIVISION (e.g., Sylhet, Chittagong, Rajshahi, Khulna, Barisal, Rangpur, Mymensingh, or any district outside Dhaka division):
    - permanentAddress: Keep it exactly as "${permanentAddress}".
    - presentAddress: MUST be a realistic, proper, and complete random address inside DHAKA CITY.
    - businessAddressDhaka & officeAddressDhaka: These 2 addresses MUST be realistic, proper, and complete random addresses inside DHAKA CITY.
-   - businessAddressLocal & officeAddressLocal: These 2 addresses MUST be realistic, proper, and complete random addresses near the permanent address. You MUST explicitly append the District name (e.g. "Sylhet") to the end of these addresses.
+   - businessAddressLocal & officeAddressLocal: These 2 addresses MUST be realistic, proper, and complete random addresses near the permanent address. You MUST explicitly append the District name with 4-digit postal code (e.g. "Sylhet-3100") to the end of these addresses.
 
 CRITICAL ADDRESS FORMATTING & DIVERSITY MANDATES:
 - DHAKA CITY ADDRESSES (presentAddress, businessAddressDhaka, officeAddressDhaka):
@@ -1069,7 +1069,7 @@ CRITICAL ADDRESS FORMATTING & DIVERSITY MANDATES:
 - LOCAL/RURAL ADDRESSES OUTSIDE DHAKA (businessAddressLocal, officeAddressLocal if permanentAddress is outside Dhaka):
   * Do NOT use Dhaka-style urban prefixes like "House/Holding/Plot/Block" or "Sector" for village/local areas, as it looks artificial and incorrect.
   * Do NOT append words like "Sadar", "Upazila", or other administrative clutter (e.g., write "Mithamain" instead of "Mithamain Sadar" or "Mithamain Upazila").
-  * Do NOT include prefix labels or structural tags like 'Vill:', 'Post:', 'Thana:', 'Dist:', 'dist:', 'vill', 'post', 'thana', or 'dist'. Write clean comma-separated names of locations strictly following the 4-section format: "Goalpur, Mithamain, Goalpur, Kishoreganj" instead of "Vill: Goalpur, Thana: Mithamain, Post: Goalpur, Dist: Kishoreganj". Ensure the district name is ALWAYS added as the last/4th section, and is never missing.
+  * Do NOT include prefix labels or structural tags like 'Vill:', 'Post:', 'Thana:', 'Dist:', 'dist:', 'vill', 'post', 'thana', or 'dist'. Write clean comma-separated names of locations strictly following the 4-section format: "Goalpur, Mithamain, Goalpur-2370, Kishoreganj-2370" instead of "Vill: Goalpur, Thana: Mithamain, Post: Goalpur, Dist: Kishoreganj". Ensure the district name with 4-digit postal code is ALWAYS added as the last/4th section, and is never missing.
   * Keep it short, authentic, uncluttered, and highly natural. Do not use placeholders like "[Insert Road]".
 - Return the output strictly in the requested JSON structure.`
         }

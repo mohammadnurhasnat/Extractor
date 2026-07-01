@@ -185,7 +185,6 @@ export function PassportDataTab({
                 <div className="col-span-1 md:col-span-2">
                   <DataField label="Address" value={data.hotelAddress || ''} onValueChange={(val) => updateDataField('hotelAddress', val)} />
                 </div>
-                <DataField label="Address line 2 / Pincode" value={data.hotelPinCode || ''} onValueChange={(val) => updateDataField('hotelPinCode', val)} />
                 <DataField label="State" value={data.hotelState || ''} onValueChange={(val) => updateDataField('hotelState', val)} />
                 <DataField label="District" value={data.hotelDistrict || ''} onValueChange={(val) => updateDataField('hotelDistrict', val)} />
                 <DataField label="Phone" value={data.hotelPhone || ''} onValueChange={(val) => updateDataField('hotelPhone', val)} />
