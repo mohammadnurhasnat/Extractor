@@ -26,6 +26,13 @@ export interface PassportData {
   placeOfIssue?: string;
   birthPlaceDistrict?: string;
   extractionTime?: number;
+  // Kolkata Hotel details (for Tourist Visa)
+  hotelName?: string;
+  hotelAddress?: string;
+  hotelPinCode?: string;
+  hotelState?: string;
+  hotelDistrict?: string;
+  hotelPhone?: string;
   // Multi-Agent System Insights
   agentLog?: string;
   discrepancyList?: string[];

@@ -172,12 +172,110 @@ export const normalizeGender = (gender: string | undefined): string => {
   return gender.toUpperCase();
 };
 
+export interface KolkataHotel {
+  name: string;
+  address: string;
+  pincode: string;
+  state: string;
+  district: string;
+  phone: string;
+}
+
+export const KOLKATA_HOTELS: KolkataHotel[] = [
+  {
+    name: 'The Peerless Inn Kolkata',
+    address: '12, Jawaharlal Nehru Rd, Esplanade, Dharmatala',
+    pincode: 'Kolkata - 700013',
+    state: 'WEST BENGAL',
+    district: 'KOLKATA',
+    phone: '7066643322'
+  },
+  {
+    name: 'The Oberoi Grand',
+    address: '15, Jawaharlal Nehru Rd, New Market Area, Dharmatala',
+    pincode: 'Kolkata - 700013',
+    state: 'WEST BENGAL',
+    district: 'KOLKATA',
+    phone: '1169110606'
+  },
+  {
+    name: 'The Park Hotel',
+    address: '17, Park St, Taltala',
+    pincode: 'Kolkata - 700016',
+    state: 'WEST BENGAL',
+    district: 'KOLKATA',
+    phone: '3322499000'
+  },
+  {
+    name: 'JW Marriott Hotel Kolkata',
+    address: '4A, JBS Haldane Ave, Tangra',
+    pincode: 'Kolkata - 700105',
+    state: 'WEST BENGAL',
+    district: 'KOLKATA',
+    phone: '3366330000'
+  },
+  {
+    name: 'Taj Bengal',
+    address: 'No. 34-B, Belvedere Road, Alipore',
+    pincode: 'Kolkata - 700027',
+    state: 'WEST BENGAL',
+    district: 'KOLKATA',
+    phone: '3366123939'
+  },
+  {
+    name: 'ITC Sonar',
+    address: '1, JBS Haldane Ave, Tangra',
+    pincode: 'Kolkata - 700105',
+    state: 'WEST BENGAL',
+    district: 'KOLKATA',
+    phone: '3323454545'
+  },
+  {
+    name: 'Novotel Kolkata Hotel and Residences',
+    address: 'Action Area 1C, Rajarhat, New Town',
+    pincode: 'Kolkata - 700156',
+    state: 'WEST BENGAL',
+    district: 'KOLKATA',
+    phone: '3340323333'
+  },
+  {
+    name: 'Broadway Hotel',
+    address: '27A, Ganesh Chandra Ave, Bowbazar',
+    pincode: 'Kolkata - 700013',
+    state: 'WEST BENGAL',
+    district: 'KOLKATA',
+    phone: '9830478430'
+  },
+  {
+    name: 'Hotel Lytton',
+    address: '14 & 14/1, Sudder St, New Market Area, Dharmatala',
+    pincode: 'Kolkata - 700016',
+    state: 'WEST BENGAL',
+    district: 'KOLKATA',
+    phone: '3322491875'
+  },
+  {
+    name: 'The Astor Kolkata',
+    address: '15, Shakespeare Sarani Rd, Kankaria Estates, Park Street area',
+    pincode: 'Kolkata - 700071',
+    state: 'WEST BENGAL',
+    district: 'KOLKATA',
+    phone: '3322829957'
+  }
+];
+
+export const getKolkataHotelForPassport = (passportNumber: string | undefined): KolkataHotel => {
+  const seed = passportNumber || 'hotel_default_seed';
+  const hash = getDeterministicHash(seed);
+  return KOLKATA_HOTELS[hash % KOLKATA_HOTELS.length];
+};
+
 export const generateDataText = (itemData: PassportData | null): string => {
   if (!itemData) return '';
   
   const normalizedGender = normalizeGender(itemData.gender);
 
-  return `=== PASSPORT DATA ===
+  let text = `=== PASSPORT DATA ===
 EMAIL: ${getGeneratedEmail(itemData)}
 DOB: ${itemData.dob}
 Surname: ${itemData.surname}
@@ -213,4 +311,18 @@ Role: ${getJobRole(itemData)}
 Office Address (Present): ${itemData.officeAddressDhaka || 'N/A'}
 Office Address (Permanent): ${itemData.officeAddressLocal || 'N/A'}
 `;
+
+  if (itemData.hotelName) {
+    text += `
+=== INDIAN REFERENCE (KOLKATA HOTEL) ===
+Reference Name in India: ${itemData.hotelName}
+Address: ${itemData.hotelAddress || 'N/A'}
+Address line 2 / Pincode: ${itemData.hotelPinCode || 'N/A'}
+State: ${itemData.hotelState || 'N/A'}
+District: ${itemData.hotelDistrict || 'N/A'}
+Phone: ${itemData.hotelPhone || 'N/A'}
+`;
+  }
+
+  return text;
 };

@@ -33,7 +33,7 @@ import { LoginModal } from './components/LoginModal';
 import { LogoutConfirmModal } from './components/LogoutConfirmModal';
 
 // Utilities
-import { generateDataText } from './utils/addressUtils';
+import { generateDataText, getKolkataHotelForPassport } from './utils/addressUtils';
 import { generatePDF, getPDFDocument, generateUndertakingPDF } from './utils/pdfGenerator';
 import { logoutGoogle } from './lib/firebase';
 
@@ -423,6 +423,25 @@ function dataURLtoFile(dataurl: string, filename: string): File {
     }
   }, [loading]);
 
+  useEffect(() => {
+    if (data && utPurpose === 'Tourism' && !data.hotelName) {
+      const hotel = getKolkataHotelForPassport(data.passportNumber);
+      const updated = {
+        ...data,
+        hotelName: hotel.name,
+        hotelAddress: hotel.address,
+        hotelPinCode: hotel.pincode,
+        hotelState: hotel.state,
+        hotelDistrict: hotel.district,
+        hotelPhone: hotel.phone
+      };
+      setData(updated);
+      if (activeQueueId) {
+        setQueue(prev => prev.map(q => q.id === activeQueueId ? { ...q, data: updated } : q));
+      }
+    }
+  }, [data, utPurpose, activeQueueId, setQueue]);
+
   const updateDataField = (field: keyof PassportData, newValue: string) => {
     if (!data) return;
     const updated = { ...data, [field]: newValue };
@@ -577,6 +596,7 @@ function dataURLtoFile(dataurl: string, filename: string): File {
               handleDownloadJSON={handleDownloadJSON}
               isGeneratingAddresses={isGeneratingAddresses}
               onGenerateAddresses={handleGenerateAddresses}
+              utPurpose={utPurpose}
             />
           </div>
         </main>

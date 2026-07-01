@@ -18,6 +18,7 @@ interface PassportDataTabProps {
   isCopied: boolean;
   isGeneratingAddresses?: boolean;
   onGenerateAddresses?: () => void;
+  utPurpose?: string;
 }
 
 export function PassportDataTab({
@@ -29,7 +30,8 @@ export function PassportDataTab({
   handleDownloadJSON,
   isCopied,
   isGeneratingAddresses = false,
-  onGenerateAddresses
+  onGenerateAddresses,
+  utPurpose
 }: PassportDataTabProps) {
   const isExpiryWarning = (() => {
     if (!data.expiryDate) return false;
@@ -164,6 +166,33 @@ export function PassportDataTab({
             <DataField label="Office Address (Permanent / Local)" value={data.officeAddressLocal || ''} onValueChange={(val) => updateDataField('officeAddressLocal', val)} />
           </div>
         </div>
+
+        {utPurpose === 'Tourism' && data.hotelName && (
+          <>
+            <div className="col-span-1 sm:col-span-2 pt-3 border-t border-slate-100 dark:border-zinc-800/50 mt-4">
+              <h4 className="text-xs font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider mb-2.5">Indian Reference (Tourist Visa Hotel)</h4>
+            </div>
+            
+            <div className="col-span-1 sm:col-span-2 bg-gradient-to-br from-amber-500/5 to-orange-500/5 dark:from-amber-500/10 dark:to-orange-500/10 p-4 rounded-xl border border-amber-500/20 dark:border-amber-500/30 space-y-3">
+              <h5 className="text-sm font-semibold text-slate-700 dark:text-zinc-300 border-b border-slate-200 dark:border-zinc-800/50 pb-2 mb-1 flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+                Kolkata Hotel Details (Reference Name in India)
+              </h5>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="col-span-1 md:col-span-2">
+                  <DataField label="Reference Name in India" value={data.hotelName || ''} onValueChange={(val) => updateDataField('hotelName', val)} />
+                </div>
+                <div className="col-span-1 md:col-span-2">
+                  <DataField label="Address" value={data.hotelAddress || ''} onValueChange={(val) => updateDataField('hotelAddress', val)} />
+                </div>
+                <DataField label="Address line 2 / Pincode" value={data.hotelPinCode || ''} onValueChange={(val) => updateDataField('hotelPinCode', val)} />
+                <DataField label="State" value={data.hotelState || ''} onValueChange={(val) => updateDataField('hotelState', val)} />
+                <DataField label="District" value={data.hotelDistrict || ''} onValueChange={(val) => updateDataField('hotelDistrict', val)} />
+                <DataField label="Phone" value={data.hotelPhone || ''} onValueChange={(val) => updateDataField('hotelPhone', val)} />
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </>
   );
