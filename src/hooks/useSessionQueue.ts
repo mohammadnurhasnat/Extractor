@@ -28,46 +28,8 @@ interface QueueStateProps {
 }
 
 export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectData, onError }: QueueStateProps) {
-  const [queue, setQueue] = useState<QueueItem[]>(() => {
-    try {
-      const savedPreview = localStorage.getItem('passport_active_preview');
-      const savedDataStr = localStorage.getItem('passport_active_data');
-      if (savedPreview && savedPreview.startsWith('data:')) {
-        let name = 'Passport.jpg';
-        let decodedData = null;
-        if (savedDataStr) {
-          decodedData = decryptData(savedDataStr);
-          if (decodedData && decodedData.passportNumber) {
-            name = `Passport_${decodedData.passportNumber}.jpg`;
-          }
-        }
-        const fileObj = dataURLtoFile(savedPreview, name);
-        return [{
-          id: 'restored_active',
-          file: fileObj,
-          preview: savedPreview,
-          loading: false,
-          error: null,
-          status: 'completed',
-          data: decodedData || undefined
-        }];
-      }
-    } catch (e) {
-      console.error("Failed to restore queue", e);
-    }
-    return [];
-  });
-  const [activeQueueId, setActiveQueueId] = useState<string | null>(() => {
-    try {
-      const savedPreview = localStorage.getItem('passport_active_preview');
-      if (savedPreview && savedPreview.startsWith('data:')) {
-        return 'restored_active';
-      }
-    } catch (e) {
-      console.error("Failed to restore activeQueueId", e);
-    }
-    return null;
-  });
+  const [queue, setQueue] = useState<QueueItem[]>([]);
+  const [activeQueueId, setActiveQueueId] = useState<string | null>(null);
   const [isBatchProcessing, setIsBatchProcessing] = useState(false);
   const [isZipping, setIsZipping] = useState(false);
   const [loading, setLoading] = useState(false);

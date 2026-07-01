@@ -211,6 +211,40 @@ export function DataField({ label, value, highlight = false, warning = false, co
               )}
               {value && (
                 <div className="flex items-center gap-1.5">
+                  {(copied || persistentCopied) && (
+                    <>
+                      <style>{`
+                        @keyframes rainbow-glow {
+                          0%, 100% {
+                            box-shadow: 0 0 5px rgba(239, 68, 68, 0.5), 0 0 10px rgba(239, 68, 68, 0.2);
+                            border-color: rgba(239, 68, 68, 0.6);
+                          }
+                          20% {
+                            box-shadow: 0 0 5px rgba(245, 158, 11, 0.5), 0 0 10px rgba(245, 158, 11, 0.2);
+                            border-color: rgba(245, 158, 11, 0.6);
+                          }
+                          40% {
+                            box-shadow: 0 0 5px rgba(16, 185, 129, 0.5), 0 0 10px rgba(16, 185, 129, 0.2);
+                            border-color: rgba(16, 185, 129, 0.6);
+                          }
+                          60% {
+                            box-shadow: 0 0 5px rgba(59, 130, 246, 0.5), 0 0 10px rgba(59, 130, 246, 0.2);
+                            border-color: rgba(59, 130, 246, 0.6);
+                          }
+                          80% {
+                            box-shadow: 0 0 5px rgba(139, 92, 246, 0.5), 0 0 10px rgba(139, 92, 246, 0.2);
+                            border-color: rgba(139, 92, 246, 0.6);
+                          }
+                        }
+                        .animate-rainbow-glow {
+                          animation: rainbow-glow 3s linear infinite;
+                        }
+                      `}</style>
+                      <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 bg-gradient-to-r from-emerald-50 via-white to-emerald-50 dark:from-emerald-950/40 dark:via-zinc-900/60 dark:to-emerald-950/40 px-2.5 py-0.5 rounded-[4px] border border-emerald-500/20 whitespace-nowrap animate-rainbow-glow transition-all duration-300">
+                        কপি হয়েছে
+                      </span>
+                    </>
+                  )}
                   <button
                     onClick={handleCopy}
                     className={`
