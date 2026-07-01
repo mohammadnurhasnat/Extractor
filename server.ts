@@ -315,6 +315,19 @@ function checkAndIncrementLimit(userId: string): { allowed: boolean; remaining: 
   return { allowed: true, remaining: userLimit - data[userId].count, count: data[userId].count };
 }
 
+function decrementLimit(userId: string) {
+  try {
+    const data = getLimitData();
+    const today = new Date().toISOString().split('T')[0];
+    if (data[userId] && data[userId].count > 0 && data[userId].date === today) {
+      data[userId].count -= 1;
+      saveLimitData(data);
+    }
+  } catch (err) {
+    console.error('Error decrementing limit:', err);
+  }
+}
+
 function getLimitStatus(userId: string): { count: number; remaining: number; limit: number } {
   const data = getLimitData();
   const today = new Date().toISOString().split('T')[0];
@@ -779,7 +792,14 @@ async function startServer() {
       const systemInstruction = `You are an ultra-fast, high-precision Passport Extraction & Validation Agent. 
 Extract passport data, read and validate Machine-Readable Zone (MRZ) checksums, compute confidence scores, highlight structural discrepancies, and suggest Bangladeshi addresses.
 
-INSTRUCTIONS:
+CRITICAL INITIAL QUALITY SCAN:
+Before doing any extraction, carefully evaluate the provided image first.
+- Is this actually a passport photo/info page?
+- Is the passport photo page extremely blurry, out-of-focus, dark, has high glare/reflections, or is of too low quality to confidently read names and passport numbers?
+- If the image is NOT a passport, or if it is too blurry/low-quality to read and extract real information accurately (which would lead to hallucination), you MUST set "isValidPassport" to false, and provide a clear, detailed, helpful explanation in Bengali under "validationError" explaining exactly why it cannot be read and asking the user to upload a clear passport photo (e.g. "পাসপোর্ট এর ছবিটি স্পষ্ট নয় বা পড়া যাচ্ছে না। দয়া করে আলোর নিচে একটি স্পষ্ট ও সোজা ছবি তুলে আপলোড করুন।"). For all other fields (finalData, mrzValidation, generatedAddresses, etc.), you can set empty/blank string values or dummy placeholder values as they won't be used.
+- If the image is a valid, legible passport page, you MUST set "isValidPassport" to true and "validationError" to "".
+
+INSTRUCTIONS FOR VALID PASSPORTS:
 1. OCR: Extract core properties: givenName, surname, dob, birthPlace, fatherName, motherName, spouseName, passportNumber, nidOrBirthCertNumber, issueDate, expiryDate, gender (Male/Female), permanentAddress, mobileNumber.
    - Core visual shapes: Carefully differentiate 'O' vs '0' and 'I' vs '1'.
    - IMPORTANT: Format dob, issueDate, and expiryDate strictly as DD/MM/YYYY (e.g. 15/08/1990).
@@ -797,11 +817,14 @@ INSTRUCTIONS:
    - Cat 2 (Dhaka Division, but not Dhaka District): Create a Dhaka City address for presentAddress, businessAddressDhaka, officeAddressDhaka. Create matching local addresses for local fields.
    - Cat 3 (Outside Dhaka Division): Create a Dhaka City address for presentAddress, businessAddressDhaka, officeAddressDhaka. Create matching local addresses for local fields.
    * Dhaka format: "House X, Road Y, [Area], Dhaka-[Postcode]" (No excessive building titles, commercial center tags, or complex names).
+   * DHAKA AREA RANDOM DIVERSITY MANDATE: You MUST randomly select different areas for each generated Dhaka address (presentAddress, businessAddressDhaka, officeAddressDhaka). Do NOT use the same area for all three, and do NOT repeatedly default to "Banani". You MUST rotate and choose randomly from areas like: Dhanmondi, Uttara, Gulshan, Mirpur, Mohammadpur, Motijheel, Badda, Malibagh, Mogbazar, Khilgaon, Bashundhara, Rampura, Shanti Nagar, Wari, Lalbagh, etc. Each field should ideally use a different area (e.g., presentAddress in Uttara, businessAddressDhaka in Dhanmondi, officeAddressDhaka in Gulshan).
    * Rules for All addresses: Do NOT include prefix labels or structural tags like 'Vill:', 'Post:', 'Thana:', 'Dist:', 'dist:', 'vill', 'post', 'thana', or 'dist'. Write clean comma-separated names of locations strictly following the 4-section format: "Goalpur, Mithamain, Goalpur, Kishoreganj" instead of "Vill: Goalpur, Thana: Mithamain, Post: Goalpur, Dist: Kishoreganj". Ensure the district name is always added at the very end.`;
 
       const responseSchema = {
         type: Type.OBJECT,
         properties: {
+          isValidPassport: { type: Type.BOOLEAN },
+          validationError: { type: Type.STRING },
           finalData: {
             type: Type.OBJECT,
             properties: {
@@ -874,7 +897,7 @@ INSTRUCTIONS:
             required: ["presentAddress", "businessAddressDhaka", "businessAddressLocal", "officeAddressDhaka", "officeAddressLocal"]
           }
         },
-        required: ["finalData", "fieldConfidence", "mrzValidation", "discrepancies", "confidenceScore", "customUndertakingDraft", "generatedAddresses"]
+        required: ["isValidPassport", "validationError", "finalData", "fieldConfidence", "mrzValidation", "discrepancies", "confidenceScore", "customUndertakingDraft", "generatedAddresses"]
       };
 
       let pipelineResponse;
@@ -922,6 +945,16 @@ INSTRUCTIONS:
 
       const pipelineData = JSON.parse(pipelineResponse.text);
       console.log('✅ High-Speed Single-Agent Extraction Pipeline Completed.');
+
+      // Validate passport image clarity & validity
+      if (pipelineData.isValidPassport === false) {
+        console.warn('⚠️ Passport photo validation failed:', pipelineData.validationError);
+        decrementLimit(userId);
+        return res.status(200).json({
+          success: false,
+          error: pipelineData.validationError || 'পাসপোর্টের ছবিটি স্পষ্ট নয় অথবা এটি একটি বৈধ পাসপোর্ট নয়। দয়া করে একটি স্পষ্ট পাসপোর্টের ছবি আপলোড করুন।'
+        });
+      }
 
       const result = {
         ...pipelineData.finalData,
@@ -1012,7 +1045,7 @@ Classify or decide based on these 3 categories:
 Category 1: If the permanent address is inside DHAKA DISTRICT (e.g. Dhaka city areas, Uttara, Banani, Gulshan, Dhanmondi, Savar, Keraniganj, Dhamrai, Nawabganj, Dohar etc.):
    - permanentAddress: Keep it exactly as "${permanentAddress}".
    - presentAddress: MUST be exactly equal to the permanentAddress.
-   - businessAddressDhaka & officeAddressDhaka: These 2 addresses MUST be realistic, proper, and complete random commercial/office addresses inside DHAKA CITY (e.g., Banani, Gulshan, Dhanmondi, Uttara, Motijheel, Mirpur, etc.). They must be distinct from each other.
+   - businessAddressDhaka & officeAddressDhaka: These 2 addresses MUST be realistic, proper, and complete random commercial/office addresses inside DHAKA CITY (e.g., Dhanmondi, Gulshan, Uttara, Mirpur, Motijheel, Badda, Malibagh, Mogbazar, etc.). They must be distinct from each other and randomly chosen.
    - businessAddressLocal & officeAddressLocal: These 2 addresses MUST be realistic, proper, and complete random addresses near the permanent address (within the same local area, district, or town, but with different local descriptors). They must be distinct from each other. You MUST explicitly append the District name to the end of these addresses.
 
 Category 2: If the permanent address is inside DHAKA DIVISION but NOT Dhaka District (e.g., Gazipur, Narayanganj, Tangail, Faridpur, Manikganj, Munshiganj, Narsingdi, Madaripur, Gopalganj, Rajbari, Shariatpur, Kishoreganj):
@@ -1027,9 +1060,10 @@ Category 3: If the permanent address is OUTSIDE DHAKA DIVISION (e.g., Sylhet, Ch
    - businessAddressDhaka & officeAddressDhaka: These 2 addresses MUST be realistic, proper, and complete random addresses inside DHAKA CITY.
    - businessAddressLocal & officeAddressLocal: These 2 addresses MUST be realistic, proper, and complete random addresses near the permanent address. You MUST explicitly append the District name (e.g. "Sylhet") to the end of these addresses.
 
-CRITICAL ADDRESS FORMATTING MANDATES:
+CRITICAL ADDRESS FORMATTING & DIVERSITY MANDATES:
 - DHAKA CITY ADDRESSES (presentAddress, businessAddressDhaka, officeAddressDhaka):
   * MUST strictly use the natural standard pattern: "House [Number], Road [Number], [Area Name], Dhaka-[Postcode]", or for Uttara: "House [Number], Road [Number], Sector [Number], Uttara, Dhaka-[Postcode]" or Mirpur: "House [Number], Road [Number], Block [Letter], Mirpur-[Number], Dhaka-[Postcode]".
+  * DHAKA AREA RANDOM DIVERSITY MANDATE: You MUST randomly select different areas for each generated Dhaka address (presentAddress, businessAddressDhaka, officeAddressDhaka). Do NOT use the same area for all three, and do NOT repeatedly default to "Banani". You MUST rotate and choose randomly from areas like: Dhanmondi, Uttara, Gulshan, Mirpur, Mohammadpur, Motijheel, Badda, Malibagh, Mogbazar, Khilgaon, Bashundhara, Rampura, Shanti Nagar, Wari, Lalbagh, etc. Each field should ideally use a different area (e.g., presentAddress in Uttara, businessAddressDhaka in Dhanmondi, officeAddressDhaka in Gulshan).
   * Do NOT include office level/building tags (like "Level 8, Concord Tower" or "Plot 15, Block C") or wordy labels like "Banani Commercial Area". Keep them clean and directly of the standard format.
   * Areas like Banani, Gulshan, Dhanmondi, Uttara MUST have proper Road numbers (e.g., "House 15, Road 11, Banani, Dhaka-1213").
 - LOCAL/RURAL ADDRESSES OUTSIDE DHAKA (businessAddressLocal, officeAddressLocal if permanentAddress is outside Dhaka):
