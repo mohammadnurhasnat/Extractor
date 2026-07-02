@@ -68,37 +68,49 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
 
     const startTime = Date.now();
     try {
-      let compressedFile = currentItem.file;
-      
-      // If original file is already under 400 KB, skip compression entirely to reduce client CPU wait time.
-      // Else, compress aggressively to max 0.35MB and max 1200px width/height for fast upload and fast Gemini processing.
-      if (currentItem.file.size > 400 * 1024) {
-        const options = {
-          maxSizeMB: 0.35,
-          maxWidthOrHeight: 1200,
-          useWebWorker: true,
-          initialQuality: 0.85
-        };
-        try {
-          compressedFile = await imageCompression(currentItem.file, options);
-          const originalMB = currentItem.file.size / (1024 * 1024);
-          const compressedMB = compressedFile.size / (1024 * 1024);
-          const reduction = Math.round((1 - compressedMB / originalMB) * 100);
-          const compressionRatio = `-${reduction}% (${compressedMB.toFixed(2)}MB)`;
-          
-          setQueue(prev => prev.map(q => q.id === itemId ? { ...q, compressionRatio } : q));
-        } catch (compressErr) {
-          console.warn('Image compression failed, falling back to original:', compressErr);
-          compressedFile = currentItem.file;
-        }
-      }
+      const isPdf = currentItem.file.type === 'application/pdf' || currentItem.documentType === 'visa_application';
+      let base64String = '';
 
-      const base64String = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(compressedFile);
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = () => reject(new Error('Failed to read file'));
-      });
+      if (isPdf) {
+        base64String = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(currentItem.file);
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = () => reject(new Error('Failed to read PDF file'));
+        });
+      } else {
+        let compressedFile = currentItem.file;
+        
+        // If original file is already under 400 KB, skip compression entirely to reduce client CPU wait time.
+        // Else, compress aggressively to max 0.35MB and max 1200px width/height for fast upload and fast Gemini processing.
+        if (currentItem.file.size > 400 * 1024) {
+          const options = {
+            maxSizeMB: 0.35,
+            maxWidthOrHeight: 1200,
+            useWebWorker: true,
+            initialQuality: 0.85
+          };
+          try {
+            compressedFile = await imageCompression(currentItem.file, options);
+            const originalMB = currentItem.file.size / (1024 * 1024);
+            const compressedMB = compressedFile.size / (1024 * 1024);
+            const reduction = Math.round((1 - compressedMB / originalMB) * 100);
+            const compressionRatio = `-${reduction}% (${compressedMB.toFixed(2)}MB)`;
+            
+            setQueue(prev => prev.map(q => q.id === itemId ? { ...q, compressionRatio } : q));
+          } catch (compressErr) {
+            console.warn('Image compression failed, falling back to original:', compressErr);
+            compressedFile = currentItem.file;
+          }
+        }
+
+        base64String = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(compressedFile);
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = () => reject(new Error('Failed to read file'));
+        });
+      }
 
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (userApiKey) {
@@ -119,13 +131,15 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
       const controller = new AbortController();
       abortControllersRef.current.add(controller);
 
-      const res = await fetch('/api/extract-passport', {
+      const endpoint = isPdf ? '/api/extract-application-pdf' : '/api/extract-passport';
+      const requestBody = isPdf
+        ? JSON.stringify({ pdfBase64: base64String, mimeType: currentItem.file.type })
+        : JSON.stringify({ imageBase64: base64String, mimeType: currentItem.file.type });
+
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers,
-        body: JSON.stringify({
-          imageBase64: base64String,
-          mimeType: currentItem.file.type
-        }),
+        body: requestBody,
         signal: controller.signal,
       });
       

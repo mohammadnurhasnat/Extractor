@@ -31,24 +31,46 @@ export function useQueueHandlers({
   setFile, setPreview, setData, setError, fileInputRef
 }: UseQueueHandlersProps) {
 
-  const processFiles = (fileList: FileList | File[]) => {
+  const processFiles = (fileList: FileList | File[], isVisaApplication: boolean = false) => {
     const filesArray = Array.from(fileList);
-    const validImageFiles = filesArray.filter(f => f.type.startsWith('image/'));
     
-    if (validImageFiles.length === 0) {
-      setError('Please upload at least one valid image file (JPEG, PNG).');
+    // Check if any visa application PDF is 1MB or larger
+    if (isVisaApplication) {
+      const oversizedFiles = filesArray.filter(f => f.type === 'application/pdf' && f.size >= 1024 * 1024);
+      if (oversizedFiles.length > 0) {
+        setError('দয়া করে ১ মেগাবাইট (1MB) এর নিচের সাইজের ইন্ডিয়ান ভিসা অ্যাপ্লিকেশন PDF ফাইল আপলোড করুন।');
+        return;
+      }
+    }
+
+    const validFiles = filesArray.filter(f => 
+      isVisaApplication 
+        ? f.type === 'application/pdf'
+        : (f.type.startsWith('image/') || f.type === 'application/pdf')
+    );
+    
+    if (validFiles.length === 0) {
+      if (isVisaApplication) {
+        setError('দয়া করে একটি ইন্ডিয়ান ভিসা অ্যাপ্লিকেশন PDF ফাইল আপলোড করুন।');
+      } else {
+        setError('Please upload at least one valid image file (JPEG, PNG) or PDF.');
+      }
       return;
     }
 
-    const newQueueItems: QueueItem[] = validImageFiles.map(file => {
+    const newQueueItems: QueueItem[] = validFiles.map(file => {
       const id = 'q_' + Date.now().toString() + Math.random().toString(36).substring(2);
+      const isPdf = file.type === 'application/pdf';
+      const docType = (isVisaApplication || isPdf) ? 'visa_application' : 'passport';
+      
       return {
         id,
         file,
-        preview: URL.createObjectURL(file),
+        preview: isPdf ? '' : URL.createObjectURL(file),
         loading: false,
         error: null,
-        status: 'queued'
+        status: 'queued',
+        documentType: docType
       };
     });
 
@@ -58,7 +80,7 @@ export function useQueueHandlers({
         const activeItem = newQueueItems[0];
         setActiveQueueId(activeItem.id);
         setFile(activeItem.file);
-        setPreview(activeItem.preview);
+        setPreview(activeItem.preview || null);
         setData(null);
         setError(null);
       }
@@ -81,6 +103,19 @@ export function useQueueHandlers({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       processFiles(e.target.files);
+    }
+  };
+
+  const handleVisaFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      processFiles(e.target.files, true);
+    }
+  };
+
+  const handleVisaDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      processFiles(e.dataTransfer.files, true);
     }
   };
 
@@ -162,6 +197,8 @@ export function useQueueHandlers({
     handleDragOver,
     handleDrop,
     handleFileChange,
+    handleVisaFileChange,
+    handleVisaDrop,
     selectQueueItem,
     removeFromQueue,
     loadFromHistory,

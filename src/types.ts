@@ -93,5 +93,6 @@ export interface QueueItem {
   data?: PassportData;
   lastUsedAt?: number;
   compressionRatio?: string;
+  documentType?: 'passport' | 'visa_application';
 }
 

@@ -349,6 +349,11 @@ const ExtractPassportSchema = z.object({
   mimeType: z.string().regex(/^image\/(jpeg|jpg|png|webp)$/i, 'Only JPEG, PNG, and WEBP images are supported'),
 });
 
+const ExtractApplicationPdfSchema = z.object({
+  pdfBase64: z.string().min(1, 'PDF base64 data is required'),
+  mimeType: z.string().regex(/^application\/pdf$/i, 'Only PDF files are supported'),
+});
+
 const GenerateAddressesSchema = z.object({
   permanentAddress: z.string().min(1, 'Permanent address is required'),
 });
@@ -992,6 +997,289 @@ INSTRUCTIONS FOR VALID PASSPORTS:
       console.error('Extraction Error:', error);
       
       let errorMessage = 'Server error during extraction';
+      
+      if (error && error.message) {
+        if (error.message.includes('503') || error.message.includes('high demand') || error.message.includes('UNAVAILABLE')) {
+          errorMessage = 'The AI system is currently experiencing high demand. Please try again in a few moments.';
+        } else {
+          try {
+            const jsonMatch = error.message.match(/\{.*\}/);
+            if (jsonMatch) {
+              const parsed = JSON.parse(jsonMatch[0]);
+              if (parsed && parsed.error && parsed.error.message) {
+                errorMessage = parsed.error.message;
+              } else {
+                errorMessage = error.message;
+              }
+            } else {
+              errorMessage = error.message;
+            }
+          } catch (e) {
+            errorMessage = error.message;
+          }
+        }
+      }
+
+      res.status(500).json({ success: false, error: errorMessage });
+    }
+  });
+
+  // API Route for Indian Visa Application PDF extraction
+  app.post('/api/extract-application-pdf', async (req, res) => {
+    try {
+      // Authenticate session via headers or request body
+      const userId = (req.headers['x-user-id'] || req.body.userId)?.toString();
+      if (!userId) {
+        return res.status(200).json({ success: false, error: 'প্রবেশাধিকার পাননি। দয়া করে আগে লগইন করুন।' });
+      }
+
+      const users = getUsersStore();
+      const user = users.find(u => u.id === userId);
+      if (!user) {
+        return res.status(200).json({ success: false, error: 'অবৈধ সেশন। দয়া করে আবার লগইন করুন।' });
+      }
+
+      if (user.isSuspended) {
+        return res.status(200).json({ success: false, error: 'আপনার অ্যাকাউন্টটি স্থগিত করা হয়েছে। দয়া করে এডমিনের সাথে যোগাযোগ করুন।' });
+      }
+
+      // Enforce 5-Passport/Application Daily Limit (reusing the same limit checker)
+      const limitCheck = checkAndIncrementLimit(userId);
+      if (!limitCheck.allowed) {
+        return res.status(200).json({ 
+          success: false, 
+          error: 'আপনার দৈনিক ফ্রী লিমিট (৫টি এক্সট্রাকশন) শেষ হয়ে গেছে। দয়া করে ২৪ ঘণ্টা পর আবার ফ্রী ট্রাই করতে পারবেন।' 
+        });
+      }
+
+      appendAuditLog({ userId: userId, action: 'EXTRACTION', details: 'Extracted an Indian Visa Application PDF' });
+
+      // Validate input request using Zod
+      const parsedBody = ExtractApplicationPdfSchema.safeParse(req.body);
+      if (!parsedBody.success) {
+        return res.status(200).json({ 
+          success: false, 
+          error: parsedBody.error.issues.map(e => e.message).join(', ') 
+        });
+      }
+
+      let { pdfBase64, mimeType } = parsedBody.data;
+
+      const clientApiKey = req.headers['x-api-key']?.toString() || process.env.GEMINI_API_KEY;
+
+      if (!clientApiKey) {
+        return res.status(200).json({ 
+          success: false,
+          error: 'GEMINI_API_KEY is missing. Please set it in your Render Dashboard Environment variables, OR configure it directly in the Extractor UI Settings (gear icon in the top-right of your screen).' 
+        });
+      }
+
+      const ai = new GoogleGenAI({
+        apiKey: clientApiKey,
+        httpOptions: {
+          headers: {
+            'User-Agent': 'aistudio-build',
+          }
+        }
+      });
+
+      // We expect the frontend to send just the base64 string without the data URI prefix
+      const base64Data = pdfBase64.includes(',') ? pdfBase64.split(',')[1] : pdfBase64;
+
+      console.log('⚡ High-Speed Visa Application PDF Extraction Pipeline Initiated.');
+
+      const systemInstruction = `You are an ultra-fast, high-precision Application Extraction & Validation Agent specializing in Indian Visa Application PDFs submitted by Bangladeshi citizens.
+The uploaded document is a PDF containing exactly 2 or 3 pages of the Indian Visa Application Form.
+
+CRITICAL DISCIPLINE:
+- Extract all data EXACTLY as printed in the uploaded form.
+- DO NOT add or fabricate any external or extra (barti) information. 
+- DO NOT invent synthetic addresses or rotate fake Dhaka addresses.
+- If a value is present in the form, extract it exactly as it is. If a field or section (like Employer/Profession details or spouse name) is blank or not on the form, keep it empty or blank. Do NOT fill it with fake or placeholder data.
+
+CRITICAL INITIAL QUALITY SCAN:
+Before doing any extraction, carefully evaluate the provided PDF file first.
+- Is this actually an Indian Visa Application Form or a similar visa application?
+- If the PDF is NOT a visa application, or if it is completely blank/unreadable, you MUST set "isValidApplication" to false, and provide a clear, detailed, helpful explanation in Bengali under "validationError" explaining exactly why it cannot be read (e.g. "পিডিএফ ফাইলটি একটি ইন্ডিয়ান ভিসা অ্যাপ্লিকেশন নয়। দয়া করে সঠিক পিডিএফ ফাইল আপলোড করুন।"). For all other fields, you can set empty/blank string values or dummy placeholder values as they won't be used.
+- If the PDF is a valid, legible visa application, you MUST set "isValidApplication" to true and "validationError" to "".
+
+INSTRUCTIONS FOR VALID APPLICATIONS:
+1. OCR Extraction: Extract the following core properties from all pages (2 or 3 pages) of the PDF:
+   - givenName: Applicant's Given Name
+   - surname: Applicant's Surname (if blank, use empty string)
+   - dob: Date of Birth. Extract and format strictly as DD/MM/YYYY (e.g., 15/08/1990)
+   - birthPlace: Place of Birth
+   - fatherName: Father's Name
+   - motherName: Mother's Name
+   - spouseName: Spouse's Name (if unmarried or empty, use empty string)
+   - passportNumber: Passport Number
+   - nidOrBirthCertNumber: National ID or Birth Registration Number
+   - issueDate: Passport Date of Issue. Format strictly as DD/MM/YYYY
+   - expiryDate: Passport Date of Expiry. Format strictly as DD/MM/YYYY
+   - gender: Gender (Male/Female/Other)
+   - permanentAddress: Permanent Address. Format strictly as written in the form, but make sure to clean or normalize any unnecessary prefix labels.
+   - mobileNumber: Applicant's Phone or Mobile Number as printed in the form.
+
+2. Address Processing: 
+   - presentAddress: Extract the exact Present Address printed on the application form. DO NOT invent a synthetic Dhaka address.
+   - For business/office addresses (businessAddressDhaka, businessAddressLocal, officeAddressDhaka, officeAddressLocal): Look at the "Profession / Occupation Details of Applicant" section on page 2 or 3 of the form. Extract the exact printed Employer/Business/Organization Name and Address. Map this extracted address to these fields. If there is no employer name or employer address listed on the form (e.g., if the applicant is a housewife, student, or unemployed), set these fields to empty string "". DO NOT invent fake company names or fake commercial addresses like "House X, Road Y, Gulshan, Dhaka" or apply any random Dhaka area rotation rules. Keep them empty or set them to the extracted employer address exactly.
+
+3. Security & Confidence: Match visual details and list any discrepancies found under discrepancies. Determine overall confidenceScore (0-100). Also estimate individual fieldConfidence scores (0-100) for every field in finalData based on document legibility.
+4. Undertaking: Set customUndertakingDraft to a very short 1-sentence string (e.g., "Full verification of submitted application data completed.") to optimize processing speed.`;
+
+      const responseSchema = {
+        type: Type.OBJECT,
+        properties: {
+          isValidApplication: { type: Type.BOOLEAN },
+          validationError: { type: Type.STRING },
+          finalData: {
+            type: Type.OBJECT,
+            properties: {
+              givenName: { type: Type.STRING },
+              surname: { type: Type.STRING },
+              dob: { type: Type.STRING },
+              birthPlace: { type: Type.STRING },
+              fatherName: { type: Type.STRING },
+              motherName: { type: Type.STRING },
+              spouseName: { type: Type.STRING },
+              passportNumber: { type: Type.STRING },
+              nidOrBirthCertNumber: { type: Type.STRING },
+              issueDate: { type: Type.STRING },
+              expiryDate: { type: Type.STRING },
+              gender: { type: Type.STRING },
+              permanentAddress: { type: Type.STRING },
+              mobileNumber: { type: Type.STRING }
+            },
+            required: [
+              "givenName", "surname", "dob", "birthPlace", "fatherName", "motherName",
+              "spouseName", "passportNumber", "nidOrBirthCertNumber", "issueDate", "expiryDate", "gender", "permanentAddress", "mobileNumber"
+            ]
+          },
+          fieldConfidence: {
+            type: Type.OBJECT,
+            properties: {
+              givenName: { type: Type.INTEGER },
+              surname: { type: Type.INTEGER },
+              dob: { type: Type.INTEGER },
+              birthPlace: { type: Type.INTEGER },
+              fatherName: { type: Type.INTEGER },
+              motherName: { type: Type.INTEGER },
+              spouseName: { type: Type.INTEGER },
+              passportNumber: { type: Type.INTEGER },
+              nidOrBirthCertNumber: { type: Type.INTEGER },
+              issueDate: { type: Type.INTEGER },
+              expiryDate: { type: Type.INTEGER },
+              gender: { type: Type.INTEGER },
+              permanentAddress: { type: Type.INTEGER },
+              mobileNumber: { type: Type.INTEGER }
+            },
+            required: [
+              "givenName", "surname", "dob", "birthPlace", "fatherName", "motherName",
+              "spouseName", "passportNumber", "nidOrBirthCertNumber", "issueDate", "expiryDate", "gender", "permanentAddress", "mobileNumber"
+            ]
+          },
+          discrepancies: { type: Type.ARRAY, items: { type: Type.STRING } },
+          confidenceScore: { type: Type.INTEGER },
+          customUndertakingDraft: { type: Type.STRING },
+          generatedAddresses: {
+            type: Type.OBJECT,
+            properties: {
+              presentAddress: { type: Type.STRING },
+              businessAddressDhaka: { type: Type.STRING },
+              businessAddressLocal: { type: Type.STRING },
+              officeAddressDhaka: { type: Type.STRING },
+              officeAddressLocal: { type: Type.STRING }
+            },
+            required: ["presentAddress", "businessAddressDhaka", "businessAddressLocal", "officeAddressDhaka", "officeAddressLocal"]
+          }
+        },
+        required: ["isValidApplication", "validationError", "finalData", "fieldConfidence", "discrepancies", "confidenceScore", "customUndertakingDraft", "generatedAddresses"]
+      };
+
+      let pipelineResponse;
+      try {
+        console.log('⚡ Running primary engine: gemini-3.1-flash-lite (Target latency: 2-3s)');
+        pipelineResponse = await ai.models.generateContent({
+          model: 'gemini-3.1-flash-lite',
+          contents: [
+            {
+              inlineData: {
+                mimeType: mimeType,
+                data: base64Data,
+              }
+            }
+          ],
+          config: {
+            systemInstruction,
+            responseMimeType: 'application/json',
+            responseSchema
+          }
+        });
+      } catch (err: any) {
+        console.warn('⚠️ Primary gemini-3.1-flash-lite engine error, attempting fast fallback (gemini-3.5-flash)...', err.message || err);
+        pipelineResponse = await ai.models.generateContent({
+          model: 'gemini-3.5-flash',
+          contents: [
+            {
+              inlineData: {
+                mimeType: mimeType,
+                data: base64Data,
+              }
+            }
+          ],
+          config: {
+            systemInstruction,
+            responseMimeType: 'application/json',
+            responseSchema
+          }
+        });
+      }
+
+      if (!pipelineResponse.text) {
+        throw new Error('Visa application PDF extraction failed to return response data.');
+      }
+
+      const pipelineData = JSON.parse(pipelineResponse.text);
+      console.log('✅ High-Speed Application PDF Extraction Pipeline Completed.');
+
+      // Validate visa application PDF
+      if (pipelineData.isValidApplication === false) {
+        console.warn('⚠️ Visa application validation failed:', pipelineData.validationError);
+        decrementLimit(userId);
+        return res.status(200).json({
+          success: false,
+          error: pipelineData.validationError || 'পিডিএফ ফাইলটি একটি বৈধ ইন্ডিয়ান ভিসা অ্যাপ্লিকেশন নয়। দয়া করে সঠিক পিডিএফ ফাইল আপলোড করুন।'
+        });
+      }
+
+      const result = {
+        ...pipelineData.finalData,
+        fieldConfidence: pipelineData.fieldConfidence,
+        discrepancyList: pipelineData.discrepancies,
+        customUndertakingDraft: pipelineData.customUndertakingDraft || "",
+        permanentAddress: cleanAddressPrefixes(pipelineData.finalData.permanentAddress),
+        presentAddress: cleanAddressPrefixes(pipelineData.generatedAddresses.presentAddress),
+        businessAddressDhaka: cleanAddressPrefixes(pipelineData.generatedAddresses.businessAddressDhaka),
+        businessAddressLocal: cleanAddressPrefixes(pipelineData.generatedAddresses.businessAddressLocal),
+        officeAddressDhaka: cleanAddressPrefixes(pipelineData.generatedAddresses.officeAddressDhaka),
+        officeAddressLocal: cleanAddressPrefixes(pipelineData.generatedAddresses.officeAddressLocal),
+      };
+
+      const logLines = [
+        `⚡ **High-Speed Indian Visa Form PDF Engine**: Indian Visa application form successfully parsed directly in a single pass.`,
+        `🔍 **Form Parser Specialist**: Extracted given names, passport details, dates, and familial information.`,
+        `🛡️ **Security Check System**: Analyzed structure and computed overall confidence is **${pipelineData.confidenceScore}%**.`,
+        `📍 **Address Synchronizer**: Automatically designed matching residence and professional address fields.`
+      ];
+      result.agentLog = logLines.join('\n\n');
+
+      console.log('⚡ Visa PDF Extraction Completed perfectly. Packaging results for display.');
+      res.json({ success: true, data: result });
+
+    } catch (error: any) {
+      console.error('Visa PDF Extraction Error:', error);
+      
+      let errorMessage = 'Server error during PDF extraction';
       
       if (error && error.message) {
         if (error.message.includes('503') || error.message.includes('high demand') || error.message.includes('UNAVAILABLE')) {

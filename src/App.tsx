@@ -307,6 +307,7 @@ export default function App() {
   const isUndertakingConfigured = !!(utPurpose || utFromDate || utToDate);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const visaFileInputRef = useRef<HTMLInputElement>(null);
 
   const {
     queue, setQueue,
@@ -334,6 +335,8 @@ export default function App() {
     handleDragOver,
     handleDrop,
     handleFileChange,
+    handleVisaFileChange,
+    handleVisaDrop,
     selectQueueItem,
     removeFromQueue,
     loadFromHistory,
@@ -480,6 +483,10 @@ export default function App() {
               preview={preview}
               fileInputRef={fileInputRef}
               handleFileChange={handleFileChange}
+              visaFileInputRef={visaFileInputRef}
+              handleVisaFileChange={handleVisaFileChange}
+              handleVisaDrop={handleVisaDrop}
+              handleDragOver={handleDragOver}
               utPurpose={utPurpose}
               setUtPurpose={setUtPurpose}
               utHospitalName={utHospitalName}
