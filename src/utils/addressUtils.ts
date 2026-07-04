@@ -416,3 +416,38 @@ Phone: ${itemData.hotelPhone || 'N/A'}
 
   return text;
 };
+
+export const formatIndianVisaAddress = (address: string): string => {
+  if (!address) return '';
+  let cleaned = address.trim();
+
+  // Find a 6-digit number representing the pincode
+  const pinMatch = cleaned.match(/\b\d{6}\b/);
+  if (pinMatch) {
+    const pincode = pinMatch[0];
+    // Remove the pincode from its current position
+    let baseAddress = cleaned.replace(pincode, '').trim();
+    // Remove any trailing commas, dashes, and extra spaces
+    baseAddress = baseAddress.replace(/,\s*-\s*$/, '').replace(/[\s,;\-]+$/, '').trim();
+
+    // Determine the city if possible
+    const isDelhi = /delhi/i.test(baseAddress);
+    const isKolkata = /kolkata/i.test(baseAddress);
+
+    if (isKolkata && !/kolkata\s*-\s*$/i.test(baseAddress)) {
+      // Clean up existing trailing Kolkata to avoid duplicate
+      baseAddress = baseAddress.replace(/(,\s*)?kolkata$/i, '').trim();
+      baseAddress = baseAddress.replace(/[\s,;\-]+$/, '').trim();
+      return `${baseAddress}, Kolkata - ${pincode}`;
+    } else if (isDelhi && !/delhi\s*-\s*$/i.test(baseAddress)) {
+      baseAddress = baseAddress.replace(/(,\s*)?delhi$/i, '').trim();
+      baseAddress = baseAddress.replace(/[\s,;\-]+$/, '').trim();
+      return `${baseAddress}, Delhi - ${pincode}`;
+    } else {
+      // Just append the pincode cleanly if no explicit city match or already ends with it
+      return `${baseAddress} - ${pincode}`;
+    }
+  }
+
+  return cleaned;
+};

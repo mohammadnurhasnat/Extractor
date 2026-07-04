@@ -33,7 +33,7 @@ import { LoginModal } from './components/LoginModal';
 import { LogoutConfirmModal } from './components/LogoutConfirmModal';
 
 // Utilities
-import { generateDataText, getKolkataHotelForPassport, getDelhiHotelForPassport, getKolkataBusinessForPassport } from './utils/addressUtils';
+import { generateDataText, getKolkataHotelForPassport, getDelhiHotelForPassport, getKolkataBusinessForPassport, formatIndianVisaAddress } from './utils/addressUtils';
 import { generatePDF, getPDFDocument, generateUndertakingPDF } from './utils/pdfGenerator';
 import { logoutGoogle } from './lib/firebase';
 
@@ -400,7 +400,16 @@ export default function App() {
 
   const updateDataField = (field: keyof PassportData, newValue: string) => {
     if (!data) return;
-    const updated = { ...data, [field]: newValue };
+    let val = newValue;
+    let extraFields = {};
+    if (field === 'hotelAddress') {
+      val = formatIndianVisaAddress(newValue);
+      const pinMatch = val.match(/\b\d{6}\b/);
+      if (pinMatch) {
+        extraFields = { hotelPinCode: pinMatch[0] };
+      }
+    }
+    const updated = { ...data, [field]: val, ...extraFields };
     setData(updated);
     if (activeQueueId) {
       setQueue(prev => prev.map(q => q.id === activeQueueId ? { ...q, data: updated } : q));
