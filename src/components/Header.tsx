@@ -69,8 +69,8 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Center column: Website Name - flex-1 min-w-0 for perfect space allocation without overlap */}
         <div className="flex-1 min-w-0 text-center px-0.5 sm:px-2 flex justify-center">
-          <div className="inline-flex items-center justify-center bg-slate-50 dark:bg-zinc-900/80 px-3 sm:px-4 py-0.5 sm:py-1 rounded-[10px] border border-slate-200/60 dark:border-zinc-800/60 shadow-[0_3px_0_0_rgba(148,163,184,0.3)] dark:shadow-[0_3px_0_0_rgba(255,255,255,0.2)] transform -translate-y-[1px] select-none cursor-default">
-            <h1 className="text-[12px] xs:text-[14px] sm:text-lg md:text-xl lg:text-2xl font-black tracking-[0.2em] text-slate-800 dark:text-zinc-100 uppercase truncate">
+          <div className="inline-flex items-center justify-center bg-slate-50 dark:bg-zinc-900/80 px-3 sm:px-4 py-0.5 sm:py-1 rounded-[10px] border-2 border-zinc-950 dark:border-white/40 shadow-[0_3px_0_0_rgba(0,0,0,0.2)] dark:shadow-[0_3px_0_0_rgba(255,255,255,0.15)] transform -translate-y-[1px] select-none cursor-default">
+            <h1 className="text-[12px] xs:text-[14px] sm:text-lg md:text-xl lg:text-2xl font-black tracking-[0.2em] text-zinc-900 dark:text-zinc-100 uppercase truncate">
               Extractor
             </h1>
           </div>
