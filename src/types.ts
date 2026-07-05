@@ -1,3 +1,10 @@
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  mobileNumber: string;
+}
+
 export interface PassportData {
   givenName: string;
   surname: string;

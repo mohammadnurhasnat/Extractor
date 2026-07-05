@@ -34,17 +34,17 @@ export const LoginGreeting: React.FC<LoginGreetingProps> = ({ userName, isOpen, 
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.2, type: "spring" }}
-                className="w-16 h-16 rounded-full bg-gradient-to-tr from-emerald-400 to-teal-500 flex items-center justify-center shadow-lg shadow-emerald-500/20"
+                className="w-16 h-16 rounded-[18px] bg-gradient-to-tr from-emerald-400 to-teal-500 flex items-center justify-center shadow-[0_10px_20px_rgba(16,185,129,0.3)] border-b-4 border-emerald-600 active:scale-95 transition-transform"
               >
-                <CheckCircle2 className="w-8 h-8 text-white" />
+                <CheckCircle2 className="w-9 h-9 text-white drop-shadow-md" />
               </motion.div>
               <motion.div
                 animate={{ 
-                  scale: [1, 1.2, 1],
-                  opacity: [0.5, 0, 0.5]
+                  scale: [1, 1.15, 1],
+                  opacity: [0.3, 0, 0.3]
                 }}
                 transition={{ duration: 2, repeat: Infinity }}
-                className="absolute inset-0 rounded-full bg-emerald-400 -z-10"
+                className="absolute inset-0 rounded-[18px] bg-emerald-400 -z-10"
               />
             </div>
 
@@ -68,15 +68,6 @@ export const LoginGreeting: React.FC<LoginGreetingProps> = ({ userName, isOpen, 
               >
                 {userName}
               </motion.h2>
-              
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-                className="text-slate-500 dark:text-zinc-400 text-sm font-medium"
-              >
-                Welcome back! Redirecting you to the workspace...
-              </motion.p>
             </div>
 
             {/* Success Bar */}

@@ -81,14 +81,14 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
       } else {
         let compressedFile = currentItem.file;
         
-        // If original file is already under 400 KB, skip compression entirely to reduce client CPU wait time.
-        // Else, compress aggressively to max 0.35MB and max 1200px width/height for fast upload and fast Gemini processing.
-        if (currentItem.file.size > 400 * 1024) {
+        // Aggressive compression to keep backup sizes minimal while preserving OCR-compatible quality.
+        // We compress if file is over 150 KB. Target is ~150 KB with max 1000px resolution.
+        if (currentItem.file.size > 150 * 1024) {
           const options = {
-            maxSizeMB: 0.35,
-            maxWidthOrHeight: 1200,
+            maxSizeMB: 0.15,
+            maxWidthOrHeight: 1000,
             useWebWorker: true,
-            initialQuality: 0.85
+            initialQuality: 0.8
           };
           try {
             compressedFile = await imageCompression(currentItem.file, options);
