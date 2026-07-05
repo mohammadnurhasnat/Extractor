@@ -168,34 +168,43 @@ Expiry Date: ${item.data.expiryDate || ''}
           <p className="text-[12px] text-slate-500 dark:text-zinc-450 max-w-[200px] relative z-10 leading-relaxed font-medium">Try adjusting your search terms or clearing the filter.</p>
         </div>
       ) : (
-        <div className="overflow-y-auto overscroll-contain scroll-smooth pr-1 space-y-1.5 pb-2 scrollbar-thin max-h-[300px]">
-          {filteredHistory.map(item => (
+        <div className="overflow-y-auto overscroll-contain scroll-smooth pr-1 space-y-2 pb-2 scrollbar-thin max-h-[300px]">
+          {filteredHistory.map((item, idx) => (
             <div 
               key={item.id} 
               onClick={() => onLoadItem(item)}
-              className="cursor-pointer group relative flex items-center justify-between py-1.5 px-3 rounded-md border border-slate-100 dark:border-zinc-800/80 bg-white dark:bg-zinc-950/40 hover:bg-gradient-to-r hover:from-blue-50/40 hover:to-transparent dark:hover:from-zinc-850/35 dark:hover:to-transparent hover:border-blue-200 dark:hover:border-zinc-700 transition-all duration-300 shadow-sm min-h-[34px]"
+              className="cursor-pointer group relative flex items-center justify-between py-2 px-3 rounded-xl border border-slate-100 dark:border-zinc-800/80 bg-white dark:bg-zinc-950/40 hover:bg-gradient-to-r hover:from-blue-50/40 hover:to-transparent dark:hover:from-zinc-850/35 dark:hover:to-transparent hover:border-blue-200 dark:hover:border-zinc-700 transition-all duration-300 shadow-sm min-h-[40px]"
             >
-              <div className="flex items-center gap-2 mr-6 overflow-hidden flex-wrap min-w-0 flex-1">
-                <span className="font-bold text-[13px] leading-none text-slate-850 dark:text-zinc-200 group-hover:text-blue-600 dark:group-hover:text-blue-450 transition-colors truncate font-sans shrink-0 max-w-[130px] sm:max-w-[165px]">
-                  {item.data.givenName} {item.data.surname}
+              <div className="flex items-center gap-3 mr-6 overflow-hidden flex-1 min-w-0">
+                {/* Stylish Index */}
+                <span className="w-6 h-6 rounded-lg bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-[11px] font-black flex items-center justify-center text-slate-500 dark:text-zinc-400 shrink-0 group-hover:bg-blue-500/10 group-hover:text-blue-600 group-hover:border-blue-500/20 transition-all">
+                  {String(idx + 1).padStart(2, '0')}
                 </span>
-                {item.data.passportNumber && (
-                  <span className="text-[9px] font-bold px-1.5 py-0.5 bg-slate-50 dark:bg-zinc-900 border border-slate-200/50 dark:border-zinc-800/80 text-slate-600 dark:text-zinc-400 rounded-sm font-mono shrink-0 leading-none">
-                    {item.data.passportNumber}
+                
+                <div className="flex flex-col min-w-0">
+                  <span className="font-bold text-[13px] leading-tight text-slate-850 dark:text-zinc-200 group-hover:text-blue-600 dark:group-hover:text-blue-450 transition-colors truncate font-sans">
+                    {item.data.givenName} {item.data.surname}
                   </span>
-                )}
-                {(item.extractionTime || item.data.extractionTime) && (
-                  <span className="text-[9px] font-bold px-1 py-0.5 bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200/40 dark:border-blue-900/30 text-blue-600 dark:text-blue-450 rounded-sm font-mono shrink-0 leading-none">
-                    ⚡{((item.extractionTime || item.data.extractionTime)!).toFixed(1)}s
-                  </span>
-                )}
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    {item.data.passportNumber && (
+                      <span className="text-[9px] font-bold text-slate-500 dark:text-zinc-500 font-mono truncate">
+                        {item.data.passportNumber}
+                      </span>
+                    )}
+                    {(item.extractionTime || item.data.extractionTime) && (
+                      <span className="text-[9px] font-bold text-blue-500/80 dark:text-blue-400/80 font-mono shrink-0">
+                        • {((item.extractionTime || item.data.extractionTime)!).toFixed(1)}s
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
               <button 
                 onClick={(e) => onConfirmDelete(e, item.id)}
-                className="p-1 text-slate-400 dark:text-zinc-550 hover:text-red-600 dark:hover:text-red-400 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded transition-all shadow-sm shrink-0 cursor-pointer"
+                className="p-1.5 text-slate-400 dark:text-zinc-550 hover:text-red-600 dark:hover:text-red-400 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg transition-all shadow-sm shrink-0 cursor-pointer"
                 title="Delete from history"
               >
-                <Trash2 className="w-2.5 h-2.5" />
+                <Trash2 className="w-3.5 h-3.5" />
               </button>
             </div>
           ))}

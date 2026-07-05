@@ -22,6 +22,17 @@ export function DeleteConfirmationModal({
     if (itemToDelete && deleteBtnRef.current) {
       deleteBtnRef.current.focus();
     }
+    
+    // Scroll lock
+    if (itemToDelete) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    
+    return () => {
+      document.body.style.overflow = '';
+    };
   }, [itemToDelete]);
 
   if (!itemToDelete) return null;
@@ -53,7 +64,7 @@ export function DeleteConfirmationModal({
                 </div>
                 <div>
                   <h3 className="text-lg font-extrabold text-slate-900 dark:text-zinc-100 tracking-tight">
-                    {isDeleteAll ? "Batch Deletion Manager" : "Delete Profile Confirmation"}
+                    {isDeleteAll ? "Delete Profile" : "Delete Profile Confirmation"}
                   </h3>
                   <p className="text-xs font-bold text-slate-500 dark:text-zinc-400 mt-0.5">
                     {isDeleteAll ? "Managing all extracted passport records" : "Remove individual record from archive"}
@@ -68,8 +79,8 @@ export function DeleteConfirmationModal({
                     {history.map((item, idx) => (
                       <div key={item.id} className="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-zinc-900/40 border border-slate-100 dark:border-zinc-800/60 rounded-xl group transition-all hover:border-rose-500/30">
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <span className="w-5 h-5 rounded-full bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-[10px] font-bold flex items-center justify-center text-slate-500 shrink-0">
-                            {idx + 1}
+                          <span className="w-6 h-6 rounded-lg bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-[11px] font-black flex items-center justify-center text-slate-700 dark:text-zinc-300 shrink-0 shadow-sm group-hover:bg-rose-500/10 group-hover:text-rose-600 group-hover:border-rose-500/20 transition-all">
+                            {String(idx + 1).padStart(2, '0')}
                           </span>
                           <div className="truncate">
                             <h5 className="text-[11px] font-bold text-slate-800 dark:text-zinc-200 truncate">
@@ -115,14 +126,14 @@ export function DeleteConfirmationModal({
             <div className="bg-slate-50/80 dark:bg-zinc-900/60 px-6 py-4 flex items-center justify-end gap-3 border-t border-slate-100 dark:border-zinc-900/80 backdrop-blur-sm">
               <button
                 onClick={cancelDelete}
-                className="px-5 py-2.5 text-xs font-black uppercase tracking-widest text-slate-600 dark:text-zinc-400 hover:bg-slate-200 dark:hover:bg-zinc-800 rounded-xl transition-all cursor-pointer border border-transparent hover:border-slate-300 dark:hover:border-zinc-700"
+                className="px-5 py-2.5 text-[10px] font-black uppercase tracking-[0.15em] text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-100 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl transition-all shadow-sm hover:shadow-md active:scale-95 cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 ref={deleteBtnRef}
                 onClick={executeDelete}
-                className="px-6 py-2.5 text-xs font-black uppercase tracking-widest bg-rose-600 hover:bg-rose-700 text-white rounded-xl transition-all shadow-lg shadow-rose-500/20 active:scale-95 cursor-pointer flex items-center gap-2"
+                className="px-6 py-2.5 text-[10px] font-black uppercase tracking-[0.15em] bg-rose-600 hover:bg-rose-700 text-white rounded-xl transition-all shadow-lg shadow-rose-500/20 active:scale-95 cursor-pointer flex items-center gap-2"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span>{isDeleteAll ? "Delete All" : "Delete Record"}</span>

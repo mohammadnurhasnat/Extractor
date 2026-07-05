@@ -244,15 +244,15 @@ export function BackupModal({
                     key={item.id} 
                     className="flex items-center justify-between p-2.5 hover:bg-white/60 dark:hover:bg-zinc-900/30 transition-all duration-150 group"
                   >
-                    <div className="flex items-center gap-2.5 overflow-hidden">
+                    <div className="flex items-center gap-3 overflow-hidden">
                       {/* Serial Number */}
-                      <span className="w-5 h-5 rounded-full border border-slate-200 dark:border-zinc-850 text-black dark:text-zinc-200 text-[10px] font-bold flex items-center justify-center shrink-0 bg-slate-100/60 dark:bg-zinc-900/40">
-                        {index + 1}
+                      <span className="w-6 h-6 rounded-lg bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-[11px] font-black flex items-center justify-center text-slate-500 dark:text-zinc-400 shrink-0 group-hover:bg-amber-500/10 group-hover:text-amber-600 group-hover:border-amber-500/20 transition-all shadow-sm">
+                        {String(index + 1).padStart(2, '0')}
                       </span>
                       
                       {/* Info block */}
                       <div className="overflow-hidden">
-                        <h5 className="font-extrabold text-xs text-slate-850 dark:text-zinc-200 truncate group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                        <h5 className="font-extrabold text-[12px] text-slate-850 dark:text-zinc-200 truncate group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
                           {displayName}
                         </h5>
                         <p className="text-[10px] text-zinc-400 font-mono font-medium mt-0.5">
