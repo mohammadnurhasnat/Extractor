@@ -165,7 +165,7 @@ export function ResultsSection({
             <h3 className="text-xl font-bold text-slate-800 dark:text-zinc-100 mb-2.5 font-sans tracking-tight">Ready for Extraction</h3>
             
             <p className="text-[13px] text-slate-500 dark:text-zinc-400 max-w-[280px] leading-relaxed font-medium">
-              Upload a passport image on the left and click <span className="font-bold text-blue-600 dark:text-blue-400 px-1 py-0.5 rounded bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800/50 mx-0.5 shadow-sm">Process</span> to see the magically extracted data appear right here.
+              Upload a passport image on the left and click <span className="inline-flex items-center justify-center font-black text-white bg-[#e05e38] dark:bg-[#d95c37] px-2 py-0.5 rounded-[6px] border border-[#c24622] dark:border-[#9a3412] shadow-[0_2.5px_0_0_#9a3412] dark:shadow-[0_2.5px_0_0_#5f1a04] mx-1 text-[11px] transform -translate-y-[1px]">Process</span> to see the magically extracted data appear right here.
             </p>
           </motion.div>
         </div>
