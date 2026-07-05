@@ -39,16 +39,6 @@ export function RestoreModal({
   const [restorePhase, setRestorePhase] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Lock body scroll when modal is active
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
-
   if (!isOpen) return null;
 
   const handleProcessFileContent = (encryptedText: string, file: File) => {

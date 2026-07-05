@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AlertTriangle, Trash2, User } from 'lucide-react';
 import { HistoryItem } from '../types';
+import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
 
 interface DeleteConfirmationModalProps {
   itemToDelete: string | null;
@@ -17,22 +18,12 @@ export function DeleteConfirmationModal({
   executeDelete,
 }: DeleteConfirmationModalProps) {
   const deleteBtnRef = useRef<HTMLButtonElement>(null);
+  useLockBodyScroll(!!itemToDelete);
 
   useEffect(() => {
     if (itemToDelete && deleteBtnRef.current) {
       deleteBtnRef.current.focus();
     }
-    
-    // Scroll lock
-    if (itemToDelete) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    
-    return () => {
-      document.body.style.overflow = '';
-    };
   }, [itemToDelete]);
 
   if (!itemToDelete) return null;

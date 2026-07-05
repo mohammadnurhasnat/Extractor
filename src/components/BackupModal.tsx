@@ -26,16 +26,6 @@ export function BackupModal({
   const [backupProgress, setBackupProgress] = useState(0);
   const [backupPhase, setBackupPhase] = useState('');
 
-  // Lock body scroll when modal is active
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
-
   if (!isOpen) return null;
 
   const filteredProfiles = history.filter(item => {

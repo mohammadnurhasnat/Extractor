@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Users, X, Loader2, Plus, ShieldCheck, History, Save, UserPlus } from 'lucide-react';
+import { Users, X, ShieldCheck, History, UserPlus } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
+import { UsersTable } from './admin/UsersTable';
+import { AuditLogsTable } from './admin/AuditLogsTable';
+import { AddUserForm } from './admin/AddUserForm';
 
 interface AdminDashboardModalProps {
   isOpen: boolean;
@@ -367,38 +370,19 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
           <div className="p-4 h-[60vh] overflow-y-auto relative z-10">
             {activeTab === 'users' ? (
               isAdminAddingUser ? (
-                <form onSubmit={handleAddUserSubmit} className="space-y-4">
-                  <h4 className="text-xs font-extrabold text-slate-400 dark:text-zinc-500 uppercase tracking-wider border-b border-slate-100 dark:border-zinc-900/50 pb-1 mb-2">
-                    Create New Portal User
-                  </h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Full Name</label>
-                      <input type="text" required value={newUserName} onChange={e => setNewUserName(e.target.value)} className="w-full px-3 py-2 border rounded-[5px] text-xs bg-white dark:bg-black/40 border-slate-200 dark:border-zinc-800 focus:ring-1 focus:ring-blue-500 font-medium" />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Mobile Number</label>
-                      <input type="text" required value={newUserMobileNumber} onChange={e => setNewUserMobileNumber(e.target.value)} className="w-full px-3 py-2 border rounded-[5px] text-xs bg-white dark:bg-black/40 border-slate-200 dark:border-zinc-800 focus:ring-1 focus:ring-blue-500 font-medium" />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Email Address</label>
-                      <input type="email" value={newUserEmail} onChange={e => setNewUserEmail(e.target.value)} className="w-full px-3 py-2 border rounded-[5px] text-xs bg-white dark:bg-black/40 border-slate-200 dark:border-zinc-800 focus:ring-1 focus:ring-blue-500 font-medium" />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Passcode</label>
-                      <input type="password" required value={newUserPassword} onChange={e => setNewUserPassword(e.target.value)} className="w-full px-3 py-2 border rounded-[5px] text-xs bg-white dark:bg-black/40 border-slate-200 dark:border-zinc-800 focus:ring-1 focus:ring-blue-500 font-medium" />
-                    </div>
-                  </div>
-                  <div className="flex gap-2 justify-end border-t border-slate-100 dark:border-zinc-900/50 pt-3 mt-4">
-                    <button type="button" onClick={() => setIsAdminAddingUser(false)} className="px-3 py-2 text-xs font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-zinc-900 rounded-[5px]">Cancel</button>
-                    <button type="submit" disabled={isSavingUser} className="slide-btn slide-btn-orange px-4 py-2 rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 disabled:opacity-50">
-                      <span className="relative z-10 flex items-center gap-1.5">
-                        {isSavingUser ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-                        <span>Save User</span>
-                      </span>
-                    </button>
-                  </div>
-                </form>
+                <AddUserForm
+                  newUserName={newUserName}
+                  setNewUserName={setNewUserName}
+                  newUserMobileNumber={newUserMobileNumber}
+                  setNewUserMobileNumber={setNewUserMobileNumber}
+                  newUserEmail={newUserEmail}
+                  setNewUserEmail={setNewUserEmail}
+                  newUserPassword={newUserPassword}
+                  setNewUserPassword={setNewUserPassword}
+                  isSavingUser={isSavingUser}
+                  onCancel={() => setIsAdminAddingUser(false)}
+                  onSubmit={handleAddUserSubmit}
+                />
               ) : (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
@@ -412,116 +396,23 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
                       </span>
                     </button>
                   </div>
-                  {isLoadingUsers ? (
-                    <div className="flex flex-col items-center justify-center py-10 gap-2"><Loader2 className="w-6 h-6 animate-spin text-blue-500" /></div>
-                  ) : adminUsersError ? (
-                    <div className="text-rose-500 text-center text-xs">{adminUsersError}</div>
-                  ) : (
-                    <div className="overflow-x-auto border border-slate-100 dark:border-zinc-900 rounded-[5px]">
-                      <table className="w-full text-left border-collapse">
-                        <thead>
-                          <tr className="bg-slate-50 dark:bg-zinc-900/50 border-b border-slate-100 dark:border-zinc-900 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                            <th className="p-2.5 w-10">#</th>
-                            <th className="p-2.5">Profile Name</th>
-                            <th className="p-2.5">Mobile Number</th>
-                            <th className="p-2.5">Email</th>
-                            <th className="p-2.5">Passcode</th>
-                            <th className="p-2.5">Daily Limit</th>
-                            <th className="p-2.5 text-right">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-zinc-900">
-                          {adminUsersList.map((user, idx) => {
-                            const isUserAdmin = user.email && user.email.toLowerCase() === 'mohammadnurhasnat@gmail.com';
-                            return (
-                              <tr key={user.id} onClick={() => handleOpenUserDetailModal(user)} className="text-xs font-medium hover:bg-slate-50 dark:hover:bg-zinc-900/30 cursor-pointer group transition-all">
-                                <td className="p-2.5">
-                                  <span className="w-6 h-6 rounded-lg bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-[11px] font-black flex items-center justify-center text-slate-500 dark:text-zinc-400 shrink-0 group-hover:bg-blue-500/10 group-hover:text-blue-600 group-hover:border-blue-500/20 transition-all shadow-sm">
-                                    {String(idx + 1).padStart(2, '0')}
-                                  </span>
-                                </td>
-                                <td className="p-2.5 flex items-center gap-1.5 min-h-[40px]">
-                                  <span>{user.name}</span>
-                                  {user.isSuspended && <span className="text-[8px] font-black bg-rose-500/10 text-rose-600 px-1 py-0.5 rounded">Suspended</span>}
-                                </td>
-                                <td className="p-2.5 font-mono">{user.mobileNumber}</td>
-                                <td className="p-2.5">{user.email || 'none'}</td>
-                                <td className="p-2.5 font-mono font-bold text-blue-500">{user.password}</td>
-                                <td className="p-2.5" onClick={e => e.stopPropagation()}>
-                                  {isUserAdmin ? <span className="text-[10px] font-bold text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded">No Limit</span> : (
-                                    <div className="flex items-center gap-1.5">
-                                      <button onClick={() => handleUpdateUserLimit(user.id, Math.max(0, (user.dailyLimit ?? 5) - 1))} className="w-5 h-5 border rounded flex justify-center items-center font-bold">-</button>
-                                      <span className="w-5 text-center font-mono font-bold">{user.dailyLimit ?? 5}</span>
-                                      <button onClick={() => handleUpdateUserLimit(user.id, (user.dailyLimit ?? 5) + 1)} className="w-5 h-5 border rounded flex justify-center items-center font-bold">+</button>
-                                    </div>
-                                  )}
-                                </td>
-                                <td className="p-2.5 text-right" onClick={e => e.stopPropagation()}>
-                                  {!isUserAdmin && (
-                                    <div className="flex items-center justify-end gap-1.5">
-                                      <button onClick={() => handleToggleSuspendUser(user.id, !!user.isSuspended)} className={`px-1.5 py-0.5 text-[9px] font-bold rounded ${user.isSuspended ? 'bg-emerald-500/10 text-emerald-600' : 'bg-amber-500/10 text-amber-600'}`}>{user.isSuspended ? 'Unsuspend' : 'Suspend'}</button>
-                                      <button onClick={() => handleDeleteUser(user.id)} className="px-1.5 py-0.5 text-[9px] font-bold bg-rose-500/10 text-rose-600 rounded">Delete</button>
-                                    </div>
-                                  )}
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
+                  <UsersTable
+                    users={adminUsersList}
+                    isLoading={isLoadingUsers}
+                    error={adminUsersError}
+                    onUpdateLimit={handleUpdateUserLimit}
+                    onToggleSuspend={handleToggleSuspendUser}
+                    onDelete={handleDeleteUser}
+                    onSelectUser={handleOpenUserDetailModal}
+                  />
                 </div>
               )
             ) : (
-              <div className="space-y-3">
-                <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-zinc-900/50">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">System Audit Logs</p>
-                  <button onClick={fetchAuditLogs} className="text-xs font-bold text-blue-500 hover:underline">Refresh</button>
-                </div>
-                {isLoadingLogs ? (
-                  <div className="flex justify-center py-10"><Loader2 className="w-6 h-6 animate-spin text-blue-500" /></div>
-                ) : auditLogs.length === 0 ? (
-                  <div className="text-center py-10 text-slate-400 text-xs">No audit logs found.</div>
-                ) : (
-                  <div className="overflow-x-auto border border-slate-100 dark:border-zinc-900 rounded-[5px]">
-                    <table className="w-full text-left border-collapse">
-                      <thead>
-                        <tr className="bg-slate-50 dark:bg-zinc-900/50 border-b border-slate-100 dark:border-zinc-900 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                          <th className="p-2.5 w-10">#</th>
-                          <th className="p-2.5 w-32">Time</th>
-                          <th className="p-2.5 w-32">Action</th>
-                          <th className="p-2.5 w-32">User ID</th>
-                          <th className="p-2.5">Details</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100 dark:divide-zinc-900 text-xs">
-                        {auditLogs.map((log: any, idx: number) => (
-                          <tr key={log.id} className="hover:bg-slate-50 dark:hover:bg-zinc-900/30 group">
-                            <td className="p-2.5">
-                              <span className="w-6 h-6 rounded-lg bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-[10px] font-black flex items-center justify-center text-slate-500 dark:text-zinc-400 shrink-0 group-hover:bg-blue-500/10 group-hover:text-blue-600 group-hover:border-blue-500/20 transition-all shadow-sm">
-                                {String(idx + 1).padStart(2, '0')}
-                              </span>
-                            </td>
-                            <td className="p-2.5 text-slate-500">{new Date(log.timestamp).toLocaleString()}</td>
-                            <td className="p-2.5">
-                              <span className={`px-1.5 py-0.5 rounded font-bold text-[9px] ${
-                                log.action === 'LOGIN' ? 'bg-blue-500/10 text-blue-600' :
-                                log.action === 'EXTRACTION' ? 'bg-emerald-500/10 text-emerald-600' :
-                                'bg-amber-500/10 text-amber-600'
-                              }`}>
-                                {log.action}
-                              </span>
-                            </td>
-                            <td className="p-2.5 font-mono text-slate-600 dark:text-slate-300">{log.userId}</td>
-                            <td className="p-2.5">{log.details}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
+              <AuditLogsTable
+                logs={auditLogs}
+                isLoading={isLoadingLogs}
+                onRefresh={fetchAuditLogs}
+              />
             )}
           </div>
         </motion.div>

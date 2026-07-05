@@ -25,13 +25,10 @@ import { DeleteConfirmationModal } from './components/DeleteConfirmationModal';
 import { UploadSection } from './components/UploadSection';
 import { ResultsSection } from './components/ResultsSection';
 import { GlobalProgress } from './components/GlobalProgress';
-import { BackupModal } from './components/BackupModal';
-import { RestoreModal } from './components/RestoreModal';
-import { ProfileCustomizationModal } from './components/ProfileCustomizationModal';
-import { AdminDashboardModal } from './components/AdminDashboardModal';
 import { LoginModal } from './components/LoginModal';
-import { LogoutConfirmModal } from './components/LogoutConfirmModal';
 import { LoginGreeting } from './components/LoginGreeting';
+import { BackgroundElements } from './components/layout/BackgroundElements';
+import { AppModals } from './components/AppModals';
 
 // Utilities
 import { generateDataText, getKolkataHotelForPassport, getDelhiHotelForPassport, getKolkataBusinessForPassport, formatIndianVisaAddress } from './utils/addressUtils';
@@ -63,6 +60,14 @@ export default function App() {
     }
   });
   const [showLoginGreeting, setShowLoginGreeting] = useState(false);
+
+  // 🛡️ Safety effect to clear any stuck body scroll lock on login/logout
+  useEffect(() => {
+    if (currentUser) {
+      // Force unlock if we are now logged in
+      document.body.style.overflow = '';
+    }
+  }, [currentUser]);
 
   const [limitStatus, setLimitStatus] = useState<{ count: number; remaining: number; limit: number } | null>(null);
   const [loginIdentifier, setLoginIdentifier] = useState('');
@@ -433,13 +438,8 @@ export default function App() {
   } = useExporterHelpers({ data, undertakingData, setToast });
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 font-sans text-slate-900 dark:text-zinc-50 pb-4 selection:bg-red-200 dark:selection:bg-red-900/50 selection:text-red-900 dark:selection:text-red-100 transition-colors relative overflow-hidden">
-      {/* Ambient soft background glows */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 print:hidden">
-        <div className="absolute top-[5%] left-[-10%] w-[40rem] h-[40rem] rounded-full bg-blue-400/8 dark:bg-blue-600/5 blur-[130px] animate-pulse" style={{ animationDuration: '8s' }} />
-        <div className="absolute top-[35%] right-[-5%] w-[35rem] h-[35rem] rounded-full bg-teal-400/8 dark:bg-emerald-600/5 blur-[110px] animate-pulse" style={{ animationDuration: '12s' }} />
-        <div className="absolute bottom-[5%] left-[5%] w-[45rem] h-[45rem] rounded-full bg-violet-400/8 dark:bg-violet-600/5 blur-[140px] animate-pulse" style={{ animationDuration: '10s' }} />
-      </div>
+    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 font-sans text-slate-900 dark:text-zinc-50 pb-4 selection:bg-red-200 dark:selection:bg-red-900/50 selection:text-red-900 dark:selection:text-red-100 transition-colors relative overflow-x-hidden">
+      <BackgroundElements />
 
       {/* Global Progress Bar */}
       <GlobalProgress loading={loading} />
@@ -559,94 +559,38 @@ export default function App() {
         </div>
       </footer>
 
-      {/* Backup & Restore Modals */}
-      <AnimatePresence>
-        {isBackupOpen && (
-          <BackupModal
-            isOpen={isBackupOpen}
-            onClose={() => setIsBackupOpen(false)}
-            history={history}
-            setToast={setToast}
-          />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {isRestoreOpen && (
-          <RestoreModal
-            isOpen={isRestoreOpen}
-            onClose={() => setIsRestoreOpen(false)}
-            history={history}
-            setHistory={setHistory}
-            setToast={setToast}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Delete Confirmation Modal */}
-      <DeleteConfirmationModal
-        itemToDelete={itemToDelete}
-        history={history}
-        cancelDelete={cancelDelete}
-        executeDelete={executeDelete}
-      />
-
-      {/* 🔐 LOGIN POPUP WINDOW */}
-      <AnimatePresence>
-        {!currentUser && (
-          <LoginModal
-            loginIdentifier={loginIdentifier}
-            setLoginIdentifier={setLoginIdentifier}
-            loginPassword={loginPassword}
-            setLoginPassword={setLoginPassword}
-            loginError={loginError}
-            isLoggingIn={isLoggingIn}
-            handleLogin={handleLogin}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* 🔐 LOGOUT CONFIRMATION MODAL */}
-      <AnimatePresence>
-        {isLogoutConfirmOpen && (
-          <LogoutConfirmModal
-            isOpen={isLogoutConfirmOpen}
-            onClose={() => setIsLogoutConfirmOpen(false)}
-            onConfirm={executeLogout}
-          />
-        )}
-      </AnimatePresence>
-
-
-
-
-
-      {/* Toast Notification */}
-      <ToastNotification toast={toast} onClose={() => setToast(null)} />
-
-      {/* Login Success Greeting */}
-      {currentUser && (
-        <LoginGreeting 
-          userName={currentUser.name}
-          isOpen={showLoginGreeting}
-          onClose={() => setShowLoginGreeting(false)}
-        />
-      )}
-
-      {/* User Profile Customization Modal */}
-      <ProfileCustomizationModal
-        isOpen={isProfileModalOpen}
-        onClose={() => setIsProfileModalOpen(false)}
+      {/* App Modals (Backup, Restore, Profile, Logout, Admin, Login, Toast, Greeting) */}
+      <AppModals
+        isAdminOpen={isAdminUsersOpen}
+        setIsAdminOpen={setIsAdminUsersOpen}
+        isProfileOpen={isProfileModalOpen}
+        setIsProfileOpen={setIsProfileModalOpen}
+        isBackupOpen={isBackupOpen}
+        setIsBackupOpen={setIsBackupOpen}
+        isRestoreOpen={isRestoreOpen}
+        setIsRestoreOpen={setIsRestoreOpen}
+        isLogoutConfirmOpen={isLogoutConfirmOpen}
+        setIsLogoutConfirmOpen={setIsLogoutConfirmOpen}
         currentUser={currentUser}
+        history={history}
+        setHistory={setHistory}
+        handleLogout={executeLogout}
         profilePicture={profilePicture}
         onSaveProfilePicture={handleSaveProfilePicture}
-      />
-
-      <AdminDashboardModal 
-        isOpen={isAdminUsersOpen}
-        onClose={() => setIsAdminUsersOpen(false)}
-        currentUser={currentUser}
+        toast={toast}
         setToast={setToast}
+        itemToDelete={itemToDelete}
+        cancelDelete={cancelDelete}
+        executeDelete={executeDelete}
+        loginIdentifier={loginIdentifier}
+        setLoginIdentifier={setLoginIdentifier}
+        loginPassword={loginPassword}
+        setLoginPassword={setLoginPassword}
+        loginError={loginError}
+        isLoggingIn={isLoggingIn}
+        handleLogin={handleLogin}
+        showLoginGreeting={showLoginGreeting}
+        setShowLoginGreeting={setShowLoginGreeting}
       />
     </div>
   );
