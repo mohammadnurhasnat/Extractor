@@ -167,7 +167,38 @@ export function PassportDataTab({
           </div>
         </div>
 
-        {(utPurpose === 'Tourism' || utPurpose === 'Double Entry' || utPurpose === 'Business') && data.hotelName && (
+        {data.hospitalName && (
+          <>
+            <div className="col-span-1 sm:col-span-2 pt-3 border-t border-slate-100 dark:border-zinc-800/50 mt-4">
+              <h4 className="text-xs font-bold text-rose-500 dark:text-rose-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                Medical / Hospital Details
+              </h4>
+            </div>
+            
+            <div className="col-span-1 sm:col-span-2 bg-gradient-to-br from-rose-500/10 via-rose-500/5 to-pink-500/5 dark:from-rose-950/30 dark:via-rose-950/20 dark:to-pink-950/10 p-5 rounded-2xl border-2 border-rose-500/30 dark:border-rose-500/40 shadow-sm space-y-3.5 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 bg-gradient-to-r from-rose-500 to-pink-500 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-bl-xl shadow-sm z-10 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
+                MEDICAL DETAILS
+              </div>
+              <h5 className="text-sm font-extrabold text-slate-800 dark:text-zinc-100 border-b border-rose-200/50 dark:border-zinc-800 pb-2 mb-1 flex items-center gap-1.5 pr-20">
+                <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse shadow-sm shadow-rose-500/50"></span>
+                Hospital Details in India
+              </h5>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="col-span-1 md:col-span-2">
+                  <DataField label="Hospital Name" value={data.hospitalName || ''} highlight onValueChange={(val) => updateDataField('hospitalName', val)} />
+                </div>
+                <div className="col-span-1 md:col-span-2">
+                  <DataField label="Hospital Address" value={data.hospitalAddress || ''} highlight onValueChange={(val) => updateDataField('hospitalAddress', val)} />
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+
+        {data.hotelName && (
           <>
             <div className="col-span-1 sm:col-span-2 pt-3 border-t border-slate-100 dark:border-zinc-800/50 mt-4">
               <h4 className="text-xs font-bold text-amber-650 dark:text-amber-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">

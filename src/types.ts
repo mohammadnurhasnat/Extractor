@@ -18,6 +18,7 @@ export interface PassportData {
   businessAddressLocal?: string;
   officeAddressDhaka?: string;
   officeAddressLocal?: string;
+
   // Editable manual overrides
   email?: string;
   proprietorBusinessName?: string;
@@ -26,13 +27,19 @@ export interface PassportData {
   placeOfIssue?: string;
   birthPlaceDistrict?: string;
   extractionTime?: number;
-  // Kolkata Hotel details (for Tourist Visa)
+
+  // Hotel details
   hotelName?: string;
   hotelAddress?: string;
   hotelPinCode?: string;
   hotelState?: string;
   hotelDistrict?: string;
   hotelPhone?: string;
+  
+  // Hospital Details
+  hospitalName?: string;
+  hospitalAddress?: string;
+
   // Multi-Agent System Insights
   agentLog?: string;
   discrepancyList?: string[];
@@ -95,4 +102,3 @@ export interface QueueItem {
   compressionRatio?: string;
   documentType?: 'passport' | 'visa_application';
 }
-

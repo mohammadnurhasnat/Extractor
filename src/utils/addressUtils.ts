@@ -99,69 +99,22 @@ export const generateRandomEnterpriseName = (name: string): string => {
   const suffix = ALLOWED_SUFFIXES[hash % ALLOWED_SUFFIXES.length];
   return `${personalName} ${suffix}`;
 };
-
 export const getProprietorBusinessName = (itemData: PassportData | null): string => {
-  if (!itemData) return '';
+  if (!itemData) return "";
   if (itemData.proprietorBusinessName) return itemData.proprietorBusinessName;
-  
-  const seed = itemData.passportNumber || itemData.givenName || 'business';
-  const hash = getDeterministicHash(seed);
-  
-  let personalName = '';
-  if (itemData.fatherName && itemData.fatherName !== 'Unknown') {
-    personalName = getCleanPersonalName(itemData.fatherName);
-  }
-  if (!personalName && itemData.motherName && itemData.motherName !== 'Unknown') {
-    personalName = getCleanPersonalName(itemData.motherName);
-  }
-  if (!personalName) {
-    personalName = AUTHENTIC_PERSONAL_NAMES[hash % AUTHENTIC_PERSONAL_NAMES.length];
-  }
-
-  const suffix = ALLOWED_SUFFIXES[hash % ALLOWED_SUFFIXES.length];
-  return `${personalName} ${suffix}`;
+  return "";
 };
 
 export const getJobCompanyName = (itemData: PassportData | null): string => {
-  if (!itemData) return '';
+  if (!itemData) return "";
   if (itemData.jobCompanyName) return itemData.jobCompanyName;
-  
-  const seed = itemData.passportNumber || itemData.surname || 'company';
-  const hash = getDeterministicHash(seed + '_company');
-  
-  let personalName = '';
-  if (itemData.motherName && itemData.motherName !== 'Unknown') {
-    personalName = getCleanPersonalName(itemData.motherName);
-  }
-  
-  const fatherNameClean = itemData.fatherName ? getCleanPersonalName(itemData.fatherName) : '';
-  if (!personalName || personalName === fatherNameClean) {
-    let nameIndex = hash % AUTHENTIC_PERSONAL_NAMES.length;
-    personalName = AUTHENTIC_PERSONAL_NAMES[nameIndex];
-    if (personalName === fatherNameClean) {
-      personalName = AUTHENTIC_PERSONAL_NAMES[(nameIndex + 1) % AUTHENTIC_PERSONAL_NAMES.length];
-    }
-  }
-
-  const businessSeed = itemData.passportNumber || itemData.givenName || 'business';
-  const businessHash = getDeterministicHash(businessSeed);
-  const businessSuffixIndex = businessHash % ALLOWED_SUFFIXES.length;
-  
-  let companySuffixIndex = hash % ALLOWED_SUFFIXES.length;
-  if (companySuffixIndex === businessSuffixIndex) {
-    companySuffixIndex = (companySuffixIndex + 1) % ALLOWED_SUFFIXES.length;
-  }
-  const suffix = ALLOWED_SUFFIXES[companySuffixIndex];
-  
-  return `${personalName} ${suffix}`;
+  return "";
 };
 
 export const getJobRole = (itemData: PassportData | null): string => {
-  if (!itemData) return '';
+  if (!itemData) return "";
   if (itemData.jobRole) return itemData.jobRole;
-  const nameLen = (itemData.givenName || itemData.surname || 'a').length;
-  const roles = ['Manager', 'Assistant Manager', 'Office Assistant', 'Salesman', 'Executive'];
-  return roles[nameLen % roles.length];
+  return "";
 };
 
 export const normalizeGender = (gender: string | undefined): string => {

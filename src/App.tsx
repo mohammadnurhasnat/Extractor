@@ -346,6 +346,14 @@ export default function App() {
     setFile, setPreview, setData, setError, fileInputRef
   });
 
+  const activeItem = queue.find(q => q.id === activeQueueId) || null;
+
+  useEffect(() => {
+    if (activeItem?.documentType === 'visa_application' && resultsTab !== 'profile') {
+      setResultsTab('profile');
+    }
+  }, [activeItem?.documentType, resultsTab]);
+
   useEffect(() => {
     if (currentUser) {
       loadLimitStatus(currentUser.id);
@@ -358,47 +366,12 @@ export default function App() {
     }
   }, [loading]);
 
-  useEffect(() => {
+  const updateDataField = (field: keyof PassportData, newValue: string) => {
     if (!data) return;
 
-    let shouldUpdate = false;
-    let hotelToUse: any = null;
+    if (!data) return;
 
-    if (utPurpose === 'Tourism') {
-      if (!data.hotelName || data.hotelState !== 'WEST BENGAL' || ['M R Enterprise', 'MS Mallika Enterprise', 'R M International'].includes(data.hotelName)) {
-        hotelToUse = getKolkataHotelForPassport(data.passportNumber);
-        shouldUpdate = true;
-      }
-    } else if (utPurpose === 'Double Entry') {
-      if (!data.hotelName || data.hotelState !== 'DELHI') {
-        hotelToUse = getDelhiHotelForPassport(data.passportNumber);
-        shouldUpdate = true;
-      }
-    } else if (utPurpose === 'Business') {
-      if (!data.hotelName || !['M R Enterprise', 'MS Mallika Enterprise', 'R M International'].includes(data.hotelName)) {
-        hotelToUse = getKolkataBusinessForPassport(data.passportNumber);
-        shouldUpdate = true;
-      }
-    }
 
-    if (shouldUpdate && hotelToUse) {
-      const updated = {
-        ...data,
-        hotelName: hotelToUse.name,
-        hotelAddress: hotelToUse.address + ', ' + hotelToUse.pincode,
-        hotelPinCode: hotelToUse.pincode,
-        hotelState: hotelToUse.state,
-        hotelDistrict: hotelToUse.district,
-        hotelPhone: hotelToUse.phone
-      };
-      setData(updated);
-      if (activeQueueId) {
-        setQueue(prev => prev.map(q => q.id === activeQueueId ? { ...q, data: updated } : q));
-      }
-    }
-  }, [data?.passportNumber, data?.hotelName, data?.hotelState, utPurpose, activeQueueId, setQueue]);
-
-  const updateDataField = (field: keyof PassportData, newValue: string) => {
     if (!data) return;
     let val = newValue;
     let extraFields = {};

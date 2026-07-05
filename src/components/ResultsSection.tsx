@@ -91,7 +91,7 @@ export function ResultsSection({
                     <span className="relative z-10">Passport Profile</span>
                   </button>
                 )}
-                {data && isUndertakingConfigured && undertakingData && (
+                {data && isUndertakingConfigured && undertakingData && activeItem?.documentType !== 'visa_application' && (
                   <button
                     onClick={() => setResultsTab('undertaking')}
                     className={`slide-btn slide-btn-purple text-center py-3 px-2 rounded-xl text-sm font-extrabold cursor-pointer transition-none border min-h-[48px] ${
@@ -103,7 +103,7 @@ export function ResultsSection({
                     <span className="relative z-10">Undertaking Form</span>
                   </button>
                 )}
-                {activeItem && (
+                {activeItem && activeItem?.documentType !== 'visa_application' && (
                   <button
                     onClick={() => setResultsTab('passport-pdf')}
                     className={`slide-btn slide-btn-purple text-center py-3 px-2 rounded-xl text-sm font-extrabold cursor-pointer transition-none border min-h-[48px] ${

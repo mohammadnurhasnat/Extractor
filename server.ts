@@ -1096,15 +1096,19 @@ CRITICAL DISCIPLINE:
 - DO NOT add or fabricate any external or extra (barti) information. 
 - DO NOT invent synthetic addresses or rotate fake Dhaka addresses.
 - If a value is present in the form, extract it exactly as it is. If a field or section (like Employer/Profession details or spouse name) is blank or not on the form, keep it empty or blank. Do NOT fill it with fake or placeholder data.
+- MUST EXTRACT the exact business name and address if printed in the "Profession / Occupation Details of Applicant" section.
+- MUST EXTRACT the exact private company name, designation, and address if present.
+- MUST EXTRACT the exact hospital details (Name, Doctor, Address, etc.) if it is a Medical Visa application and the details are printed.
+- MUST EXTRACT the exact hotel details if it is a Tourist Visa application and the details are printed.
 
 CRITICAL INITIAL QUALITY SCAN:
 Before doing any extraction, carefully evaluate the provided PDF file first.
 - Is this actually an Indian Visa Application Form or a similar visa application?
-- If the PDF is NOT a visa application, or if it is completely blank/unreadable, you MUST set "isValidApplication" to false, and provide a clear, detailed, helpful explanation in Bengali under "validationError" explaining exactly why it cannot be read (e.g. "পিডিএফ ফাইলটি একটি ইন্ডিয়ান ভিসা অ্যাপ্লিকেশন নয়। দয়া করে সঠিক পিডিএফ ফাইল আপলোড করুন।"). For all other fields, you can set empty/blank string values or dummy placeholder values as they won't be used.
+- If the PDF is NOT a visa application, or if it is completely blank/unreadable, you MUST set "isValidApplication" to false, and provide a clear, detailed, helpful explanation in Bengali under "validationError" explaining exactly why it cannot be read.
 - If the PDF is a valid, legible visa application, you MUST set "isValidApplication" to true and "validationError" to "".
 
 INSTRUCTIONS FOR VALID APPLICATIONS:
-1. OCR Extraction: Extract the following core properties from all pages (2 or 3 pages) of the PDF:
+1. OCR Extraction: Extract the following core properties from all pages (2 or 3 pages) of the PDF exactly as printed:
    - givenName: Applicant's Given Name
    - surname: Applicant's Surname (if blank, use empty string)
    - dob: Date of Birth. Extract and format strictly as DD/MM/YYYY (e.g., 15/08/1990)
@@ -1118,11 +1122,13 @@ INSTRUCTIONS FOR VALID APPLICATIONS:
    - expiryDate: Passport Date of Expiry. Format strictly as DD/MM/YYYY
    - gender: Gender (Male/Female/Other)
    - permanentAddress: Permanent Address. Format strictly as written in the form, but make sure to clean or normalize any unnecessary prefix labels.
+   - presentAddress: Exact Present Address printed on the application form.
    - mobileNumber: Applicant's Phone or Mobile Number as printed in the form.
 
-2. Address Processing: 
-   - presentAddress: Extract the exact Present Address printed on the application form. DO NOT invent a synthetic Dhaka address.
-   - For business/office addresses (businessAddressDhaka, businessAddressLocal, officeAddressDhaka, officeAddressLocal): Look at the "Profession / Occupation Details of Applicant" section on page 2 or 3 of the form. Extract the exact printed Employer/Business/Organization Name and Address. Map this extracted address to these fields. If there is no employer name or employer address listed on the form (e.g., if the applicant is a housewife, student, or unemployed), set these fields to empty string "". DO NOT invent fake company names or fake commercial addresses like "House X, Road Y, Gulshan, Dhaka" or apply any random Dhaka area rotation rules. Keep them empty or set them to the extracted employer address exactly.
+2. Additional Details Processing: 
+   - professionDetails: In the "Profession / Occupation Details of Applicant" section, extract the exact printed Employer/Business/Organization Name into "jobCompanyName", the designation into "jobRole", and the exact employer address into "officeAddressDhaka" or "officeAddressLocal". For private companies, extract the name, designation, and address exactly as printed. DO NOT invent fake company names or fake commercial addresses.
+   - medicalDetails: If this is a medical visa, extract the hospital name into "hospitalName" and the hospital address/details into "hospitalAddress".
+   - touristDetails: If this is a tourist visa or has hotel info, extract the hotel name into "hotelName" and the hotel address into "hotelAddress".
 
 3. Security & Confidence: Match visual details and list any discrepancies found under discrepancies. Determine overall confidenceScore (0-100). Also estimate individual fieldConfidence scores (0-100) for every field in finalData based on document legibility.
 4. Undertaking: Set customUndertakingDraft to a very short 1-sentence string (e.g., "Full verification of submitted application data completed.") to optimize processing speed.`;
@@ -1148,11 +1154,20 @@ INSTRUCTIONS FOR VALID APPLICATIONS:
               expiryDate: { type: Type.STRING },
               gender: { type: Type.STRING },
               permanentAddress: { type: Type.STRING },
-              mobileNumber: { type: Type.STRING }
+              presentAddress: { type: Type.STRING },
+              mobileNumber: { type: Type.STRING },
+              jobCompanyName: { type: Type.STRING },
+              jobRole: { type: Type.STRING },
+              officeAddressDhaka: { type: Type.STRING },
+              officeAddressLocal: { type: Type.STRING },
+              hospitalName: { type: Type.STRING },
+              hospitalAddress: { type: Type.STRING },
+              hotelName: { type: Type.STRING },
+              hotelAddress: { type: Type.STRING }
             },
             required: [
               "givenName", "surname", "dob", "birthPlace", "fatherName", "motherName",
-              "spouseName", "passportNumber", "nidOrBirthCertNumber", "issueDate", "expiryDate", "gender", "permanentAddress", "mobileNumber"
+              "spouseName", "passportNumber", "nidOrBirthCertNumber", "issueDate", "expiryDate", "gender", "permanentAddress", "mobileNumber", "presentAddress"
             ]
           },
           fieldConfidence: {
@@ -1171,11 +1186,12 @@ INSTRUCTIONS FOR VALID APPLICATIONS:
               expiryDate: { type: Type.INTEGER },
               gender: { type: Type.INTEGER },
               permanentAddress: { type: Type.INTEGER },
+              presentAddress: { type: Type.INTEGER },
               mobileNumber: { type: Type.INTEGER }
             },
             required: [
               "givenName", "surname", "dob", "birthPlace", "fatherName", "motherName",
-              "spouseName", "passportNumber", "nidOrBirthCertNumber", "issueDate", "expiryDate", "gender", "permanentAddress", "mobileNumber"
+              "spouseName", "passportNumber", "nidOrBirthCertNumber", "issueDate", "expiryDate", "gender", "permanentAddress", "mobileNumber", "presentAddress"
             ]
           },
           discrepancies: { type: Type.ARRAY, items: { type: Type.STRING } },
