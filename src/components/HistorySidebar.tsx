@@ -90,7 +90,7 @@ Expiry Date: ${item.data.expiryDate || ''}
             >
               <span className="relative z-10 flex items-center gap-1">
                 <Trash2 className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Delete</span>
+                <span className="inline">Delete</span>
               </span>
             </button>
           )}

@@ -46,7 +46,7 @@ export function LogoutConfirmModal({ isOpen, onClose, onConfirm }: LogoutConfirm
         </div>
 
         {/* Buttons */}
-        <div className="flex border-t border-slate-100 dark:border-zinc-900/80 p-3 pt-4 gap-2">
+        <div className="flex border-t border-slate-100 dark:border-zinc-900/80 p-4 pt-5 pb-6 gap-3">
           <button
             onClick={onClose}
             className="slide-btn slide-btn-slate flex-1 py-3 rounded-xl font-bold text-xs uppercase tracking-wider"

@@ -91,7 +91,7 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           )}
           {currentUser && (
-            <div className="flex items-center gap-1.5 sm:gap-3 px-0.5 py-0.5 sm:px-1.5 sm:py-1 bg-slate-100/60 dark:bg-zinc-900/60 rounded-[5px] border border-slate-200/50 dark:border-zinc-800/50 min-w-0 shrink-0">
+            <div className="flex items-center gap-2 sm:gap-4 px-1 py-1 sm:px-2 sm:py-1.5 bg-slate-100/60 dark:bg-zinc-900/60 rounded-[8px] border border-slate-200/50 dark:border-zinc-800/50 min-w-0 shrink-0">
               {/* Daily Limit - strictly hidden for Admin */}
               {!isAdmin && limitStatus && (
                 <span className={`text-[8px] sm:text-[10px] font-extrabold px-1 py-0.5 rounded-[3px] flex items-center gap-0.5 shrink-0 ${

@@ -125,7 +125,7 @@ export function DeleteConfirmationModal({
                 className="px-6 py-2.5 text-xs font-black uppercase tracking-widest bg-rose-600 hover:bg-rose-700 text-white rounded-xl transition-all shadow-lg shadow-rose-500/20 active:scale-95 cursor-pointer flex items-center gap-2"
               >
                 <Trash2 className="w-3.5 h-3.5" />
-                <span>{isDeleteAll ? "Wipe All History" : "Delete Record"}</span>
+                <span>{isDeleteAll ? "Delete All" : "Delete Record"}</span>
               </button>
             </div>
           </motion.div>
