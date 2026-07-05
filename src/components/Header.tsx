@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sun, Moon, LogOut, User, RefreshCw, Users, ShieldCheck, Cloud, CloudOff } from 'lucide-react';
+import { Sun, Moon, LogOut, User, RefreshCw, Users, ShieldCheck, Cloud, CloudOff, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface HeaderProps {
@@ -76,53 +76,58 @@ export const Header: React.FC<HeaderProps> = ({
             Extractor
           </h1>
         </div>
-
         {/* Right column: User Button (bam pase) and Profile Button (dan pase) */}
-        <div className="flex items-center gap-1 sm:gap-2 justify-end shrink-0 min-w-0">
-          {currentUser && isAdmin && (
+        <div className="flex items-center gap-1 sm:gap-3 lg:gap-4 shrink-0 min-w-0">
+          {isAdmin && (
             <button
               onClick={onOpenAdminUsers}
-              className="flex items-center gap-0.5 sm:gap-1 px-1.5 py-0.5 sm:px-2 sm:py-1.5 text-[9px] sm:text-xs font-bold bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-[5px] border border-blue-500/20 transition-all cursor-pointer hover:scale-[1.02] active:scale-[0.98] shrink-0"
+              className="slide-btn slide-btn-slate px-3 py-1 rounded-full font-bold text-[9px] sm:text-xs flex items-center justify-center gap-1 shrink-0"
               title="Manage Registered Users"
             >
-              <Users className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5" />
-              <span>Users</span>
+              <span className="relative z-10 flex items-center justify-center gap-1">
+                <Users className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                <span>Users</span>
+              </span>
             </button>
           )}
-
           {currentUser && (
-            <div className="flex items-center gap-0.5 sm:gap-1.5 px-0.5 py-0.5 sm:px-1.5 sm:py-1 bg-slate-100/60 dark:bg-zinc-900/60 rounded-[5px] border border-slate-200/50 dark:border-zinc-800/50 min-w-0 shrink-0">
+            <div className="flex items-center gap-1.5 sm:gap-3 px-0.5 py-0.5 sm:px-1.5 sm:py-1 bg-slate-100/60 dark:bg-zinc-900/60 rounded-[5px] border border-slate-200/50 dark:border-zinc-800/50 min-w-0 shrink-0">
               {/* Daily Limit - strictly hidden for Admin */}
               {!isAdmin && limitStatus && (
                 <span className={`text-[8px] sm:text-[10px] font-extrabold px-1 py-0.5 rounded-[3px] flex items-center gap-0.5 shrink-0 ${
                   limitStatus.remaining > 0 
-                    ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400' 
-                    : 'bg-rose-500/15 text-rose-700 dark:text-rose-400 animate-pulse'
+                    ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400" 
+                    : "bg-rose-500/15 text-rose-700 dark:text-rose-400 animate-pulse"
                 }`}>
                   <RefreshCw className="w-2 h-2 sm:w-2.5 sm:h-2.5 shrink-0 animate-spin-slow" />
                   <span>{limitStatus.remaining}/{limitStatus.limit}</span>
                 </span>
               )}
-              
-              {/* Interactive Profile Area - full name with smaller font if wrapped */}
+
+              {/* Profile Button - Only icon on ultra-small screens */}
               <button
                 onClick={onOpenProfile}
-                className="px-1 py-0.5 sm:px-1.5 sm:py-0.5 bg-white dark:bg-zinc-950 border border-slate-300 dark:border-zinc-700 hover:border-slate-400 dark:hover:border-zinc-500 rounded-[5px] text-slate-800 dark:text-zinc-200 hover:opacity-90 active:scale-98 transition-all shrink-0 cursor-pointer shadow-xs flex items-center justify-center min-h-[18px] sm:min-h-[26px]"
-                title="View Profile Details"
+                className="slide-btn slide-btn-purple px-1.5 sm:px-2.5 py-1 rounded-[4px] font-bold text-[9px] sm:text-[11px] flex items-center gap-1 sm:gap-1.5 hover:shadow-sm shrink-0 min-w-0"
+                title="Profile Settings"
               >
-                <span className="text-[8px] xs:text-[9px] sm:text-xs font-bold leading-[1.15] sm:leading-tight break-words max-w-[55px] xs:max-w-[80px] sm:max-w-[150px] line-clamp-2 overflow-hidden text-ellipsis text-left block max-h-[20px] xs:max-h-[22px] sm:max-h-[32px]">
-                  {currentUser.name}
+                <span className="relative z-10 flex items-center gap-1">
+                  <span className="truncate max-w-[50px] xs:max-w-[80px] sm:max-w-[120px] hidden xs:inline-block">
+                    {currentUser.name || currentUser.mobileNumber}
+                  </span>
+                  <Settings className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0 xs:hidden sm:block" />
                 </span>
               </button>
-              
+
               {/* Logout Button */}
               <button
                 onClick={onLogout}
-                className="w-4.5 h-4.5 sm:w-6 sm:h-6 flex items-center justify-center rounded-[5px] bg-rose-600 hover:bg-rose-700 text-white transition-all cursor-pointer shrink-0 ml-0.5 shadow-sm"
-                title="Log Out"
-                aria-label="Log out"
+                className="slide-btn slide-btn-orange p-1 sm:px-2.5 sm:py-1 rounded-[4px] font-bold text-[9px] sm:text-[11px] flex items-center justify-center gap-1 shrink-0"
+                title="Sign out"
               >
-                <LogOut className="w-2 h-2 sm:w-3 sm:h-3" />
+                <span className="relative z-10 flex items-center justify-center gap-1">
+                  <span className="hidden sm:inline">Logout</span>
+                  <LogOut className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                </span>
               </button>
             </div>
           )}
@@ -131,4 +136,3 @@ export const Header: React.FC<HeaderProps> = ({
     </header>
   );
 };
-

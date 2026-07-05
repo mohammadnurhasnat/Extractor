@@ -277,6 +277,7 @@ export function RestoreModal({
           >
             <X className="w-3 h-3" />
           </button>
+
         </div>
 
         {/* Single-line elegant instruction */}
@@ -365,39 +366,34 @@ export function RestoreModal({
             </>
           )}
         </div>
-
-        {/* Action Buttons (More compact py-2.5 with dynamic light/pure premium colors) */}
         <div className="p-3 bg-white/60 dark:bg-zinc-950/60 border-t border-slate-100 dark:border-zinc-900/80 flex items-center justify-end gap-2 relative z-10">
-          <button 
+          <button
             disabled={isRestoring}
             onClick={onClose}
-            className="relative overflow-hidden group px-3 py-1.5 border border-red-500/30 dark:border-red-500/20 bg-red-500/10 transition-all duration-300 font-bold text-[11px] shadow-sm active:scale-95 cursor-pointer shrink-0 rounded-[5px] disabled:opacity-40 disabled:cursor-not-allowed"
+
           >
             <span className="absolute inset-0 w-full h-full bg-red-600 -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></span>
             <span className="relative z-10 text-black dark:text-zinc-200 group-hover:text-white dark:group-hover:text-white transition-colors duration-300">
               Cancel
             </span>
           </button>
-
           <button 
-            disabled={!attachedFile || isRestoring}
+             disabled={!attachedFile || isRestoring}
             onClick={handleExecuteRestore}
-            className={`relative overflow-hidden group px-4 py-1.5 border rounded-[5px] transition-all duration-300 font-bold text-[11px] shadow-sm active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex items-center gap-1 shrink-0 ${
-              attachedFile 
-                ? 'border-emerald-500/30 dark:border-emerald-500/20 bg-emerald-500/10' 
-                : 'border-slate-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80'
-            }`}
+            className={`slide-btn ${attachedFile ? "slide-btn-teal" : "slide-btn-slate"} px-4 py-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 uppercase tracking-wider`}
           >
-            {attachedFile && !isRestoring && (
-              <span className="absolute inset-0 w-full h-full bg-emerald-600 -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></span>
-            )}
-            <span className={`relative z-10 transition-colors duration-300 flex items-center gap-1 ${
-              attachedFile 
-                ? 'text-black dark:text-zinc-200 group-hover:text-white dark:group-hover:text-white' 
-                : 'text-slate-400 dark:text-zinc-500'
-            }`}>
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>OK</span>
+            <span className="relative z-10 flex items-center gap-1.5">
+              {isRestoring ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Restoring...</span>
+                </>
+              ) : (
+                <>
+                  <UploadCloud className="w-4 h-4" />
+                  <span>Execute Database Recovery</span>
+                </>
+              )}
             </span>
           </button>
         </div>
@@ -405,3 +401,4 @@ export function RestoreModal({
     </div>
   );
 }
+

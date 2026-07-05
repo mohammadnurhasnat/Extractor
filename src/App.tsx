@@ -400,14 +400,19 @@ export default function App() {
   };
 
   const confirmDelete = (e: React.MouseEvent, id: string) => { e.stopPropagation(); setItemToDelete(id); };
-  const executeDelete = (e: React.MouseEvent) => { 
+  const executeDelete = (e: React.MouseEvent, id?: string) => { 
     e.stopPropagation(); 
-    if (itemToDelete === 'ALL') {
+    const finalId = id || itemToDelete;
+    if (finalId === 'ALL') {
       clearHistory();
-    } else if (itemToDelete) {
-      deleteHistoryItem(itemToDelete); 
+    } else if (finalId) {
+      deleteHistoryItem(finalId); 
     }
-    setItemToDelete(null); 
+    
+    // Only close the whole modal if we are NOT in ALL mode OR if the item deleted was the ALL target
+    if (itemToDelete !== 'ALL' || finalId === 'ALL') {
+      setItemToDelete(null); 
+    }
   };
   const cancelDelete = (e: React.MouseEvent) => { e.stopPropagation(); setItemToDelete(null); };
 
@@ -583,6 +588,7 @@ export default function App() {
       {/* Delete Confirmation Modal */}
       <DeleteConfirmationModal
         itemToDelete={itemToDelete}
+        history={history}
         cancelDelete={cancelDelete}
         executeDelete={executeDelete}
       />

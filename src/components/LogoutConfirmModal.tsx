@@ -46,21 +46,22 @@ export function LogoutConfirmModal({ isOpen, onClose, onConfirm }: LogoutConfirm
         </div>
 
         {/* Buttons */}
-        <div className="flex border-t border-slate-100 dark:border-zinc-900/80">
+        <div className="flex border-t border-slate-100 dark:border-zinc-900/80 p-3 pt-4 gap-2">
           <button
             onClick={onClose}
-            className="flex-1 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-50 dark:text-zinc-400 dark:hover:text-zinc-200 dark:hover:bg-zinc-900/50 transition-colors border-r border-slate-100 dark:border-zinc-900/80 uppercase tracking-wider cursor-pointer"
+            className="slide-btn slide-btn-slate flex-1 py-3 rounded-xl font-bold text-xs uppercase tracking-wider"
           >
-            No
+            <span className="relative z-10">No</span>
           </button>
           <button
             onClick={onConfirm}
-            className="flex-1 py-2.5 text-xs font-extrabold text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:text-rose-400 dark:hover:text-rose-300 dark:hover:bg-rose-500/10 transition-colors uppercase tracking-wider cursor-pointer"
+            className="slide-btn slide-btn-orange flex-1 py-3 rounded-xl font-extrabold text-xs uppercase tracking-wider"
           >
-            Yes
+            <span className="relative z-10">Yes</span>
           </button>
         </div>
       </motion.div>
     </div>
   );
 }
+

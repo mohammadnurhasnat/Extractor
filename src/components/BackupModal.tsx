@@ -200,12 +200,11 @@ export function BackupModal({
             <button
               onClick={handleExportAllBackup}
               disabled={history.length === 0}
-              className="relative overflow-hidden group w-full py-2 border border-emerald-500/30 dark:border-emerald-500/20 bg-emerald-500/10 rounded-[5px] shadow-sm transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed active:scale-98 cursor-pointer flex items-center justify-center gap-2"
+              className="slide-btn slide-btn-teal w-full py-2 rounded-xl font-bold text-sm flex items-center justify-center gap-2 uppercase tracking-wider"
             >
-              <span className="absolute inset-0 w-full h-full bg-emerald-600 -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></span>
-              <span className="relative z-10 transition-colors duration-300 flex items-center gap-2 text-black dark:text-zinc-200 group-hover:text-white dark:group-hover:text-white">
-                <Download className="w-3.5 h-3.5 text-black dark:text-zinc-200 group-hover:text-white dark:group-hover:text-white transition-colors" />
-                <span>Backup your all data</span>
+              <span className="relative z-10 flex items-center gap-1">
+                <Database className="w-4 h-4" />
+                <span>Export Cryptographic Backup</span>
               </span>
             </button>
           )}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, X, Loader2, Plus, ShieldCheck, History } from 'lucide-react';
+import { Users, X, Loader2, Plus, ShieldCheck, History, Save, UserPlus } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
 
@@ -391,17 +391,25 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
                   </div>
                   <div className="flex gap-2 justify-end border-t border-slate-100 dark:border-zinc-900/50 pt-3 mt-4">
                     <button type="button" onClick={() => setIsAdminAddingUser(false)} className="px-3 py-2 text-xs font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-zinc-900 rounded-[5px]">Cancel</button>
-                    <button type="submit" disabled={isSavingUser} className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-extrabold rounded-[5px] shadow-sm disabled:opacity-50 flex items-center gap-1.5">
-                      {isSavingUser ? <Loader2 className="w-3 h-3 animate-spin" /> : null} Save User
+                    <button type="submit" disabled={isSavingUser} className="slide-btn slide-btn-orange px-4 py-2 rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 disabled:opacity-50">
+                      <span className="relative z-10 flex items-center gap-1.5">
+                        {isSavingUser ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                        <span>Save User</span>
+                      </span>
                     </button>
                   </div>
                 </form>
               ) : (
                 <div className="space-y-3">
-                  <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-zinc-900/50">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Active registered user accounts</p>
-                    <button onClick={() => setIsAdminAddingUser(true)} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-[11px] rounded-[5px] shadow-sm">
-                      <Plus className="w-3.5 h-3.5" /> Add User
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-widest">
+                      Existing Users
+                    </h3>
+                    <button onClick={() => setIsAdminAddingUser(true)} className="slide-btn slide-btn-teal px-3 py-1.5 rounded-xl font-extrabold text-[11px] flex items-center justify-center gap-1.5">
+                      <span className="relative z-10 flex items-center gap-1.5">
+                        <UserPlus className="w-3 h-3" />
+                        <span>Add New User</span>
+                      </span>
                     </button>
                   </div>
                   {isLoadingUsers ? (

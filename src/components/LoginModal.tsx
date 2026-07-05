@@ -111,32 +111,22 @@ export function LoginModal({
           <button
             type="submit"
             disabled={isLoggingIn}
-            onMouseEnter={handleButtonMouseEnter}
-            className="relative overflow-hidden group w-full py-1.5 rounded-[4px] shadow-sm transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed active:scale-[0.98] cursor-pointer flex items-center justify-center gap-1 mt-1 border text-[10.5px] font-bold"
-            style={{
-              borderColor: hoverColor + '30',
-              backgroundColor: hoverColor + '08'
-            }}
+            className="slide-btn slide-btn-orange w-full py-2.5 rounded-xl font-bold text-sm min-h-[44px] flex items-center justify-center gap-2 mt-2"
           >
-            <span 
-              className="absolute inset-0 w-full h-full -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0" 
-              style={{ backgroundColor: hoverColor }}
-            />
-            <span className="relative z-10 transition-colors duration-300 flex items-center gap-1 text-slate-800 dark:text-zinc-200 group-hover:text-white dark:group-hover:text-white font-black text-[10.5px] uppercase tracking-wider">
+            <span className="relative z-10 flex items-center gap-1.5 uppercase tracking-wider">
               {isLoggingIn ? (
                 <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin" />
                   <span>Verifying...</span>
                 </>
               ) : (
                 <>
-                  <Key className="w-3 h-3" />
+                  <Key className="w-4 h-4" />
                   <span>Login</span>
                 </>
               )}
             </span>
           </button>
-
           {/* WhatsApp Support Section */}
           <div className="mt-3.5 text-center flex flex-col items-center justify-center gap-2 border-t border-slate-200 dark:border-zinc-800/80 pt-3">
             <span className="text-[8.5px] font-bold text-slate-500 dark:text-zinc-400 leading-normal px-1">
@@ -146,17 +136,14 @@ export function LoginModal({
               href="https://wa.me/8801861186863"
               target="_blank"
               rel="noopener noreferrer"
-              className="relative overflow-hidden group inline-flex items-center justify-center gap-1.5 px-3 py-1.5 border border-emerald-500/25 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 font-bold text-[8.5px] rounded-[4px] shadow-sm transition-all duration-300 active:scale-95 cursor-pointer hover:shadow-emerald-500/10"
+              className="slide-btn slide-btn-teal w-full max-w-[200px] py-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 uppercase tracking-wider"
             >
-              {/* Slide effect background fill */}
-              <span className="absolute inset-0 w-full h-full bg-emerald-600 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0" />
-              
-              {/* Content container */}
-              <span className="relative z-10 flex items-center gap-1 transition-colors duration-300 group-hover:text-white uppercase tracking-wider">
-                <WhatsAppIcon className="w-3 h-3" />
+              <span className="relative z-10 flex items-center gap-1">
+                <WhatsAppIcon className="w-3.5 h-3.5" />
                 <span>WhatsApp</span>
               </span>
             </a>
+
           </div>
         </form>
 
