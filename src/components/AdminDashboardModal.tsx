@@ -421,6 +421,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
                       <table className="w-full text-left border-collapse">
                         <thead>
                           <tr className="bg-slate-50 dark:bg-zinc-900/50 border-b border-slate-100 dark:border-zinc-900 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                            <th className="p-2.5 w-10">#</th>
                             <th className="p-2.5">Profile Name</th>
                             <th className="p-2.5">Mobile Number</th>
                             <th className="p-2.5">Email</th>
@@ -430,11 +431,16 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-zinc-900">
-                          {adminUsersList.map(user => {
+                          {adminUsersList.map((user, idx) => {
                             const isUserAdmin = user.email && user.email.toLowerCase() === 'mohammadnurhasnat@gmail.com';
                             return (
-                              <tr key={user.id} onClick={() => handleOpenUserDetailModal(user)} className="text-xs font-medium hover:bg-slate-50 dark:hover:bg-zinc-900/30 cursor-pointer">
-                                <td className="p-2.5 flex items-center gap-1.5">
+                              <tr key={user.id} onClick={() => handleOpenUserDetailModal(user)} className="text-xs font-medium hover:bg-slate-50 dark:hover:bg-zinc-900/30 cursor-pointer group transition-all">
+                                <td className="p-2.5">
+                                  <span className="w-6 h-6 rounded-lg bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-[11px] font-black flex items-center justify-center text-slate-500 dark:text-zinc-400 shrink-0 group-hover:bg-blue-500/10 group-hover:text-blue-600 group-hover:border-blue-500/20 transition-all shadow-sm">
+                                    {String(idx + 1).padStart(2, '0')}
+                                  </span>
+                                </td>
+                                <td className="p-2.5 flex items-center gap-1.5 min-h-[40px]">
                                   <span>{user.name}</span>
                                   {user.isSuspended && <span className="text-[8px] font-black bg-rose-500/10 text-rose-600 px-1 py-0.5 rounded">Suspended</span>}
                                 </td>
@@ -482,6 +488,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
                     <table className="w-full text-left border-collapse">
                       <thead>
                         <tr className="bg-slate-50 dark:bg-zinc-900/50 border-b border-slate-100 dark:border-zinc-900 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                          <th className="p-2.5 w-10">#</th>
                           <th className="p-2.5 w-32">Time</th>
                           <th className="p-2.5 w-32">Action</th>
                           <th className="p-2.5 w-32">User ID</th>
@@ -489,8 +496,13 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 dark:divide-zinc-900 text-xs">
-                        {auditLogs.map((log: any) => (
-                          <tr key={log.id} className="hover:bg-slate-50 dark:hover:bg-zinc-900/30">
+                        {auditLogs.map((log: any, idx: number) => (
+                          <tr key={log.id} className="hover:bg-slate-50 dark:hover:bg-zinc-900/30 group">
+                            <td className="p-2.5">
+                              <span className="w-6 h-6 rounded-lg bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-[10px] font-black flex items-center justify-center text-slate-500 dark:text-zinc-400 shrink-0 group-hover:bg-blue-500/10 group-hover:text-blue-600 group-hover:border-blue-500/20 transition-all shadow-sm">
+                                {String(idx + 1).padStart(2, '0')}
+                              </span>
+                            </td>
                             <td className="p-2.5 text-slate-500">{new Date(log.timestamp).toLocaleString()}</td>
                             <td className="p-2.5">
                               <span className={`px-1.5 py-0.5 rounded font-bold text-[9px] ${

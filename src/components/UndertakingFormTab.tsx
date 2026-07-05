@@ -38,7 +38,7 @@ export function UndertakingFormTab({
           <div className="bg-slate-100 dark:bg-zinc-800/50 p-1 rounded-lg flex items-center gap-1 text-xs border border-slate-200 dark:border-zinc-700/60 print:hidden shrink-0">
             <button
                onClick={() => setIsUndertakingEditable(false)}
-               className={`slide-btn slide-btn-purple flex items-center gap-1.5 px-3 py-1.5 rounded-md font-bold cursor-pointer border ${
+               className={`slide-btn slide-btn-purple flex items-center gap-1.5 px-3 py-1.5 rounded-md font-bold cursor-pointer border ripple-btn ${
                  !isUndertakingEditable
                   ? 'active shadow-sm font-extrabold border-[#2DD4BF]/50'
                   : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-zinc-400 dark:hover:text-zinc-350 bg-transparent!'
@@ -49,7 +49,7 @@ export function UndertakingFormTab({
             </button>
             <button
                onClick={() => setIsUndertakingEditable(true)}
-               className={`slide-btn slide-btn-purple flex items-center gap-1.5 px-3 py-1.5 rounded-md font-bold cursor-pointer border ${
+               className={`slide-btn slide-btn-purple flex items-center gap-1.5 px-3 py-1.5 rounded-md font-bold cursor-pointer border ripple-btn ${
                  isUndertakingEditable
                   ? 'active shadow-sm font-extrabold border-[#2DD4BF]/50'
                   : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-zinc-400 dark:hover:text-zinc-350 bg-transparent!'
@@ -62,7 +62,7 @@ export function UndertakingFormTab({
 
           <button
             onClick={handleDownloadUndertaking}
-            className="slide-btn slide-btn-orange flex items-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-bold rounded-lg cursor-pointer print:hidden shrink-0"
+            className="slide-btn slide-btn-orange flex items-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-bold rounded-lg cursor-pointer print:hidden shrink-0 ripple-btn"
           >
             <Download className="w-4 h-4 relative z-10" />
             <span className="relative z-10">Download</span>

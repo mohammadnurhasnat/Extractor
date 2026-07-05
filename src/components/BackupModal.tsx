@@ -5,6 +5,7 @@ import {
 import { motion } from 'motion/react';
 import { HistoryItem } from '../types';
 import { encryptData } from '../utils/crypto';
+import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
 
 interface BackupModalProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ export function BackupModal({
   history,
   setToast
 }: BackupModalProps) {
+  useLockBodyScroll(isOpen);
   const [searchTerm, setSearchTerm] = useState('');
   const [isBackingUp, setIsBackingUp] = useState(false);
   const [backupProgress, setBackupProgress] = useState(0);

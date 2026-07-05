@@ -85,7 +85,7 @@ Expiry Date: ${item.data.expiryDate || ''}
           {history.length > 0 && (
             <button 
               onClick={(e) => onConfirmDelete(e, "ALL")}
-              className="slide-btn slide-btn-slate w-full sm:w-auto px-4 py-2 sm:py-1.5 rounded-full font-bold text-xs flex items-center justify-center gap-1.5 uppercase"
+              className="slide-btn slide-btn-slate w-full sm:w-auto px-4 py-2 sm:py-1.5 rounded-full font-bold text-xs flex items-center justify-center gap-1.5 uppercase ripple-btn"
               title="Delete All Profiles"
             >
               <span className="relative z-10 flex items-center gap-1">
@@ -97,7 +97,7 @@ Expiry Date: ${item.data.expiryDate || ''}
           <div className="flex gap-2.5 w-full sm:w-auto col-span-2 sm:col-span-1">
             <button 
               onClick={onOpenBackup}
-              className="slide-btn slide-btn-purple w-full sm:w-auto px-4 py-2 sm:py-1.5 rounded-full font-bold text-xs flex items-center justify-center gap-1.5 uppercase"
+              className="slide-btn slide-btn-purple w-full sm:w-auto px-4 py-2 sm:py-1.5 rounded-full font-bold text-xs flex items-center justify-center gap-1.5 uppercase ripple-btn"
               title="Open Cryptographic Profile Backup"
             >
               <span className="relative z-10 flex items-center gap-1">
@@ -107,7 +107,7 @@ Expiry Date: ${item.data.expiryDate || ''}
             </button>
             <button 
               onClick={onOpenRestore}
-              className="slide-btn slide-btn-teal w-full sm:w-auto px-4 py-2 sm:py-1.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 uppercase"
+              className="slide-btn slide-btn-teal w-full sm:w-auto px-4 py-2 sm:py-1.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 uppercase ripple-btn"
               title="Open Secure Data Restore"
             >
               <span className="relative z-10 flex items-center gap-1">

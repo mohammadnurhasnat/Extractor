@@ -115,8 +115,9 @@ export function SessionQueue({
               }`}
             >
               <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                <span className="text-[11px] font-bold font-mono text-slate-400 min-w-[16px] text-center shrink-0">
-                  #{index + 1}
+                {/* Stylish Index */}
+                <span className="w-6 h-6 rounded-lg bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-[10px] font-black flex items-center justify-center text-slate-500 dark:text-zinc-400 shrink-0 group-hover/item:bg-blue-500/10 group-hover/item:text-blue-600 group-hover/item:border-blue-500/20 transition-all shadow-sm">
+                  {String(index + 1).padStart(2, '0')}
                 </span>
                 
                 <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-zinc-900 border border-slate-200/60 dark:border-zinc-800/60 flex items-center justify-center overflow-hidden shrink-0">

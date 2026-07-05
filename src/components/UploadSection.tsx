@@ -288,7 +288,7 @@ export function UploadSection(props: UploadSectionProps) {
               <button 
                 onClick={props.clearAll}
                 disabled={props.loading || props.isBatchProcessing}
-                className="slide-btn slide-btn-purple w-full sm:flex-1 py-3 px-4 rounded-xl font-bold text-sm cursor-pointer disabled:opacity-50 min-h-[48px]"
+                className="slide-btn slide-btn-purple w-full sm:flex-1 py-3 px-4 rounded-xl font-bold text-sm cursor-pointer disabled:opacity-50 min-h-[48px] ripple-btn"
               >
                 <span className="relative z-10">Clear All</span>
               </button>
@@ -297,7 +297,7 @@ export function UploadSection(props: UploadSectionProps) {
                   <button 
                     onClick={props.loading || props.isBatchProcessing ? props.cancelExtraction : props.extractData}
                     disabled={!props.isOnline && !props.loading && !props.isBatchProcessing}
-                    className={`slide-btn w-full py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 cursor-pointer min-h-[48px] ${
+                    className={`slide-btn w-full py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 cursor-pointer min-h-[48px] ripple-btn ${
                       props.loading || props.isBatchProcessing
                         ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100 dark:bg-red-950/30 dark:text-red-400 dark:border-red-900/50 dark:hover:bg-red-900/40' 
                         : !props.isOnline 

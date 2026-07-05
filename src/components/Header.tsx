@@ -36,7 +36,7 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center justify-start shrink-0">
           <button
             onClick={onToggleDarkMode}
-            className="relative w-6 h-6 sm:w-7.5 sm:h-7.5 flex items-center justify-center rounded-[5px] bg-slate-100/80 hover:bg-amber-500/10 dark:bg-zinc-900/80 dark:hover:bg-indigo-500/15 text-slate-600 dark:text-zinc-300 border border-slate-200/60 dark:border-zinc-800/80 hover:border-amber-400 dark:hover:border-indigo-500/50 shadow-xs hover:shadow-md transition-all duration-300 overflow-hidden group cursor-pointer active:scale-95 shrink-0"
+            className="relative w-6 h-6 sm:w-7.5 sm:h-7.5 flex items-center justify-center rounded-[5px] bg-slate-100/80 hover:bg-amber-500/10 dark:bg-zinc-900/80 dark:hover:bg-indigo-500/15 text-slate-600 dark:text-zinc-300 border border-slate-200/60 dark:border-zinc-800/80 hover:border-amber-400 dark:hover:border-indigo-500/50 shadow-xs hover:shadow-md transition-all duration-300 overflow-hidden group cursor-pointer active:scale-95 shrink-0 ripple-btn"
             aria-label="Toggle dark mode"
           >
             {/* Ambient Background Glow on Hover */}
@@ -83,7 +83,7 @@ export const Header: React.FC<HeaderProps> = ({
           {isAdmin && (
             <button
               onClick={onOpenAdminUsers}
-              className="slide-btn slide-btn-slate px-3 py-1 rounded-full font-bold text-[9px] sm:text-xs flex items-center justify-center gap-1 shrink-0"
+              className="slide-btn slide-btn-slate px-3 py-1 rounded-full font-bold text-[9px] sm:text-xs flex items-center justify-center gap-1 shrink-0 ripple-btn"
               title="Manage Registered Users"
             >
               <span className="relative z-10 flex items-center justify-center gap-1">
@@ -109,7 +109,7 @@ export const Header: React.FC<HeaderProps> = ({
               {/* Profile Button - Only icon on ultra-small screens */}
               <button
                 onClick={onOpenProfile}
-                className="slide-btn slide-btn-purple px-1.5 sm:px-2.5 py-1 rounded-[4px] font-bold text-[9px] sm:text-[11px] flex items-center gap-1 sm:gap-1.5 hover:shadow-sm shrink-0 min-w-0"
+                className="slide-btn slide-btn-purple px-1.5 sm:px-2.5 py-1 rounded-[4px] font-bold text-[9px] sm:text-[11px] flex items-center gap-1 sm:gap-1.5 hover:shadow-sm shrink-0 min-w-0 ripple-btn"
                 title="Profile Settings"
               >
                 <span className="relative z-10 flex items-center gap-1">
@@ -123,7 +123,7 @@ export const Header: React.FC<HeaderProps> = ({
               {/* Logout Button */}
               <button
                 onClick={onLogout}
-                className="slide-btn slide-btn-orange p-1 sm:px-2.5 sm:py-1 rounded-[4px] font-bold text-[9px] sm:text-[11px] flex items-center justify-center gap-1 shrink-0"
+                className="slide-btn slide-btn-orange p-1 sm:px-2.5 sm:py-1 rounded-[4px] font-bold text-[9px] sm:text-[11px] flex items-center justify-center gap-1 shrink-0 ripple-btn"
                 title="Sign out"
               >
                 <span className="relative z-10 flex items-center justify-center gap-1">

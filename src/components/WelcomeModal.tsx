@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { ShieldCheck, Loader2 } from 'lucide-react';
+import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
 
 interface WelcomeModalProps {
   signInWithGoogle: () => Promise<void>;
@@ -8,6 +9,7 @@ interface WelcomeModalProps {
 }
 
 export function WelcomeModal({ signInWithGoogle, isLoading = false }: WelcomeModalProps) {
+  useLockBodyScroll(true);
   const [localLoading, setLocalLoading] = useState(false);
 
   const handleSignIn = async () => {

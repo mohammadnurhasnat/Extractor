@@ -82,7 +82,7 @@ export function ResultsSection({
                 {data && (
                   <button
                     onClick={() => setResultsTab('profile')}
-                    className={`slide-btn slide-btn-purple text-center py-3 px-2 rounded-xl text-sm font-extrabold cursor-pointer transition-none border min-h-[48px] ${
+                    className={`slide-btn slide-btn-purple text-center py-3 px-2 rounded-xl text-sm font-extrabold cursor-pointer transition-none border min-h-[48px] ripple-btn ${
                       resultsTab === 'profile'
                         ? 'active shadow-[0_2px_10px_rgba(0,0,0,0.02)] font-black border-[#2DD4BF]/50'
                         : 'border-slate-205 dark:border-zinc-800'
@@ -94,7 +94,7 @@ export function ResultsSection({
                 {data && isUndertakingConfigured && undertakingData && activeItem?.documentType !== 'visa_application' && (
                   <button
                     onClick={() => setResultsTab('undertaking')}
-                    className={`slide-btn slide-btn-purple text-center py-3 px-2 rounded-xl text-sm font-extrabold cursor-pointer transition-none border min-h-[48px] ${
+                    className={`slide-btn slide-btn-purple text-center py-3 px-2 rounded-xl text-sm font-extrabold cursor-pointer transition-none border min-h-[48px] ripple-btn ${
                       resultsTab === 'undertaking'
                         ? 'active shadow-[0_2px_10px_rgba(0,0,0,0.02)] font-black border-[#2DD4BF]/50'
                         : 'border-slate-205 dark:border-zinc-800'
@@ -106,7 +106,7 @@ export function ResultsSection({
                 {activeItem && activeItem?.documentType !== 'visa_application' && (
                   <button
                     onClick={() => setResultsTab('passport-pdf')}
-                    className={`slide-btn slide-btn-purple text-center py-3 px-2 rounded-xl text-sm font-extrabold cursor-pointer transition-none border min-h-[48px] ${
+                    className={`slide-btn slide-btn-purple text-center py-3 px-2 rounded-xl text-sm font-extrabold cursor-pointer transition-none border min-h-[48px] ripple-btn ${
                       resultsTab === 'passport-pdf'
                         ? 'active shadow-[0_2px_10px_rgba(0,0,0,0.02)] font-black border-[#2DD4BF]/50'
                         : 'border-slate-205 dark:border-zinc-800'

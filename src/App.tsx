@@ -31,6 +31,7 @@ import { ProfileCustomizationModal } from './components/ProfileCustomizationModa
 import { AdminDashboardModal } from './components/AdminDashboardModal';
 import { LoginModal } from './components/LoginModal';
 import { LogoutConfirmModal } from './components/LogoutConfirmModal';
+import { LoginGreeting } from './components/LoginGreeting';
 
 // Utilities
 import { generateDataText, getKolkataHotelForPassport, getDelhiHotelForPassport, getKolkataBusinessForPassport, formatIndianVisaAddress } from './utils/addressUtils';
@@ -61,6 +62,7 @@ export default function App() {
       return null;
     }
   });
+  const [showLoginGreeting, setShowLoginGreeting] = useState(false);
 
   const [limitStatus, setLimitStatus] = useState<{ count: number; remaining: number; limit: number } | null>(null);
   const [loginIdentifier, setLoginIdentifier] = useState('');
@@ -140,7 +142,7 @@ export default function App() {
       if (response.ok && result.success) {
         localStorage.setItem('passport_extractor_user', JSON.stringify(result.user));
         setCurrentUser(result.user);
-        setToast({ message: `Welcome ${result.user.name}! Login was successful.`, type: 'success' });
+        setShowLoginGreeting(true);
       } else {
         setLoginError(result.error || 'Login failed. Please provide correct credentials.');
       }
@@ -625,6 +627,15 @@ export default function App() {
 
       {/* Toast Notification */}
       <ToastNotification toast={toast} onClose={() => setToast(null)} />
+
+      {/* Login Success Greeting */}
+      {currentUser && (
+        <LoginGreeting 
+          userName={currentUser.name}
+          isOpen={showLoginGreeting}
+          onClose={() => setShowLoginGreeting(false)}
+        />
+      )}
 
       {/* User Profile Customization Modal */}
       <ProfileCustomizationModal
