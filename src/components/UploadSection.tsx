@@ -254,31 +254,34 @@ export function UploadSection(props: UploadSectionProps) {
               
               {/* Right Column: Undertaking Options */}
               <div className="flex flex-col h-full justify-between">
-                <UndertakingOptions
-                  utPurpose={props.utPurpose}
-                  setUtPurpose={props.setUtPurpose}
-                  utHospitalName={props.utHospitalName}
-                  setUtHospitalName={props.setUtHospitalName}
-                  utDoctorName={props.utDoctorName}
-                  setUtDoctorName={props.setUtDoctorName}
-                  utEmbassyCity={props.utEmbassyCity}
-                  setUtEmbassyCity={props.setUtEmbassyCity}
-                  utEmbassyDate={props.utEmbassyDate}
-                  setUtEmbassyDate={props.setUtEmbassyDate}
-                  utFromDate={props.utFromDate}
-                  setUtFromDate={props.setUtFromDate}
-                  utToDate={props.utToDate}
-                  setUtToDate={props.setUtToDate}
-                  utReturnCountry={props.utReturnCountry}
-                  isUndertakingConfigured={props.isUndertakingConfigured}
-                  undertakingData={props.undertakingData}
-                  setUndertakingData={props.setUndertakingData}
-                  savedHospitals={props.savedHospitals}
-                  handleAddHospitalSuggestion={props.handleAddHospitalSuggestion}
-                  savedDepartments={props.savedDepartments}
-                  handleAddDepartmentSuggestion={props.handleAddDepartmentSuggestion}
-                />
+                {!isPdf && (
+                  <UndertakingOptions
+                    utPurpose={props.utPurpose}
+                    setUtPurpose={props.setUtPurpose}
+                    utHospitalName={props.utHospitalName}
+                    setUtHospitalName={props.setUtHospitalName}
+                    utDoctorName={props.utDoctorName}
+                    setUtDoctorName={props.setUtDoctorName}
+                    utEmbassyCity={props.utEmbassyCity}
+                    setUtEmbassyCity={props.setUtEmbassyCity}
+                    utEmbassyDate={props.utEmbassyDate}
+                    setUtEmbassyDate={props.setUtEmbassyDate}
+                    utFromDate={props.utFromDate}
+                    setUtFromDate={props.setUtFromDate}
+                    utToDate={props.utToDate}
+                    setUtToDate={props.setUtToDate}
+                    utReturnCountry={props.utReturnCountry}
+                    isUndertakingConfigured={props.isUndertakingConfigured}
+                    undertakingData={props.undertakingData}
+                    setUndertakingData={props.setUndertakingData}
+                    savedHospitals={props.savedHospitals}
+                    handleAddHospitalSuggestion={props.handleAddHospitalSuggestion}
+                    savedDepartments={props.savedDepartments}
+                    handleAddDepartmentSuggestion={props.handleAddDepartmentSuggestion}
+                  />
+                )}
               </div>
+
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3">
