@@ -371,10 +371,6 @@ export default function App() {
   const updateDataField = (field: keyof PassportData, newValue: string) => {
     if (!data) return;
 
-    if (!data) return;
-
-
-    if (!data) return;
     let val = newValue;
     let extraFields = {};
     if (field === 'hotelAddress') {
