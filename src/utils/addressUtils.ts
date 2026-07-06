@@ -102,12 +102,24 @@ export const generateRandomEnterpriseName = (name: string): string => {
 export const getProprietorBusinessName = (itemData: PassportData | null): string => {
   if (!itemData) return "";
   if (itemData.proprietorBusinessName) return itemData.proprietorBusinessName;
+  if (!itemData.isPdf) {
+    const fullName = `${itemData.givenName || ''} ${itemData.surname || ''}`.trim();
+    if (fullName) {
+      return generateRandomEnterpriseName(fullName);
+    }
+  }
   return "";
 };
 
 export const getJobCompanyName = (itemData: PassportData | null): string => {
   if (!itemData) return "";
   if (itemData.jobCompanyName) return itemData.jobCompanyName;
+  if (!itemData.isPdf) {
+    const fullName = `${itemData.givenName || ''} ${itemData.surname || ''}`.trim();
+    if (fullName) {
+      return generateRandomEnterpriseName(fullName);
+    }
+  }
   return "";
 };
 

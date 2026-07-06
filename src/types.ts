@@ -34,6 +34,7 @@ export interface PassportData {
   placeOfIssue?: string;
   birthPlaceDistrict?: string;
   extractionTime?: number;
+  isPdf?: boolean;
 
   // Hotel details
   hotelName?: string;

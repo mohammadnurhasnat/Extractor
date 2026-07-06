@@ -161,6 +161,7 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
             result.data.gender = normalizeGender(result.data.gender);
           }
           result.data.extractionTime = durationSeconds;
+          result.data.isPdf = isPdf;
         }
         
         const deduplicatedData = (await addToHistory(result.data, base64String)) || result.data;
