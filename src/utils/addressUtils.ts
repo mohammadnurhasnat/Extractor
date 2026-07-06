@@ -416,3 +416,128 @@ export const formatIndianVisaAddress = (address: string): string => {
 
   return cleaned;
 };
+
+export const DISTRICT_POSTAL_CODES: Record<string, string> = {
+  dhaka: '1200',
+  kishoreganj: '2300',
+  sylhet: '3100',
+  chittagong: '4000',
+  chattogram: '4000',
+  gazipur: '1700',
+  narayanganj: '1400',
+  tangail: '1900',
+  faridpur: '7800',
+  manikganj: '1800',
+  munshiganj: '1500',
+  narsingdi: '1600',
+  madaripur: '7900',
+  gopalganj: '8100',
+  rajbari: '7700',
+  shariatpur: '8000',
+  mymensingh: '2200',
+  rajshahi: '6000',
+  rangpur: '5400',
+  khulna: '9100',
+  barisal: '8200',
+  barishal: '8200',
+  bogra: '5800',
+  bogura: '5800',
+  jessore: '7400',
+  jashore: '7400',
+  comilla: '3500',
+  cumilla: '3500',
+  noakhali: '3800',
+  feni: '3900',
+  coxsbazar: '4700',
+  cox: '4700',
+  brahmanbaria: '3400',
+  dinajpur: '5200',
+  pabna: '6600',
+  kushtia: '7000',
+  sirajganj: '6700',
+  jamalpur: '2000',
+  netrokona: '2400',
+  sherpur: '2100',
+  naogaon: '6500',
+  natore: '6400',
+  joypurhat: '5900',
+  chapainawabganj: '6300',
+  gaibandha: '5700',
+  kurigram: '5600',
+  lalmonirhat: '5500',
+  nilphamari: '5300',
+  panchagarh: '5000',
+  thakurgaon: '5100',
+  bagerhat: '9300',
+  chuadanga: '7200',
+  jhenaidah: '7300',
+  magura: '7600',
+  meherpur: '7100',
+  narail: '7500',
+  satkhira: '9400',
+  barguna: '8700',
+  bhola: '8300',
+  jhalokati: '8400',
+  patuakhali: '8600',
+  pirojpur: '8500',
+  bandarban: '4600',
+  khagrachhari: '4400',
+  rangamati: '4500',
+  habiganj: '3300',
+  moulvibazar: '3200',
+  sunamganj: '3000',
+  chandpur: '3600',
+  lakshmipur: '3700'
+};
+
+export const appendPostalCodeToAddress = (address: string | undefined): string => {
+  if (!address) return '';
+  let cleaned = address.trim();
+
+  // If it already has a 4-digit postcode (e.g. Kishoreganj-2370 or Dhaka-1212)
+  const hasPostcode = /\b\d{4}\b/.test(cleaned);
+  if (hasPostcode) {
+    return cleaned;
+  }
+
+  const words = cleaned.toLowerCase().split(/[\s,;-]+/);
+  let detectedPostcode = '1000';
+  let matchedDistrictKey = '';
+
+  for (const word of words) {
+    const cleanWord = word.replace(/[^a-z]/g, '');
+    if (DISTRICT_POSTAL_CODES[cleanWord]) {
+      detectedPostcode = DISTRICT_POSTAL_CODES[cleanWord];
+      matchedDistrictKey = cleanWord;
+      break;
+    }
+  }
+
+  if (matchedDistrictKey) {
+    const regex = new RegExp(`\\b(${matchedDistrictKey})\\b`, 'i');
+    const match = cleaned.match(regex);
+    if (match) {
+      const index = cleaned.toLowerCase().lastIndexOf(matchedDistrictKey);
+      if (index !== -1) {
+        const originalCaseDistrict = cleaned.substring(index, index + matchedDistrictKey.length);
+        cleaned = cleaned.substring(0, index) + `${originalCaseDistrict}-${detectedPostcode}` + cleaned.substring(index + matchedDistrictKey.length);
+        return cleaned;
+      }
+    }
+  }
+
+  if (!matchedDistrictKey) {
+    let hash = 0;
+    for (let i = 0; i < cleaned.length; i++) {
+      hash = cleaned.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const fallbackCodes = ['1200', '2300', '3100', '4000', '1700', '1400', '1900', '7800', '2200', '6000', '5400', '9100', '8200'];
+    const fallbackCode = fallbackCodes[Math.abs(hash) % fallbackCodes.length];
+    if (cleaned.endsWith(',')) {
+      cleaned = cleaned.substring(0, cleaned.length - 1).trim();
+    }
+    cleaned = `${cleaned}-${fallbackCode}`;
+  }
+
+  return cleaned;
+};
