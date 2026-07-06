@@ -211,6 +211,20 @@ export function DataField({ label, value, highlight = false, warning = false, co
          ) : (
           <div 
             className={`flex-1 flex items-center justify-between gap-2 px-3 py-0.5 w-full min-w-0 ${hasValue ? 'cursor-pointer hover:bg-slate-50/50 dark:hover:bg-zinc-900/30 transition-all duration-150' : 'cursor-default'}`}
+            onDoubleClick={(e) => {
+              if (isEditing || !hasValue) return;
+              
+              // If clicked on buttons or their children, ignore
+              const target = e.target as HTMLElement;
+              if (target.closest('.action-button-no-copy')) {
+                return;
+              }
+
+              if (value) {
+                navigator.clipboard.writeText(value);
+                triggerCopiedEffects(value);
+              }
+            }}
             onMouseUp={(e) => {
               if (isEditing || !hasValue) return;
               
@@ -225,11 +239,6 @@ export function DataField({ label, value, highlight = false, warning = false, co
               if (selectedText.trim().length > 0) {
                 navigator.clipboard.writeText(selectedText);
                 triggerCopiedEffects(selectedText);
-              } else {
-                if (value) {
-                  navigator.clipboard.writeText(value);
-                  triggerCopiedEffects(value);
-                }
               }
             }}
           >
