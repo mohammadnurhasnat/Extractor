@@ -26,6 +26,7 @@ interface ResultsSectionProps {
   isGeneratingAddresses?: boolean;
   onGenerateAddresses?: () => void;
   utPurpose?: string;
+  onOpenRefHelper?: () => void;
 }
 
 export function ResultsSection({
@@ -47,7 +48,8 @@ export function ResultsSection({
   handleDownloadJSON,
   isGeneratingAddresses,
   onGenerateAddresses,
-  utPurpose
+  utPurpose,
+  onOpenRefHelper
 }: ResultsSectionProps) {
   // If there's data, show the results card
   const hasContent = !!data;
@@ -130,6 +132,7 @@ export function ResultsSection({
                 isGeneratingAddresses={isGeneratingAddresses}
                 onGenerateAddresses={onGenerateAddresses}
                 utPurpose={utPurpose}
+                onOpenRefHelper={onOpenRefHelper}
               />
             ) : resultsTab === 'undertaking' && data && undertakingData ? (
               <UndertakingFormTab

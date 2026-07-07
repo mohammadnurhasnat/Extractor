@@ -9,6 +9,7 @@ import { LoginModal } from './LoginModal';
 import { LoginGreeting } from './LoginGreeting';
 import { ToastNotification } from './ToastNotification';
 import { DeleteConfirmationModal } from './DeleteConfirmationModal';
+import { IndianReferenceHelperModal } from './IndianReferenceHelperModal';
 import { User, HistoryItem, PassportData } from '../types';
 
 interface AppModalsProps {
@@ -42,6 +43,9 @@ interface AppModalsProps {
   handleLogin: (e: React.FormEvent) => void;
   showLoginGreeting: boolean;
   setShowLoginGreeting: (val: boolean) => void;
+  isRefHelperOpen: boolean;
+  setIsRefHelperOpen: (val: boolean) => void;
+  utPurpose?: string;
 }
 
 export function AppModals({
@@ -75,7 +79,18 @@ export function AppModals({
   handleLogin,
   showLoginGreeting,
   setShowLoginGreeting,
+  isRefHelperOpen,
+  setIsRefHelperOpen,
+  utPurpose,
 }: AppModalsProps) {
+  const helperPurpose = (() => {
+    if (!utPurpose) return null;
+    if (utPurpose === 'Tourism') return 'Tourism';
+    if (utPurpose === 'Business') return 'Business';
+    if (utPurpose === 'Medical Treatment - Patient' || utPurpose === 'Medical Treatment - Attendance') return 'Medical';
+    if (utPurpose === 'Double Entry') return 'DoubleEntry';
+    return null;
+  })();
   return (
     <>
       {/* Admin Dashboard Modal */}
@@ -163,6 +178,15 @@ export function AppModals({
           userName={currentUser.name}
           isOpen={showLoginGreeting}
           onClose={() => setShowLoginGreeting(false)}
+        />
+      )}
+
+      {/* Indian Reference Helper Modal */}
+      {helperPurpose && (
+        <IndianReferenceHelperModal
+          isOpen={isRefHelperOpen}
+          onClose={() => setIsRefHelperOpen(false)}
+          purpose={helperPurpose}
         />
       )}
     </>

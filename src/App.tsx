@@ -299,6 +299,7 @@ export default function App() {
   // toast state is declared at the top of App()
   const [isBackupOpen, setIsBackupOpen] = useState(false);
   const [isRestoreOpen, setIsRestoreOpen] = useState(false);
+  const [isRefHelperOpen, setIsRefHelperOpen] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('passport_active_results_tab', resultsTab);
@@ -542,6 +543,7 @@ export default function App() {
               isGeneratingAddresses={isGeneratingAddresses}
               onGenerateAddresses={handleGenerateAddresses}
               utPurpose={utPurpose}
+              onOpenRefHelper={() => setIsRefHelperOpen(true)}
             />
           </div>
         </main>
@@ -591,6 +593,9 @@ export default function App() {
         handleLogin={handleLogin}
         showLoginGreeting={showLoginGreeting}
         setShowLoginGreeting={setShowLoginGreeting}
+        isRefHelperOpen={isRefHelperOpen}
+        setIsRefHelperOpen={setIsRefHelperOpen}
+        utPurpose={utPurpose}
       />
     </div>
   );

@@ -32,6 +32,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
 
   // User Detail / Edit State
   const [selectedUserForModal, setSelectedUserForModal] = useState<any | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isEditingSelectedUser, setIsEditingSelectedUser] = useState(false);
   const [editUserName, setEditUserName] = useState('');
   const [editUserEmail, setEditUserEmail] = useState('');
@@ -217,6 +218,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
     setEditUserPassword(user.password);
     setEditUserDailyLimit(user.dailyLimit ?? 5);
     setIsEditingSelectedUser(false);
+    setShowDeleteConfirm(false);
   };
 
   const handleEditUserSubmit = async (e: React.FormEvent) => {
@@ -263,10 +265,13 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
     }
   };
 
-  const handleDeleteFromPopup = async () => {
+  const handleDeleteFromPopup = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDeleteUser = async () => {
     if (!selectedUserForModal) return;
     const userId = selectedUserForModal.id;
-    if (!window.confirm('আপনি কি নিশ্চিত যে এই ব্যবহারকারীকে মুছে ফেলতে চান?')) return;
     
     try {
       const response = await fetch('/api/admin/delete-user', {
@@ -280,8 +285,9 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
       const result = await response.json();
       if (response.ok && result.success) {
         setAdminUsersList(prev => prev.filter(u => u.id !== userId));
-        setToast({ message: 'ব্যবহারকারীকে সফলভাবে মুছে ফেলা হয়েছে!', type: 'success' });
+        setToast({ message: 'ব্যবহারকারীকে সফলভাবে মুছে ফেলা হয়েছে! (User deleted successfully!)', type: 'success' });
         setSelectedUserForModal(null);
+        setShowDeleteConfirm(false);
       } else {
         setToast({ message: result.error || 'Failed to delete user.', type: 'error' });
       }
@@ -462,6 +468,29 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
                       <button type="submit" disabled={isUpdatingUserDetail} className="px-4 py-2 bg-emerald-600 text-white font-bold rounded-[5px]">Save</button>
                     </div>
                   </form>
+                ) : showDeleteConfirm ? (
+                  <div className="space-y-4 py-4 text-center">
+                    <p className="text-xs font-bold text-slate-800 dark:text-zinc-200">
+                      আপনি কি নিশ্চিত যে এই ব্যবহারকারীকে মুছে ফেলতে চান?
+                    </p>
+                    <p className="text-xs text-rose-500 font-extrabold bg-rose-500/10 py-1.5 px-4 rounded-full inline-block">
+                      {selectedUserForModal.name}
+                    </p>
+                    <div className="flex gap-3 justify-center pt-4">
+                      <button
+                        onClick={confirmDeleteUser}
+                        className="slide-btn slide-btn-orange px-6 py-2 rounded-xl font-extrabold text-xs uppercase ripple-btn"
+                      >
+                        Yes
+                      </button>
+                      <button
+                        onClick={() => setShowDeleteConfirm(false)}
+                        className="slide-btn slide-btn-slate px-6 py-2 rounded-xl font-extrabold text-xs uppercase ripple-btn"
+                      >
+                        No
+                      </button>
+                    </div>
+                  </div>
                 ) : (
                   <div className="space-y-4">
                     <h4 className="font-bold">{selectedUserForModal.name}</h4>
@@ -473,9 +502,24 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
                       <div><span className="block font-bold text-[10px] uppercase text-slate-400">Daily Limit</span>{selectedUserForModal.dailyLimit ?? 5}</div>
                     </div>
                     <div className="flex gap-2 pt-4 border-t border-slate-100 dark:border-zinc-900">
-                      <button onClick={handleDeleteFromPopup} className="flex-1 py-2 text-rose-600 border border-rose-200 font-bold rounded">Delete</button>
-                      <button onClick={handleToggleSuspendFromPopup} className="flex-1 py-2 text-amber-600 border border-amber-200 font-bold rounded">{selectedUserForModal.isSuspended ? 'Unsuspend' : 'Suspend'}</button>
-                      <button onClick={() => setIsEditingSelectedUser(true)} className="flex-1 py-2 bg-blue-600 text-white font-bold rounded">Edit</button>
+                      <button 
+                        onClick={handleDeleteFromPopup} 
+                        className="slide-btn slide-btn-orange flex-1 py-2 rounded-xl font-extrabold text-xs ripple-btn"
+                      >
+                        Delete
+                      </button>
+                      <button 
+                        onClick={handleToggleSuspendFromPopup} 
+                        className="slide-btn slide-btn-purple flex-1 py-2 rounded-xl font-extrabold text-xs ripple-btn"
+                      >
+                        {selectedUserForModal.isSuspended ? 'Unsuspend' : 'Suspend'}
+                      </button>
+                      <button 
+                        onClick={() => setIsEditingSelectedUser(true)} 
+                        className="slide-btn slide-btn-teal flex-1 py-2 rounded-xl font-extrabold text-xs ripple-btn"
+                      >
+                        Edit
+                      </button>
                     </div>
                   </div>
                 )}

@@ -1,4 +1,5 @@
-import { CheckCircle2, Check, Copy, Download, FileText, Braces } from 'lucide-react';
+import React from 'react';
+import { CheckCircle2, Check, Copy, Download, FileText, Braces, ClipboardList } from 'lucide-react';
 import { PassportData } from '../types';
 import { DataField } from './DataField';
 import {
@@ -19,6 +20,7 @@ interface PassportDataTabProps {
   isGeneratingAddresses?: boolean;
   onGenerateAddresses?: () => void;
   utPurpose?: string;
+  onOpenRefHelper?: () => void;
 }
 
 export function PassportDataTab({
@@ -31,8 +33,10 @@ export function PassportDataTab({
   isCopied,
   isGeneratingAddresses = false,
   onGenerateAddresses,
-  utPurpose
+  utPurpose,
+  onOpenRefHelper
 }: PassportDataTabProps) {
+
   const isExpiryWarning = (() => {
     if (!data.expiryDate) return false;
     const expiry = new Date(data.expiryDate);
@@ -41,6 +45,39 @@ export function PassportDataTab({
     const sixMonthsFromNow = new Date();
     sixMonthsFromNow.setMonth(today.getMonth() + 6);
     return expiry < sixMonthsFromNow;
+  })();
+
+  const helperInfo = (() => {
+    if (!utPurpose) return null;
+    if (utPurpose === 'Tourism') {
+      return {
+        label: '🏨 Kolkata Hotels (5)',
+        purpose: 'Tourism' as const,
+        btnClass: 'slide-btn-teal text-white'
+      };
+    }
+    if (utPurpose === 'Business') {
+      return {
+        label: '🏢 Kolkata Businesses (5)',
+        purpose: 'Business' as const,
+        btnClass: 'slide-btn-purple text-white'
+      };
+    }
+    if (utPurpose === 'Medical Treatment - Patient' || utPurpose === 'Medical Treatment - Attendance') {
+      return {
+        label: '🏥 Indian Hospitals (5)',
+        purpose: 'Medical' as const,
+        btnClass: 'slide-btn-orange text-white'
+      };
+    }
+    if (utPurpose === 'Double Entry') {
+      return {
+        label: '🏨 Delhi Hotels (5)',
+        purpose: 'DoubleEntry' as const,
+        btnClass: 'slide-btn-orange text-white'
+      };
+    }
+    return null;
   })();
 
   return (
@@ -59,6 +96,15 @@ export function PassportDataTab({
           <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1">Verified extracted elements from passport page scan.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto xl:justify-end">
+          {helperInfo && onOpenRefHelper && (
+            <button
+              onClick={onOpenRefHelper}
+              className={`slide-btn ${helperInfo.btnClass} flex items-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-extrabold rounded-lg cursor-pointer ripple-btn`}
+            >
+              <ClipboardList className="w-4.5 h-4.5 relative z-10" />
+              <span className="relative z-10">{helperInfo.label}</span>
+            </button>
+          )}
           <button 
             onClick={handleCopyAll}
             className="slide-btn slide-btn-slate flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg cursor-pointer shadow-sm hover:shadow ripple-btn"
