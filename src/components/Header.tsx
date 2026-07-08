@@ -1,4 +1,5 @@
 import React from 'react';
+import { flushSync } from 'react-dom';
 import { Sun, Moon, LogOut, User, RefreshCw, Users, ShieldCheck, Cloud, CloudOff, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -29,41 +30,101 @@ export const Header: React.FC<HeaderProps> = ({
   const isAdmin = currentUser?.email.toLowerCase() === 'mohammadnurhasnat@gmail.com';
   const initials = currentUser?.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'EX';
 
+  const handleThemeToggle = (event: React.MouseEvent<HTMLButtonElement>) => {
+    const docAny = document as any;
+    if (!docAny.startViewTransition) {
+      onToggleDarkMode();
+      return;
+    }
+
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = rect.left + rect.width / 2;
+    const y = rect.top + rect.height / 2;
+
+    const right = window.innerWidth - x;
+    const bottom = window.innerHeight - y;
+    const maxRadius = Math.hypot(Math.max(x, right), Math.max(y, bottom));
+
+    // Determine direction before the transition snapshot is captured
+    const isCurrentlyDark = document.documentElement.classList.contains('dark');
+    if (isCurrentlyDark) {
+      document.documentElement.classList.add('theme-transition-dark-to-light');
+    } else {
+      document.documentElement.classList.add('theme-transition-light-to-dark');
+    }
+
+    const transition = docAny.startViewTransition(() => {
+      // Synchronously update the React state and commit DOM changes
+      flushSync(() => {
+        onToggleDarkMode();
+      });
+      
+      // Toggle class synchronously on documentElement inside the callback to ensure snapshot accuracy
+      if (isCurrentlyDark) {
+        document.documentElement.classList.remove('dark');
+      } else {
+        document.documentElement.classList.add('dark');
+      }
+    });
+
+    transition.ready.then(() => {
+      if (isCurrentlyDark) {
+        // Dark to Light: Old view (Dark) is on top. We collapse/shrink it back into the button
+        document.documentElement.animate(
+          [
+            { clipPath: `circle(${maxRadius}px at ${x}px ${y}px)` },
+            { clipPath: `circle(0px at ${x}px ${y}px)` }
+          ],
+          {
+            duration: 550,
+            easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+            pseudoElement: '::view-transition-old(root)',
+            fill: 'forwards'
+          }
+        );
+      } else {
+        // Light to Dark: New view (Dark) is on top. We expand it outwards from the button
+        document.documentElement.animate(
+          [
+            { clipPath: `circle(0px at ${x}px ${y}px)` },
+            { clipPath: `circle(${maxRadius}px at ${x}px ${y}px)` }
+          ],
+          {
+            duration: 550,
+            easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+            pseudoElement: '::view-transition-new(root)',
+            fill: 'forwards'
+          }
+        );
+      }
+    });
+
+    // Cleanup transition classes when transition completes or fails
+    transition.finished.finally(() => {
+      document.documentElement.classList.remove('theme-transition-dark-to-light', 'theme-transition-light-to-dark');
+    });
+  };
+
   return (
     <header className="bg-white/60 dark:bg-black/60 backdrop-blur-md border-b border-slate-200/50 dark:border-zinc-800/50 sticky top-0 z-40 py-2.5 transition-colors print:hidden shadow-sm">
       <div className="w-full px-3.5 flex items-center justify-between gap-2">
         {/* Left column: Theme Toggle Icon */}
         <div className="flex items-center justify-start shrink-0">
           <button
-            onClick={onToggleDarkMode}
-            className="slide-btn slide-btn-slate p-1.5 sm:p-2 rounded-[8px] flex items-center justify-center shrink-0 group"
+            onClick={handleThemeToggle}
+            className="slide-btn slide-btn-slate p-1.5 sm:p-2 rounded-[8px] flex items-center justify-center shrink-0 group active:scale-95 transition-transform"
             aria-label="Toggle dark mode"
           >
-            <AnimatePresence mode="wait" initial={false}>
+            <div
+              style={{ viewTransitionName: 'theme-icon' } as React.CSSProperties}
+              className="relative z-10 flex items-center justify-center transition-transform duration-300 group-hover:rotate-12"
+            >
               {isDarkMode ? (
-                <motion.div
-                  key="moon"
-                  initial={{ y: 8, opacity: 0, rotate: -45 }}
-                  animate={{ y: 0, opacity: 1, rotate: 0 }}
-                  exit={{ y: -8, opacity: 0, rotate: 45 }}
-                  transition={{ type: "spring", stiffness: 220, damping: 15 }}
-                  className="relative z-10 flex items-center justify-center"
-                >
-                  <Moon className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-amber-400 fill-amber-400/20" />
-                </motion.div>
+                <Moon className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-amber-400 fill-amber-400/20" />
               ) : (
-                <motion.div
-                  key="sun"
-                  initial={{ y: 8, opacity: 0, rotate: 45 }}
-                  animate={{ y: 0, opacity: 1, rotate: 0 }}
-                  exit={{ y: -8, opacity: 0, rotate: -45 }}
-                  transition={{ type: "spring", stiffness: 220, damping: 15 }}
-                  className="relative z-10 flex items-center justify-center"
-                >
-                  <Sun className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-amber-500 fill-amber-500/20" />
-                </motion.div>
+                <Sun className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-amber-500 fill-amber-500/20" />
               )}
-            </AnimatePresence>
+            </div>
           </button>
         </div>
 

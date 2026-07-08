@@ -515,3 +515,58 @@ button, .slide-btn {
     print-color-adjust: exact !important;
   }
 }
+
+/* Custom View Transitions circular reveal ripple effect */
+::view-transition-image-pair(root) {
+  isolation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  mix-blend-mode: normal !important;
+  display: block;
+  height: 100%;
+}
+
+@keyframes theme-transition-keep-alive {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Going from Light to Dark: New view (Dark) is on top and expands */
+.theme-transition-light-to-dark::view-transition-old(root) {
+  z-index: 1;
+  animation: 600ms theme-transition-keep-alive !important;
+}
+.theme-transition-light-to-dark::view-transition-new(root) {
+  z-index: 9999;
+  animation: 600ms theme-transition-keep-alive !important;
+}
+
+/* Going from Dark to Light: Old view (Dark) is on top and collapses/shrinks */
+.theme-transition-dark-to-light::view-transition-old(root) {
+  z-index: 9999;
+  animation: 600ms theme-transition-keep-alive !important;
+}
+.theme-transition-dark-to-light::view-transition-new(root) {
+  z-index: 1;
+  animation: 600ms theme-transition-keep-alive !important;
+}
+
+/* Disable all transitions and animations on elements during view transition to guarantee 120 FPS butter-smooth performance */
+.theme-transition-light-to-dark,
+.theme-transition-light-to-dark *,
+.theme-transition-light-to-dark ::before,
+.theme-transition-light-to-dark ::after,
+.theme-transition-dark-to-light,
+.theme-transition-dark-to-light *,
+.theme-transition-dark-to-light ::before,
+.theme-transition-dark-to-light ::after {
+  transition: none !important;
+  animation: none !important;
+}
+
