@@ -596,6 +596,7 @@ export default function App() {
         isRefHelperOpen={isRefHelperOpen}
         setIsRefHelperOpen={setIsRefHelperOpen}
         utPurpose={utPurpose}
+        selectedHospital={undertakingData?.hospitalName || data?.hospitalName || utHospitalName || ''}
       />
     </div>
   );

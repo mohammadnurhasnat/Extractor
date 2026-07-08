@@ -186,9 +186,10 @@ interface IndianReferenceHelperModalProps {
   isOpen: boolean;
   onClose: () => void;
   purpose: 'Tourism' | 'Medical' | 'DoubleEntry' | 'Business';
+  selectedHospital?: string;
 }
 
-export function IndianReferenceHelperModal({ isOpen, onClose, purpose }: IndianReferenceHelperModalProps) {
+export function IndianReferenceHelperModal({ isOpen, onClose, purpose, selectedHospital }: IndianReferenceHelperModalProps) {
   const [copiedText, setCopiedText] = useState<string | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null); // itemId-fieldKey
 
@@ -203,7 +204,31 @@ export function IndianReferenceHelperModal({ isOpen, onClose, purpose }: IndianR
     };
   }, [isOpen]);
 
-  const items = REFERECE_DATA[purpose] || [];
+  const items = React.useMemo(() => {
+    const originalItems = REFERECE_DATA[purpose] || [];
+    if (purpose === 'Medical' && selectedHospital) {
+      const lowerSelected = selectedHospital.toLowerCase().trim();
+      if (lowerSelected) {
+        const matchIndex = originalItems.findIndex(item => {
+          const lowerName = item.name.toLowerCase().trim();
+          if (lowerName === lowerSelected) return true;
+          if (lowerName.includes(lowerSelected) || lowerSelected.includes(lowerName)) return true;
+          
+          // Token-based matching for words longer than 3 characters
+          const selectedTokens = lowerSelected.split(/[\s,.-]+/).filter(t => t.length > 3);
+          const nameTokens = lowerName.split(/[\s,.-]+/).filter(t => t.length > 3);
+          return selectedTokens.some(st => nameTokens.some(nt => nt === st));
+        });
+
+        if (matchIndex > -1) {
+          const matched = originalItems[matchIndex];
+          const rest = originalItems.filter((_, idx) => idx !== matchIndex);
+          return [matched, ...rest];
+        }
+      }
+    }
+    return originalItems;
+  }, [purpose, selectedHospital]);
 
   const handleCopy = (text: string, fieldId: string) => {
     if (!text) return;

@@ -46,6 +46,7 @@ interface AppModalsProps {
   isRefHelperOpen: boolean;
   setIsRefHelperOpen: (val: boolean) => void;
   utPurpose?: string;
+  selectedHospital?: string;
 }
 
 export function AppModals({
@@ -82,6 +83,7 @@ export function AppModals({
   isRefHelperOpen,
   setIsRefHelperOpen,
   utPurpose,
+  selectedHospital,
 }: AppModalsProps) {
   const helperPurpose = (() => {
     if (!utPurpose) return null;
@@ -187,6 +189,7 @@ export function AppModals({
           isOpen={isRefHelperOpen}
           onClose={() => setIsRefHelperOpen(false)}
           purpose={helperPurpose}
+          selectedHospital={selectedHospital}
         />
       )}
     </>
