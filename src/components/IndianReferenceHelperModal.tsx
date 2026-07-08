@@ -14,31 +14,31 @@ export const REFERECE_DATA: Record<string, ReferenceItem[]> = {
     {
       name: 'The Peerless Inn Kolkata',
       address: '12, Jawaharlal Nehru Road, Esplanade, Dharmatala, Kolkata, West Bengal 700013',
-      phone: '+91 33 4400 3900',
+      phone: '+913344003900',
       email: 'pik@peerlesshotels.com'
     },
     {
       name: 'The Oberoi Grand Kolkata',
       address: '15, Jawaharlal Nehru Road, New Market Area, Dharmatala, Kolkata, West Bengal 700013',
-      phone: '+91 33 2249 2323',
+      phone: '+913322492323',
       email: 'reservations@oberoigroup.com'
     },
     {
       name: 'The Park Hotel Kolkata',
       address: '17, Park Street, Taltala, Kolkata, West Bengal 700016',
-      phone: '+91 33 2249 9000',
+      phone: '+913322499000',
       email: 'resv.cal@theparkhotels.com'
     },
     {
       name: 'JW Marriott Hotel Kolkata',
       address: '4A, JBS Haldane Avenue, Tangra, Kolkata, West Bengal 700105',
-      phone: '+91 33 6633 0000',
+      phone: '+913366330000',
       email: 'jw.ccujw.reservations@marriotthotels.com'
     },
     {
       name: 'Taj Bengal Kolkata',
       address: '34-B, Belvedere Road, Alipore, Kolkata, West Bengal 700027',
-      phone: '+91 33 6612 3939',
+      phone: '+913366123939',
       email: 'bengal.kolkata@tajhotels.com'
     }
   ],
@@ -46,31 +46,31 @@ export const REFERECE_DATA: Record<string, ReferenceItem[]> = {
     {
       name: 'Apollo Multispecialty Hospitals',
       address: '58, Canal Circular Road, Kadapara, Phool Bagan, Kankurgachi, Kolkata, West Bengal 700054',
-      phone: '+91 33 2320 3040',
+      phone: '+913323203040',
       email: 'infokolkata@apollohospitals.com'
     },
     {
       name: 'Rabindranath Tagore International Institute of Cardiac Sciences',
       address: '124, Mukundapur Main Road, Mukundapur, Kolkata, West Bengal 700099',
-      phone: '+91 80 6750 6860',
+      phone: '+918067506860',
       email: 'info.rtiics@narayanahealth.org'
     },
     {
       name: 'Fortis Hospital Kolkata',
       address: '730, Eastern Metropolitan Bypass, Anandapur, Kolkata, West Bengal 700107',
-      phone: '+91 33 6628 4444',
+      phone: '+913366284444',
       email: 'contactus.kolkata@fortishealthcare.com'
     },
     {
       name: 'AMRI Hospitals Salt Lake',
       address: 'JC-16 & 17, Salt Lake Bypass, Sector III, Salt Lake City, Kolkata, West Bengal 700098',
-      phone: '+91 33 2335 7710',
+      phone: '+913323357710',
       email: 'info.sl@amrihospitals.in'
     },
     {
       name: 'Peerless Hospital & B.K. Roy Research Centre',
       address: '360, Panchasayar, Garia, Kolkata, West Bengal 700094',
-      phone: '+91 33 4011 1222',
+      phone: '+913340111222',
       email: 'peerless@peerlesshospital.com'
     }
   ],
@@ -78,31 +78,31 @@ export const REFERECE_DATA: Record<string, ReferenceItem[]> = {
     {
       name: 'The Oberoi New Delhi',
       address: 'Dr. Zakir Hussain Marg, Delhi Golf Club, Golf Links, New Delhi, Delhi 110003',
-      phone: '+91 11 2436 3030',
+      phone: '+911124363030',
       email: 'reservations.delhi@oberoigroup.com'
     },
     {
       name: 'Taj Palace New Delhi',
       address: '2, Sardar Patel Marg, Diplomatic Enclave, Chanakyapuri, New Delhi, Delhi 110021',
-      phone: '+91 11 2611 0202',
+      phone: '+911126110202',
       email: 'palace.delhi@tajhotels.com'
     },
     {
       name: 'The Lalit New Delhi',
       address: 'Fire Brigade Lane, Barakhamba, Connaught Place, New Delhi, Delhi 110001',
-      phone: '+91 11 4444 7777',
+      phone: '+911144447777',
       email: 'delhi@thelalit.com'
     },
     {
       name: 'Shangri-La Eros New Delhi',
       address: '19, Ashoka Road, Janpath, Connaught Place, New Delhi, Delhi 110001',
-      phone: '+91 11 4119 1919',
+      phone: '+911141191919',
       email: 'newdelhi@shangri-la.com'
     },
     {
       name: 'Le Méridien New Delhi',
       address: 'Windsor Place, Janpath, Connaught Place, New Delhi, Delhi 110001',
-      phone: '+91 11 4502 0200',
+      phone: '+911145020200',
       email: 'info@lemeridiennewdelhi.com'
     }
   ],
@@ -110,31 +110,31 @@ export const REFERECE_DATA: Record<string, ReferenceItem[]> = {
     {
       name: 'M R Enterprise',
       address: '111, Kabiguru Sarani, A. G. Road, Kolkata, West Bengal 700038',
-      phone: '+91 98308 18359',
+      phone: '+919830818359',
       email: 'mrenterprise.cal@gmail.com'
     },
     {
       name: 'MS Mallika Enterprise',
       address: 'Anandanagar, Jhautala, Liluah, Howrah, West Bengal 711203',
-      phone: '+91 87770 34708',
+      phone: '+918777034708',
       email: 'mallikaent.sales@gmail.com'
     },
     {
       name: 'R M International',
       address: '2/72, Azadgarh, Tollygunge, Kolkata, West Bengal 700040',
-      phone: '+91 82749 50443',
+      phone: '+918274950443',
       email: 'rminternational.kol@yahoo.com'
     },
     {
       name: 'Bengal Global Trade Link',
       address: '15, Netaji Subhas Road, Fairley Place, B.B.D. Bagh, Kolkata, West Bengal 700001',
-      phone: '+91 33 2230 4567',
+      phone: '+913322304567',
       email: 'contact@bengalglobaltrade.com'
     },
     {
       name: 'Horizon Impex India',
       address: '4th Floor, 8, Camac Street, Elgin, Kolkata, West Bengal 700017',
-      phone: '+91 33 4005 8922',
+      phone: '+913340058922',
       email: 'import.export@horizonimpex.in'
     }
   ]
