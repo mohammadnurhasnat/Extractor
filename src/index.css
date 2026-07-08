@@ -516,9 +516,12 @@ button, .slide-btn {
   }
 }
 
-/* Custom View Transitions circular reveal ripple effect */
+/* Custom View Transitions circular reveal ripple effect optimized for 144Hz */
 ::view-transition-image-pair(root) {
   isolation: auto;
+  will-change: transform, clip-path, opacity;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
 }
 
 ::view-transition-old(root),
@@ -526,6 +529,9 @@ button, .slide-btn {
   mix-blend-mode: normal !important;
   display: block;
   height: 100%;
+  will-change: clip-path, opacity;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
 }
 
 @keyframes theme-transition-keep-alive {
@@ -537,27 +543,27 @@ button, .slide-btn {
   }
 }
 
-/* Going from Light to Dark: New view (Dark) is on top and expands */
+/* Going from Light to Dark: New view (Dark) is on top and expands (Optimized to 480ms) */
 .theme-transition-light-to-dark::view-transition-old(root) {
   z-index: 1;
-  animation: 600ms theme-transition-keep-alive !important;
+  animation: 480ms theme-transition-keep-alive !important;
 }
 .theme-transition-light-to-dark::view-transition-new(root) {
   z-index: 9999;
-  animation: 600ms theme-transition-keep-alive !important;
+  animation: 480ms theme-transition-keep-alive !important;
 }
 
-/* Going from Dark to Light: Old view (Dark) is on top and collapses/shrinks */
+/* Going from Dark to Light: Old view (Dark) is on top and collapses/shrinks (Optimized to 480ms) */
 .theme-transition-dark-to-light::view-transition-old(root) {
   z-index: 9999;
-  animation: 600ms theme-transition-keep-alive !important;
+  animation: 480ms theme-transition-keep-alive !important;
 }
 .theme-transition-dark-to-light::view-transition-new(root) {
   z-index: 1;
-  animation: 600ms theme-transition-keep-alive !important;
+  animation: 480ms theme-transition-keep-alive !important;
 }
 
-/* Disable all transitions and animations on elements during view transition to guarantee 120 FPS butter-smooth performance */
+/* Disable all transitions and animations on elements during view transition to guarantee 144Hz butter-smooth performance */
 .theme-transition-light-to-dark,
 .theme-transition-light-to-dark *,
 .theme-transition-light-to-dark ::before,

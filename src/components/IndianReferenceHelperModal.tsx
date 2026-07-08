@@ -44,34 +44,76 @@ export const REFERECE_DATA: Record<string, ReferenceItem[]> = {
   ],
   Medical: [
     {
-      name: 'Apollo Multispecialty Hospitals',
-      address: '58, Canal Circular Road, Kadapara, Phool Bagan, Kankurgachi, Kolkata, West Bengal 700054',
-      phone: '+913323203040',
-      email: 'infokolkata@apollohospitals.com'
+      name: 'Apollo Hospital, Chennai',
+      address: '21, Greams Lane, Off Greams Road, Chennai, Tamil Nadu 600006',
+      phone: '+914428290200',
+      email: 'infochennai@apollohospitals.com'
     },
     {
-      name: 'Rabindranath Tagore International Institute of Cardiac Sciences',
+      name: 'Max Super Speciality Hospital Noida',
+      address: 'A-364, Sector 19, Noida, Uttar Pradesh 201301',
+      phone: '+911206629999',
+      email: 'contact.noida@maxhealthcare.com'
+    },
+    {
+      name: 'Rabindranath Tagore Hospital Kolkata',
       address: '124, Mukundapur Main Road, Mukundapur, Kolkata, West Bengal 700099',
       phone: '+918067506860',
       email: 'info.rtiics@narayanahealth.org'
     },
     {
-      name: 'Fortis Hospital Kolkata',
+      name: 'AIG Hospitals',
+      address: '1-100/1/CCH, Mindspace Road, Gachibowli, Hyderabad, Telangana 500032',
+      phone: '+914023378888',
+      email: 'info@aighospitals.com'
+    },
+    {
+      name: 'Manipal Hospitals Mukundapur',
+      address: '141, Barakhola, Mukundapur, Kolkata, West Bengal 700099',
+      phone: '+913366405000',
+      email: 'info.mukundapur@manipalhospitals.com'
+    },
+    {
+      name: 'Fortis Hospital, Kolkata',
       address: '730, Eastern Metropolitan Bypass, Anandapur, Kolkata, West Bengal 700107',
       phone: '+913366284444',
       email: 'contactus.kolkata@fortishealthcare.com'
     },
     {
-      name: 'AMRI Hospitals Salt Lake',
-      address: 'JC-16 & 17, Salt Lake Bypass, Sector III, Salt Lake City, Kolkata, West Bengal 700098',
-      phone: '+913323357710',
-      email: 'info.sl@amrihospitals.in'
+      name: 'Medanta Hospital, Gurgaon',
+      address: 'CH Baktawar Singh Road, Sector 38, Gurgaon, Haryana 122001',
+      phone: '+911244141414',
+      email: 'info@medanta.org'
     },
     {
-      name: 'Peerless Hospital & B.K. Roy Research Centre',
+      name: 'Narayana Health, Bangalore',
+      address: '258/A, Bommasandra Industrial Area, Anekal Taluk, Bangalore, Karnataka 560099',
+      phone: '+918071222222',
+      email: 'info.msr@narayanahealth.org'
+    },
+    {
+      name: 'Christian Medical College, Vellore',
+      address: 'Ida Scudder Road, Vellore, Tamil Nadu 632004',
+      phone: '+914162281000',
+      email: 'directorate@cmcvellore.ac.in'
+    },
+    {
+      name: 'Tata Memorial Hospital, Mumbai',
+      address: 'Dr. Ernest Borges Road, Parel, Mumbai, Maharashtra 400012',
+      phone: '+912224177000',
+      email: 'info@tmc.gov.in'
+    },
+    {
+      name: 'Peerless Hospitex Hospital And Research Center Ltd',
       address: '360, Panchasayar, Garia, Kolkata, West Bengal 700094',
       phone: '+913340111222',
       email: 'peerless@peerlesshospital.com'
+    },
+    {
+      name: 'Caree Fertility Pvt Ltd',
+      address: '151A, Broad Street, Park Circus, Ballygunge, Kolkata, West Bengal 700019',
+      phone: '+919830501133',
+      email: 'info@careefertilitycentre.com'
     }
   ],
   DoubleEntry: [
@@ -285,7 +327,7 @@ export function IndianReferenceHelperModal({ isOpen, onClose, purpose }: IndianR
                     {/* Item Serial Index */}
                     <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 pb-2">
                       <span className="text-[9px] font-black bg-slate-100 dark:bg-zinc-800 text-slate-500 px-1.5 py-0.5 rounded">
-                        Index: 0{index + 1}
+                        Index: {index + 1 < 10 ? '0' + (index + 1) : index + 1}
                       </span>
                       <span className="text-[9px] font-bold text-slate-400 dark:text-zinc-500 uppercase">
                         {purpose === 'Medical' ? 'Hospital' : purpose === 'Business' ? 'Business' : 'Hotel'}
@@ -362,7 +404,7 @@ export function IndianReferenceHelperModal({ isOpen, onClose, purpose }: IndianR
 
                   <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-zinc-800/80 flex items-center justify-between">
                     <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-bold uppercase">
-                      Serial #0{index + 1}
+                      Serial #{index + 1 < 10 ? '0' + (index + 1) : index + 1}
                     </span>
                     <button
                       onClick={() => handleCopy(`${item.name}\n${item.address}\nPhone: ${item.phone}\nEmail: ${item.email}`, `${index}-all`)}

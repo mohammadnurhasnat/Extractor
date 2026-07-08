@@ -69,29 +69,29 @@ export const Header: React.FC<HeaderProps> = ({
 
     transition.ready.then(() => {
       if (isCurrentlyDark) {
-        // Dark to Light: Old view (Dark) is on top. We collapse/shrink it back into the button
+        // Dark to Light: Old view (Dark) is on top. We collapse/shrink it back into the button (Accelerated for 144Hz)
         document.documentElement.animate(
           [
             { clipPath: `circle(${maxRadius}px at ${x}px ${y}px)` },
             { clipPath: `circle(0px at ${x}px ${y}px)` }
           ],
           {
-            duration: 550,
-            easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+            duration: 480,
+            easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
             pseudoElement: '::view-transition-old(root)',
             fill: 'forwards'
           }
         );
       } else {
-        // Light to Dark: New view (Dark) is on top. We expand it outwards from the button
+        // Light to Dark: New view (Dark) is on top. We expand it outwards from the button (Accelerated for 144Hz)
         document.documentElement.animate(
           [
             { clipPath: `circle(0px at ${x}px ${y}px)` },
             { clipPath: `circle(${maxRadius}px at ${x}px ${y}px)` }
           ],
           {
-            duration: 550,
-            easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+            duration: 480,
+            easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
             pseudoElement: '::view-transition-new(root)',
             fill: 'forwards'
           }

@@ -65,7 +65,7 @@ export function PassportDataTab({
     }
     if (utPurpose === 'Medical Treatment - Patient' || utPurpose === 'Medical Treatment - Attendance') {
       return {
-        label: '🏥 Indian Hospitals (5)',
+        label: '🏥 Indian Hospitals (12)',
         purpose: 'Medical' as const,
         btnClass: 'slide-btn-orange text-white'
       };
