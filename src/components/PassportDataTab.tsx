@@ -53,7 +53,7 @@ export function PassportDataTab({
       return {
         label: '🏨 Kolkata Hotels (5)',
         purpose: 'Tourism' as const,
-        btnClass: 'slide-btn-teal text-white'
+        btnClass: 'slide-btn-orange text-white'
       };
     }
     if (utPurpose === 'Business') {

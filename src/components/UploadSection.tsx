@@ -302,7 +302,7 @@ export function UploadSection(props: UploadSectionProps) {
                         ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100 dark:bg-red-950/30 dark:text-red-400 dark:border-red-900/50 dark:hover:bg-red-900/40' 
                         : !props.isOnline 
                         ? 'bg-slate-200 dark:bg-zinc-800 text-slate-400 dark:text-zinc-500 cursor-not-allowed border-transparent' 
-                        : 'slide-btn-teal'
+                        : 'slide-btn-orange'
                     }`}
                   >
                     {props.loading || props.isBatchProcessing ? (

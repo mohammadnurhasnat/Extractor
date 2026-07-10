@@ -395,7 +395,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
                     <h3 className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-widest">
                       Existing Users
                     </h3>
-                    <button onClick={() => setIsAdminAddingUser(true)} className="slide-btn slide-btn-teal px-3 py-1.5 rounded-xl font-extrabold text-[11px] flex items-center justify-center gap-1.5">
+                    <button onClick={() => setIsAdminAddingUser(true)} className="slide-btn slide-btn-blue px-3 py-1.5 rounded-xl font-extrabold text-[11px] flex items-center justify-center gap-1.5">
                       <span className="relative z-10 flex items-center gap-1.5">
                         <UserPlus className="w-3 h-3" />
                         <span>Add New User</span>
@@ -479,13 +479,13 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
                     <div className="flex gap-3 justify-center pt-4">
                       <button
                         onClick={confirmDeleteUser}
-                        className="slide-btn slide-btn-orange px-6 py-2 rounded-xl font-extrabold text-xs uppercase ripple-btn"
+                        className="slide-btn slide-btn-blue px-6 py-2 rounded-xl font-extrabold text-xs uppercase ripple-btn"
                       >
                         Yes
                       </button>
                       <button
                         onClick={() => setShowDeleteConfirm(false)}
-                        className="slide-btn slide-btn-slate px-6 py-2 rounded-xl font-extrabold text-xs uppercase ripple-btn"
+                        className="slide-btn slide-btn-blue px-6 py-2 rounded-xl font-extrabold text-xs uppercase ripple-btn"
                       >
                         No
                       </button>
@@ -504,13 +504,13 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
                     <div className="flex gap-2 pt-4 border-t border-slate-100 dark:border-zinc-900">
                       <button 
                         onClick={handleDeleteFromPopup} 
-                        className="slide-btn slide-btn-orange flex-1 py-2 rounded-xl font-extrabold text-xs ripple-btn"
+                        className="slide-btn slide-btn-teal flex-1 py-2 rounded-xl font-extrabold text-xs ripple-btn"
                       >
                         Delete
                       </button>
                       <button 
                         onClick={handleToggleSuspendFromPopup} 
-                        className="slide-btn slide-btn-purple flex-1 py-2 rounded-xl font-extrabold text-xs ripple-btn"
+                        className="slide-btn slide-btn-teal flex-1 py-2 rounded-xl font-extrabold text-xs ripple-btn"
                       >
                         {selectedUserForModal.isSuspended ? 'Unsuspend' : 'Suspend'}
                       </button>

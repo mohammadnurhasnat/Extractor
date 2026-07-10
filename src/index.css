@@ -177,50 +177,50 @@
 
 /* 
    =========================================
-   STYLE 1 (First Photo): TERRACOTTA 3D RAISED BUTTON
-   - Accent terracotta orange color (#e05e38)
-   - Solid 3D bottom shadow (#9a3412)
+   STYLE 1 (First Photo): CRISP TEAL 3D RAISED BUTTON
+   - Accent crisp teal color (#0d9488)
+   - Solid 3D bottom shadow (#0f766e)
    - Rounded-xl (12px) corners
    - Smooth press-down animation on click
    =========================================
 */
 .slide-btn-orange,
 .slide-btn-teal {
-  background-color: #e05e38 !important;
+  background-color: #0d9488 !important;
   color: #ffffff !important;
-  border: 1px solid #c24622 !important;
+  border: 1px solid #0f766e !important;
   border-radius: 12px !important;
-  box-shadow: 0 4px 0 0 #9a3412 !important;
+  box-shadow: 0 4px 0 0 #0f766e !important;
   transform: translateY(0) !important;
 }
 
 .slide-btn-orange:hover,
 .slide-btn-teal:hover {
-  background-color: #e66b47 !important;
+  background-color: #14b8a6 !important;
   transform: translateY(-1.5px) !important;
-  box-shadow: 0 5.5px 0 0 #9a3412 !important;
+  box-shadow: 0 5.5px 0 0 #0f766e !important;
 }
 
 .slide-btn-orange:active,
 .slide-btn-teal:active,
 .slide-btn-orange.active,
 .slide-btn-teal.active {
-  background-color: #cd512c !important;
+  background-color: #0f766e !important;
   transform: translateY(4px) !important;
-  box-shadow: 0 0px 0 0 #9a3412 !important;
+  box-shadow: 0 0px 0 0 #0f766e !important;
 }
 
 /* Dark mode support for Style 1 */
 .dark .slide-btn-orange,
 .dark .slide-btn-teal {
-  background-color: #d95c37 !important;
+  background-color: #14b8a6 !important;
   color: #ffffff !important;
-  border-color: #9a3412 !important;
+  border-color: #0f766e !important;
   box-shadow: 0 4px 0 0 rgba(255, 255, 255, 0.35) !important;
 }
 
 .dark .slide-btn-orange:hover,
-.dark .slide-btn-teal:hover {
+.slide-btn-teal:hover {
   background-color: #e06e4b !important;
   box-shadow: 0 5.5px 0 0 rgba(255, 255, 255, 0.35) !important;
 }
@@ -229,16 +229,15 @@
 .dark .slide-btn-teal:active,
 .dark .slide-btn-orange.active,
 .dark .slide-btn-teal.active {
-  background-color: #c44d28 !important;
+  background-color: #0d9488 !important;
   transform: translateY(4px) !important;
-  box-shadow: 0 0px 0 0 #5f1a04 !important;
+  box-shadow: 0 0px 0 0 #042f2c !important;
 }
 
 
 /* 
    =========================================
    STYLE 2 SOLID (Second Photo - "Buy it now"): RETRO BURGUNDY SOLID
-   - Deep burgundy background (#881337)
    - Thick solid dark outline (#2b0c10)
    - Pill rounded (9999px) shape
    - 2D offset shadow (#2b0c10)
@@ -366,6 +365,19 @@
 }
 
 /* Dark mode support for retro dropzones */
+
+
+.dark .retro-dropzone-emerald {
+  background-color: #064e3b !important;
+  color: #6ee7b7 !important;
+  border-color: #022c22 !important;
+  box-shadow: 4px 4px 0px 0px #022c22 !important;
+}
+
+.dark .retro-dropzone-emerald:hover {
+  background-color: #065f46 !important;
+  box-shadow: 6px 6px 0px 0px #022c22 !important;
+}
 .dark .retro-dropzone {
   background-color: #27272a !important;
   color: #fda4af !important;
@@ -576,3 +588,109 @@ button, .slide-btn {
   animation: none !important;
 }
 
+
+
+/* Modern Deep Blue */
+.slide-btn-blue {
+  background-color: #1d4ed8 !important;
+  color: #ffffff !important;
+  border: 1px solid #1e3a8a !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 0 0 #1e3a8a !important;
+  transform: translateY(0) !important;
+}
+.slide-btn-blue:hover {
+  background-color: #2563eb !important;
+  transform: translateY(-1.5px) !important;
+  box-shadow: 0 5.5px 0 0 #1e3a8a !important;
+}
+.slide-btn-blue:active, .slide-btn-blue.active {
+  background-color: #1e40af !important;
+  transform: translateY(4px) !important;
+  box-shadow: 0 0px 0 0 #1e3a8a !important;
+}
+.dark .slide-btn-blue {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+  border-color: #1e3a8a !important;
+  box-shadow: 0 4px 0 0 rgba(255, 255, 255, 0.35) !important;
+}
+.dark .slide-btn-blue:hover {
+  background-color: #3b82f6 !important;
+  box-shadow: 0 5.5px 0 0 rgba(255, 255, 255, 0.35) !important;
+}
+.dark .slide-btn-blue:active, .dark .slide-btn-blue.active {
+  background-color: #1d4ed8 !important;
+  transform: translateY(4px) !important;
+  box-shadow: 0 0px 0 0 #0f172a !important;
+}
+
+/* Bright Red */
+.slide-btn-red {
+  background-color: #ef4444 !important;
+  color: #ffffff !important;
+  border: 1px solid #b91c1c !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 0 0 #991b1b !important;
+  transform: translateY(0) !important;
+}
+.slide-btn-red:hover {
+  background-color: #f87171 !important;
+  transform: translateY(-1.5px) !important;
+  box-shadow: 0 5.5px 0 0 #991b1b !important;
+}
+.slide-btn-red:active, .slide-btn-red.active {
+  background-color: #dc2626 !important;
+  transform: translateY(4px) !important;
+  box-shadow: 0 0px 0 0 #991b1b !important;
+}
+.dark .slide-btn-red {
+  background-color: #ef4444 !important;
+  color: #ffffff !important;
+  border-color: #b91c1c !important;
+  box-shadow: 0 4px 0 0 rgba(255, 255, 255, 0.35) !important;
+}
+.dark .slide-btn-red:hover {
+  background-color: #f87171 !important;
+  box-shadow: 0 5.5px 0 0 rgba(255, 255, 255, 0.35) !important;
+}
+.dark .slide-btn-red:active, .dark .slide-btn-red.active {
+  background-color: #dc2626 !important;
+  transform: translateY(4px) !important;
+  box-shadow: 0 0px 0 0 #7f1d1d !important;
+}
+
+/* Mix Color (Gradient) with 10px Border Radius */
+.slide-btn-mix {
+  background: linear-gradient(to right, #3b82f6, #6366f1, #a855f7) !important;
+  color: #ffffff !important;
+  border: 1px solid #4f46e5 !important;
+  border-radius: 10px !important;
+  box-shadow: 0 4px 0 0 #3730a3 !important;
+  transform: translateY(0) !important;
+}
+.slide-btn-mix:hover {
+  background: linear-gradient(to right, #60a5fa, #818cf8, #c084fc) !important;
+  transform: translateY(-1.5px) !important;
+  box-shadow: 0 5.5px 0 0 #3730a3 !important;
+}
+.slide-btn-mix:active, .slide-btn-mix.active {
+  background: linear-gradient(to right, #2563eb, #4f46e5, #9333ea) !important;
+  transform: translateY(4px) !important;
+  box-shadow: 0 0px 0 0 #3730a3 !important;
+}
+.dark .slide-btn-mix {
+  background: linear-gradient(to right, #3b82f6, #6366f1, #a855f7) !important;
+  color: #ffffff !important;
+  border-color: #4f46e5 !important;
+  box-shadow: 0 4px 0 0 rgba(255, 255, 255, 0.35) !important;
+}
+.dark .slide-btn-mix:hover {
+  background: linear-gradient(to right, #60a5fa, #818cf8, #c084fc) !important;
+  box-shadow: 0 5.5px 0 0 rgba(255, 255, 255, 0.35) !important;
+}
+.dark .slide-btn-mix:active, .dark .slide-btn-mix.active {
+  background: linear-gradient(to right, #2563eb, #4f46e5, #9333ea) !important;
+  transform: translateY(4px) !important;
+  box-shadow: 0 0px 0 0 #312e81 !important;
+}

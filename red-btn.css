@@ -1,0 +1,41 @@
+/* Red Style */
+.slide-btn-red {
+  background-color: #dc2626 !important;
+  color: #ffffff !important;
+  border: 1px solid #b91c1c !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 0 0 #b91c1c !important;
+  transform: translateY(0) !important;
+}
+
+.slide-btn-red:hover {
+  background-color: #ef4444 !important;
+  transform: translateY(-1.5px) !important;
+  box-shadow: 0 5.5px 0 0 #b91c1c !important;
+}
+
+.slide-btn-red:active,
+.slide-btn-red.active {
+  background-color: #991b1b !important;
+  transform: translateY(4px) !important;
+  box-shadow: 0 0px 0 0 #b91c1c !important;
+}
+
+.dark .slide-btn-red {
+  background-color: #ef4444 !important;
+  color: #ffffff !important;
+  border-color: #b91c1c !important;
+  box-shadow: 0 4px 0 0 rgba(255, 255, 255, 0.35) !important;
+}
+
+.dark .slide-btn-red:hover {
+  background-color: #f87171 !important;
+  box-shadow: 0 5.5px 0 0 rgba(255, 255, 255, 0.35) !important;
+}
+
+.dark .slide-btn-red:active,
+.dark .slide-btn-red.active {
+  background-color: #dc2626 !important;
+  transform: translateY(4px) !important;
+  box-shadow: 0 0px 0 0 #7f1d1d !important;
+}

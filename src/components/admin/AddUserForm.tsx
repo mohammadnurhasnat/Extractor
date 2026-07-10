@@ -83,7 +83,7 @@ export function AddUserForm({
         <button 
           type="submit" 
           disabled={isSavingUser} 
-          className="slide-btn slide-btn-orange px-4 py-2 rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 disabled:opacity-50"
+          className="slide-btn slide-btn-blue px-4 py-2 rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 disabled:opacity-50"
         >
           <span className="relative z-10 flex items-center gap-1.5">
             {isSavingUser ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}

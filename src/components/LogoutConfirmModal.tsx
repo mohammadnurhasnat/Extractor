@@ -55,7 +55,7 @@ export function LogoutConfirmModal({ isOpen, onClose, onConfirm }: LogoutConfirm
           </button>
           <button
             onClick={onConfirm}
-            className="slide-btn slide-btn-orange flex-1 py-3 rounded-xl font-extrabold text-xs uppercase tracking-wider"
+            className="slide-btn slide-btn-red flex-1 py-3 rounded-xl font-extrabold text-xs uppercase tracking-wider"
           >
             <span className="relative z-10">Yes</span>
           </button>
