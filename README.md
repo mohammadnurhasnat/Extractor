@@ -1,20 +1,13 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# Smart Automated Identity Processor
 
-# Run and deploy your AI Studio app
+A modern, fast, and highly secure web application for extracting and processing passport data with high accuracy. 
 
-This contains everything you need to run your app locally.
+## Developer Information
 
-View your app in AI Studio: https://ai.studio/apps/96bd1c6c-3ff8-4353-babb-9444b256bf45
+- **Name:** MOHAMMAD NUR HASNAT
+- **Phone:** +88 01861186863
+- **WhatsApp:** +8801861186863
+- **Email:** mohammadnurhasnat@gmail.com
 
-## Run Locally
-
-**Prerequisites:**  Node.js
-
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+---
+*For any inquiries, feature requests, or support, please contact via the provided email or WhatsApp.*
