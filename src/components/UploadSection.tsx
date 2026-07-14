@@ -64,6 +64,13 @@ export function UploadSection(props: UploadSectionProps) {
   const isPdf = activeItem?.file?.type === 'application/pdf' || activeItem?.documentType === 'visa_application';
   const [hoveredSection, setHoveredSection] = React.useState<'passport' | 'pdf' | null>(null);
 
+  // States to handle responsive drag-over animations and highlight styles
+  const [dragActivePassport, setDragActivePassport] = React.useState(false);
+  const [dragActivePdf, setDragActivePdf] = React.useState(false);
+  const [dragActiveAddPassport, setDragActiveAddPassport] = React.useState(false);
+  const [dragActiveAddPdf, setDragActiveAddPdf] = React.useState(false);
+  const [dragActivePreview, setDragActivePreview] = React.useState(false);
+
   return (
     <div className="lg:col-span-5 flex flex-col gap-6 print:hidden lg:max-h-[calc(100vh-130px)] lg:overflow-y-auto overscroll-contain pr-2.5 scrollbar-thin">
       <div className="shrink-0 bg-gradient-to-br from-white/95 to-blue-50/40 dark:from-zinc-900/95 dark:to-zinc-950/40 backdrop-blur-xl p-6 rounded-2xl shadow-[0_12px_40px_rgba(59,130,246,0.04)] border-t-[3px] border-t-blue-500 border-x border-b border-slate-200/80 dark:border-zinc-800/80 transition-all duration-300">
@@ -84,14 +91,24 @@ export function UploadSection(props: UploadSectionProps) {
                 layout
                 onMouseEnter={() => setHoveredSection('passport')}
                 onMouseLeave={() => setHoveredSection(null)}
+                onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setDragActivePassport(true); }}
+                onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setDragActivePassport(true); }}
+                onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setDragActivePassport(false); }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setDragActivePassport(false);
+                  props.handleDrop(e);
+                }}
                 animate={{
-                  scale: hoveredSection === 'passport' ? 1.025 : hoveredSection === 'pdf' ? 0.98 : 1,
+                  scale: dragActivePassport ? 1.04 : hoveredSection === 'passport' ? 1.025 : hoveredSection === 'pdf' ? 0.98 : 1,
+                  borderColor: dragActivePassport ? '#3b82f6' : '#2b0c10',
                 }}
                 transition={{ type: 'spring', stiffness: 220, damping: 20 }}
-                className="retro-dropzone group flex flex-col items-center justify-center text-center min-h-[220px] p-6 cursor-pointer" 
+                className={`retro-dropzone group flex flex-col items-center justify-center text-center min-h-[220px] p-6 cursor-pointer relative ${
+                  dragActivePassport ? 'ring-4 ring-blue-500/20 border-blue-500 shadow-[6px_6px_0px_0px_rgba(59,130,246,0.5)]' : ''
+                }`} 
                 onClick={() => props.fileInputRef.current?.click()}
-                onDragOver={props.handleDragOver}
-                onDrop={props.handleDrop}
               >
                 <input 
                    type="file" 
@@ -117,6 +134,28 @@ export function UploadSection(props: UploadSectionProps) {
                     JPEG, PNG, WEBP
                   </p>
                 </div>
+
+                {/* Drag Active Beautiful Overlay */}
+                <AnimatePresence>
+                  {dragActivePassport && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      className="absolute inset-0 bg-blue-50/95 dark:bg-zinc-900/95 backdrop-blur-md z-30 flex flex-col items-center justify-center p-4 rounded-[14px] border-2 border-dashed border-blue-500"
+                    >
+                      <motion.div
+                        animate={{ y: [0, -8, 0] }}
+                        transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                        className="w-16 h-16 bg-blue-500 text-white rounded-full flex items-center justify-center shadow-lg mb-3"
+                      >
+                        <UploadCloud className="w-8 h-8" />
+                      </motion.div>
+                      <p className="font-black text-blue-600 dark:text-blue-400 text-base">এখানে ছেড়ে দিন!</p>
+                      <p className="text-xs text-blue-500/80 dark:text-zinc-300 font-bold mt-1">পাসপোর্ট ফটো ড্রপ করুন</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.div>
 
               {/* Visa Application PDF Dropzone (Emerald) */}
@@ -124,14 +163,24 @@ export function UploadSection(props: UploadSectionProps) {
                 layout
                 onMouseEnter={() => setHoveredSection('pdf')}
                 onMouseLeave={() => setHoveredSection(null)}
+                onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setDragActivePdf(true); }}
+                onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setDragActivePdf(true); }}
+                onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setDragActivePdf(false); }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setDragActivePdf(false);
+                  props.handleVisaDrop(e);
+                }}
                 animate={{
-                  scale: hoveredSection === 'pdf' ? 1.025 : hoveredSection === 'passport' ? 0.98 : 1,
+                  scale: dragActivePdf ? 1.04 : hoveredSection === 'pdf' ? 1.025 : hoveredSection === 'passport' ? 0.98 : 1,
+                  borderColor: dragActivePdf ? '#10b981' : '#2b0c10',
                 }}
                 transition={{ type: 'spring', stiffness: 220, damping: 20 }}
-                className="retro-dropzone group flex flex-col items-center justify-center text-center min-h-[220px] p-6 cursor-pointer" 
+                className={`retro-dropzone group flex flex-col items-center justify-center text-center min-h-[220px] p-6 cursor-pointer relative ${
+                  dragActivePdf ? 'ring-4 ring-emerald-500/20 border-emerald-500 shadow-[6px_6px_0px_0px_rgba(16,185,129,0.5)]' : ''
+                }`} 
                 onClick={() => props.visaFileInputRef.current?.click()}
-                onDragOver={props.handleDragOver}
-                onDrop={props.handleVisaDrop}
               >
                 <input 
                    type="file" 
@@ -156,17 +205,52 @@ export function UploadSection(props: UploadSectionProps) {
                     application/pdf only
                   </p>
                 </div>
+
+                {/* Drag Active Beautiful Overlay */}
+                <AnimatePresence>
+                  {dragActivePdf && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      className="absolute inset-0 bg-emerald-50/95 dark:bg-zinc-900/95 backdrop-blur-md z-30 flex flex-col items-center justify-center p-4 rounded-[14px] border-2 border-dashed border-emerald-500"
+                    >
+                      <motion.div
+                        animate={{ y: [0, -8, 0] }}
+                        transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                        className="w-16 h-16 bg-emerald-500 text-white rounded-full flex items-center justify-center shadow-lg mb-3"
+                      >
+                        <FileText className="w-8 h-8" />
+                      </motion.div>
+                      <p className="font-black text-emerald-600 dark:text-emerald-400 text-base">এখানে ছেড়ে দিন!</p>
+                      <p className="text-xs text-emerald-500/80 dark:text-zinc-300 font-bold mt-1">BGD ফর্ম পিডিএফ ড্রপ করুন</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.div>
             </div>
         ) : (
           <div className="flex flex-col gap-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {/* Add more passports button */}
-              <div 
-                className="border border-dashed border-slate-205 dark:border-zinc-800 rounded-xl bg-slate-50/55 dark:bg-black/25 hover:bg-slate-100/60 dark:hover:bg-zinc-850/40 hover:border-blue-405 dark:hover:border-blue-500/30 transition-all duration-300 group flex items-center gap-3 p-3 cursor-pointer"
+              <motion.div 
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                className={`border border-dashed rounded-xl transition-all duration-300 group flex items-center gap-3 p-3 cursor-pointer relative ${
+                  dragActiveAddPassport 
+                    ? 'border-blue-500 bg-blue-50/40 dark:bg-blue-950/20 ring-2 ring-blue-500/20 shadow-sm' 
+                    : 'border-slate-205 dark:border-zinc-800 bg-slate-50/55 dark:bg-black/25 hover:bg-slate-100/60 dark:hover:bg-zinc-850/40 hover:border-blue-405 dark:hover:border-blue-500/30'
+                }`}
                 onClick={() => props.fileInputRef.current?.click()}
-                onDragOver={props.handleDragOver}
-                onDrop={props.handleDrop}
+                onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setDragActiveAddPassport(true); }}
+                onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setDragActiveAddPassport(true); }}
+                onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setDragActiveAddPassport(false); }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setDragActiveAddPassport(false);
+                  props.handleDrop(e);
+                }}
               >
                 <input type="file" ref={props.fileInputRef} className="hidden" accept="image/jpeg, image/png, image/webp" onChange={props.handleFileChange} multiple />
                 <div className="w-9 h-9 bg-white dark:bg-zinc-900 rounded-xl shadow-sm flex items-center justify-center shrink-0 border border-slate-100 dark:border-zinc-800 group-hover:scale-105 transition-transform">
@@ -176,14 +260,36 @@ export function UploadSection(props: UploadSectionProps) {
                   <p className="text-xs font-bold text-slate-700 dark:text-zinc-200">Add passports...</p>
                   <p className="text-[10px] text-slate-400 dark:text-zinc-500 font-medium">Select passport image files</p>
                 </div>
-              </div>
+                
+                {/* Micro drag overlay */}
+                {dragActiveAddPassport && (
+                  <div className="absolute inset-0 bg-blue-50/90 dark:bg-zinc-900/90 backdrop-blur-xs rounded-xl flex items-center justify-center z-20">
+                    <p className="text-[11px] font-black text-blue-600 dark:text-blue-400 animate-pulse flex items-center gap-1">
+                      <UploadCloud className="w-3.5 h-3.5" /> পাসপোর্ট এখানে ড্রপ করুন
+                    </p>
+                  </div>
+                )}
+              </motion.div>
 
               {/* Add more visa applications button */}
-              <div 
-                className="border border-dashed border-slate-205 dark:border-zinc-800 rounded-xl bg-slate-50/55 dark:bg-black/25 hover:bg-slate-100/60 dark:hover:bg-zinc-850/40 hover:border-emerald-405 dark:hover:border-emerald-500/30 transition-all duration-300 group flex items-center gap-3 p-3 cursor-pointer"
+              <motion.div 
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                className={`border border-dashed rounded-xl transition-all duration-300 group flex items-center gap-3 p-3 cursor-pointer relative ${
+                  dragActiveAddPdf 
+                    ? 'border-emerald-500 bg-emerald-50/40 dark:bg-emerald-950/20 ring-2 ring-emerald-500/20 shadow-sm' 
+                    : 'border-slate-205 dark:border-zinc-800 bg-slate-50/55 dark:bg-black/25 hover:bg-slate-100/60 dark:hover:bg-zinc-850/40 hover:border-emerald-405 dark:hover:border-emerald-500/30'
+                }`}
                 onClick={() => props.visaFileInputRef.current?.click()}
-                onDragOver={props.handleDragOver}
-                onDrop={props.handleVisaDrop}
+                onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setDragActiveAddPdf(true); }}
+                onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setDragActiveAddPdf(true); }}
+                onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setDragActiveAddPdf(false); }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setDragActiveAddPdf(false);
+                  props.handleVisaDrop(e);
+                }}
               >
                 <input type="file" ref={props.visaFileInputRef} className="hidden" accept="application/pdf" onChange={props.handleVisaFileChange} />
                 <div className="w-9 h-9 bg-white dark:bg-zinc-900 rounded-xl shadow-sm flex items-center justify-center shrink-0 border border-slate-100 dark:border-zinc-800 group-hover:scale-105 transition-transform">
@@ -193,7 +299,16 @@ export function UploadSection(props: UploadSectionProps) {
                   <p className="text-xs font-bold text-slate-700 dark:text-zinc-200">Add visa application PDF...</p>
                   <p className="text-[10px] text-slate-400 dark:text-zinc-500 font-medium">Select Indian Visa PDF files</p>
                 </div>
-              </div>
+
+                {/* Micro drag overlay */}
+                {dragActiveAddPdf && (
+                  <div className="absolute inset-0 bg-emerald-50/90 dark:bg-zinc-900/90 backdrop-blur-xs rounded-xl flex items-center justify-center z-20">
+                    <p className="text-[11px] font-black text-emerald-600 dark:text-emerald-400 animate-pulse flex items-center gap-1">
+                      <FileText className="w-3.5 h-3.5" /> PDF এখানে ড্রপ করুন
+                    </p>
+                  </div>
+                )}
+              </motion.div>
             </div>
 
             {/* 2-Column Responsive Layout for Passport Preview and Undertaking Options */}
@@ -201,10 +316,21 @@ export function UploadSection(props: UploadSectionProps) {
               {/* Left Column: Passport Preview or PDF layout */}
               {isPdf ? (
                 <div 
-                  className="relative rounded-2xl overflow-hidden border border-slate-205 dark:border-zinc-800 bg-slate-100 dark:bg-black w-full min-h-[220px] md:h-auto flex flex-col items-center justify-center p-6 shadow-inner text-center cursor-pointer"
+                  className={`relative rounded-2xl overflow-hidden border bg-slate-100 dark:bg-black w-full min-h-[220px] md:h-auto flex flex-col items-center justify-center p-6 shadow-inner text-center cursor-pointer transition-all duration-300 ${
+                    dragActivePreview 
+                      ? 'border-emerald-500 ring-2 ring-emerald-500/20 scale-[1.01]' 
+                      : 'border-slate-205 dark:border-zinc-800'
+                  }`}
                   onClick={() => props.visaFileInputRef.current?.click()}
-                  onDragOver={props.handleDragOver}
-                  onDrop={props.handleVisaDrop}
+                  onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setDragActivePreview(true); }}
+                  onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setDragActivePreview(true); }}
+                  onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setDragActivePreview(false); }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setDragActivePreview(false);
+                    props.handleVisaDrop(e);
+                  }}
                 >
                   <div className="w-20 h-20 bg-emerald-50 dark:bg-emerald-950/20 rounded-2xl flex items-center justify-center mb-4 border border-emerald-100 dark:border-emerald-900/30 shadow-sm">
                     <FileText className="w-10 h-10 text-emerald-500 animate-pulse" />
@@ -234,13 +360,40 @@ export function UploadSection(props: UploadSectionProps) {
                     </>
                   )}
                   <div className="absolute inset-0 ring-1 ring-inset ring-black/5 dark:ring-white/5 rounded-2xl" />
+
+                  {/* Drag drop preview replace overlay */}
+                  <AnimatePresence>
+                    {dragActivePreview && (
+                      <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute inset-0 bg-emerald-50/95 dark:bg-zinc-950/95 backdrop-blur-xs z-20 flex flex-col items-center justify-center p-4 rounded-2xl border-2 border-dashed border-emerald-500"
+                      >
+                        <FileText className="w-12 h-12 text-emerald-500 animate-bounce mb-2" />
+                        <p className="text-sm font-black text-emerald-600 dark:text-emerald-400">নতুন PDF এখানে ড্রপ করুন</p>
+                        <p className="text-[10px] text-emerald-500/80 font-bold mt-1">ফাইলটি পরিবর্তন করতে ছেড়ে দিন</p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               ) : (
                 <div 
-                  className="relative rounded-2xl overflow-hidden border border-slate-205 dark:border-zinc-800 bg-slate-100 dark:bg-black w-full min-h-[220px] md:h-auto flex items-center justify-center shadow-inner group/preview cursor-pointer"
+                  className={`relative rounded-2xl overflow-hidden border bg-slate-100 dark:bg-black w-full min-h-[220px] md:h-auto flex items-center justify-center shadow-inner group/preview cursor-pointer transition-all duration-300 ${
+                    dragActivePreview 
+                      ? 'border-blue-500 ring-2 ring-blue-500/20 scale-[1.01]' 
+                      : 'border-slate-205 dark:border-zinc-800'
+                  }`}
                   onClick={() => props.fileInputRef.current?.click()}
-                  onDragOver={props.handleDragOver}
-                  onDrop={props.handleDrop}
+                  onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setDragActivePreview(true); }}
+                  onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setDragActivePreview(true); }}
+                  onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setDragActivePreview(false); }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setDragActivePreview(false);
+                    props.handleDrop(e);
+                  }}
                 >
                   {props.preview ? (
                     <img src={props.preview} alt="Passport Preview" className="max-w-full max-h-[350px] md:max-h-[420px] object-contain transition-transform duration-500 group-hover/preview:scale-[1.02]" />
@@ -264,6 +417,22 @@ export function UploadSection(props: UploadSectionProps) {
                       />
                     </>
                   )}
+
+                  {/* Drag drop preview replace overlay */}
+                  <AnimatePresence>
+                    {dragActivePreview && (
+                      <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute inset-0 bg-blue-50/95 dark:bg-zinc-950/95 backdrop-blur-xs z-20 flex flex-col items-center justify-center p-4 rounded-2xl border-2 border-dashed border-blue-500"
+                      >
+                        <UploadCloud className="w-12 h-12 text-blue-500 animate-bounce mb-2" />
+                        <p className="text-sm font-black text-blue-600 dark:text-blue-400">নতুন পাসপোর্ট ফটো এখানে ড্রপ করুন</p>
+                        <p className="text-[10px] text-blue-500/80 font-bold mt-1">ফাইলটি পরিবর্তন করতে ছেড়ে দিন</p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                   
                   <div className="absolute inset-0 ring-1 ring-inset ring-black/5 dark:ring-white/5 rounded-2xl" />
                 </div>
