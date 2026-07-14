@@ -436,7 +436,7 @@ export default function App() {
     handleDownloadPDF,
     handleDownloadUndertaking,
     handleDownloadJSON
-  } = useExporterHelpers({ data, undertakingData, setToast });
+  } = useExporterHelpers({ data, undertakingData, setToast, currentUser });
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 font-sans text-slate-900 dark:text-zinc-50 pb-4 selection:bg-red-200 dark:selection:bg-red-900/50 selection:text-red-900 dark:selection:text-red-100 transition-colors relative overflow-x-hidden">
@@ -545,6 +545,7 @@ export default function App() {
               onGenerateAddresses={handleGenerateAddresses}
               utPurpose={utPurpose}
               onOpenRefHelper={() => setIsRefHelperOpen(true)}
+              currentUser={currentUser}
             />
           </div>
         </main>

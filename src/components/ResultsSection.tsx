@@ -27,6 +27,7 @@ interface ResultsSectionProps {
   onGenerateAddresses?: () => void;
   utPurpose?: string;
   onOpenRefHelper?: () => void;
+  currentUser?: any;
 }
 
 export function ResultsSection({
@@ -49,7 +50,8 @@ export function ResultsSection({
   isGeneratingAddresses,
   onGenerateAddresses,
   utPurpose,
-  onOpenRefHelper
+  onOpenRefHelper,
+  currentUser
 }: ResultsSectionProps) {
   // If there's data, show the results card
   const hasContent = !!data;
@@ -143,7 +145,7 @@ export function ResultsSection({
                 handleDownloadUndertaking={handleDownloadUndertaking}
               />
             ) : resultsTab === 'passport-pdf' && activeItem ? (
-              <PassportImagePdfTab activeItem={activeItem} />
+              <PassportImagePdfTab activeItem={activeItem} currentUser={currentUser} />
             ) : null}
           </motion.div>
         </div>

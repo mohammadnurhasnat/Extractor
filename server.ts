@@ -14,7 +14,7 @@ const AUDIT_LOGS_FILE = path.join(process.cwd(), 'audit_logs.json');
 export interface AuditLog {
   id: string;
   timestamp: string;
-  action: 'LOGIN' | 'EXTRACTION' | 'LIMIT_CHANGE' | 'USER_ADDED' | 'USER_EDITED' | 'USER_DELETED' | 'USER_SUSPENDED';
+  action: 'LOGIN' | 'EXTRACTION' | 'LIMIT_CHANGE' | 'USER_ADDED' | 'USER_EDITED' | 'USER_DELETED' | 'USER_SUSPENDED' | 'UNDERTAKING_DOWNLOAD' | 'IMAGE_TO_PDF' | 'PDF_DOWNLOAD';
   userId: string;
   details: string;
 }
@@ -83,8 +83,7 @@ function parseUsersTsContent(content: string): any[] {
   return [];
 }
 
-import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, getDocs, doc, setDoc, writeBatch } from 'firebase/firestore';
+import { Firestore } from '@google-cloud/firestore';
 
 // Global cache for users
 let cachedUsers: any[] = [];
@@ -100,15 +99,16 @@ async function loadUsersFromFirestore() {
     }
 
     const firebaseConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-    const app = initializeApp(firebaseConfig);
-    db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+    db = new Firestore({
+      projectId: firebaseConfig.projectId,
+      databaseId: firebaseConfig.firestoreDatabaseId || '(default)'
+    });
 
-    console.log("Firebase initialized on server backend. Fetching users from Firestore...");
-    const usersCollection = collection(db, 'registered_users');
-    const snapshot = await getDocs(usersCollection);
+    console.log("Firebase Admin SDK initialized on server backend. Fetching users from Firestore...");
+    const snapshot = await db.collection('registered_users').get();
     
     const dbUsers: any[] = [];
-    snapshot.forEach((doc) => {
+    snapshot.forEach((doc: any) => {
       dbUsers.push(doc.data());
     });
 
@@ -121,9 +121,9 @@ async function loadUsersFromFirestore() {
       console.log("Firestore 'registered_users' collection is empty. Seeding with default users database...");
       cachedUsers = getUsersStoreLocal();
       // Seed to Firestore
-      const batch = writeBatch(db);
-      cachedUsers.forEach((user) => {
-        const docRef = doc(db, 'registered_users', user.id);
+      const batch = db.batch();
+      cachedUsers.forEach((user: any) => {
+        const docRef = db.collection('registered_users').doc(user.id);
         batch.set(docRef, user);
       });
       await batch.commit();
@@ -138,28 +138,24 @@ async function loadUsersFromFirestore() {
 async function syncUsersToFirestore(newUsers: typeof USERS_DATABASE) {
   if (!db) return;
   try {
-    const usersCollection = collection(db, 'registered_users');
-    const snapshot = await getDocs(usersCollection);
-    const existingIds = snapshot.docs.map(doc => doc.id);
+    const snapshot = await db.collection('registered_users').get();
+    const existingIds = snapshot.docs.map((doc: any) => doc.id);
     const newIds = new Set(newUsers.map(u => u.id));
     
-    const batch = writeBatch(db);
-    let count = 0;
+    const batch = db.batch();
     
     // Delete removed users
-    existingIds.forEach(id => {
+    existingIds.forEach((id: string) => {
       if (!newIds.has(id)) {
-        const docRef = doc(db, 'registered_users', id);
+        const docRef = db.collection('registered_users').doc(id);
         batch.delete(docRef);
-        count++;
       }
     });
     
     // Set/update all active users
-    newUsers.forEach(user => {
-      const docRef = doc(db, 'registered_users', user.id);
+    newUsers.forEach((user: any) => {
+      const docRef = db.collection('registered_users').doc(user.id);
       batch.set(docRef, user);
-      count++;
     });
     
     await batch.commit();
@@ -841,6 +837,20 @@ async function startServer() {
     }
   });
 
+  // API Route to log an action (used by client to track undertakings, pdf downloads, image-to-pdf, etc.)
+  app.post('/api/log-action', (req, res) => {
+    try {
+      const { userId, action, details } = req.body;
+      if (!userId || !action) {
+        return res.status(400).json({ success: false, error: 'User ID and action are required.' });
+      }
+      appendAuditLog({ userId, action, details: details || '' });
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message || 'Failed to log action.' });
+    }
+  });
+
   // API Route for getting current user's daily limit status
   app.get('/api/limit-status/:userId', (req, res) => {
     try {
@@ -849,6 +859,153 @@ async function startServer() {
       res.json({ success: true, ...status });
     } catch (error: any) {
       res.status(500).json({ success: false, error: error.message || 'Failed to fetch limit status' });
+    }
+  });
+
+  // API Route to fetch passport history for a user
+  app.get('/api/history', async (req, res) => {
+    try {
+      const userId = req.query.userId?.toString();
+      if (!userId) {
+        return res.status(400).json({ success: false, error: 'User ID is required.' });
+      }
+
+      const requesterId = req.headers['x-user-id']?.toString();
+      if (!requesterId) {
+        return res.status(401).json({ success: false, error: 'Unauthorized.' });
+      }
+      
+      const users = getUsersStore();
+      const adminUser = users.find(u => u.id === requesterId);
+      const isAdmin = adminUser && adminUser.email.toLowerCase() === 'mohammadnurhasnat@gmail.com';
+      
+      if (requesterId !== userId && !isAdmin) {
+        return res.status(403).json({ success: false, error: 'Forbidden.' });
+      }
+
+      if (!db) {
+        return res.status(500).json({ success: false, error: 'Database not initialized.' });
+      }
+
+      const snapshot = await db.collection('users').doc(userId).collection('history').orderBy('timestamp', 'desc').get();
+      const historyItems: any[] = [];
+      snapshot.forEach((doc: any) => {
+        historyItems.push(doc.data());
+      });
+
+      res.json({ success: true, history: historyItems });
+    } catch (error: any) {
+      console.error('Failed to fetch history:', error);
+      res.status(500).json({ success: false, error: error.message || 'Failed to fetch history.' });
+    }
+  });
+
+  // API Route to save a history item
+  app.post('/api/history', async (req, res) => {
+    try {
+      const { userId, item } = req.body;
+      if (!userId || !item || !item.id) {
+        return res.status(400).json({ success: false, error: 'User ID and history item with ID are required.' });
+      }
+
+      const requesterId = req.headers['x-user-id']?.toString();
+      if (!requesterId) {
+        return res.status(401).json({ success: false, error: 'Unauthorized.' });
+      }
+      
+      const users = getUsersStore();
+      const adminUser = users.find(u => u.id === requesterId);
+      const isAdmin = adminUser && adminUser.email.toLowerCase() === 'mohammadnurhasnat@gmail.com';
+      
+      if (requesterId !== userId && !isAdmin) {
+        return res.status(403).json({ success: false, error: 'Forbidden.' });
+      }
+
+      if (!db) {
+        return res.status(500).json({ success: false, error: 'Database not initialized.' });
+      }
+
+      // Save to Firestore
+      await db.collection('users').doc(userId).collection('history').doc(item.id).set(item);
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error('Failed to save history:', error);
+      res.status(500).json({ success: false, error: error.message || 'Failed to save history.' });
+    }
+  });
+
+  // API Route to delete a history item
+  app.delete('/api/history/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const userId = req.query.userId?.toString();
+      if (!id || !userId) {
+        return res.status(400).json({ success: false, error: 'History item ID and User ID are required.' });
+      }
+
+      const requesterId = req.headers['x-user-id']?.toString();
+      if (!requesterId) {
+        return res.status(401).json({ success: false, error: 'Unauthorized.' });
+      }
+      
+      const users = getUsersStore();
+      const adminUser = users.find(u => u.id === requesterId);
+      const isAdmin = adminUser && adminUser.email.toLowerCase() === 'mohammadnurhasnat@gmail.com';
+      
+      if (requesterId !== userId && !isAdmin) {
+        return res.status(403).json({ success: false, error: 'Forbidden.' });
+      }
+
+      if (!db) {
+        return res.status(500).json({ success: false, error: 'Database not initialized.' });
+      }
+
+      await db.collection('users').doc(userId).collection('history').doc(id).delete();
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error('Failed to delete history item:', error);
+      res.status(500).json({ success: false, error: error.message || 'Failed to delete history item.' });
+    }
+  });
+
+  // API Route to clear all history
+  app.post('/api/history/clear', async (req, res) => {
+    try {
+      const userId = req.query.userId?.toString();
+      if (!userId) {
+        return res.status(400).json({ success: false, error: 'User ID is required.' });
+      }
+
+      const requesterId = req.headers['x-user-id']?.toString();
+      if (!requesterId) {
+        return res.status(401).json({ success: false, error: 'Unauthorized.' });
+      }
+      
+      const users = getUsersStore();
+      const adminUser = users.find(u => u.id === requesterId);
+      const isAdmin = adminUser && adminUser.email.toLowerCase() === 'mohammadnurhasnat@gmail.com';
+      
+      if (requesterId !== userId && !isAdmin) {
+        return res.status(403).json({ success: false, error: 'Forbidden.' });
+      }
+
+      if (!db) {
+        return res.status(500).json({ success: false, error: 'Database not initialized.' });
+      }
+
+      const collectionRef = db.collection('users').doc(userId).collection('history');
+      const snapshot = await collectionRef.get();
+      
+      const batch = db.batch();
+      snapshot.docs.forEach((doc: any) => {
+        batch.delete(doc.ref);
+      });
+      await batch.commit();
+
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error('Failed to clear history:', error);
+      res.status(500).json({ success: false, error: error.message || 'Failed to clear history.' });
     }
   });
   

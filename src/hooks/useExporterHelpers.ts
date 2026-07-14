@@ -7,9 +7,10 @@ interface UseExporterHelpersProps {
   data: PassportData | null;
   undertakingData: UndertakingFormData | null;
   setToast: (toast: { message: string; type: 'success' | 'info' | 'error' } | null) => void;
+  currentUser?: any;
 }
 
-export function useExporterHelpers({ data, undertakingData, setToast }: UseExporterHelpersProps) {
+export function useExporterHelpers({ data, undertakingData, setToast, currentUser }: UseExporterHelpersProps) {
   const [isCopied, setIsCopied] = useState(false);
 
   const handleCopyAll = async () => {
@@ -41,6 +42,21 @@ export function useExporterHelpers({ data, undertakingData, setToast }: UseExpor
   const handleDownloadPDF = () => {
     if (!data) return;
     generatePDF(data);
+    
+    // Log Download Action to server
+    if (currentUser?.id) {
+      fetch('/api/log-action', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: currentUser.id,
+          action: 'PDF_DOWNLOAD',
+          details: `Downloaded PDF report for ${data.givenName || ''} ${data.surname || ''}`
+        })
+      }).catch(err => console.error("Error logging PDF download:", err));
+    }
   };
 
   const handleDownloadUndertaking = async () => {
@@ -53,6 +69,21 @@ export function useExporterHelpers({ data, undertakingData, setToast }: UseExpor
     try {
       generateUndertakingPDF(undertakingData);
       setToast({ message: "Success!", type: "success" });
+      
+      // Log Download Action to server
+      if (currentUser?.id) {
+        fetch('/api/log-action', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: currentUser.id,
+            action: 'UNDERTAKING_DOWNLOAD',
+            details: `Downloaded undertaking PDF for ${undertakingData.fullName || 'unknown'}`
+          })
+        }).catch(err => console.error("Error logging undertaking download:", err));
+      }
     } catch (err: any) {
       setToast({ message: "Error generating the document.", type: "error" });
     }

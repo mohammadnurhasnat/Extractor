@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Users, X, ShieldCheck, History, UserPlus } from 'lucide-react';
+import { Users, X, ShieldCheck, History, UserPlus, BarChart3 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
 import { UsersTable } from './admin/UsersTable';
 import { AuditLogsTable } from './admin/AuditLogsTable';
 import { AddUserForm } from './admin/AddUserForm';
+import { AnalyticsTab } from './admin/AnalyticsTab';
 
 interface AdminDashboardModalProps {
   isOpen: boolean;
@@ -15,7 +16,7 @@ interface AdminDashboardModalProps {
 
 export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen, onClose, currentUser, setToast }) => {
   useLockBodyScroll(isOpen);
-  const [activeTab, setActiveTab] = useState<'users' | 'audit'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'audit' | 'analytics'>('analytics');
   
   // Users State
   const [adminUsersList, setAdminUsersList] = useState<any[]>([]);
@@ -49,7 +50,10 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
     if (isOpen && currentUser) {
       if (activeTab === 'users') {
         fetchAdminUsers();
-      } else {
+      } else if (activeTab === 'audit') {
+        fetchAuditLogs();
+      } else if (activeTab === 'analytics') {
+        fetchAdminUsers();
         fetchAuditLogs();
       }
     }
@@ -350,6 +354,13 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
               
               <div className="flex gap-2 bg-slate-100 dark:bg-zinc-900 p-1 rounded">
                 <button
+                  onClick={() => setActiveTab('analytics')}
+                  className={`px-3 py-1 text-xs font-bold rounded ${activeTab === 'analytics' ? 'bg-white dark:bg-zinc-800 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-slate-500 dark:text-zinc-400'}`}
+                >
+                  <BarChart3 className="w-3 h-3 inline-block mr-1" />
+                  Analytics (পরিসংখ্যান)
+                </button>
+                <button
                   onClick={() => setActiveTab('users')}
                   className={`px-3 py-1 text-xs font-bold rounded ${activeTab === 'users' ? 'bg-white dark:bg-zinc-800 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-slate-500 dark:text-zinc-400'}`}
                 >
@@ -374,7 +385,17 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
           </div>
 
           <div className="p-4 h-[60vh] overflow-y-auto relative z-10">
-            {activeTab === 'users' ? (
+            {activeTab === 'analytics' ? (
+              <AnalyticsTab
+                users={adminUsersList}
+                logs={auditLogs}
+                onRefresh={() => {
+                  fetchAdminUsers();
+                  fetchAuditLogs();
+                }}
+                isLoading={isLoadingUsers || isLoadingLogs}
+              />
+            ) : activeTab === 'users' ? (
               isAdminAddingUser ? (
                 <AddUserForm
                   newUserName={newUserName}

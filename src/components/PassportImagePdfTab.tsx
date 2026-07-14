@@ -5,9 +5,10 @@ import { generatePassportImagePDF } from '../utils/pdfGenerator';
 
 interface PassportImagePdfTabProps {
   activeItem: QueueItem | null;
+  currentUser?: any;
 }
 
-export function PassportImagePdfTab({ activeItem }: PassportImagePdfTabProps) {
+export function PassportImagePdfTab({ activeItem, currentUser }: PassportImagePdfTabProps) {
   const [isGenerating, setIsGenerating] = useState(false);
 
   const isHistoryMock = activeItem?.file && activeItem.file.size === 0 && !activeItem.preview;
@@ -35,6 +36,21 @@ export function PassportImagePdfTab({ activeItem }: PassportImagePdfTabProps) {
     setIsGenerating(true);
     try {
       await generatePassportImagePDF(source, activeItem.data);
+      
+      // Log Image to PDF action to server
+      if (currentUser?.id) {
+        fetch('/api/log-action', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: currentUser.id,
+            action: 'IMAGE_TO_PDF',
+            details: `Converted passport image to PDF for ${activeItem.data?.givenName || ''} ${activeItem.data?.surname || ''}`
+          })
+        }).catch(err => console.error("Error logging image-to-pdf:", err));
+      }
     } catch (e) {
       console.error(e);
       alert('Failed to generate PDF');

@@ -1,8 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { HistoryItem, PassportData } from '../types';
 import { encryptData, decryptData } from '../utils/crypto';
-import { db } from '../lib/firebase';
-import { collection, doc, setDoc, deleteDoc, getDocs, writeBatch, query, orderBy, onSnapshot } from 'firebase/firestore';
 
 export function usePassportHistory(userId: string | null, options?: {
   onItemAdded?: (item: HistoryItem) => void;
@@ -18,7 +16,7 @@ export function usePassportHistory(userId: string | null, options?: {
     latestHistoryRef.current = history;
   }, [history]);
 
-  // Fallback to local storage if no user
+  // Fallback to local storage if no user, or fetch from custom API if user exists
   useEffect(() => {
     if (!userId) {
       try {
@@ -38,23 +36,40 @@ export function usePassportHistory(userId: string | null, options?: {
       return;
     }
 
-    // Load from Firestore if user exists
-    const historyRef = collection(db, `users/${userId}/history`);
-    const q = query(historyRef, orderBy('timestamp', 'desc'));
-    
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const fetchedHistory: HistoryItem[] = [];
-      snapshot.forEach((doc) => {
-        const data = doc.data() as HistoryItem;
-        fetchedHistory.push(data);
-      });
-      setInternalHistory(fetchedHistory);
-      latestHistoryRef.current = fetchedHistory;
-    }, (error) => {
-      console.error("Error fetching history from Firestore:", error);
-    });
+    // Load from Express Proxy API if user exists
+    const fetchHistory = async () => {
+      try {
+        const response = await fetch(`/api/history?userId=${encodeURIComponent(userId)}`, {
+          headers: {
+            'x-user-id': userId
+          }
+        });
+        const resData = await response.json();
+        if (resData.success && resData.history) {
+          const fetchedHistory = resData.history.map((item: any) => {
+            let cachedImage = '';
+            try {
+              const stored = localStorage.getItem(`passport_img_${item.id}`);
+              if (stored) {
+                cachedImage = decryptData(stored) || '';
+              }
+            } catch (e) {
+              console.error("Failed to load cached image:", e);
+            }
+            return {
+              ...item,
+              imageBase64: cachedImage || item.imageBase64 || ''
+            };
+          });
+          setInternalHistory(fetchedHistory);
+          latestHistoryRef.current = fetchedHistory;
+        }
+      } catch (err) {
+        console.error("Error fetching history from API:", err);
+      }
+    };
 
-    return () => unsubscribe();
+    fetchHistory();
   }, [userId]);
 
   const saveHistory = useCallback(async (newHistory: HistoryItem[]) => {
@@ -65,16 +80,30 @@ export function usePassportHistory(userId: string | null, options?: {
       return;
     }
     
-    const batch = writeBatch(db);
-    const historyRef = collection(db, `users/${userId}/history`);
-    
-    newHistory.forEach(item => {
-      const docRef = doc(historyRef, item.id);
-      batch.set(docRef, item);
-    });
-    
+    // Save all to server proxy
     try {
-      await batch.commit();
+      for (const item of newHistory) {
+        // Cache image locally if present
+        if (item.imageBase64) {
+          try {
+            localStorage.setItem(`passport_img_${item.id}`, encryptData(item.imageBase64));
+          } catch (e) {}
+        }
+        
+        // Strip imageBase64 from Firestore payload to stay under 1MB limit
+        const { imageBase64: _, ...firestoreData } = item;
+        await fetch('/api/history', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-user-id': userId
+          },
+          body: JSON.stringify({
+            userId,
+            item: firestoreData
+          })
+        });
+      }
     } catch (e) {
       console.error("Error saving history batch:", e);
     }
@@ -136,6 +165,15 @@ export function usePassportHistory(userId: string | null, options?: {
       updatedHistory = [itemToSave, ...prevHistory];
     }
 
+    // Cache the image locally to stay under 1MB Firestore document limit
+    if (itemToSave.imageBase64) {
+      try {
+        localStorage.setItem(`passport_img_${itemToSave.id}`, encryptData(itemToSave.imageBase64));
+      } catch (err) {
+        console.warn("Local storage quota exceeded, cannot cache image locally:", err);
+      }
+    }
+
     // Update state and local storage immediately
     setInternalHistory(updatedHistory);
     latestHistoryRef.current = updatedHistory;
@@ -144,8 +182,19 @@ export function usePassportHistory(userId: string | null, options?: {
       localStorage.setItem('passport_core_history', encryptData(updatedHistory));
     } else {
       try {
-        const docRef = doc(db, `users/${userId}/history`, itemToSave.id);
-        await setDoc(docRef, itemToSave);
+        // Strip imageBase64 from Firestore payload
+        const { imageBase64: _, ...firestoreData } = itemToSave;
+        await fetch('/api/history', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-user-id': userId
+          },
+          body: JSON.stringify({
+            userId,
+            item: firestoreData
+          })
+        });
       } catch (err) {
         console.error("Failed to save history to Firestore:", err);
       }
@@ -159,6 +208,11 @@ export function usePassportHistory(userId: string | null, options?: {
   }, [userId, options]);
 
   const deleteHistoryItem = useCallback(async (id: string) => {
+    // Delete local cached image
+    try {
+      localStorage.removeItem(`passport_img_${id}`);
+    } catch (e) {}
+
     setInternalHistory(prev => {
       const newHistory = prev.filter(item => item.id !== id);
       if (!userId) {
@@ -169,7 +223,12 @@ export function usePassportHistory(userId: string | null, options?: {
 
     if (userId) {
       try {
-        await deleteDoc(doc(db, `users/${userId}/history`, id));
+        await fetch(`/api/history/${id}?userId=${encodeURIComponent(userId)}`, {
+          method: 'DELETE',
+          headers: {
+            'x-user-id': userId
+          }
+        });
       } catch (e) {
         console.error("Error deleting document:", e);
       }
@@ -181,16 +240,27 @@ export function usePassportHistory(userId: string | null, options?: {
   }, [userId, options]);
 
   const clearHistory = useCallback(async () => {
+    // Clear all locally cached passport images
+    try {
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('passport_img_')) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach(k => localStorage.removeItem(k));
+    } catch (e) {}
+
     // Delete all from firestore
     if (userId) {
       try {
-        const historyRef = collection(db, `users/${userId}/history`);
-        const snapshot = await getDocs(historyRef);
-        const batch = writeBatch(db);
-        snapshot.docs.forEach(doc => {
-          batch.delete(doc.ref);
+        await fetch(`/api/history/clear?userId=${encodeURIComponent(userId)}`, {
+          method: 'POST',
+          headers: {
+            'x-user-id': userId
+          }
         });
-        await batch.commit();
       } catch (e) {
         console.error("Error clearing history:", e);
       }
