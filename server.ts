@@ -85,6 +85,71 @@ function parseUsersTsContent(content: string): any[] {
 
 import { Firestore } from '@google-cloud/firestore';
 
+const HISTORY_STORE_FILE = path.join(process.cwd(), 'history_store.json');
+
+interface HistoryStore {
+  [userId: string]: any[];
+}
+
+function getLocalHistory(userId: string): any[] {
+  try {
+    if (fs.existsSync(HISTORY_STORE_FILE)) {
+      const data = fs.readFileSync(HISTORY_STORE_FILE, 'utf8');
+      const store: HistoryStore = JSON.parse(data);
+      return store[userId] || [];
+    }
+  } catch (error) {
+    console.error('Error reading local history file:', error);
+  }
+  return [];
+}
+
+function saveLocalHistory(userId: string, item: any) {
+  try {
+    let store: HistoryStore = {};
+    if (fs.existsSync(HISTORY_STORE_FILE)) {
+      const data = fs.readFileSync(HISTORY_STORE_FILE, 'utf8');
+      store = JSON.parse(data);
+    }
+    const userHistory = store[userId] || [];
+    // Remove if already exists with the same ID
+    const filtered = userHistory.filter((i: any) => i.id !== item.id);
+    filtered.unshift(item); // Add to the top
+    store[userId] = filtered;
+    fs.writeFileSync(HISTORY_STORE_FILE, JSON.stringify(store, null, 2), 'utf8');
+  } catch (error) {
+    console.error('Error writing local history file:', error);
+  }
+}
+
+function deleteLocalHistoryItem(userId: string, itemId: string) {
+  try {
+    if (fs.existsSync(HISTORY_STORE_FILE)) {
+      const data = fs.readFileSync(HISTORY_STORE_FILE, 'utf8');
+      const store: HistoryStore = JSON.parse(data);
+      if (store[userId]) {
+        store[userId] = store[userId].filter((i: any) => i.id !== itemId);
+        fs.writeFileSync(HISTORY_STORE_FILE, JSON.stringify(store, null, 2), 'utf8');
+      }
+    }
+  } catch (error) {
+    console.error('Error deleting local history item:', error);
+  }
+}
+
+function clearLocalHistory(userId: string) {
+  try {
+    if (fs.existsSync(HISTORY_STORE_FILE)) {
+      const data = fs.readFileSync(HISTORY_STORE_FILE, 'utf8');
+      const store: HistoryStore = JSON.parse(data);
+      store[userId] = [];
+      fs.writeFileSync(HISTORY_STORE_FILE, JSON.stringify(store, null, 2), 'utf8');
+    }
+  } catch (error) {
+    console.error('Error clearing local history:', error);
+  }
+}
+
 // Global cache for users
 let cachedUsers: any[] = [];
 let db: any = null;
@@ -131,6 +196,7 @@ async function loadUsersFromFirestore() {
     }
   } catch (error) {
     console.error("Failed to load users from Firestore. Falling back to local files:", error);
+    db = null; // Mark as not available to force local fallback
     cachedUsers = getUsersStoreLocal();
   }
 }
@@ -884,16 +950,23 @@ async function startServer() {
       }
 
       if (!db) {
-        return res.status(500).json({ success: false, error: 'Database not initialized.' });
+        const historyItems = getLocalHistory(userId);
+        return res.json({ success: true, history: historyItems });
       }
 
-      const snapshot = await db.collection('users').doc(userId).collection('history').orderBy('timestamp', 'desc').get();
-      const historyItems: any[] = [];
-      snapshot.forEach((doc: any) => {
-        historyItems.push(doc.data());
-      });
-
-      res.json({ success: true, history: historyItems });
+      try {
+        const snapshot = await db.collection('users').doc(userId).collection('history').orderBy('timestamp', 'desc').get();
+        const historyItems: any[] = [];
+        snapshot.forEach((doc: any) => {
+          historyItems.push(doc.data());
+        });
+        return res.json({ success: true, history: historyItems });
+      } catch (firestoreError: any) {
+        console.warn('Firestore fetch failed, falling back to local history storage:', firestoreError.message || firestoreError);
+        db = null; // Reset db to null to force local storage fallback for subsequent requests
+        const historyItems = getLocalHistory(userId);
+        return res.json({ success: true, history: historyItems });
+      }
     } catch (error: any) {
       console.error('Failed to fetch history:', error);
       res.status(500).json({ success: false, error: error.message || 'Failed to fetch history.' });
@@ -922,12 +995,20 @@ async function startServer() {
       }
 
       if (!db) {
-        return res.status(500).json({ success: false, error: 'Database not initialized.' });
+        saveLocalHistory(userId, item);
+        return res.json({ success: true });
       }
 
-      // Save to Firestore
-      await db.collection('users').doc(userId).collection('history').doc(item.id).set(item);
-      res.json({ success: true });
+      try {
+        // Save to Firestore
+        await db.collection('users').doc(userId).collection('history').doc(item.id).set(item);
+        return res.json({ success: true });
+      } catch (firestoreError: any) {
+        console.warn('Firestore write failed, falling back to local history storage:', firestoreError.message || firestoreError);
+        db = null; // Force fallback
+        saveLocalHistory(userId, item);
+        return res.json({ success: true });
+      }
     } catch (error: any) {
       console.error('Failed to save history:', error);
       res.status(500).json({ success: false, error: error.message || 'Failed to save history.' });
@@ -957,11 +1038,19 @@ async function startServer() {
       }
 
       if (!db) {
-        return res.status(500).json({ success: false, error: 'Database not initialized.' });
+        deleteLocalHistoryItem(userId, id);
+        return res.json({ success: true });
       }
 
-      await db.collection('users').doc(userId).collection('history').doc(id).delete();
-      res.json({ success: true });
+      try {
+        await db.collection('users').doc(userId).collection('history').doc(id).delete();
+        return res.json({ success: true });
+      } catch (firestoreError: any) {
+        console.warn('Firestore delete failed, falling back to local history storage:', firestoreError.message || firestoreError);
+        db = null; // Force fallback
+        deleteLocalHistoryItem(userId, id);
+        return res.json({ success: true });
+      }
     } catch (error: any) {
       console.error('Failed to delete history item:', error);
       res.status(500).json({ success: false, error: error.message || 'Failed to delete history item.' });
@@ -990,19 +1079,26 @@ async function startServer() {
       }
 
       if (!db) {
-        return res.status(500).json({ success: false, error: 'Database not initialized.' });
+        clearLocalHistory(userId);
+        return res.json({ success: true });
       }
 
-      const collectionRef = db.collection('users').doc(userId).collection('history');
-      const snapshot = await collectionRef.get();
-      
-      const batch = db.batch();
-      snapshot.docs.forEach((doc: any) => {
-        batch.delete(doc.ref);
-      });
-      await batch.commit();
-
-      res.json({ success: true });
+      try {
+        const collectionRef = db.collection('users').doc(userId).collection('history');
+        const snapshot = await collectionRef.get();
+        
+        const batch = db.batch();
+        snapshot.docs.forEach((doc: any) => {
+          batch.delete(doc.ref);
+        });
+        await batch.commit();
+        return res.json({ success: true });
+      } catch (firestoreError: any) {
+        console.warn('Firestore clear failed, falling back to local history storage:', firestoreError.message || firestoreError);
+        db = null; // Force fallback
+        clearLocalHistory(userId);
+        return res.json({ success: true });
+      }
     } catch (error: any) {
       console.error('Failed to clear history:', error);
       res.status(500).json({ success: false, error: error.message || 'Failed to clear history.' });
