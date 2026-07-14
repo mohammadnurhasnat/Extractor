@@ -358,7 +358,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
                   className={`px-3 py-1 text-xs font-bold rounded ${activeTab === 'analytics' ? 'bg-white dark:bg-zinc-800 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-slate-500 dark:text-zinc-400'}`}
                 >
                   <BarChart3 className="w-3 h-3 inline-block mr-1" />
-                  Analytics (পরিসংখ্যান)
+                  Analytics
                 </button>
                 <button
                   onClick={() => setActiveTab('users')}

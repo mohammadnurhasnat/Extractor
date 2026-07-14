@@ -1,0 +1,42 @@
+{
+  "entities": {
+    "RegisteredUser": {
+      "title": "RegisteredUser",
+      "description": "User account registered in the system",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier of the user" },
+        "email": { "type": "string", "description": "User email address" },
+        "name": { "type": "string", "description": "User full name" },
+        "mobileNumber": { "type": "string", "description": "User mobile number" },
+        "password": { "type": "string", "description": "User hashed password" },
+        "dailyLimit": { "type": "integer", "description": "Daily usage limit" },
+        "isSuspended": { "type": "boolean", "description": "Whether the user account is suspended" }
+      },
+      "required": ["id", "name"]
+    },
+    "HistoryItem": {
+      "title": "HistoryItem",
+      "description": "Passport extraction history item",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier of the history item" },
+        "timestamp": { "type": "integer", "description": "Epoch timestamp of the extraction" },
+        "data": { "type": "object", "description": "Extracted passport data payload" },
+        "extractionTime": { "type": "integer", "description": "Extraction execution duration in ms" },
+        "imageBase64": { "type": "string", "description": "Optional thumbnail/image base64" }
+      },
+      "required": ["id", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/registered_users/{userId}": {
+      "schema": "RegisteredUser",
+      "description": "Store registered user profiles and permissions"
+    },
+    "/users/{userId}/history/{historyId}": {
+      "schema": "HistoryItem",
+      "description": "User's extracted passport and application history logs"
+    }
+  }
+}

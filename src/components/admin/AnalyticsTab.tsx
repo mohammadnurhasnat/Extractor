@@ -4,13 +4,11 @@ import {
   Users, 
   ShieldCheck, 
   FileText, 
-  FileImage, 
   Download, 
   Calendar, 
   Search, 
   RefreshCw,
-  Clock,
-  ArrowRight
+  Clock
 } from 'lucide-react';
 
 interface User {
@@ -65,7 +63,7 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
     // Start of this week (7 days rolling)
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     
-    // Start of this month (rolling or calendar, let's do calendar month)
+    // Start of this month (calendar month)
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
 
@@ -82,7 +80,7 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
       extractions: { today: 0, week: 0, month: 0, total: 0 },
       undertakings: { today: 0, week: 0, month: 0, total: 0 },
       imageToPdf: { today: 0, week: 0, month: 0, total: 0 },
-      downloads: { today: 0, week: 0, month: 0, total: 0 } // Combines all downloads (PDF_DOWNLOAD, UNDERTAKING_DOWNLOAD, etc.)
+      downloads: { today: 0, week: 0, month: 0, total: 0 }
     };
 
     logs.forEach(log => {
@@ -140,7 +138,6 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
     logs.forEach(log => {
       const uId = log.userId;
       if (!userMap[uId]) {
-        // Handle cases where a log userId might not be in our users list (legacy or system)
         userMap[uId] = { extractions: 0, undertakings: 0, imageToPdf: 0, total: 0 };
       }
 
@@ -230,7 +227,7 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-3">
         <RefreshCw className="w-8 h-8 text-blue-500 animate-spin" />
-        <span className="text-xs text-slate-400 font-bold">পরিসংখ্যান লোড করা হচ্ছে... (Loading analytics...)</span>
+        <span className="text-xs text-slate-400 font-bold">Loading analytics...</span>
       </div>
     );
   }
@@ -242,7 +239,7 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
         <div>
           <h4 className="text-sm font-bold text-slate-800 dark:text-zinc-100 flex items-center gap-1.5">
             <TrendingUp className="w-4 h-4 text-emerald-500" />
-            <span>ব্যবহারের সার্বিক পরিসংখ্যান (Usage Analytics)</span>
+            <span>Usage Analytics</span>
           </h4>
           <p className="text-[10px] text-slate-400 dark:text-zinc-500 font-bold uppercase tracking-wider mt-0.5">
             Realtime performance & utilization insights
@@ -253,7 +250,7 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
           className="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-50 dark:hover:bg-zinc-850 text-xs font-bold flex items-center gap-1.5 text-blue-500 transition-colors"
         >
           <RefreshCw className="w-3.5 h-3.5" />
-          <span>রিফ্রেশ</span>
+          <span>Refresh</span>
         </button>
       </div>
 
@@ -265,7 +262,7 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
             <ShieldCheck className="w-5 h-5" />
           </div>
           <div>
-            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">এডমিন অ্যাকাউন্ট</span>
+            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">Admin Accounts</span>
             <span className="text-lg font-black block tracking-tight text-indigo-600 dark:text-indigo-400">
               {accountsSummary.adminCount} <span className="text-xs font-bold text-slate-500">Accounts</span>
             </span>
@@ -278,7 +275,7 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
             <Users className="w-5 h-5" />
           </div>
           <div>
-            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">গ্রাহক অ্যাকাউন্ট</span>
+            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">Customer Accounts</span>
             <span className="text-lg font-black block tracking-tight text-blue-600 dark:text-blue-400">
               {accountsSummary.userCount} <span className="text-xs font-bold text-slate-500">Accounts</span>
             </span>
@@ -291,7 +288,7 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
             <FileText className="w-5 h-5" />
           </div>
           <div>
-            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">সর্বমোট এক্সট্রাকশন</span>
+            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">Total Extractions</span>
             <span className="text-lg font-black block tracking-tight text-emerald-600 dark:text-emerald-400">
               {metrics.extractions.total} <span className="text-xs font-bold text-slate-500">Times</span>
             </span>
@@ -304,7 +301,7 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
             <Download className="w-5 h-5" />
           </div>
           <div>
-            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">মোট ডাউনলোড / এক্সপোর্ট</span>
+            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">Total Downloads / Exports</span>
             <span className="text-lg font-black block tracking-tight text-teal-600 dark:text-teal-400">
               {metrics.downloads.total} <span className="text-xs font-bold text-slate-500">Actions</span>
             </span>
@@ -316,24 +313,24 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
       <div className="bg-white dark:bg-zinc-900/40 rounded-xl border border-slate-200/80 dark:border-zinc-800/85 overflow-hidden shadow-sm">
         <div className="bg-slate-50/80 dark:bg-zinc-900/60 p-3 border-b border-slate-100 dark:border-zinc-800 flex items-center gap-1.5">
           <Calendar className="w-4 h-4 text-blue-500" />
-          <h5 className="font-extrabold text-xs uppercase tracking-wider">পর্যায়ভিত্তিক সারসংক্ষেপ (Activity Period Matrix)</h5>
+          <h5 className="font-extrabold text-xs uppercase tracking-wider">Activity Period Matrix</h5>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-slate-150 dark:border-zinc-800 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/30 dark:bg-zinc-950/10">
-                <th className="p-3">অ্যাক্টিভিটি টাইপ (Activity Type)</th>
-                <th className="p-3 text-center bg-blue-500/5 dark:bg-blue-500/10">আজ (Daily/Today)</th>
-                <th className="p-3 text-center bg-indigo-500/5 dark:bg-indigo-500/10">এই সপ্তাহে (Weekly)</th>
-                <th className="p-3 text-center bg-emerald-500/5 dark:bg-emerald-500/10">এই মাসে (Monthly)</th>
-                <th className="p-3 text-center font-black">সর্বমোট (All Time)</th>
+                <th className="p-3">Activity Type</th>
+                <th className="p-3 text-center bg-blue-500/5 dark:bg-blue-500/10">Today</th>
+                <th className="p-3 text-center bg-indigo-500/5 dark:bg-indigo-500/10">This Week</th>
+                <th className="p-3 text-center bg-emerald-500/5 dark:bg-emerald-500/10">This Month</th>
+                <th className="p-3 text-center font-black">All Time</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/60 text-xs">
               <tr className="hover:bg-slate-50/50 dark:hover:bg-zinc-800/20">
                 <td className="p-3 font-semibold flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                  <span>পাসপোর্ট এক্সট্রাকশন (Passport Extractions)</span>
+                  <span>Passport Extractions</span>
                 </td>
                 <td className="p-3 text-center bg-blue-500/5 dark:bg-blue-500/10 font-bold text-slate-700 dark:text-zinc-200">{metrics.extractions.today}</td>
                 <td className="p-3 text-center bg-indigo-500/5 dark:bg-indigo-500/10 font-bold text-slate-700 dark:text-zinc-200">{metrics.extractions.week}</td>
@@ -343,7 +340,7 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
               <tr className="hover:bg-slate-50/50 dark:hover:bg-zinc-800/20">
                 <td className="p-3 font-semibold flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-amber-500" />
-                  <span>অঙ্গীকারনামা ডাউনলোড (Undertakings Downloaded)</span>
+                  <span>Undertakings Downloaded</span>
                 </td>
                 <td className="p-3 text-center bg-blue-500/5 dark:bg-blue-500/10 font-bold text-slate-700 dark:text-zinc-200">{metrics.undertakings.today}</td>
                 <td className="p-3 text-center bg-indigo-500/5 dark:bg-indigo-500/10 font-bold text-slate-700 dark:text-zinc-200">{metrics.undertakings.week}</td>
@@ -353,7 +350,7 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
               <tr className="hover:bg-slate-50/50 dark:hover:bg-zinc-800/20">
                 <td className="p-3 font-semibold flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-teal-500" />
-                  <span>ছবি থেকে PDF কনভার্শন (Image to PDF)</span>
+                  <span>Image to PDF Conversion</span>
                 </td>
                 <td className="p-3 text-center bg-blue-500/5 dark:bg-blue-500/10 font-bold text-slate-700 dark:text-zinc-200">{metrics.imageToPdf.today}</td>
                 <td className="p-3 text-center bg-indigo-500/5 dark:bg-indigo-500/10 font-bold text-slate-700 dark:text-zinc-200">{metrics.imageToPdf.week}</td>
@@ -369,13 +366,13 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
       <div className="space-y-3">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <h5 className="font-extrabold text-xs uppercase tracking-wider text-slate-500 dark:text-zinc-400">
-            ব্যবহারকারী ভিত্তিক বিস্তারিত হিসাব (User-wise Performance Breakdown)
+            User-wise Performance Breakdown
           </h5>
           <div className="relative w-full sm:w-60">
             <Search className="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-slate-400" />
             <input 
               type="text" 
-              placeholder="ইউজার খুজুন (Filter by user)..."
+              placeholder="Filter by user..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-8 pr-3 py-1.5 border rounded-lg text-xs bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 focus:outline-none focus:ring-1 focus:ring-blue-500 text-black dark:text-white"
@@ -387,17 +384,17 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50 dark:bg-zinc-900/50 border-b border-slate-200/80 dark:border-zinc-800 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                <th className="p-3">ব্যবহারকারী (User Details)</th>
-                <th className="p-3 text-center">পাসপোর্ট এক্সট্রাকশন</th>
-                <th className="p-3 text-center">ডাউনলোডকৃত অঙ্গীকারনামা</th>
-                <th className="p-3 text-center">Image-to-PDF রূপান্তর</th>
-                <th className="p-3 text-center font-black">মোট অ্যাকশন</th>
+                <th className="p-3">User Details</th>
+                <th className="p-3 text-center">Passport Extractions</th>
+                <th className="p-3 text-center">Undertakings Downloaded</th>
+                <th className="p-3 text-center">Image-to-PDF</th>
+                <th className="p-3 text-center font-black">Total Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/60 text-xs">
               {userBreakdown.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="p-6 text-center text-slate-400 text-xs">কোনো ব্যবহারকারীর তথ্য পাওয়া যায়নি।</td>
+                  <td colSpan={5} className="p-6 text-center text-slate-400 text-xs">No user information found.</td>
                 </tr>
               ) : (
                 userBreakdown.map(user => (
@@ -441,13 +438,13 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
       <div className="space-y-3">
         <h5 className="font-extrabold text-xs uppercase tracking-wider text-slate-500 dark:text-zinc-400 flex items-center gap-1.5">
           <Clock className="w-4 h-4 text-indigo-500" />
-          <span>দৈনিক পাসপোর্ট এক্সট্রাকশন হিস্ট্রি (Daily Passport Extraction History)</span>
+          <span>Daily Passport Extraction History</span>
         </h5>
 
         <div className="space-y-3 max-h-[350px] overflow-y-auto pr-1">
           {dailyHistory.length === 0 ? (
             <div className="text-center py-8 text-slate-400 text-xs border border-dashed rounded-xl border-slate-200 dark:border-zinc-850">
-              কোনো দৈনিক হিস্ট্রি পাওয়া যায়নি।
+              No daily extraction history found.
             </div>
           ) : (
             dailyHistory.map(day => (
@@ -459,7 +456,7 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
                     <span className="text-xs font-extrabold text-slate-800 dark:text-zinc-100">{day.dateStr}</span>
                   </div>
                   <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">
-                    মোট এক্সট্রাকশন: {day.total} বার
+                    Total Extractions: {day.total}
                   </span>
                 </div>
 
@@ -473,12 +470,12 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
                         <div className="flex items-center gap-3 text-[10px] text-slate-400 dark:text-zinc-500">
                           {uStats.extractions > 0 && (
                             <span className="bg-emerald-500/5 text-emerald-600 px-1.5 py-0.5 rounded font-semibold border border-emerald-500/10">
-                              এক্সট্রাকশন: {uStats.extractions}
+                              Extractions: {uStats.extractions}
                             </span>
                           )}
                           {uStats.undertakings > 0 && (
                             <span className="bg-amber-500/5 text-amber-600 px-1.5 py-0.5 rounded font-semibold border border-amber-500/10">
-                              অঙ্গীকারনামা: {uStats.undertakings}
+                              Undertakings: {uStats.undertakings}
                             </span>
                           )}
                           {uStats.imageToPdf > 0 && (
