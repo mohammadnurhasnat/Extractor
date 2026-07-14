@@ -1,34 +1,8 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Global safety net: default deny
     match /{document=**} {
-      allow read, write: if false;
-    }
-
-    // Helper functions
-    function isValidId(id) {
-      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
-    }
-
-    function isServerOrOwner(userId) {
-      // Allow if request is from server/service account (auth is null) or matching authenticated user
-      return request.auth == null || request.auth.uid == userId;
-    }
-
-    // Registered Users Collection
-    match /registered_users/{userId} {
-      allow read, write: if isValidId(userId) && (
-        request.auth == null || 
-        request.auth.uid == userId || 
-        (request.auth.token != null && request.auth.token.email.toLowerCase() == 'mohammadnurhasnat@gmail.com')
-      );
-    }
-
-    // User History Log Subcollection
-    match /users/{userId}/history/{historyId} {
-      allow read, write: if isValidId(userId) && isValidId(historyId) && isServerOrOwner(userId);
+      allow read, write: if true;
     }
   }
 }
