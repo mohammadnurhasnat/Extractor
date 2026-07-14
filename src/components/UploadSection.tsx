@@ -13,6 +13,7 @@ interface UploadSectionProps {
   visaFileInputRef: React.RefObject<HTMLInputElement | null>;
   handleVisaFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleVisaDrop: (e: React.DragEvent) => void;
+  handleDrop: (e: React.DragEvent) => void;
   handleDragOver: (e: React.DragEvent) => void;
   
   // Undertaking props
@@ -89,6 +90,8 @@ export function UploadSection(props: UploadSectionProps) {
                 transition={{ type: 'spring', stiffness: 220, damping: 20 }}
                 className="retro-dropzone group flex flex-col items-center justify-center text-center min-h-[220px] p-6 cursor-pointer" 
                 onClick={() => props.fileInputRef.current?.click()}
+                onDragOver={props.handleDragOver}
+                onDrop={props.handleDrop}
               >
                 <input 
                    type="file" 
@@ -162,6 +165,8 @@ export function UploadSection(props: UploadSectionProps) {
               <div 
                 className="border border-dashed border-slate-205 dark:border-zinc-800 rounded-xl bg-slate-50/55 dark:bg-black/25 hover:bg-slate-100/60 dark:hover:bg-zinc-850/40 hover:border-blue-405 dark:hover:border-blue-500/30 transition-all duration-300 group flex items-center gap-3 p-3 cursor-pointer"
                 onClick={() => props.fileInputRef.current?.click()}
+                onDragOver={props.handleDragOver}
+                onDrop={props.handleDrop}
               >
                 <input type="file" ref={props.fileInputRef} className="hidden" accept="image/jpeg, image/png, image/webp" onChange={props.handleFileChange} multiple />
                 <div className="w-9 h-9 bg-white dark:bg-zinc-900 rounded-xl shadow-sm flex items-center justify-center shrink-0 border border-slate-100 dark:border-zinc-800 group-hover:scale-105 transition-transform">
@@ -177,6 +182,8 @@ export function UploadSection(props: UploadSectionProps) {
               <div 
                 className="border border-dashed border-slate-205 dark:border-zinc-800 rounded-xl bg-slate-50/55 dark:bg-black/25 hover:bg-slate-100/60 dark:hover:bg-zinc-850/40 hover:border-emerald-405 dark:hover:border-emerald-500/30 transition-all duration-300 group flex items-center gap-3 p-3 cursor-pointer"
                 onClick={() => props.visaFileInputRef.current?.click()}
+                onDragOver={props.handleDragOver}
+                onDrop={props.handleVisaDrop}
               >
                 <input type="file" ref={props.visaFileInputRef} className="hidden" accept="application/pdf" onChange={props.handleVisaFileChange} />
                 <div className="w-9 h-9 bg-white dark:bg-zinc-900 rounded-xl shadow-sm flex items-center justify-center shrink-0 border border-slate-100 dark:border-zinc-800 group-hover:scale-105 transition-transform">
@@ -193,7 +200,12 @@ export function UploadSection(props: UploadSectionProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
               {/* Left Column: Passport Preview or PDF layout */}
               {isPdf ? (
-                <div className="relative rounded-2xl overflow-hidden border border-slate-205 dark:border-zinc-800 bg-slate-100 dark:bg-black w-full min-h-[220px] md:h-auto flex flex-col items-center justify-center p-6 shadow-inner text-center">
+                <div 
+                  className="relative rounded-2xl overflow-hidden border border-slate-205 dark:border-zinc-800 bg-slate-100 dark:bg-black w-full min-h-[220px] md:h-auto flex flex-col items-center justify-center p-6 shadow-inner text-center cursor-pointer"
+                  onClick={() => props.visaFileInputRef.current?.click()}
+                  onDragOver={props.handleDragOver}
+                  onDrop={props.handleVisaDrop}
+                >
                   <div className="w-20 h-20 bg-emerald-50 dark:bg-emerald-950/20 rounded-2xl flex items-center justify-center mb-4 border border-emerald-100 dark:border-emerald-900/30 shadow-sm">
                     <FileText className="w-10 h-10 text-emerald-500 animate-pulse" />
                   </div>
@@ -224,7 +236,12 @@ export function UploadSection(props: UploadSectionProps) {
                   <div className="absolute inset-0 ring-1 ring-inset ring-black/5 dark:ring-white/5 rounded-2xl" />
                 </div>
               ) : (
-                <div className="relative rounded-2xl overflow-hidden border border-slate-205 dark:border-zinc-800 bg-slate-100 dark:bg-black w-full min-h-[220px] md:h-auto flex items-center justify-center shadow-inner group/preview">
+                <div 
+                  className="relative rounded-2xl overflow-hidden border border-slate-205 dark:border-zinc-800 bg-slate-100 dark:bg-black w-full min-h-[220px] md:h-auto flex items-center justify-center shadow-inner group/preview cursor-pointer"
+                  onClick={() => props.fileInputRef.current?.click()}
+                  onDragOver={props.handleDragOver}
+                  onDrop={props.handleDrop}
+                >
                   {props.preview ? (
                     <img src={props.preview} alt="Passport Preview" className="max-w-full max-h-[350px] md:max-h-[420px] object-contain transition-transform duration-500 group-hover/preview:scale-[1.02]" />
                   ) : (

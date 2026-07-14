@@ -472,6 +472,7 @@ export default function App() {
               visaFileInputRef={visaFileInputRef}
               handleVisaFileChange={handleVisaFileChange}
               handleVisaDrop={handleVisaDrop}
+              handleDrop={handleDrop}
               handleDragOver={handleDragOver}
               utPurpose={utPurpose}
               setUtPurpose={setUtPurpose}
