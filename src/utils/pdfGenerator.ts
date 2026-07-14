@@ -572,6 +572,8 @@ export const getUndertakingPDFDocument = (formData: UndertakingFormData): jsPDF 
     durationText = 'The exact duration and dates of my stay in India will depend entirely upon the medical treatment requirements, progress, and schedule as prescribed and advised by the consulting hospital and medical specialists.';
   } else if (purpose === 'Double Entry') {
     durationText = `My scheduled embassy appointment is on ${formData.embassyDate || '______________________'}. I intend to stay in India solely for the period necessary to complete my consular interview and visa formalities.`;
+  } else if (purpose.toLowerCase().includes('tourism')) {
+    durationText = 'The exact duration and dates of my stay in India will be determined after the successful grant of my tourist visa. I will decide on the travel dates and duration of stay once the visa is approved, as my travel plans depend entirely on the visa issuance.';
   } else {
     durationText = `I intend to stay in India from ${formData.travelFrom || '______________________'} to ${formData.travelTo || '______________________'}, for a total period of ${formData.duration || '______________________'}.`;
   }

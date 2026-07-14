@@ -28,6 +28,10 @@ export function StayDurationSection({
             "My scheduled embassy appointment is on <span className="font-bold text-amber-700 dark:text-amber-400 underline decoration-dashed decoration-amber-400">{undertakingData.embassyDate || '_________________'}</span>. 
             I intend to stay in India solely for the period necessary to complete my consular interview and visa formalities."
           </div>
+        ) : undertakingData.purpose.toLowerCase().includes('tourism') ? (
+          <div className="italic text-slate-800 dark:text-zinc-250 font-semibold bg-emerald-500/5 dark:bg-zinc-900/30 p-3 rounded-lg border border-emerald-200 dark:border-zinc-800 max-w-2xl leading-relaxed">
+            "The exact duration and dates of my stay in India will be determined after the successful grant of my tourist visa. I will decide on the travel dates and duration of stay once the visa is approved, as my travel plans depend entirely on the visa issuance."
+          </div>
         ) : (
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <span>I intend to stay in India for a duration of</span>

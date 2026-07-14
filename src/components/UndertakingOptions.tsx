@@ -185,7 +185,7 @@ export function UndertakingOptions({
         </AnimatePresence>
 
         {/* 2. Duration of Stay */}
-        {utPurpose !== 'Double Entry' && (
+        {utPurpose !== 'Double Entry' && utPurpose !== 'Tourism' && (
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="block text-[10px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wide mb-1">
@@ -209,6 +209,17 @@ export function UndertakingOptions({
                 className="w-full text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
               />
             </div>
+          </div>
+        )}
+
+        {utPurpose === 'Tourism' && (
+          <div className="bg-emerald-500/5 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 rounded-lg p-2.5">
+            <p className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-0.5">
+              Duration of Stay (Visa Dependent)
+            </p>
+            <p className="text-[11px] text-slate-600 dark:text-zinc-400 leading-normal italic">
+              ভ্রমণের তারিখ ও স্থায়িত্বকাল নির্দিষ্ট নয়। এটি সম্পূর্ণভাবে ভিসা পাওয়ার পর নির্ধারণ করা হবে।
+            </p>
           </div>
         )}
 
