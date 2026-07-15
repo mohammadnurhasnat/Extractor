@@ -441,6 +441,11 @@ async function startServer() {
   // Increase payload limit for large passport images
   app.use(express.json({ limit: '20mb' }));
 
+  // Simple health check endpoint for Render keep-alive and uptime monitoring
+  app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
+
   function cleanAddressPrefixes(address: string | undefined): string {
     if (!address) return '';
     return address
@@ -1854,6 +1859,23 @@ CRITICAL ADDRESS FORMATTING & DIVERSITY MANDATES:
 
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on http://localhost:${PORT}`);
+
+    // Render Keep-Alive Trick (Self-ping to avoid spin-down)
+    const externalUrl = process.env.RENDER_EXTERNAL_URL;
+    if (externalUrl) {
+      console.log(`Render external URL detected: ${externalUrl}. Initializing self-ping keep-alive...`);
+      // Ping every 10 minutes (600,000 ms) to keep the service warm
+      setInterval(async () => {
+        try {
+          const response = await fetch(`${externalUrl}/api/health`);
+          console.log(`[Keep-Alive] Self-ping successful: ${response.status} - ${response.statusText}`);
+        } catch (error: any) {
+          console.error(`[Keep-Alive] Self-ping failed:`, error.message);
+        }
+      }, 10 * 60 * 1000);
+    } else {
+      console.log("No RENDER_EXTERNAL_URL environment variable found. Keep-alive self-ping is ready but disabled.");
+    }
   });
 }
 
