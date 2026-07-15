@@ -163,6 +163,13 @@ async function loadUsersFromFirestore() {
       return;
     }
 
+    if (process.env.RENDER || (!process.env.GOOGLE_APPLICATION_CREDENTIALS && !process.env.K_SERVICE)) {
+      console.warn("Running in non-GCP environment (e.g., Render) without credentials. Bypassing Firestore and using local fallbacks.");
+      cachedUsers = getUsersStoreLocal();
+      db = null;
+      return;
+    }
+
     const firebaseConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
     db = new Firestore({
       projectId: firebaseConfig.projectId,
