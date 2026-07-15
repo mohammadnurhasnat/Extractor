@@ -237,8 +237,8 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
       {/* Upper header action */}
       <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-zinc-900/50">
         <div>
-          <h4 className="text-sm font-bold text-slate-800 dark:text-zinc-100 flex items-center gap-1.5">
-            <TrendingUp className="w-4 h-4 text-emerald-500" />
+          <h4 className="text-sm font-extrabold text-slate-800 dark:text-zinc-100 flex items-center gap-1.5">
+            <TrendingUp className="w-4 h-4 text-blue-500" />
             <span>Usage Analytics</span>
           </h4>
           <p className="text-[10px] text-slate-400 dark:text-zinc-500 font-bold uppercase tracking-wider mt-0.5">
@@ -247,7 +247,7 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
         </div>
         <button 
           onClick={onRefresh} 
-          className="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-50 dark:hover:bg-zinc-850 text-xs font-bold flex items-center gap-1.5 text-blue-500 transition-colors"
+          className="px-2.5 py-1.5 rounded-md border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-50 dark:hover:bg-zinc-850 text-xs font-bold flex items-center gap-1.5 text-blue-500 dark:text-blue-400 transition-colors shadow-sm"
         >
           <RefreshCw className="w-3.5 h-3.5" />
           <span>Refresh</span>
@@ -257,105 +257,105 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
       {/* Account summaries */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {/* Total Admin accounts */}
-        <div className="bg-gradient-to-br from-indigo-50/50 to-white dark:from-indigo-950/10 dark:to-zinc-950 p-3.5 rounded-xl border border-slate-200/80 dark:border-zinc-800/80 flex items-center gap-3">
-          <div className="p-2.5 bg-indigo-500/10 rounded-lg text-indigo-600 dark:text-indigo-400">
-            <ShieldCheck className="w-5 h-5" />
+        <div className="bg-slate-50/55 dark:bg-zinc-900/35 p-3.5 rounded-lg border border-slate-200/60 dark:border-zinc-800/80 flex items-center gap-3">
+          <div className="p-2.5 bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 rounded-md">
+            <ShieldCheck className="w-4 h-4" />
           </div>
           <div>
-            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">Admin Accounts</span>
-            <span className="text-lg font-black block tracking-tight text-indigo-600 dark:text-indigo-400">
-              {accountsSummary.adminCount} <span className="text-xs font-bold text-slate-500">Accounts</span>
+            <span className="block text-[9px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">Admin Accounts</span>
+            <span className="text-base font-extrabold block tracking-tight text-slate-800 dark:text-zinc-100">
+              {accountsSummary.adminCount}
             </span>
           </div>
         </div>
 
         {/* Total User accounts */}
-        <div className="bg-gradient-to-br from-blue-50/50 to-white dark:from-blue-950/10 dark:to-zinc-950 p-3.5 rounded-xl border border-slate-200/80 dark:border-zinc-800/80 flex items-center gap-3">
-          <div className="p-2.5 bg-blue-500/10 rounded-lg text-blue-600 dark:text-blue-400">
-            <Users className="w-5 h-5" />
+        <div className="bg-slate-50/55 dark:bg-zinc-900/35 p-3.5 rounded-lg border border-slate-200/60 dark:border-zinc-800/80 flex items-center gap-3">
+          <div className="p-2.5 bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 rounded-md">
+            <Users className="w-4 h-4" />
           </div>
           <div>
-            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">Customer Accounts</span>
-            <span className="text-lg font-black block tracking-tight text-blue-600 dark:text-blue-400">
-              {accountsSummary.userCount} <span className="text-xs font-bold text-slate-500">Accounts</span>
+            <span className="block text-[9px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">Customer Accounts</span>
+            <span className="text-base font-extrabold block tracking-tight text-slate-800 dark:text-zinc-100">
+              {accountsSummary.userCount}
             </span>
           </div>
         </div>
 
         {/* Total Extractions */}
-        <div className="bg-gradient-to-br from-emerald-50/50 to-white dark:from-emerald-950/10 dark:to-zinc-950 p-3.5 rounded-xl border border-slate-200/80 dark:border-zinc-800/80 flex items-center gap-3">
-          <div className="p-2.5 bg-emerald-500/10 rounded-lg text-emerald-600 dark:text-emerald-400">
-            <FileText className="w-5 h-5" />
+        <div className="bg-slate-50/55 dark:bg-zinc-900/35 p-3.5 rounded-lg border border-slate-200/60 dark:border-zinc-800/80 flex items-center gap-3">
+          <div className="p-2.5 bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 rounded-md">
+            <FileText className="w-4 h-4" />
           </div>
           <div>
-            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">Total Extractions</span>
-            <span className="text-lg font-black block tracking-tight text-emerald-600 dark:text-emerald-400">
-              {metrics.extractions.total} <span className="text-xs font-bold text-slate-500">Times</span>
+            <span className="block text-[9px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">Total Extractions</span>
+            <span className="text-base font-extrabold block tracking-tight text-slate-800 dark:text-zinc-100">
+              {metrics.extractions.total}
             </span>
           </div>
         </div>
 
         {/* Total Downloads */}
-        <div className="bg-gradient-to-br from-teal-50/50 to-white dark:from-teal-950/10 dark:to-zinc-950 p-3.5 rounded-xl border border-slate-200/80 dark:border-zinc-800/80 flex items-center gap-3">
-          <div className="p-2.5 bg-teal-500/10 rounded-lg text-teal-600 dark:text-teal-400">
-            <Download className="w-5 h-5" />
+        <div className="bg-slate-50/55 dark:bg-zinc-900/35 p-3.5 rounded-lg border border-slate-200/60 dark:border-zinc-800/80 flex items-center gap-3">
+          <div className="p-2.5 bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 rounded-md">
+            <Download className="w-4 h-4" />
           </div>
           <div>
-            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">Total Downloads / Exports</span>
-            <span className="text-lg font-black block tracking-tight text-teal-600 dark:text-teal-400">
-              {metrics.downloads.total} <span className="text-xs font-bold text-slate-500">Actions</span>
+            <span className="block text-[9px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">Total Downloads</span>
+            <span className="text-base font-extrabold block tracking-tight text-slate-800 dark:text-zinc-100">
+              {metrics.downloads.total}
             </span>
           </div>
         </div>
       </div>
 
       {/* Period Table Grid (Daily, Weekly, Monthly Summary) */}
-      <div className="bg-white dark:bg-zinc-900/40 rounded-xl border border-slate-200/80 dark:border-zinc-800/85 overflow-hidden shadow-sm">
-        <div className="bg-slate-50/80 dark:bg-zinc-900/60 p-3 border-b border-slate-100 dark:border-zinc-800 flex items-center gap-1.5">
-          <Calendar className="w-4 h-4 text-blue-500" />
-          <h5 className="font-extrabold text-xs uppercase tracking-wider">Activity Period Matrix</h5>
+      <div className="bg-white dark:bg-zinc-950/20 rounded-lg border border-slate-200/80 dark:border-zinc-800/80 overflow-hidden shadow-sm">
+        <div className="bg-slate-50/60 dark:bg-zinc-900/40 p-3 border-b border-slate-100 dark:border-zinc-800 flex items-center gap-1.5">
+          <Calendar className="w-4 h-4 text-blue-500 dark:text-blue-400" />
+          <h5 className="font-extrabold text-xs uppercase tracking-wider text-slate-700 dark:text-zinc-300">Activity Period Matrix</h5>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-150 dark:border-zinc-800 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/30 dark:bg-zinc-950/10">
+              <tr className="border-b border-slate-100 dark:border-zinc-900 text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider bg-slate-50/30 dark:bg-zinc-950/10">
                 <th className="p-3">Activity Type</th>
-                <th className="p-3 text-center bg-blue-500/5 dark:bg-blue-500/10">Today</th>
-                <th className="p-3 text-center bg-indigo-500/5 dark:bg-indigo-500/10">This Week</th>
-                <th className="p-3 text-center bg-emerald-500/5 dark:bg-emerald-500/10">This Month</th>
-                <th className="p-3 text-center font-black">All Time</th>
+                <th className="p-3 text-center">Today</th>
+                <th className="p-3 text-center">This Week</th>
+                <th className="p-3 text-center">This Month</th>
+                <th className="p-3 text-center">All Time</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/60 text-xs">
-              <tr className="hover:bg-slate-50/50 dark:hover:bg-zinc-800/20">
-                <td className="p-3 font-semibold flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/50 text-xs">
+              <tr className="hover:bg-slate-50/30 dark:hover:bg-zinc-900/10">
+                <td className="p-3 font-semibold text-slate-700 dark:text-zinc-300 flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
                   <span>Passport Extractions</span>
                 </td>
-                <td className="p-3 text-center bg-blue-500/5 dark:bg-blue-500/10 font-bold text-slate-700 dark:text-zinc-200">{metrics.extractions.today}</td>
-                <td className="p-3 text-center bg-indigo-500/5 dark:bg-indigo-500/10 font-bold text-slate-700 dark:text-zinc-200">{metrics.extractions.week}</td>
-                <td className="p-3 text-center bg-emerald-500/5 dark:bg-emerald-500/10 font-bold text-slate-700 dark:text-zinc-200">{metrics.extractions.month}</td>
-                <td className="p-3 text-center font-black text-emerald-600 dark:text-emerald-400">{metrics.extractions.total}</td>
+                <td className="p-3 text-center text-slate-600 dark:text-zinc-300 font-bold">{metrics.extractions.today}</td>
+                <td className="p-3 text-center text-slate-600 dark:text-zinc-300 font-bold">{metrics.extractions.week}</td>
+                <td className="p-3 text-center text-slate-600 dark:text-zinc-300 font-bold">{metrics.extractions.month}</td>
+                <td className="p-3 text-center font-black text-blue-600 dark:text-blue-400">{metrics.extractions.total}</td>
               </tr>
-              <tr className="hover:bg-slate-50/50 dark:hover:bg-zinc-800/20">
-                <td className="p-3 font-semibold flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-amber-500" />
+              <tr className="hover:bg-slate-50/30 dark:hover:bg-zinc-900/10">
+                <td className="p-3 font-semibold text-slate-700 dark:text-zinc-300 flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
                   <span>Undertakings Downloaded</span>
                 </td>
-                <td className="p-3 text-center bg-blue-500/5 dark:bg-blue-500/10 font-bold text-slate-700 dark:text-zinc-200">{metrics.undertakings.today}</td>
-                <td className="p-3 text-center bg-indigo-500/5 dark:bg-indigo-500/10 font-bold text-slate-700 dark:text-zinc-200">{metrics.undertakings.week}</td>
-                <td className="p-3 text-center bg-emerald-500/5 dark:bg-emerald-500/10 font-bold text-slate-700 dark:text-zinc-200">{metrics.undertakings.month}</td>
-                <td className="p-3 text-center font-black text-amber-600 dark:text-amber-500">{metrics.undertakings.total}</td>
+                <td className="p-3 text-center text-slate-600 dark:text-zinc-300 font-bold">{metrics.undertakings.today}</td>
+                <td className="p-3 text-center text-slate-600 dark:text-zinc-300 font-bold">{metrics.undertakings.week}</td>
+                <td className="p-3 text-center text-slate-600 dark:text-zinc-300 font-bold">{metrics.undertakings.month}</td>
+                <td className="p-3 text-center font-black text-slate-700 dark:text-zinc-200">{metrics.undertakings.total}</td>
               </tr>
-              <tr className="hover:bg-slate-50/50 dark:hover:bg-zinc-800/20">
-                <td className="p-3 font-semibold flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-teal-500" />
+              <tr className="hover:bg-slate-50/30 dark:hover:bg-zinc-900/10">
+                <td className="p-3 font-semibold text-slate-700 dark:text-zinc-300 flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
                   <span>Image to PDF Conversion</span>
                 </td>
-                <td className="p-3 text-center bg-blue-500/5 dark:bg-blue-500/10 font-bold text-slate-700 dark:text-zinc-200">{metrics.imageToPdf.today}</td>
-                <td className="p-3 text-center bg-indigo-500/5 dark:bg-indigo-500/10 font-bold text-slate-700 dark:text-zinc-200">{metrics.imageToPdf.week}</td>
-                <td className="p-3 text-center bg-emerald-500/5 dark:bg-emerald-500/10 font-bold text-slate-700 dark:text-zinc-200">{metrics.imageToPdf.month}</td>
-                <td className="p-3 text-center font-black text-teal-600 dark:text-teal-400">{metrics.imageToPdf.total}</td>
+                <td className="p-3 text-center text-slate-600 dark:text-zinc-300 font-bold">{metrics.imageToPdf.today}</td>
+                <td className="p-3 text-center text-slate-600 dark:text-zinc-300 font-bold">{metrics.imageToPdf.week}</td>
+                <td className="p-3 text-center text-slate-600 dark:text-zinc-300 font-bold">{metrics.imageToPdf.month}</td>
+                <td className="p-3 text-center font-black text-slate-700 dark:text-zinc-200">{metrics.imageToPdf.total}</td>
               </tr>
             </tbody>
           </table>
@@ -375,54 +375,54 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
               placeholder="Filter by user..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 border rounded-lg text-xs bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 focus:outline-none focus:ring-1 focus:ring-blue-500 text-black dark:text-white"
+              className="w-full pl-8 pr-3 py-1.5 border rounded-lg text-xs bg-slate-50/50 dark:bg-zinc-900/50 border-slate-200/80 dark:border-zinc-800/80 focus:outline-none focus:ring-1 focus:ring-blue-500 text-black dark:text-white"
             />
           </div>
         </div>
 
-        <div className="overflow-x-auto border border-slate-200/80 dark:border-zinc-800/85 rounded-xl">
+        <div className="overflow-x-auto border border-slate-200/80 dark:border-zinc-800/80 rounded-lg shadow-sm">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50 dark:bg-zinc-900/50 border-b border-slate-200/80 dark:border-zinc-800 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+              <tr className="bg-slate-50/80 dark:bg-zinc-900/40 border-b border-slate-200/60 dark:border-zinc-800 text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">
                 <th className="p-3">User Details</th>
                 <th className="p-3 text-center">Passport Extractions</th>
                 <th className="p-3 text-center">Undertakings Downloaded</th>
                 <th className="p-3 text-center">Image-to-PDF</th>
-                <th className="p-3 text-center font-black">Total Actions</th>
+                <th className="p-3 text-center">Total Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/60 text-xs">
+            <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/50 text-xs">
               {userBreakdown.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="p-6 text-center text-slate-400 text-xs">No user information found.</td>
                 </tr>
               ) : (
                 userBreakdown.map(user => (
-                  <tr key={user.id} className="hover:bg-slate-50/50 dark:hover:bg-zinc-900/30">
+                  <tr key={user.id} className="hover:bg-slate-50/30 dark:hover:bg-zinc-900/10">
                     <td className="p-3">
                       <div className="flex flex-col">
                         <div className="flex items-center gap-1.5 font-bold text-slate-800 dark:text-zinc-200">
                           <span>{user.name}</span>
                           {user.isAdmin && (
-                            <span className="px-1 py-0.5 rounded text-[8px] bg-amber-500/10 text-amber-500 font-extrabold uppercase">
+                            <span className="px-1 py-0.5 rounded text-[8px] bg-blue-500/10 text-blue-600 dark:text-blue-400 font-extrabold uppercase tracking-wide">
                               ADMIN
                             </span>
                           )}
                         </div>
-                        <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-mono">{user.email || user.mobileNumber}</span>
+                        <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-mono mt-0.5">{user.email || user.mobileNumber}</span>
                       </div>
                     </td>
-                    <td className="p-3 text-center font-semibold text-slate-700 dark:text-zinc-300">
+                    <td className="p-3 text-center font-semibold text-slate-600 dark:text-zinc-300">
                       {user.extractions}
                     </td>
-                    <td className="p-3 text-center font-semibold text-slate-700 dark:text-zinc-300">
+                    <td className="p-3 text-center font-semibold text-slate-600 dark:text-zinc-300">
                       {user.undertakings}
                     </td>
-                    <td className="p-3 text-center font-semibold text-slate-700 dark:text-zinc-300">
+                    <td className="p-3 text-center font-semibold text-slate-600 dark:text-zinc-300">
                       {user.imageToPdf}
                     </td>
                     <td className="p-3 text-center">
-                      <span className="px-2 py-0.5 rounded-full font-black text-[11px] bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                      <span className="px-2 py-0.5 rounded font-bold text-[10px] bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300">
                         {user.total}
                       </span>
                     </td>
@@ -437,53 +437,44 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
       {/* Daily Passport Extraction History grouped by day */}
       <div className="space-y-3">
         <h5 className="font-extrabold text-xs uppercase tracking-wider text-slate-500 dark:text-zinc-400 flex items-center gap-1.5">
-          <Clock className="w-4 h-4 text-indigo-500" />
+          <Clock className="w-4 h-4 text-blue-500" />
           <span>Daily Passport Extraction History</span>
         </h5>
 
         <div className="space-y-3 max-h-[350px] overflow-y-auto pr-1">
           {dailyHistory.length === 0 ? (
-            <div className="text-center py-8 text-slate-400 text-xs border border-dashed rounded-xl border-slate-200 dark:border-zinc-850">
+            <div className="text-center py-8 text-slate-400 text-xs border border-dashed rounded-lg border-slate-200 dark:border-zinc-800">
               No daily extraction history found.
             </div>
           ) : (
             dailyHistory.map(day => (
-              <div key={day.dateStr} className="border border-slate-200/80 dark:border-zinc-800/80 rounded-xl p-3.5 bg-white dark:bg-zinc-950 shadow-sm hover:border-slate-300 dark:hover:border-zinc-700 transition-all">
+              <div key={day.dateStr} className="border border-slate-200/80 dark:border-zinc-800/80 rounded-lg p-3 bg-white dark:bg-zinc-950/40 shadow-sm">
                 {/* Date header and daily total */}
-                <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-zinc-900/60 mb-2.5">
+                <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-zinc-900/60 mb-2">
                   <div className="flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-xs font-extrabold text-slate-800 dark:text-zinc-100">{day.dateStr}</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                    <span className="text-xs font-bold text-slate-700 dark:text-zinc-200">{day.dateStr}</span>
                   </div>
-                  <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">
-                    Total Extractions: {day.total}
+                  <span className="text-[10px] font-bold text-slate-500 dark:text-zinc-400">
+                    Total Extractions: <span className="font-extrabold text-blue-500">{day.total}</span>
                   </span>
                 </div>
 
                 {/* Users activity breakdown on that day */}
-                <div className="space-y-2 pl-3">
+                <div className="space-y-1.5 pl-3">
                   {Object.keys(day.users).map(userName => {
                     const uStats = day.users[userName];
+                    const details: string[] = [];
+                    if (uStats.extractions > 0) details.push(`${uStats.extractions} Extractions`);
+                    if (uStats.undertakings > 0) details.push(`${uStats.undertakings} Undertakings`);
+                    if (uStats.imageToPdf > 0) details.push(`${uStats.imageToPdf} Image-to-PDF`);
+
                     return (
-                      <div key={userName} className="flex flex-col sm:flex-row justify-between sm:items-center text-xs gap-1 py-1 border-b border-slate-50 dark:border-zinc-900/30 last:border-none">
-                        <span className="font-bold text-slate-700 dark:text-zinc-300">{userName}</span>
-                        <div className="flex items-center gap-3 text-[10px] text-slate-400 dark:text-zinc-500">
-                          {uStats.extractions > 0 && (
-                            <span className="bg-emerald-500/5 text-emerald-600 px-1.5 py-0.5 rounded font-semibold border border-emerald-500/10">
-                              Extractions: {uStats.extractions}
-                            </span>
-                          )}
-                          {uStats.undertakings > 0 && (
-                            <span className="bg-amber-500/5 text-amber-600 px-1.5 py-0.5 rounded font-semibold border border-amber-500/10">
-                              Undertakings: {uStats.undertakings}
-                            </span>
-                          )}
-                          {uStats.imageToPdf > 0 && (
-                            <span className="bg-teal-500/5 text-teal-600 px-1.5 py-0.5 rounded font-semibold border border-teal-500/10">
-                              Image-to-PDF: {uStats.imageToPdf}
-                            </span>
-                          )}
-                        </div>
+                      <div key={userName} className="flex justify-between items-center text-xs py-0.5">
+                        <span className="font-semibold text-slate-600 dark:text-zinc-300">{userName}</span>
+                        <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-medium">
+                          {details.join(', ')}
+                        </span>
                       </div>
                     );
                   })}
