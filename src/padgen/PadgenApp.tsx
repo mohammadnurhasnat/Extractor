@@ -483,13 +483,12 @@ export function PadgenApp() {
     }
     showStatusMessage('Rendering Pad PDF…');
     try {
-      const orig = wrapper.style.cssText;
-      wrapper.style.cssText = 'position: fixed; left: 0; top: 0; z-index: -999;';
+      
       const canvas = await htmlToImage.toCanvas(target, {
         pixelRatio: 2.5,
         backgroundColor: '#ffffff'
       });
-      wrapper.style.cssText = orig;
+      
       const imgData = canvas.toDataURL('image/jpeg', 0.9);
       const pdf = new jsPDF('p', 'mm', 'a4');
       const imgProps = pdf.getImageProperties(imgData);
@@ -514,13 +513,12 @@ export function PadgenApp() {
     }
     showStatusMessage('Rendering A4 Card Sheet PDF…');
     try {
-      const orig = wrapper.style.cssText;
-      wrapper.style.cssText = 'position: fixed; left: 0; top: 0; z-index: -999;';
+      
       const canvas = await htmlToImage.toCanvas(target, {
         pixelRatio: 2.5,
         backgroundColor: '#ffffff'
       });
-      wrapper.style.cssText = orig;
+      
       const imgData = canvas.toDataURL('image/jpeg', 0.9);
       const pdf = new jsPDF('p', 'mm', 'a4');
       const imgProps = pdf.getImageProperties(imgData);
@@ -554,13 +552,12 @@ export function PadgenApp() {
     }
     showStatusMessage('Rendering Card PNG…');
     try {
-      const orig = wrapper.style.cssText;
-      wrapper.style.cssText = 'position: fixed; left: 0; top: 0; z-index: -999;';
+      
       const canvas = await htmlToImage.toCanvas(target, {
         pixelRatio: 4,
         backgroundColor: '#ffffff'
       });
-      wrapper.style.cssText = orig;
+      
       const fn = `${baseFilename()}-card.png`;
       const link = document.createElement('a');
       link.download = fn;
@@ -584,13 +581,12 @@ export function PadgenApp() {
     }
     showStatusMessage('Rendering Pad PNG…');
     try {
-      const orig = wrapper.style.cssText;
-      wrapper.style.cssText = 'position: fixed; left: 0; top: 0; z-index: -999;';
+      
       const canvas = await htmlToImage.toCanvas(target, {
         pixelRatio: 2.5,
         backgroundColor: '#ffffff'
       });
-      wrapper.style.cssText = orig;
+      
       const fn = `${baseFilename()}-pad.png`;
       const link = document.createElement('a');
       link.download = fn;
