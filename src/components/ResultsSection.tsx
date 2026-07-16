@@ -4,13 +4,14 @@ import { FileText } from 'lucide-react';
 import { PassportDataTab } from './PassportDataTab';
 import { UndertakingFormTab } from './UndertakingFormTab';
 import { PassportImagePdfTab } from './PassportImagePdfTab';
+import { PadgenApp } from '../padgen/PadgenApp';
 import { PassportData, UndertakingFormData, QueueItem } from '../types';
 
 interface ResultsSectionProps {
   data: PassportData | null;
   activeItem: QueueItem | null;
-  resultsTab: 'profile' | 'undertaking' | 'passport-pdf';
-  setResultsTab: (tab: 'profile' | 'undertaking' | 'passport-pdf') => void;
+  resultsTab: 'profile' | 'undertaking' | 'passport-pdf' | 'padgen';
+  setResultsTab: (tab: 'profile' | 'undertaking' | 'passport-pdf' | 'padgen') => void;
   isUndertakingConfigured: boolean;
   undertakingData: UndertakingFormData | null;
   updateDataField: (field: keyof PassportData, value: string) => void;
@@ -82,7 +83,7 @@ export function ResultsSection({
 
             {/* TABS SELECTOR */}
             {(data && isUndertakingConfigured && undertakingData) || activeItem ? (
-              <div className="flex flex-col sm:grid sm:grid-cols-3 bg-slate-100/60 dark:bg-zinc-950/65 p-2 rounded-2xl mb-6 print:hidden gap-2 w-full text-center">
+              <div className="flex flex-col sm:grid sm:grid-cols-4 bg-slate-100/60 dark:bg-zinc-950/65 p-2 rounded-2xl mb-6 print:hidden gap-2 w-full text-center">
                 {data && (
                   <button
                     onClick={() => setResultsTab('profile')}
@@ -119,6 +120,18 @@ export function ResultsSection({
                     <span className="relative z-10">Image to PDF</span>
                   </button>
                 )}
+                {data && (
+                  <button
+                    onClick={() => setResultsTab('padgen')}
+                    className={`slide-btn slide-btn-purple text-center py-3 px-2 rounded-xl text-sm font-extrabold cursor-pointer transition-none border min-h-[48px] ripple-btn ${
+                      resultsTab === 'padgen'
+                        ? 'active shadow-[0_2px_10px_rgba(0,0,0,0.02)] font-black border-[#2DD4BF]/50'
+                        : 'border-slate-205 dark:border-zinc-800'
+                     }`}
+                  >
+                    <span className="relative z-10">Card & Letter Head</span>
+                  </button>
+                )}
               </div>
             ) : null}
 
@@ -146,6 +159,8 @@ export function ResultsSection({
               />
             ) : resultsTab === 'passport-pdf' && activeItem ? (
               <PassportImagePdfTab activeItem={activeItem} currentUser={currentUser} />
+            ) : resultsTab === 'padgen' ? (
+              <PadgenApp />
             ) : null}
           </motion.div>
         </div>

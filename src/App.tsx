@@ -269,10 +269,11 @@ export default function App() {
 
 
 
-  const [resultsTab, setResultsTab] = useState<'profile' | 'undertaking' | 'passport-pdf'>(() => {
+  const [resultsTab, setResultsTab] = useState<'profile' | 'undertaking' | 'passport-pdf' | 'padgen'>(() => {
     const saved = localStorage.getItem('passport_active_results_tab');
     if (saved === 'undertaking') return 'undertaking';
     if (saved === 'passport-pdf') return 'passport-pdf';
+    if (saved === 'padgen') return 'padgen';
     return 'profile';
   });
 
