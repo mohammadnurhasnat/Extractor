@@ -289,7 +289,7 @@ export const GRID_STYLE_LABELS = {
   circuit: 'Circuit Board Pattern'
 };
 
-export const PAD_LAYOUTS: Array<'sideband' | 'modern-header' | 'elegant-border' | 'bottom-heavy' | 'minimalist-corner' | 'geometric-bg' | 'tech-isometric' | 'classic-seal' | 'diagonal-sash' | 'abstract-waves' | 'corporate-column' | 'editorial-luxury' | 'bento-modular' | 'retro-brutalist' | 'organic-leaf' | 'architectural-lines' | 'executive-signature' | 'minimalist-stamped' | 'freepik-corporate-blue' | 'canva-creative-wave' | 'modern-gradient-edge' | 'luxury-gold-foil' | 'startup-geometric' | 'law-firm-classic' | 'creative-agency-bold' | 'medical-clean-cross' | 'real-estate-arch' | 'hospitality-elegant'> = [
+export const PAD_LAYOUTS: Array<'sideband' | 'modern-header' | 'elegant-border' | 'bottom-heavy' | 'minimalist-corner' | 'geometric-bg' | 'tech-isometric' | 'classic-seal' | 'diagonal-sash' | 'abstract-waves' | 'corporate-column' | 'editorial-luxury' | 'bento-modular' | 'retro-brutalist' | 'organic-leaf' | 'architectural-lines' | 'executive-signature' | 'minimalist-stamped' | 'freepik-corporate-blue' | 'canva-creative-wave' | 'modern-gradient-edge' | 'luxury-gold-foil' | 'startup-geometric' | 'law-firm-classic' | 'creative-agency-bold' | 'medical-clean-cross' | 'real-estate-arch' | 'hospitality-elegant' | 'premium-business'> = [
   'sideband',
   'modern-header',
   'elegant-border',
@@ -317,7 +317,8 @@ export const PAD_LAYOUTS: Array<'sideband' | 'modern-header' | 'elegant-border' 
   'creative-agency-bold',
   'medical-clean-cross',
   'real-estate-arch',
-  'hospitality-elegant'
+  'hospitality-elegant',
+  'premium-business'
 ];
 
 export const CARD_LAYOUTS: Array<'centered' | 'split' | 'sideband' | 'modern-split' | 'minimalist-right' | 'dark-accent' | 'shield-badge' | 'bento-grid' | 'diagonal-split' | 'retro-tech' | 'luxury-gold' | 'wave-abstract' | 'minimalist-centered' | 'asymmetrical-stripe' | 'executive-badge' | 'architectural-structure' | 'geometric-nodes' | 'vertical-editorial' | 'corporate-envelope' | 'freepik-corporate-blue' | 'canva-creative-wave' | 'modern-gradient-edge' | 'luxury-gold-foil' | 'startup-geometric' | 'law-firm-classic' | 'creative-agency-bold' | 'medical-clean-cross' | 'real-estate-arch' | 'hospitality-elegant'> = [
@@ -381,6 +382,7 @@ export const PAD_LAYOUT_LABELS = {
   'medical-clean-cross': '28. Medical Clean',
   'real-estate-arch': '29. Real Estate Arch',
   'hospitality-elegant': '30. Hospitality Elegant',
+  'premium-business': '31. Premium Business',
 };
 
 export const CARD_LAYOUT_LABELS = {
@@ -466,15 +468,15 @@ export const TEXTURE_LABELS = {
 };
 
 export const DEFAULT_COMPANY_DATA: CompanyData = {
-  companyName: "Processing Hub",
-  address: "34/D, Level-3, Jamuna Future Park, Vatara, Dhaka-1229",
-  phone: "+8801332601510",
-  email: "processinghubbd@gmail.com",
-  tagline: "processinghubbd.com",
-  empName: "MOHAMMAD NUR HASNAT",
-  empRole: "Proprietor",
-  empPhone: "+8801861186863",
-  empEmail: "mohammadnurhasnat@gmail.com",
+  companyName: "Business Solutions Inc.",
+  address: "123 Professional Way, Suite 100, City, State 12345",
+  phone: "+1 (555) 123-4567",
+  email: "contact@business-solutions.com",
+  tagline: "Innovative Professional Services",
+  empName: "John Doe",
+  empRole: "CEO",
+  empPhone: "+1 (555) 987-6543",
+  empEmail: "johndoe@business-solutions.com",
   casing: 'title',
   industry: 'corporate',
 };

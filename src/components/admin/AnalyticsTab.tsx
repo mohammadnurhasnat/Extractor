@@ -156,7 +156,7 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
     logs.forEach(log => {
       const uId = log.userId;
       if (!userMap[uId]) {
-        userMap[uId] = { extractions: 0, undertakings: 0, imageToPdf: 0, total: 0 };
+        userMap[uId] = { extractions: 0, undertakings: 0, imageToPdf: 0, businessPads: 0, visitingCards: 0, total: 0 };
       }
 
       if (log.action === 'EXTRACTION') {
@@ -281,52 +281,52 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
       {/* Account summaries */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {/* Total Admin accounts */}
-        <div className="bg-slate-50/55 dark:bg-zinc-900/35 p-3.5 rounded-lg border border-slate-200/60 dark:border-zinc-800/80 flex items-center gap-3">
-          <div className="p-2.5 bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 rounded-md">
+        <div className="bg-amber-50 dark:bg-amber-950/20 p-3.5 rounded-lg border border-amber-200/60 dark:border-amber-900/30 flex items-center gap-3">
+          <div className="p-2.5 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-md">
             <ShieldCheck className="w-4 h-4" />
           </div>
           <div>
-            <span className="block text-[9px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">Admin Accounts</span>
-            <span className="text-base font-extrabold block tracking-tight text-slate-800 dark:text-zinc-100">
+            <span className="block text-[9px] font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wider">Admin Accounts</span>
+            <span className="text-base font-extrabold block tracking-tight text-amber-950 dark:text-amber-100">
               {accountsSummary.adminCount}
             </span>
           </div>
         </div>
 
         {/* Total User accounts */}
-        <div className="bg-slate-50/55 dark:bg-zinc-900/35 p-3.5 rounded-lg border border-slate-200/60 dark:border-zinc-800/80 flex items-center gap-3">
-          <div className="p-2.5 bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 rounded-md">
+        <div className="bg-blue-50 dark:bg-blue-950/20 p-3.5 rounded-lg border border-blue-200/60 dark:border-blue-900/30 flex items-center gap-3">
+          <div className="p-2.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-md">
             <Users className="w-4 h-4" />
           </div>
           <div>
-            <span className="block text-[9px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">Customer Accounts</span>
-            <span className="text-base font-extrabold block tracking-tight text-slate-800 dark:text-zinc-100">
+            <span className="block text-[9px] font-bold text-blue-800 dark:text-blue-400 uppercase tracking-wider">Customer Accounts</span>
+            <span className="text-base font-extrabold block tracking-tight text-blue-950 dark:text-blue-100">
               {accountsSummary.userCount}
             </span>
           </div>
         </div>
 
         {/* Total Extractions */}
-        <div className="bg-slate-50/55 dark:bg-zinc-900/35 p-3.5 rounded-lg border border-slate-200/60 dark:border-zinc-800/80 flex items-center gap-3">
-          <div className="p-2.5 bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 rounded-md">
+        <div className="bg-emerald-50 dark:bg-emerald-950/20 p-3.5 rounded-lg border border-emerald-200/60 dark:border-emerald-900/30 flex items-center gap-3">
+          <div className="p-2.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-md">
             <FileText className="w-4 h-4" />
           </div>
           <div>
-            <span className="block text-[9px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">Total Extractions</span>
-            <span className="text-base font-extrabold block tracking-tight text-slate-800 dark:text-zinc-100">
+            <span className="block text-[9px] font-bold text-emerald-800 dark:text-emerald-400 uppercase tracking-wider">Total Extractions</span>
+            <span className="text-base font-extrabold block tracking-tight text-emerald-950 dark:text-emerald-100">
               {metrics.extractions.total}
             </span>
           </div>
         </div>
 
         {/* Total Downloads */}
-        <div className="bg-slate-50/55 dark:bg-zinc-900/35 p-3.5 rounded-lg border border-slate-200/60 dark:border-zinc-800/80 flex items-center gap-3">
-          <div className="p-2.5 bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 rounded-md">
+        <div className="bg-rose-50 dark:bg-rose-950/20 p-3.5 rounded-lg border border-rose-200/60 dark:border-rose-900/30 flex items-center gap-3">
+          <div className="p-2.5 bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-md">
             <Download className="w-4 h-4" />
           </div>
           <div>
-            <span className="block text-[9px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">Total Downloads</span>
-            <span className="text-base font-extrabold block tracking-tight text-slate-800 dark:text-zinc-100">
+            <span className="block text-[9px] font-bold text-rose-800 dark:text-rose-400 uppercase tracking-wider">Total Downloads</span>
+            <span className="text-base font-extrabold block tracking-tight text-rose-950 dark:text-rose-100">
               {metrics.downloads.total}
             </span>
           </div>
@@ -335,61 +335,57 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
 
       {/* Period Table Grid (Daily, Weekly, Monthly Summary) */}
       <div className="bg-white dark:bg-zinc-950/20 rounded-lg border border-slate-200/80 dark:border-zinc-800/80 overflow-hidden shadow-sm">
-        <div className="bg-slate-50/60 dark:bg-zinc-900/40 p-3 border-b border-slate-100 dark:border-zinc-800 flex items-center gap-1.5">
-          <Calendar className="w-4 h-4 text-blue-500 dark:text-blue-400" />
-          <h5 className="font-extrabold text-xs uppercase tracking-wider text-slate-700 dark:text-zinc-300">Activity Period Matrix</h5>
+        <div className="bg-slate-100 dark:bg-zinc-900 p-3 border-b border-slate-200 dark:border-zinc-800 flex items-center gap-1.5">
+          <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+          <h5 className="font-extrabold text-xs uppercase tracking-wider text-slate-800 dark:text-zinc-200">Activity Period Matrix</h5>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-100 dark:border-zinc-900 text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider bg-slate-50/30 dark:bg-zinc-950/10">
-                <th className="p-3">Activity Type</th>
-                <th className="p-3 text-center">Today</th>
-                <th className="p-3 text-center">This Week</th>
-                <th className="p-3 text-center">This Month</th>
-                <th className="p-3 text-center">All Time</th>
+              <tr className="border-b border-slate-200 dark:border-zinc-800 text-[10px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider bg-slate-50 dark:bg-zinc-950/40">
+                <th className="p-3 text-slate-700 dark:text-slate-300">Activity Type</th>
+                <th className="p-3 text-center text-sky-600 dark:text-sky-400 bg-sky-50/50 dark:bg-sky-950/20 border-b-2 border-sky-400/50">Today</th>
+                <th className="p-3 text-center text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/20 border-b-2 border-indigo-400/50">This Week</th>
+                <th className="p-3 text-center text-violet-600 dark:text-violet-400 bg-violet-50/50 dark:bg-violet-950/20 border-b-2 border-violet-400/50">This Month</th>
+                <th className="p-3 text-center text-fuchsia-600 dark:text-fuchsia-400 bg-fuchsia-50/50 dark:bg-fuchsia-950/20 border-b-2 border-fuchsia-400/50">All Time</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/50 text-xs">
-              <tr className="hover:bg-slate-50/30 dark:hover:bg-zinc-900/10">
-                <td className="p-3 font-semibold text-slate-700 dark:text-zinc-300 flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                  <span>Passport Extractions</span>
+            <tbody className="divide-y divide-slate-100 dark:divide-zinc-800 text-xs">
+              <tr className="hover:bg-blue-50/50 dark:hover:bg-blue-950/10 border-l-4 border-blue-500 transition-colors group">
+                <td className="p-3 font-semibold text-blue-800 dark:text-blue-300 bg-blue-50/30 dark:bg-blue-900/10">
+                  Passport Extractions
                 </td>
-                <td className="p-3 text-center text-slate-600 dark:text-zinc-300 font-bold">{metrics.extractions.today}</td>
-                <td className="p-3 text-center text-slate-600 dark:text-zinc-300 font-bold">{metrics.extractions.week}</td>
-                <td className="p-3 text-center text-slate-600 dark:text-zinc-300 font-bold">{metrics.extractions.month}</td>
-                <td className="p-3 text-center font-black text-blue-600 dark:text-blue-400">{metrics.extractions.total}</td>
+                <td className="p-3 text-center text-slate-700 dark:text-zinc-200 font-bold group-hover:bg-sky-50/30 dark:group-hover:bg-sky-900/10">{metrics.extractions.today}</td>
+                <td className="p-3 text-center text-slate-700 dark:text-zinc-200 font-bold group-hover:bg-indigo-50/30 dark:group-hover:bg-indigo-900/10">{metrics.extractions.week}</td>
+                <td className="p-3 text-center text-slate-700 dark:text-zinc-200 font-bold group-hover:bg-violet-50/30 dark:group-hover:bg-violet-900/10">{metrics.extractions.month}</td>
+                <td className="p-3 text-center font-black text-fuchsia-700 dark:text-fuchsia-300 bg-fuchsia-50/30 dark:bg-fuchsia-900/10">{metrics.extractions.total}</td>
               </tr>
-              <tr className="hover:bg-slate-50/30 dark:hover:bg-zinc-900/10">
-                <td className="p-3 font-semibold text-slate-700 dark:text-zinc-300 flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                  <span>Undertakings Downloaded</span>
+              <tr className="hover:bg-emerald-50/50 dark:hover:bg-emerald-950/10 border-l-4 border-emerald-500 transition-colors group">
+                <td className="p-3 font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-50/30 dark:bg-emerald-900/10">
+                  Undertakings Downloaded
                 </td>
-                <td className="p-3 text-center text-slate-600 dark:text-zinc-300 font-bold">{metrics.undertakings.today}</td>
-                <td className="p-3 text-center text-slate-600 dark:text-zinc-300 font-bold">{metrics.undertakings.week}</td>
-                <td className="p-3 text-center text-slate-600 dark:text-zinc-300 font-bold">{metrics.undertakings.month}</td>
-                <td className="p-3 text-center font-black text-slate-700 dark:text-zinc-200">{metrics.undertakings.total}</td>
+                <td className="p-3 text-center text-slate-700 dark:text-zinc-200 font-bold group-hover:bg-sky-50/30 dark:group-hover:bg-sky-900/10">{metrics.undertakings.today}</td>
+                <td className="p-3 text-center text-slate-700 dark:text-zinc-200 font-bold group-hover:bg-indigo-50/30 dark:group-hover:bg-indigo-900/10">{metrics.undertakings.week}</td>
+                <td className="p-3 text-center text-slate-700 dark:text-zinc-200 font-bold group-hover:bg-violet-50/30 dark:group-hover:bg-violet-900/10">{metrics.undertakings.month}</td>
+                <td className="p-3 text-center font-black text-fuchsia-700 dark:text-fuchsia-300 bg-fuchsia-50/30 dark:bg-fuchsia-900/10">{metrics.undertakings.total}</td>
               </tr>
-              <tr className="hover:bg-slate-50/30 dark:hover:bg-zinc-900/10">
-                <td className="p-3 font-semibold text-slate-700 dark:text-zinc-300 flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                  <span>Business Pads</span>
+              <tr className="hover:bg-amber-50/50 dark:hover:bg-amber-950/10 border-l-4 border-amber-500 transition-colors group">
+                <td className="p-3 font-semibold text-amber-800 dark:text-amber-300 bg-amber-50/30 dark:bg-amber-900/10">
+                  Business Pads
                 </td>
-                <td className="p-3 text-center text-slate-600 dark:text-zinc-300 font-bold">{metrics.businessPads.today}</td>
-                <td className="p-3 text-center text-slate-600 dark:text-zinc-300 font-bold">{metrics.businessPads.week}</td>
-                <td className="p-3 text-center text-slate-600 dark:text-zinc-300 font-bold">{metrics.businessPads.month}</td>
-                <td className="p-3 text-center font-black text-slate-700 dark:text-zinc-200">{metrics.businessPads.total}</td>
+                <td className="p-3 text-center text-slate-700 dark:text-zinc-200 font-bold group-hover:bg-sky-50/30 dark:group-hover:bg-sky-900/10">{metrics.businessPads.today}</td>
+                <td className="p-3 text-center text-slate-700 dark:text-zinc-200 font-bold group-hover:bg-indigo-50/30 dark:group-hover:bg-indigo-900/10">{metrics.businessPads.week}</td>
+                <td className="p-3 text-center text-slate-700 dark:text-zinc-200 font-bold group-hover:bg-violet-50/30 dark:group-hover:bg-violet-900/10">{metrics.businessPads.month}</td>
+                <td className="p-3 text-center font-black text-fuchsia-700 dark:text-fuchsia-300 bg-fuchsia-50/30 dark:bg-fuchsia-900/10">{metrics.businessPads.total}</td>
               </tr>
-              <tr className="hover:bg-slate-50/30 dark:hover:bg-zinc-900/10">
-                <td className="p-3 font-semibold text-slate-700 dark:text-zinc-300 flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                  <span>Visiting Cards</span>
+              <tr className="hover:bg-rose-50/50 dark:hover:bg-rose-950/10 border-l-4 border-rose-500 transition-colors group">
+                <td className="p-3 font-semibold text-rose-800 dark:text-rose-300 bg-rose-50/30 dark:bg-rose-900/10">
+                  Visiting Cards
                 </td>
-                <td className="p-3 text-center text-slate-600 dark:text-zinc-300 font-bold">{metrics.visitingCards.today}</td>
-                <td className="p-3 text-center text-slate-600 dark:text-zinc-300 font-bold">{metrics.visitingCards.week}</td>
-                <td className="p-3 text-center text-slate-600 dark:text-zinc-300 font-bold">{metrics.visitingCards.month}</td>
-                <td className="p-3 text-center font-black text-slate-700 dark:text-zinc-200">{metrics.visitingCards.total}</td>
+                <td className="p-3 text-center text-slate-700 dark:text-zinc-200 font-bold group-hover:bg-sky-50/30 dark:group-hover:bg-sky-900/10">{metrics.visitingCards.today}</td>
+                <td className="p-3 text-center text-slate-700 dark:text-zinc-200 font-bold group-hover:bg-indigo-50/30 dark:group-hover:bg-indigo-900/10">{metrics.visitingCards.week}</td>
+                <td className="p-3 text-center text-slate-700 dark:text-zinc-200 font-bold group-hover:bg-violet-50/30 dark:group-hover:bg-violet-900/10">{metrics.visitingCards.month}</td>
+                <td className="p-3 text-center font-black text-fuchsia-700 dark:text-fuchsia-300 bg-fuchsia-50/30 dark:bg-fuchsia-900/10">{metrics.visitingCards.total}</td>
               </tr>
             </tbody>
           </table>
@@ -417,7 +413,7 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
         <div className="overflow-x-auto border border-slate-200/80 dark:border-zinc-800/80 rounded-lg shadow-sm">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50/80 dark:bg-zinc-900/40 border-b border-slate-200/60 dark:border-zinc-800 text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">
+              <tr className="bg-slate-100 dark:bg-zinc-900 border-b border-slate-200 dark:border-zinc-800 text-[10px] font-bold text-slate-600 dark:text-zinc-300 uppercase tracking-wider">
                 <th className="p-3">User Details</th>
                 <th className="p-3 text-center">Passport Extractions</th>
                 <th className="p-3 text-center">Undertakings Downloaded</th>
@@ -427,20 +423,20 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
                 <th className="p-3 text-center">Total Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/50 text-xs">
+            <tbody className="divide-y divide-slate-100 dark:divide-zinc-800 text-xs">
               {userBreakdown.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="p-6 text-center text-slate-400 text-xs">No user information found.</td>
                 </tr>
               ) : (
-                userBreakdown.map(user => (
-                  <tr key={user.id} className="hover:bg-slate-50/30 dark:hover:bg-zinc-900/10">
+                userBreakdown.map((user, index) => (
+                  <tr key={user.id} className={`${index % 2 === 0 ? 'bg-white dark:bg-zinc-950/20' : 'bg-slate-50/50 dark:bg-zinc-900/20'} hover:bg-blue-50/30 dark:hover:bg-blue-950/10`}>
                     <td className="p-3">
                       <div className="flex flex-col">
                         <div className="flex items-center gap-1.5 font-bold text-slate-800 dark:text-zinc-200">
                           <span>{user.name}</span>
                           {user.isAdmin && (
-                            <span className="px-1 py-0.5 rounded text-[8px] bg-blue-500/10 text-blue-600 dark:text-blue-400 font-extrabold uppercase tracking-wide">
+                            <span className="px-1 py-0.5 rounded text-[8px] bg-amber-500/20 text-amber-700 dark:text-amber-400 font-extrabold uppercase tracking-wide">
                               ADMIN
                             </span>
                           )}
@@ -448,23 +444,23 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
                         <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-mono mt-0.5">{user.email || user.mobileNumber}</span>
                       </div>
                     </td>
-                    <td className="p-3 text-center font-semibold text-slate-600 dark:text-zinc-300">
+                    <td className="p-3 text-center font-semibold text-slate-700 dark:text-zinc-200">
                       {user.extractions}
                     </td>
-                    <td className="p-3 text-center font-semibold text-slate-600 dark:text-zinc-300">
+                    <td className="p-3 text-center font-semibold text-slate-700 dark:text-zinc-200">
                       {user.undertakings}
                     </td>
-                    <td className="p-3 text-center font-semibold text-slate-600 dark:text-zinc-300">
+                    <td className="p-3 text-center font-semibold text-slate-700 dark:text-zinc-200">
                       {user.imageToPdf}
                     </td>
-                    <td className="p-3 text-center font-semibold text-slate-600 dark:text-zinc-300">
+                    <td className="p-3 text-center font-semibold text-slate-700 dark:text-zinc-200">
                       {user.businessPads}
                     </td>
-                    <td className="p-3 text-center font-semibold text-slate-600 dark:text-zinc-300">
+                    <td className="p-3 text-center font-semibold text-slate-700 dark:text-zinc-200">
                       {user.visitingCards}
                     </td>
                     <td className="p-3 text-center">
-                      <span className="px-2 py-0.5 rounded font-bold text-[10px] bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300">
+                      <span className="px-2 py-0.5 rounded font-bold text-[10px] bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
                         {user.total}
                       </span>
                     </td>
@@ -492,13 +488,13 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
             dailyHistory.map(day => (
               <div key={day.dateStr} className="border border-slate-200/80 dark:border-zinc-800/80 rounded-lg p-3 bg-white dark:bg-zinc-950/40 shadow-sm">
                 {/* Date header and daily total */}
-                <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-zinc-900/60 mb-2">
+                <div className="flex justify-between items-center pb-2 border-b border-slate-200 dark:border-zinc-800 mb-2">
                   <div className="flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                    <span className="text-xs font-bold text-slate-700 dark:text-zinc-200">{day.dateStr}</span>
+                    <span className="text-xs font-bold text-slate-800 dark:text-zinc-100">{day.dateStr}</span>
                   </div>
                   <span className="text-[10px] font-bold text-slate-500 dark:text-zinc-400">
-                    Total Extractions: <span className="font-extrabold text-blue-500">{day.total}</span>
+                    Total Extractions: <span className="font-extrabold text-blue-600 dark:text-blue-400">{day.total}</span>
                   </span>
                 </div>
 
@@ -512,10 +508,10 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
                     if (uStats.imageToPdf > 0) details.push(`${uStats.imageToPdf} Image-to-PDF`);
 
                     return (
-                      <div key={userName} className="flex justify-between items-center text-xs py-0.5">
-                        <span className="font-semibold text-slate-600 dark:text-zinc-300">{userName}</span>
-                        <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-medium">
-                          {details.join(', ')}
+                      <div key={userName} className="flex justify-between items-center text-xs py-1 px-2 rounded bg-slate-50/50 dark:bg-zinc-900/50 border border-slate-100 dark:border-zinc-800/50">
+                        <span className="font-semibold text-slate-700 dark:text-zinc-200">{userName}</span>
+                        <span className="text-[10px] text-blue-600 dark:text-blue-400 font-bold">
+                          {details.join(' • ')}
                         </span>
                       </div>
                     );

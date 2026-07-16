@@ -800,7 +800,38 @@ const PadPreviewInner: React.FC<PadPreviewProps> = ({
             </div>
           </div>
           <div style={{ height: '1px', background: `linear-gradient(90deg, transparent, ${acc} 50%, transparent)`, marginTop: '4mm' }}></div>
-          
+        </div>
+      </div>
+    );
+  }
+
+  // 15. Premium Business Layout
+  if (layout === 'premium-business') {
+    return (
+      <div className="pad" style={{ background: customPaper, fontFamily: "'Inter', sans-serif" }}>
+        <div style={{ position: 'absolute', top: '0', left: '0', right: '0', height: '35mm', background: `linear-gradient(135deg, ${prim}, ${sh2})`, zIndex: 1 }}>
+          <div style={{ position: 'absolute', top: '10mm', right: '15mm', fontSize: '9pt', color: '#FFFFFF', textAlign: 'right', lineHeight: 1.6 }}>
+            <div style={{ fontWeight: 'bold', fontSize: '12pt' }}>{data.companyName}</div>
+            <div>{data.address}</div>
+            <div>Phone: {data.phone} | Email: {data.email}</div>
+          </div>
+        </div>
+        
+        {waterMark}
+
+        <div className="content" style={{ padding: '45mm 15mm 15mm' }}>
+           <div style={{ borderLeft: `6px solid ${acc}`, paddingLeft: '10mm', paddingRight: '10mm' }}>
+             <div style={{ fontSize: '24pt', fontWeight: 'bold', color: prim }}>{nameFormatted}</div>
+             <div style={{ fontSize: '14pt', color: detailsMuted, marginTop: '3mm' }}>{data.tagline}</div>
+             
+             <div style={{ marginTop: '10mm', borderTop: `1px solid ${sh3}`, paddingTop: '5mm', color: detailsMuted }}>
+               <div style={{ fontWeight: 'bold', color: prim }}>Authorized Representative</div>
+               <div style={{ fontSize: '13pt', marginTop: '1mm' }}>{data.empName}</div>
+               <div style={{ fontSize: '11pt', marginTop: '0.5mm' }}>{data.empRole}</div>
+               <div style={{ fontSize: '11pt', marginTop: '2mm' }}>{data.empPhone}</div>
+               <div style={{ fontSize: '11pt' }}>{data.empEmail}</div>
+             </div>
+           </div>
         </div>
       </div>
     );

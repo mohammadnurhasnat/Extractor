@@ -270,6 +270,10 @@ export default function App() {
 
 
   const [resultsTab, setResultsTab] = useState<'profile' | 'undertaking' | 'passport-pdf' | 'padgen'>(() => {
+    const hash = window.location.hash.replace('#', '');
+    if (['profile', 'undertaking', 'passport-pdf', 'padgen'].includes(hash)) {
+      return hash as any;
+    }
     const saved = localStorage.getItem('passport_active_results_tab');
     if (saved === 'undertaking') return 'undertaking';
     if (saved === 'passport-pdf') return 'passport-pdf';
@@ -304,7 +308,31 @@ export default function App() {
 
   useEffect(() => {
     localStorage.setItem('passport_active_results_tab', resultsTab);
+    
+    // Manage browser history for back button support
+    const currentHash = window.location.hash.replace('#', '');
+    if (currentHash !== resultsTab) {
+      if (!currentHash && resultsTab === 'profile') {
+        window.history.replaceState(null, '', `#${resultsTab}`);
+      } else {
+        window.history.pushState(null, '', `#${resultsTab}`);
+      }
+    }
   }, [resultsTab]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const hash = window.location.hash.replace('#', '');
+      if (['profile', 'undertaking', 'passport-pdf', 'padgen'].includes(hash)) {
+        setResultsTab(hash as any);
+      } else {
+        setResultsTab('profile'); // Default fallback
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   useEffect(() => {
     if (toast) {

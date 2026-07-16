@@ -503,6 +503,13 @@ export function PadgenApp() {
         scale: 2, // reduced for speed
         useCORS: true,
         backgroundColor: '#ffffff',
+        ignoreElements: (node) => {
+          if (node instanceof SVGElement) {
+            const rect = node.getBoundingClientRect();
+            if (rect.width === 0 || rect.height === 0) return true;
+          }
+          return false;
+        },
         onclone: 
         (doc) => {
           const elements = doc.querySelectorAll('*');
@@ -541,16 +548,7 @@ export function PadgenApp() {
       });
 
       const fn = `${baseFilename()}-pad.pdf`;
-      const blob = pdf.output('blob');
-      const downloadBlob = new Blob([blob], { type: 'application/octet-stream' });
-      const url = URL.createObjectURL(downloadBlob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = fn;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      pdf.save(fn);
       showStatusMessage('Pad PDF downloaded.');
       addDownloadToHistory('pad-pdf', fn);
       if (user) {
@@ -595,6 +593,13 @@ export function PadgenApp() {
         scale: 2, // reduced for speed
         useCORS: true,
         backgroundColor: '#ffffff',
+        ignoreElements: (node) => {
+          if (node instanceof SVGElement) {
+            const rect = node.getBoundingClientRect();
+            if (rect.width === 0 || rect.height === 0) return true;
+          }
+          return false;
+        },
         onclone: 
         (doc) => {
           const elements = doc.querySelectorAll('*');
@@ -633,16 +638,7 @@ export function PadgenApp() {
       });
 
       const fn = `${baseFilename()}-card-a4.pdf`;
-      const blob = pdf.output('blob');
-      const downloadBlob = new Blob([blob], { type: 'application/octet-stream' });
-      const url = URL.createObjectURL(downloadBlob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = fn;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      pdf.save(fn);
       showStatusMessage('A4 Card Sheet PDF downloaded.');
       addDownloadToHistory('card-pdf', fn);
       if (user) {
@@ -696,6 +692,13 @@ export function PadgenApp() {
         scale: 3, // reduced for speed
         useCORS: true,
         backgroundColor: '#ffffff',
+        ignoreElements: (node) => {
+          if (node instanceof SVGElement) {
+            const rect = node.getBoundingClientRect();
+            if (rect.width === 0 || rect.height === 0) return true;
+          }
+          return false;
+        },
         onclone: 
         (doc) => {
           const elements = doc.querySelectorAll('*');
@@ -758,6 +761,13 @@ export function PadgenApp() {
         scale: 2, // reduced for speed
         useCORS: true,
         backgroundColor: '#ffffff',
+        ignoreElements: (node) => {
+          if (node instanceof SVGElement) {
+            const rect = node.getBoundingClientRect();
+            if (rect.width === 0 || rect.height === 0) return true;
+          }
+          return false;
+        },
         onclone: 
         (doc) => {
           const elements = doc.querySelectorAll('*');
