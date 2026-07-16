@@ -6,7 +6,8 @@ import {
   deleteLocalHistoryItem, 
   clearLocalHistory, 
   getLimitStatus, 
-  getDb 
+  getDb,
+  appendAuditLog
 } from './db';
 
 export const historyRouter = Router();
@@ -189,5 +190,31 @@ historyRouter.post('/history/clear', async (req, res) => {
   } catch (error: any) {
     console.error('Failed to clear history:', error);
     res.status(500).json({ success: false, error: error.message || 'Failed to clear history.' });
+  }
+});
+
+historyRouter.post('/history/log-download', async (req, res) => {
+  try {
+    const { userId, type } = req.body;
+    if (!userId || !['pad-pdf', 'card-pdf'].includes(type)) {
+      return res.status(400).json({ success: false, error: 'User ID and valid download type are required.' });
+    }
+
+    const requesterId = req.headers['x-user-id']?.toString();
+    if (!requesterId || requesterId !== userId) {
+      return res.status(401).json({ success: false, error: 'Unauthorized.' });
+    }
+
+    const action = type === 'pad-pdf' ? 'PAD_DOWNLOAD' : 'CARD_DOWNLOAD';
+    appendAuditLog({ 
+      userId, 
+      action, 
+      details: `${type === 'pad-pdf' ? 'Downloaded Business Pad PDF' : 'Downloaded Visiting Card PDF'}` 
+    });
+
+    return res.json({ success: true });
+  } catch (error: any) {
+    console.error('Failed to log download:', error);
+    res.status(500).json({ success: false, error: error.message || 'Failed to log download.' });
   }
 });

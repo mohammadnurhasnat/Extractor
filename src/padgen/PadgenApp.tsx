@@ -18,6 +18,7 @@ import { downloadBlob, svgWrap } from './utils';
 import { ControlPanel } from './components/ControlPanel';
 import { PreviewStage } from './components/PreviewStage';
 import { PadPreview } from './components/PadPreview';
+import { useAuth } from '../lib/AuthContext';
 import { CardPreview } from './components/CardPreview';
 import { HistoryPanel } from './components/HistoryPanel';
 import html2canvas from 'html2canvas';
@@ -25,6 +26,7 @@ import { jsPDF } from 'jspdf';
 
 export function PadgenApp() {
   const [companyData, setCompanyData] = useState<CompanyData>(DEFAULT_COMPANY_DATA);
+  const { user } = useAuth();
 
   const [controls, setControls] = useState<DesignControls>({
     font: 'random',
@@ -551,6 +553,16 @@ export function PadgenApp() {
       URL.revokeObjectURL(url);
       showStatusMessage('Pad PDF downloaded.');
       addDownloadToHistory('pad-pdf', fn);
+      if (user) {
+        fetch('/api/history/log-download', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-user-id': user.uid
+          },
+          body: JSON.stringify({ userId: user.uid, type: 'pad-pdf' })
+        }).catch(err => console.error('Failed to log download:', err));
+      }
     } catch (err: any) {
       setError('PDF export failed: ' + err.message);
     }
@@ -633,6 +645,16 @@ export function PadgenApp() {
       URL.revokeObjectURL(url);
       showStatusMessage('A4 Card Sheet PDF downloaded.');
       addDownloadToHistory('card-pdf', fn);
+      if (user) {
+        fetch('/api/history/log-download', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-user-id': user.uid
+          },
+          body: JSON.stringify({ userId: user.uid, type: 'card-pdf' })
+        }).catch(err => console.error('Failed to log download:', err));
+      }
     } catch (err: any) {
       setError('PDF export failed: ' + err.message);
     }

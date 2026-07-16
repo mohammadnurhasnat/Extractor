@@ -38,7 +38,7 @@ const HISTORY_STORE_FILE = path.join(DATA_DIR, 'history_store.json');
 export interface AuditLog {
   id: string;
   timestamp: string;
-  action: 'LOGIN' | 'EXTRACTION' | 'LIMIT_CHANGE' | 'USER_ADDED' | 'USER_EDITED' | 'USER_DELETED' | 'USER_SUSPENDED' | 'UNDERTAKING_DOWNLOAD' | 'IMAGE_TO_PDF' | 'PDF_DOWNLOAD';
+  action: 'LOGIN' | 'EXTRACTION' | 'LIMIT_CHANGE' | 'USER_ADDED' | 'USER_EDITED' | 'USER_DELETED' | 'USER_SUSPENDED' | 'UNDERTAKING_DOWNLOAD' | 'IMAGE_TO_PDF' | 'PDF_DOWNLOAD' | 'PAD_DOWNLOAD' | 'CARD_DOWNLOAD';
   userId: string;
   details: string;
 }

@@ -80,6 +80,8 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
       extractions: { today: 0, week: 0, month: 0, total: 0 },
       undertakings: { today: 0, week: 0, month: 0, total: 0 },
       imageToPdf: { today: 0, week: 0, month: 0, total: 0 },
+      businessPads: { today: 0, week: 0, month: 0, total: 0 },
+      visitingCards: { today: 0, week: 0, month: 0, total: 0 },
       downloads: { today: 0, week: 0, month: 0, total: 0 }
     };
 
@@ -112,9 +114,25 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
         if (isThisWeek) stats.imageToPdf.week++;
         if (isThisMonth) stats.imageToPdf.month++;
       }
+      
+      // Handle Business Pads
+      if (log.action === 'PAD_DOWNLOAD') {
+        stats.businessPads.total++;
+        if (isToday) stats.businessPads.today++;
+        if (isThisWeek) stats.businessPads.week++;
+        if (isThisMonth) stats.businessPads.month++;
+      }
+
+      // Handle Visiting Cards
+      if (log.action === 'CARD_DOWNLOAD') {
+        stats.visitingCards.total++;
+        if (isToday) stats.visitingCards.today++;
+        if (isThisWeek) stats.visitingCards.week++;
+        if (isThisMonth) stats.visitingCards.month++;
+      }
 
       // Handle all downloads/exports
-      if (['PDF_DOWNLOAD', 'UNDERTAKING_DOWNLOAD', 'IMAGE_TO_PDF'].includes(log.action)) {
+      if (['PDF_DOWNLOAD', 'UNDERTAKING_DOWNLOAD', 'IMAGE_TO_PDF', 'PAD_DOWNLOAD', 'CARD_DOWNLOAD'].includes(log.action)) {
         stats.downloads.total++;
         if (isToday) stats.downloads.today++;
         if (isThisWeek) stats.downloads.week++;
@@ -127,11 +145,11 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
 
   // 4. Process logs into detailed User Breakdown table
   const userBreakdown = useMemo(() => {
-    const userMap: { [userId: string]: { extractions: number; undertakings: number; imageToPdf: number; total: number } } = {};
+    const userMap: { [userId: string]: { extractions: number; undertakings: number; imageToPdf: number; businessPads: number; visitingCards: number; total: number } } = {};
 
     // Initialize all users from database so we see 0 stats too
     users.forEach(u => {
-      userMap[u.id] = { extractions: 0, undertakings: 0, imageToPdf: 0, total: 0 };
+      userMap[u.id] = { extractions: 0, undertakings: 0, imageToPdf: 0, businessPads: 0, visitingCards: 0, total: 0 };
     });
 
     // Populate stats from logs
@@ -149,6 +167,12 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
         userMap[uId].total++;
       } else if (log.action === 'IMAGE_TO_PDF') {
         userMap[uId].imageToPdf++;
+        userMap[uId].total++;
+      } else if (log.action === 'PAD_DOWNLOAD') {
+        userMap[uId].businessPads++;
+        userMap[uId].total++;
+      } else if (log.action === 'CARD_DOWNLOAD') {
+        userMap[uId].visitingCards++;
         userMap[uId].total++;
       } else if (log.action === 'PDF_DOWNLOAD') {
         userMap[uId].total++;
@@ -350,12 +374,22 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
               <tr className="hover:bg-slate-50/30 dark:hover:bg-zinc-900/10">
                 <td className="p-3 font-semibold text-slate-700 dark:text-zinc-300 flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                  <span>Image to PDF Conversion</span>
+                  <span>Business Pads</span>
                 </td>
-                <td className="p-3 text-center text-slate-600 dark:text-zinc-300 font-bold">{metrics.imageToPdf.today}</td>
-                <td className="p-3 text-center text-slate-600 dark:text-zinc-300 font-bold">{metrics.imageToPdf.week}</td>
-                <td className="p-3 text-center text-slate-600 dark:text-zinc-300 font-bold">{metrics.imageToPdf.month}</td>
-                <td className="p-3 text-center font-black text-slate-700 dark:text-zinc-200">{metrics.imageToPdf.total}</td>
+                <td className="p-3 text-center text-slate-600 dark:text-zinc-300 font-bold">{metrics.businessPads.today}</td>
+                <td className="p-3 text-center text-slate-600 dark:text-zinc-300 font-bold">{metrics.businessPads.week}</td>
+                <td className="p-3 text-center text-slate-600 dark:text-zinc-300 font-bold">{metrics.businessPads.month}</td>
+                <td className="p-3 text-center font-black text-slate-700 dark:text-zinc-200">{metrics.businessPads.total}</td>
+              </tr>
+              <tr className="hover:bg-slate-50/30 dark:hover:bg-zinc-900/10">
+                <td className="p-3 font-semibold text-slate-700 dark:text-zinc-300 flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                  <span>Visiting Cards</span>
+                </td>
+                <td className="p-3 text-center text-slate-600 dark:text-zinc-300 font-bold">{metrics.visitingCards.today}</td>
+                <td className="p-3 text-center text-slate-600 dark:text-zinc-300 font-bold">{metrics.visitingCards.week}</td>
+                <td className="p-3 text-center text-slate-600 dark:text-zinc-300 font-bold">{metrics.visitingCards.month}</td>
+                <td className="p-3 text-center font-black text-slate-700 dark:text-zinc-200">{metrics.visitingCards.total}</td>
               </tr>
             </tbody>
           </table>
@@ -388,13 +422,15 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
                 <th className="p-3 text-center">Passport Extractions</th>
                 <th className="p-3 text-center">Undertakings Downloaded</th>
                 <th className="p-3 text-center">Image-to-PDF</th>
+                <th className="p-3 text-center">Business Pads</th>
+                <th className="p-3 text-center">Visiting Cards</th>
                 <th className="p-3 text-center">Total Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/50 text-xs">
               {userBreakdown.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="p-6 text-center text-slate-400 text-xs">No user information found.</td>
+                  <td colSpan={7} className="p-6 text-center text-slate-400 text-xs">No user information found.</td>
                 </tr>
               ) : (
                 userBreakdown.map(user => (
@@ -420,6 +456,12 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
                     </td>
                     <td className="p-3 text-center font-semibold text-slate-600 dark:text-zinc-300">
                       {user.imageToPdf}
+                    </td>
+                    <td className="p-3 text-center font-semibold text-slate-600 dark:text-zinc-300">
+                      {user.businessPads}
+                    </td>
+                    <td className="p-3 text-center font-semibold text-slate-600 dark:text-zinc-300">
+                      {user.visitingCards}
                     </td>
                     <td className="p-3 text-center">
                       <span className="px-2 py-0.5 rounded font-bold text-[10px] bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300">
