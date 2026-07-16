@@ -485,7 +485,7 @@ export default function App() {
                 NOC ও ভিজিটিং কার্ড তৈরি করা।
               </li>
             </ul>
-            <div className="flex justify-center w-full mt-4">
+            <div className="flex justify-center w-full mt-2">
               <button
                 onClick={() => {
                   setResultsTab('padgen');

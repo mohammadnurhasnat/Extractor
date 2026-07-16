@@ -539,7 +539,16 @@ export function PadgenApp() {
       });
 
       const fn = `${baseFilename()}-pad.pdf`;
-      pdf.save(fn);
+      const blob = pdf.output('blob');
+      const downloadBlob = new Blob([blob], { type: 'application/octet-stream' });
+      const url = URL.createObjectURL(downloadBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fn;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
       showStatusMessage('Pad PDF downloaded.');
       addDownloadToHistory('pad-pdf', fn);
     } catch (err: any) {
@@ -612,7 +621,16 @@ export function PadgenApp() {
       });
 
       const fn = `${baseFilename()}-card-a4.pdf`;
-      pdf.save(fn);
+      const blob = pdf.output('blob');
+      const downloadBlob = new Blob([blob], { type: 'application/octet-stream' });
+      const url = URL.createObjectURL(downloadBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fn;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
       showStatusMessage('A4 Card Sheet PDF downloaded.');
       addDownloadToHistory('card-pdf', fn);
     } catch (err: any) {

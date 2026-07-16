@@ -3,10 +3,37 @@ import fs from 'fs';
 import { Firestore } from '@google-cloud/firestore';
 import { USERS_DATABASE } from '../src/users';
 
-const LIMITS_FILE = path.join(process.cwd(), 'limits_store.json');
-const USERS_STORE_FILE = path.join(process.cwd(), 'users_store.json');
-const AUDIT_LOGS_FILE = path.join(process.cwd(), 'audit_logs.json');
-const HISTORY_STORE_FILE = path.join(process.cwd(), 'history_store.json');
+const DATA_DIR = path.join(process.cwd(), '.data');
+if (!fs.existsSync(DATA_DIR)) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+}
+
+// Automatically migrate files from root to .data directory
+const filesToMigrate = [
+  { old: 'limits_store.json', new: 'limits_store.json' },
+  { old: 'users_store.json', new: 'users_store.json' },
+  { old: 'audit_logs.json', new: 'audit_logs.json' },
+  { old: 'history_store.json', new: 'history_store.json' }
+];
+
+filesToMigrate.forEach(f => {
+  const oldPath = path.join(process.cwd(), f.old);
+  const newPath = path.join(DATA_DIR, f.new);
+  if (fs.existsSync(oldPath)) {
+    try {
+      fs.copyFileSync(oldPath, newPath);
+      fs.unlinkSync(oldPath);
+      console.log(`Successfully migrated ${f.old} to hidden storage ${newPath}`);
+    } catch (err) {
+      console.error(`Error migrating ${f.old}:`, err);
+    }
+  }
+});
+
+const LIMITS_FILE = path.join(DATA_DIR, 'limits_store.json');
+const USERS_STORE_FILE = path.join(DATA_DIR, 'users_store.json');
+const AUDIT_LOGS_FILE = path.join(DATA_DIR, 'audit_logs.json');
+const HISTORY_STORE_FILE = path.join(DATA_DIR, 'history_store.json');
 
 export interface AuditLog {
   id: string;
