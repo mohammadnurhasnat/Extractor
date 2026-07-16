@@ -11,8 +11,8 @@ interface PreviewStageProps {
   cardLayout: any;
   headlineFont: string;
   logoStyle: 'classic' | 'typographic' | 'bordered' | 'shadow-badge';
-  gridStyle: 'none' | 'dots' | 'lines';
-  texture: 'none' | 'linen' | 'vellum' | 'canvas';
+  gridStyle: any;
+  texture: any;
   previewPadRef: React.RefObject<HTMLDivElement | null>;
   previewCardRef: React.RefObject<HTMLDivElement | null>;
   onDownloadPadPDF: () => void;

@@ -207,7 +207,7 @@ const CardPreviewInner: React.FC<CardPreviewProps> = ({
   // Layout 2: Split / Ribbon Corner (Intersecting polygon layouts)
   if (layout === 'split') {
     return (
-      <div className="card" style={{ background: theme.paper, fontFamily: "'Segoe UI', Arial, sans-serif" , position: "relative"}}>
+      <div className="card" style={{ background: theme.paper, fontFamily: "'Segoe UI', Arial, sans-serif" }}>
         {/* Dynamic diagonal color band on the right */}
         <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: '40%', background: `linear-gradient(135deg, ${prim} 0%, ${sh2} 100%)`, clipPath: 'polygon(25% 0, 100% 0, 100% 100%, 0% 100%)', zIndex: 1 }}></div>
         <div style={{ position: 'absolute', top: 0, right: '39%', bottom: 0, width: '1.5mm', background: acc, transform: 'skewX(-20deg)', zIndex: 1 }}></div>
@@ -265,7 +265,7 @@ const CardPreviewInner: React.FC<CardPreviewProps> = ({
   // Layout 3: Sideband (Vibrant vertical accent stripes with high-contrast shapes)
   if (layout === 'sideband') {
     return (
-      <div className="card" style={{ background: theme.paper, fontFamily: "'Segoe UI', Arial, sans-serif" , position: "relative"}}>
+      <div className="card" style={{ background: theme.paper, fontFamily: "'Segoe UI', Arial, sans-serif" }}>
         {/* Left vertical colorband with gorgeous multi-tone gradients */}
         <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: '22mm', background: `linear-gradient(135deg, ${prim} 0%, ${sh2} 100%)`, zIndex: 1 }}>
           {/* Decorative skewed stripe inside left band */}
@@ -310,7 +310,7 @@ const CardPreviewInner: React.FC<CardPreviewProps> = ({
   // Layout 4: Asymmetric Columns (modern-split - Canva & Freepik bestseller style)
   if (layout === 'modern-split') {
     return (
-      <div className="card" style={{ background: theme.paper, fontFamily: "'Segoe UI', Arial, sans-serif" , position: "relative"}}>
+      <div className="card" style={{ background: theme.paper, fontFamily: "'Segoe UI', Arial, sans-serif" }}>
         <div className="content" style={{ display: 'flex', height: '100%', position: 'relative' }}>
           
           {/* Left Block (42% width): Gorgeous linear gradient with polygon shapes */}
@@ -380,7 +380,7 @@ const CardPreviewInner: React.FC<CardPreviewProps> = ({
   // Layout 5: Minimalist Right-Aligned (Chic geometric overlay)
   if (layout === 'minimalist-right') {
     return (
-      <div className="card" style={{ background: theme.paper, fontFamily: "'Segoe UI', Arial, sans-serif" , position: "relative"}}>
+      <div className="card" style={{ background: theme.paper, fontFamily: "'Segoe UI', Arial, sans-serif" }}>
         {/* Abstract background graphics */}
         <div style={{ position: 'absolute', top: 0, left: 0, width: '30mm', height: '100%', background: `linear-gradient(90deg, ${hexToRgba(sh3, 0.4)}, transparent)`, zIndex: 0 }}></div>
         <div style={{ position: 'absolute', bottom: 0, left: 0, width: '40mm', height: '2mm', background: `linear-gradient(90deg, ${prim}, ${acc})`, zIndex: 0 }}></div>
@@ -413,7 +413,7 @@ const CardPreviewInner: React.FC<CardPreviewProps> = ({
   // Layout 6: Inverted Accent Band (Dual Tone contrast layout - premium executive look)
   if (layout === 'dark-accent') {
     return (
-      <div className="card" style={{ background: theme.paper, fontFamily: "'Segoe UI', Arial, sans-serif" , position: "relative"}}>
+      <div className="card" style={{ background: theme.paper, fontFamily: "'Segoe UI', Arial, sans-serif" }}>
         {/* Main upper white area */}
         <div className="content" style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between' }}>
           
@@ -467,7 +467,7 @@ const CardPreviewInner: React.FC<CardPreviewProps> = ({
   // Layout 7: Floating Shield Emblem (shield-badge style with intersecting lines)
   if (layout === 'shield-badge') {
     return (
-      <div className="card" style={{ background: theme.paper, fontFamily: "'Segoe UI', Arial, sans-serif" , position: "relative"}}>
+      <div className="card" style={{ background: theme.paper, fontFamily: "'Segoe UI', Arial, sans-serif" }}>
         {/* Decorative frame vectors */}
         <div style={{ position: 'absolute', top: '1.5mm', left: '1.5mm', right: '1.5mm', bottom: '1.5mm', border: `1px solid ${hexToRgba(acc, 0.4)}`, pointerEvents: 'none' }}></div>
         <div style={{ position: 'absolute', top: 0, left: 0, width: '15mm', height: '15mm', background: `linear-gradient(135deg, ${prim}, transparent)`, opacity: 0.1, pointerEvents: 'none' }}></div>
@@ -515,9 +515,9 @@ const CardPreviewInner: React.FC<CardPreviewProps> = ({
   // Layout 8: Modern Bento Grid Card (bento-grid)
   if (layout === 'bento-grid') {
     return (
-      <div className="card" style={{ background: theme.paper, fontFamily: "'Segoe UI', sans-serif" , position: "relative"}}>
+      <div className="card" style={{ background: theme.paper, fontFamily: "'Segoe UI', sans-serif" }}>
         <div className="content" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.8fr', gap: '2mm', height: '100%', padding: '2.5mm' }}>
-          <div style={{ background: hexToRgba(prim, 0.04), borderRadius: '4px', border: `1px solid ${hexToRgba(prim, 0.1)}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyStyle: 'center', justifyContent: 'center', padding: '2mm' }}>
+          <div style={{ background: hexToRgba(prim, 0.04), borderRadius: '4px', border: `1px solid ${hexToRgba(prim, 0.1)}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2mm' }}>
             <div style={{ width: '10mm', height: '10mm' }} dangerouslySetInnerHTML={{ __html: mark }} />
             <div style={{ fontSize: '5.5pt', color: prim, fontWeight: 'bold', textAlign: 'center', marginTop: '2mm' }}><span style={{ whiteSpace: "nowrap" }}>{nameFormatted}</span></div>
           </div>
@@ -539,7 +539,7 @@ const CardPreviewInner: React.FC<CardPreviewProps> = ({
   // Layout 9: Dynamic Diagonal Split (diagonal-split)
   if (layout === 'diagonal-split') {
     return (
-      <div className="card" style={{ background: theme.paper, fontFamily: "'Segoe UI', Arial, sans-serif" , position: "relative"}}>
+      <div className="card" style={{ background: theme.paper, fontFamily: "'Segoe UI', Arial, sans-serif" }}>
         <div style={{ position: 'absolute', top: 0, left: 0, width: '25mm', height: '100%', background: `linear-gradient(135deg, ${prim} 0%, ${sh2} 100%)`, clipPath: 'polygon(0 0, 100% 0, 75% 100%, 0 100%)' }}></div>
         <div className="content" style={{ display: 'flex', height: '100%', position: 'relative', zIndex: 2 }}>
           <div style={{ width: '22mm', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -566,7 +566,7 @@ const CardPreviewInner: React.FC<CardPreviewProps> = ({
   // Layout 10: Retro Tech Monospaced Card (retro-tech)
   if (layout === 'retro-tech') {
     return (
-      <div className="card" style={{ background: theme.paper, fontFamily: "'Courier New', monospace" , position: "relative"}}>
+      <div className="card" style={{ background: theme.paper, fontFamily: "'Courier New', monospace" }}>
         <div style={{ position: 'absolute', top: '2mm', right: '3mm', fontSize: '5pt', color: acc }}>[ONLINE]</div>
         <div className="content" style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '4mm', justifyContent: 'space-between' }}>
           <div>
@@ -589,7 +589,7 @@ const CardPreviewInner: React.FC<CardPreviewProps> = ({
   // Layout 11: Ultra-Luxury Gold Border (luxury-gold)
   if (layout === 'luxury-gold') {
     return (
-      <div className="card" style={{ background: theme.paper, fontFamily: "'Georgia', serif" , position: "relative"}}>
+      <div className="card" style={{ background: theme.paper, fontFamily: "'Georgia', serif" }}>
         <div style={{ position: 'absolute', top: '1.5mm', left: '1.5mm', right: '1.5mm', bottom: '1.5mm', border: `1.5px solid ${acc}`, pointerEvents: 'none' }}></div>
         <div style={{ position: 'absolute', top: '2.5mm', left: '2.5mm', right: '2.5mm', bottom: '2.5mm', border: `0.5px solid ${prim}`, pointerEvents: 'none', opacity: 0.4 }}></div>
         <div className="content" style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '5mm', justifyContent: 'space-between', alignItems: 'center', textAlign: 'center' }}>
@@ -612,7 +612,7 @@ const CardPreviewInner: React.FC<CardPreviewProps> = ({
   // Layout 12: Modern Wave Accent Card (wave-abstract)
   if (layout === 'wave-abstract') {
     return (
-      <div className="card" style={{ background: theme.paper, fontFamily: "'Segoe UI', Arial, sans-serif" , position: "relative"}}>
+      <div className="card" style={{ background: theme.paper, fontFamily: "'Segoe UI', Arial, sans-serif" }}>
         <div style={{ position: 'absolute', bottom: 0, right: 0, width: '45%', height: '100%', overflow: 'hidden', zIndex: 1 }}>
           <svg viewBox="0 0 100 100" preserveAspectRatio="none" style={{ width: '100%', height: '100%' }}>
             <path d="M50,100 C20,70 60,30 100,0 L100,100 Z" fill={hexToRgba(prim, 0.15)} />
@@ -643,7 +643,7 @@ const CardPreviewInner: React.FC<CardPreviewProps> = ({
   // Layout 14: Ultra-Minimal Centered Accent (minimalist-centered)
   if (layout === 'minimalist-centered') {
     return (
-      <div className="card" style={{ background: theme.paper, fontFamily: "'Segoe UI', Arial, sans-serif" , position: "relative"}}>
+      <div className="card" style={{ background: theme.paper, fontFamily: "'Segoe UI', Arial, sans-serif" }}>
         <div style={{ position: 'absolute', top: '1.2mm', left: '1.2mm', right: '1.2mm', bottom: '1.2mm', border: `1.5px solid ${acc}`, pointerEvents: 'none', boxShadow: `0 0 5px ${hexToRgba(acc, 0.4)}` }}></div>
         <div className="content" style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '4.5mm 5mm', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -668,7 +668,7 @@ const CardPreviewInner: React.FC<CardPreviewProps> = ({
   // Layout 15: Triple Stripe Asymmetrical (asymmetrical-stripe)
   if (layout === 'asymmetrical-stripe') {
     return (
-      <div className="card" style={{ background: theme.paper, fontFamily: "'Segoe UI', sans-serif" , position: "relative"}}>
+      <div className="card" style={{ background: theme.paper, fontFamily: "'Segoe UI', sans-serif" }}>
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4mm', background: prim }}></div>
         <div style={{ position: 'absolute', top: '4mm', left: 0, right: 0, height: '1px', background: acc }}></div>
         <div className="content" style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '6mm 5mm 4mm', justifyContent: 'space-between' }}>
@@ -694,7 +694,7 @@ const CardPreviewInner: React.FC<CardPreviewProps> = ({
   // Layout 16: Executive Crest & Border (executive-badge)
   if (layout === 'executive-badge') {
     return (
-      <div className="card" style={{ background: theme.paper, fontFamily: "'Times New Roman', serif" , position: "relative"}}>
+      <div className="card" style={{ background: theme.paper, fontFamily: "'Times New Roman', serif" }}>
         <div className="content" style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '4.5mm', justifyContent: 'space-between', alignItems: 'center', textAlign: 'center' }}>
           <div style={{ fontSize: '11pt', fontFamily: headlineFont, color: prim, fontWeight: 'bold', borderBottom: `1px solid ${acc}`, paddingBottom: '1mm', width: '80%' }}>
             <span style={{ whiteSpace: "nowrap" }}>{nameFormatted}</span>
@@ -714,7 +714,7 @@ const CardPreviewInner: React.FC<CardPreviewProps> = ({
   // Layout 17: Architectural Bold Frame (architectural-structure)
   if (layout === 'architectural-structure') {
     return (
-      <div className="card" style={{ background: theme.paper, fontFamily: "'Courier New', Courier, monospace" , position: "relative"}}>
+      <div className="card" style={{ background: theme.paper, fontFamily: "'Courier New', Courier, monospace" }}>
         <div style={{ position: 'absolute', top: '1.5mm', left: '1.5mm', width: '3mm', height: '3mm', borderTop: '0.5px solid #888888', borderLeft: '0.5px solid #888888', opacity: 0.5 }}></div>
         <div style={{ position: 'absolute', top: '1.5mm', right: '1.5mm', width: '3mm', height: '3mm', borderTop: '0.5px solid #888888', borderRight: '0.5px solid #888888', opacity: 0.5 }}></div>
         <div style={{ position: 'absolute', bottom: '1.5mm', left: '1.5mm', width: '3mm', height: '3mm', borderBottom: '0.5px solid #888888', borderLeft: '0.5px solid #888888', opacity: 0.5 }}></div>
@@ -740,7 +740,7 @@ const CardPreviewInner: React.FC<CardPreviewProps> = ({
   // Layout 18: Connected Node Pattern Card (geometric-nodes)
   if (layout === 'geometric-nodes') {
     return (
-      <div className="card" style={{ background: theme.paper, fontFamily: "'Segoe UI', sans-serif" , position: "relative"}}>
+      <div className="card" style={{ background: theme.paper, fontFamily: "'Segoe UI', sans-serif" }}>
         <div style={{ position: 'absolute', top: '-10mm', left: '-10mm', width: '30mm', height: '30mm', background: hexToRgba(prim, 0.08), borderRadius: '50%' }}></div>
         <div style={{ position: 'absolute', bottom: '-12mm', right: '-12mm', width: '35mm', height: '35mm', background: hexToRgba(acc, 0.1), borderRadius: '50%' }}></div>
         <div className="content" style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '4.5mm 5mm', justifyContent: 'space-between', zIndex: 1 }}>
@@ -766,7 +766,7 @@ const CardPreviewInner: React.FC<CardPreviewProps> = ({
   // Layout 19: Vertical Editorial Typography Card (vertical-editorial)
   if (layout === 'vertical-editorial') {
     return (
-      <div className="card" style={{ background: theme.paper, fontFamily: "'Times New Roman', serif" , position: "relative"}}>
+      <div className="card" style={{ background: theme.paper, fontFamily: "'Times New Roman', serif" }}>
         <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: '3mm', background: prim }}></div>
         <div style={{ position: 'absolute', top: 0, left: '3mm', bottom: 0, width: '1px', background: acc }}></div>
         <div className="content" style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '4mm 4mm 4mm 7mm', justifyContent: 'space-between' }}>
@@ -789,7 +789,7 @@ const CardPreviewInner: React.FC<CardPreviewProps> = ({
   // Layout 20: Corporate Diagonal Overlay Card (corporate-envelope)
   if (layout === 'corporate-envelope') {
     return (
-      <div className="card" style={{ background: theme.paper, fontFamily: "'Segoe UI', sans-serif" , position: "relative"}}>
+      <div className="card" style={{ background: theme.paper, fontFamily: "'Segoe UI', sans-serif" }}>
         <div style={{ position: 'absolute', right: '4mm', bottom: '4mm', fontSize: '38pt', color: prim, opacity: 0.05, fontWeight: 'bold', pointerEvents: 'none' }}>
           {initials}
         </div>
@@ -813,7 +813,7 @@ const CardPreviewInner: React.FC<CardPreviewProps> = ({
   // 21. Freepik Corporate
   if (layout === 'freepik-corporate-blue') {
     return (
-      <div className="card" style={{ background: theme.paper, fontFamily: "'Segoe UI', sans-serif" , position: "relative"}}>
+      <div className="card" style={{ background: theme.paper, fontFamily: "'Segoe UI', sans-serif" }}>
          <div style={{ position: 'absolute', top: 0, bottom: 0, right: 0, width: '38mm', background: `linear-gradient(135deg, ${prim} 0%, ${acc} 100%)` }}>
             <div style={{ position: 'absolute', top: '15mm', left: '9mm', width: '20mm', height: '20mm' }} dangerouslySetInnerHTML={{ __html: whiteLogoMark }} />
          </div>
@@ -839,7 +839,7 @@ const CardPreviewInner: React.FC<CardPreviewProps> = ({
   // 22. Canva Creative Wave
   if (layout === 'canva-creative-wave') {
     return (
-      <div className="card" style={{ background: theme.paper, fontFamily: "'Segoe UI', sans-serif" , position: "relative"}}>
+      <div className="card" style={{ background: theme.paper, fontFamily: "'Segoe UI', sans-serif" }}>
          <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }} preserveAspectRatio="none" viewBox="0 0 1440 320">
           <path fill={hexToRgba(prim, 0.05)} fillOpacity="1" d="M0,160L48,165.3C96,171,192,181,288,160C384,139,480,85,576,96C672,107,768,181,864,213.3C960,245,1056,235,1152,197.3C1248,160,1344,96,1392,64L1440,32L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
         </svg>
@@ -867,7 +867,7 @@ const CardPreviewInner: React.FC<CardPreviewProps> = ({
   // 23. Modern Gradient Edge
   if (layout === 'modern-gradient-edge') {
     return (
-      <div className="card" style={{ background: theme.paper, fontFamily: "'Segoe UI', sans-serif" , position: "relative"}}>
+      <div className="card" style={{ background: theme.paper, fontFamily: "'Segoe UI', sans-serif" }}>
          <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: '4mm', background: `linear-gradient(to bottom, ${prim}, ${acc})` }}></div>
          <div style={{ padding: '7mm 8mm 7mm 11mm', display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between' }}>
            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -894,7 +894,7 @@ const CardPreviewInner: React.FC<CardPreviewProps> = ({
   if (layout === 'luxury-gold-foil') {
     const goldLogo = logoMarkSVG(initials, shape, '#FFFFFF', '#FCF6BA', '#AA771C', logoStyle);
     return (
-      <div className="card" style={{ background: '#111111', color: '#F1E6C8', fontFamily: "'Georgia', serif", border: '1mm solid #AA771C', padding: '5mm', boxSizing: 'border-box', position: 'relative' , position: "relative"}}>
+      <div className="card" style={{ background: '#111111', color: '#F1E6C8', fontFamily: "'Georgia', serif", border: '1mm solid #AA771C', padding: '5mm', boxSizing: 'border-box', position: 'relative' }}>
          <div style={{ display: 'flex', justifyContent: 'space-between', height: '100%', alignItems: 'center' }}>
            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', width: '60%', height: '100%' }}>
              <div>
@@ -921,7 +921,7 @@ const CardPreviewInner: React.FC<CardPreviewProps> = ({
   // 25. Startup Geometric
   if (layout === 'startup-geometric') {
     return (
-      <div className="card" style={{ background: theme.paper, fontFamily: "'Segoe UI', sans-serif" , position: "relative"}}>
+      <div className="card" style={{ background: theme.paper, fontFamily: "'Segoe UI', sans-serif" }}>
          <div style={{ position: 'absolute', bottom: '-10mm', right: '-10mm', width: '40mm', height: '40mm', background: hexToRgba(prim, 0.1), borderRadius: '50%' }}></div>
          <div style={{ position: 'absolute', top: '5mm', right: '15mm', width: '15mm', height: '15mm', background: hexToRgba(acc, 0.1), borderRadius: '50%' }}></div>
          <div style={{ padding: '7mm 8mm', position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', height: '100%', flexDirection: 'column' }}>
@@ -948,7 +948,7 @@ const CardPreviewInner: React.FC<CardPreviewProps> = ({
   // 26. Law Firm Classic
   if (layout === 'law-firm-classic') {
     return (
-      <div className="card" style={{ background: theme.paper, fontFamily: "'Times New Roman', serif" , position: "relative"}}>
+      <div className="card" style={{ background: theme.paper, fontFamily: "'Times New Roman', serif" }}>
          <div style={{ position: 'absolute', top: '5mm', left: '8mm', width: '11mm', height: '11mm' }} dangerouslySetInnerHTML={{ __html: mark }} />
          <div style={{ borderBottom: `1px solid ${prim}`, padding: '4mm 8mm 4mm 22mm', textAlign: 'right' }}>
            <div style={{ fontSize: `${cardNameSize}pt`, fontWeight: 'bold', color: prim, lineHeight: 1.15 }}>{nameFormatted.toUpperCase()}</div>
@@ -972,7 +972,7 @@ const CardPreviewInner: React.FC<CardPreviewProps> = ({
   // 27. Creative Agency Bold
   if (layout === 'creative-agency-bold') {
     return (
-      <div className="card" style={{ background: prim, color: '#fff', fontFamily: "'Arial Black', sans-serif" , position: "relative"}}>
+      <div className="card" style={{ background: prim, color: '#fff', fontFamily: "'Arial Black', sans-serif" }}>
          <div style={{ padding: '6mm 8mm', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
              <div style={{ fontSize: `${cardNameSize + 2}pt`, lineHeight: 1.1, letterSpacing: '-1px', maxWidth: '75%' }}>{nameFormatted.toUpperCase()}</div>
@@ -997,7 +997,7 @@ const CardPreviewInner: React.FC<CardPreviewProps> = ({
   // 28. Medical Clean
   if (layout === 'medical-clean-cross') {
     return (
-      <div className="card" style={{ background: theme.paper, fontFamily: "'Segoe UI', sans-serif" , position: "relative"}}>
+      <div className="card" style={{ background: theme.paper, fontFamily: "'Segoe UI', sans-serif" }}>
          <div style={{ position: 'absolute', top: '6mm', left: '8mm', width: '13mm', height: '13mm' }} dangerouslySetInnerHTML={{ __html: mark }} />
          <div style={{ padding: '6mm 8mm 6mm 23mm', display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between' }}>
            <div>
@@ -1020,7 +1020,7 @@ const CardPreviewInner: React.FC<CardPreviewProps> = ({
   // 29. Real Estate Arch
   if (layout === 'real-estate-arch') {
     return (
-      <div className="card" style={{ background: theme.paper, fontFamily: "'Georgia', serif" , position: "relative"}}>
+      <div className="card" style={{ background: theme.paper, fontFamily: "'Georgia', serif" }}>
          <div style={{ position: 'absolute', top: '0', right: '5mm', width: '30mm', height: '40mm', background: hexToRgba(prim, 0.05), borderBottomLeftRadius: '15mm', borderBottomRightRadius: '15mm' }}></div>
          <div style={{ position: 'absolute', top: '6mm', right: '10mm', width: '12mm', height: '12mm', zIndex: 2 }} dangerouslySetInnerHTML={{ __html: mark }} />
          <div style={{ padding: '7mm 8mm', position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%' }}>
@@ -1044,7 +1044,7 @@ const CardPreviewInner: React.FC<CardPreviewProps> = ({
   // 30. Hospitality Elegant
   if (layout === 'hospitality-elegant') {
     return (
-      <div className="card" style={{ background: theme.paper, fontFamily: "'Cinzel', serif" , position: "relative"}}>
+      <div className="card" style={{ background: theme.paper, fontFamily: "'Cinzel', serif" }}>
          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', height: '100%', padding: '4.5mm', border: `1px solid ${hexToRgba(prim, 0.2)}`, margin: '3mm', boxSizing: 'border-box' }}>
            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '0.5mm' }}>
              <div style={{ width: '11mm', height: '11mm', marginBottom: '1mm' }} dangerouslySetInnerHTML={{ __html: mark }} />

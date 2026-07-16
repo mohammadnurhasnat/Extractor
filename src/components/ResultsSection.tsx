@@ -54,8 +54,8 @@ export function ResultsSection({
   onOpenRefHelper,
   currentUser
 }: ResultsSectionProps) {
-  // If there's data, show the results card
-  const hasContent = !!data;
+  // If there's data, active item, or active padgen tab, show the results card
+  const hasContent = !!data || !!activeItem || resultsTab === 'padgen';
 
   return (
     <div className="lg:col-span-7 print:w-full print:col-span-12 lg:max-h-[calc(100vh-130px)] lg:overflow-y-auto overscroll-contain pr-1.5 scrollbar-thin">
@@ -82,7 +82,7 @@ export function ResultsSection({
             )}
 
             {/* TABS SELECTOR */}
-            {(data && isUndertakingConfigured && undertakingData) || activeItem ? (
+            {(data && isUndertakingConfigured && undertakingData) || activeItem || resultsTab === 'padgen' ? (
               <div className="flex flex-col sm:grid sm:grid-cols-4 bg-slate-100/60 dark:bg-zinc-950/65 p-2 rounded-2xl mb-3 print:hidden gap-2 w-full text-center">
                 {data && (
                   <button
@@ -120,7 +120,7 @@ export function ResultsSection({
                     <span className="relative z-10">Image to PDF</span>
                   </button>
                 )}
-                {data && (
+                {(data || resultsTab === 'padgen') && (
                   <button
                     onClick={() => setResultsTab('padgen')}
                     className={`text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer transition-colors border min-h-[40px] ${

@@ -20,7 +20,7 @@ import { PreviewStage } from './components/PreviewStage';
 import { PadPreview } from './components/PadPreview';
 import { CardPreview } from './components/CardPreview';
 import { HistoryPanel } from './components/HistoryPanel';
-import html2canvas from 'html2canvas';
+import * as htmlToImage from 'html-to-image';
 import { jsPDF } from 'jspdf';
 
 export function PadgenApp() {
@@ -151,6 +151,7 @@ export function PadgenApp() {
       cardLayout: item.cardLayout,
       logoStyle: item.logoStyle,
       gridStyle: item.gridStyle,
+      texture: item.texture || 'none',
     });
 
     showStatusMessage('Historical state loaded successfully.');
@@ -292,6 +293,7 @@ export function PadgenApp() {
         headlineIdx: matchedFontIdx,
         logoStyleIdx: matchedLogoStyleIdx,
         gridStyleIdx: matchedGridStyleIdx,
+        textureIdx: 0,
       });
 
       setControls({
@@ -301,6 +303,7 @@ export function PadgenApp() {
         cardLayout: CARD_LAYOUTS[matchedCardLayoutIdx],
         logoStyle: LOGO_STYLES[matchedLogoStyleIdx],
         gridStyle: GRID_STYLES[matchedGridStyleIdx],
+        texture: 'none',
       });
 
       setCompanyData((prev) => ({
@@ -482,10 +485,9 @@ export function PadgenApp() {
     try {
       const orig = wrapper.style.cssText;
       wrapper.style.cssText = 'position: fixed; left: 0; top: 0; z-index: -999;';
-      const canvas = await html2canvas(target, {
-        scale: 2.5,
-        backgroundColor: '#ffffff',
-        useCORS: true,
+      const canvas = await htmlToImage.toCanvas(target, {
+        pixelRatio: 2.5,
+        backgroundColor: '#ffffff'
       });
       wrapper.style.cssText = orig;
       const imgData = canvas.toDataURL('image/jpeg', 0.9);
@@ -514,10 +516,9 @@ export function PadgenApp() {
     try {
       const orig = wrapper.style.cssText;
       wrapper.style.cssText = 'position: fixed; left: 0; top: 0; z-index: -999;';
-      const canvas = await html2canvas(target, {
-        scale: 2.5,
-        backgroundColor: '#ffffff',
-        useCORS: true,
+      const canvas = await htmlToImage.toCanvas(target, {
+        pixelRatio: 2.5,
+        backgroundColor: '#ffffff'
       });
       wrapper.style.cssText = orig;
       const imgData = canvas.toDataURL('image/jpeg', 0.9);
@@ -555,10 +556,9 @@ export function PadgenApp() {
     try {
       const orig = wrapper.style.cssText;
       wrapper.style.cssText = 'position: fixed; left: 0; top: 0; z-index: -999;';
-      const canvas = await html2canvas(target, {
-        scale: 4,
-        backgroundColor: '#ffffff',
-        useCORS: true,
+      const canvas = await htmlToImage.toCanvas(target, {
+        pixelRatio: 4,
+        backgroundColor: '#ffffff'
       });
       wrapper.style.cssText = orig;
       const fn = `${baseFilename()}-card.png`;
@@ -586,10 +586,9 @@ export function PadgenApp() {
     try {
       const orig = wrapper.style.cssText;
       wrapper.style.cssText = 'position: fixed; left: 0; top: 0; z-index: -999;';
-      const canvas = await html2canvas(target, {
-        scale: 2.5,
-        backgroundColor: '#ffffff',
-        useCORS: true,
+      const canvas = await htmlToImage.toCanvas(target, {
+        pixelRatio: 2.5,
+        backgroundColor: '#ffffff'
       });
       wrapper.style.cssText = orig;
       const fn = `${baseFilename()}-pad.png`;
@@ -642,10 +641,9 @@ export function PadgenApp() {
     if (!target) return;
     showStatusMessage('Preparing layered document stream…');
     try {
-      const canvas = await html2canvas(target, {
-        scale: 3,
-        backgroundColor: '#ffffff',
-        useCORS: true,
+      const canvas = await htmlToImage.toCanvas(target, {
+        pixelRatio: 3,
+        backgroundColor: '#ffffff'
       });
       canvas.toBlob((blob) => {
         if (!blob) return;
@@ -708,6 +706,7 @@ export function PadgenApp() {
       cardLayout: CARD_LAYOUTS[newState.cardLayoutIdx],
       logoStyle: LOGO_STYLES[newState.logoStyleIdx],
       gridStyle: GRID_STYLES[newState.gridStyleIdx],
+      texture: TEXTURES[newState.textureIdx] || 'none',
     });
     setError(null);
     showStatusMessage('Template configuration loaded.');
@@ -778,7 +777,7 @@ export function PadgenApp() {
       />
 
       {/* Off-screen/Print nodes (unscaled at 100% dimensions in mm) */}
-      <div id="printPad">
+      <div id="printPad" style={{ color: '#000000' }}>
         <PadPreview
           data={activeState.data}
           theme={activeTheme}
@@ -790,7 +789,7 @@ export function PadgenApp() {
           texture={activeTexture as any}
         />
       </div>
-      <div id="printCard">
+      <div id="printCard" style={{ color: '#000000' }}>
         <CardPreview
           data={activeState.data}
           theme={activeTheme}
@@ -801,8 +800,8 @@ export function PadgenApp() {
           texture={activeTexture as any}
         />
       </div>
-      <div id="printCardA4">
-        <div style={{ width: '210mm', height: '297mm', background: 'white', padding: '10mm' }}>
+      <div id="printCardA4" style={{ color: '#000000' }}>
+        <div style={{ width: '210mm', height: '297mm', background: '#ffffff', padding: '10mm', color: '#000000' }}>
           <div style={{ display: 'flex', gap: '5mm' }}>
             <div style={{ width: '89mm', height: '51mm', border: '1px solid #ccc' }}>
               <CardPreview

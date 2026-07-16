@@ -485,19 +485,23 @@ export default function App() {
                 NOC ও ভিজিটিং কার্ড তৈরি করা।
               </li>
             </ul>
-            <button
-              onClick={() => {
-                setResultsTab('padgen');
-                const resultsSection = document.getElementById('printable-results-card');
-                if (resultsSection) {
-                  resultsSection.scrollIntoView({ behavior: 'smooth' });
-                }
-              }}
-              className="w-full text-white font-extrabold py-2 px-4 rounded-full shadow-lg flex items-center justify-center gap-2 text-sm slide-btn slide-btn-blue"
-            >
-              <FileText className="w-5 h-5" />
-              NOC & Card Create
-            </button>
+            <div className="flex justify-center w-full mt-4">
+              <button
+                onClick={() => {
+                  setResultsTab('padgen');
+                  setTimeout(() => {
+                    const resultsSection = document.getElementById('printable-results-card');
+                    if (resultsSection) {
+                      resultsSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }, 100);
+                }}
+                className="w-fit text-white font-extrabold py-2 px-6 rounded-full shadow-lg flex items-center justify-center gap-2 text-sm slide-btn slide-btn-blue cursor-pointer transition-transform hover:scale-105"
+              >
+                <FileText className="w-5 h-5" />
+                NOC & Card Create
+              </button>
+            </div>
           </div>
         </div>
 
