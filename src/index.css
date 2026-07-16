@@ -730,7 +730,7 @@ button, .slide-btn {
 .card .content { position: relative; z-index: 1; height: 100%; }
 .card .frame-line { position: absolute; top: 1.6mm; left: 1.6mm; right: 1.6mm; bottom: 1.6mm; border: 1px solid; z-index: 0; pointer-events: none; }
 /* Hidden elements for print & snapshots */
-#printPad, #printCard, #printCardA4 { position: absolute; left: -99999px; top: 0; }
+#printPad, #printCard, #printCardA4 { position: fixed; left: -99999px; top: 0; z-index: -9999; pointer-events: none; }
 /* Standard print media target styling to perfectly render PDF pages */
 @media print {
   body > *:not(#printPad):not(#printCard) { display: none !important; }

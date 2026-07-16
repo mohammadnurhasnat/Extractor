@@ -20,7 +20,7 @@ import { PreviewStage } from './components/PreviewStage';
 import { PadPreview } from './components/PadPreview';
 import { CardPreview } from './components/CardPreview';
 import { HistoryPanel } from './components/HistoryPanel';
-import * as htmlToImage from 'html-to-image';
+import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 
 export function PadgenApp() {
@@ -483,10 +483,43 @@ export function PadgenApp() {
     }
     showStatusMessage('Rendering Pad PDF…');
     try {
+
+    const origElements = target.querySelectorAll('*');
+    origElements.forEach((el) => {
+      if (el instanceof HTMLElement || el instanceof SVGElement) {
+        const comp = window.getComputedStyle(el);
+        if (comp.color) el.setAttribute('data-comp-color', comp.color);
+        if (comp.backgroundColor) el.setAttribute('data-comp-bg', comp.backgroundColor);
+        if (comp.borderColor) el.setAttribute('data-comp-border', comp.borderColor);
+        if (comp.fill) el.setAttribute('data-comp-fill', comp.fill);
+        if (comp.stroke) el.setAttribute('data-comp-stroke', comp.stroke);
+      }
+    });
+
       
-      const canvas = await htmlToImage.toCanvas(target, {
-        pixelRatio: 2.5,
-        backgroundColor: '#ffffff'
+      const canvas = await html2canvas(target, {
+        scale: 2, // reduced for speed
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        onclone: 
+        (doc) => {
+          const elements = doc.querySelectorAll('*');
+          elements.forEach((el) => {
+            if (el instanceof HTMLElement || el instanceof SVGElement) {
+              const color = el.getAttribute('data-comp-color');
+              const bg = el.getAttribute('data-comp-bg');
+              const border = el.getAttribute('data-comp-border');
+              const fill = el.getAttribute('data-comp-fill');
+              const stroke = el.getAttribute('data-comp-stroke');
+              
+              if (color) el.style.setProperty('color', color, 'important');
+              if (bg) el.style.setProperty('background-color', bg, 'important');
+              if (border) el.style.setProperty('border-color', border, 'important');
+              if (fill) el.style.setProperty('fill', fill, 'important');
+              if (stroke) el.style.setProperty('stroke', stroke, 'important');
+            }
+          });
+        }
       });
       
       const imgData = canvas.toDataURL('image/jpeg', 0.9);
@@ -495,6 +528,16 @@ export function PadgenApp() {
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
       pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+      
+      const origElementsClean = target.querySelectorAll('*');
+      origElementsClean.forEach((el) => {
+        el.removeAttribute('data-comp-color');
+        el.removeAttribute('data-comp-bg');
+        el.removeAttribute('data-comp-border');
+        el.removeAttribute('data-comp-fill');
+        el.removeAttribute('data-comp-stroke');
+      });
+
       const fn = `${baseFilename()}-pad.pdf`;
       pdf.save(fn);
       showStatusMessage('Pad PDF downloaded.');
@@ -513,10 +556,43 @@ export function PadgenApp() {
     }
     showStatusMessage('Rendering A4 Card Sheet PDF…');
     try {
+
+    const origElements = target.querySelectorAll('*');
+    origElements.forEach((el) => {
+      if (el instanceof HTMLElement || el instanceof SVGElement) {
+        const comp = window.getComputedStyle(el);
+        if (comp.color) el.setAttribute('data-comp-color', comp.color);
+        if (comp.backgroundColor) el.setAttribute('data-comp-bg', comp.backgroundColor);
+        if (comp.borderColor) el.setAttribute('data-comp-border', comp.borderColor);
+        if (comp.fill) el.setAttribute('data-comp-fill', comp.fill);
+        if (comp.stroke) el.setAttribute('data-comp-stroke', comp.stroke);
+      }
+    });
+
       
-      const canvas = await htmlToImage.toCanvas(target, {
-        pixelRatio: 2.5,
-        backgroundColor: '#ffffff'
+      const canvas = await html2canvas(target, {
+        scale: 2, // reduced for speed
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        onclone: 
+        (doc) => {
+          const elements = doc.querySelectorAll('*');
+          elements.forEach((el) => {
+            if (el instanceof HTMLElement || el instanceof SVGElement) {
+              const color = el.getAttribute('data-comp-color');
+              const bg = el.getAttribute('data-comp-bg');
+              const border = el.getAttribute('data-comp-border');
+              const fill = el.getAttribute('data-comp-fill');
+              const stroke = el.getAttribute('data-comp-stroke');
+              
+              if (color) el.style.setProperty('color', color, 'important');
+              if (bg) el.style.setProperty('background-color', bg, 'important');
+              if (border) el.style.setProperty('border-color', border, 'important');
+              if (fill) el.style.setProperty('fill', fill, 'important');
+              if (stroke) el.style.setProperty('stroke', stroke, 'important');
+            }
+          });
+        }
       });
       
       const imgData = canvas.toDataURL('image/jpeg', 0.9);
@@ -525,6 +601,16 @@ export function PadgenApp() {
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
       pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+      
+      const origElementsClean = target.querySelectorAll('*');
+      origElementsClean.forEach((el) => {
+        el.removeAttribute('data-comp-color');
+        el.removeAttribute('data-comp-bg');
+        el.removeAttribute('data-comp-border');
+        el.removeAttribute('data-comp-fill');
+        el.removeAttribute('data-comp-stroke');
+      });
+
       const fn = `${baseFilename()}-card-a4.pdf`;
       pdf.save(fn);
       showStatusMessage('A4 Card Sheet PDF downloaded.');
@@ -552,10 +638,43 @@ export function PadgenApp() {
     }
     showStatusMessage('Rendering Card PNG…');
     try {
+
+    const origElements = target.querySelectorAll('*');
+    origElements.forEach((el) => {
+      if (el instanceof HTMLElement || el instanceof SVGElement) {
+        const comp = window.getComputedStyle(el);
+        if (comp.color) el.setAttribute('data-comp-color', comp.color);
+        if (comp.backgroundColor) el.setAttribute('data-comp-bg', comp.backgroundColor);
+        if (comp.borderColor) el.setAttribute('data-comp-border', comp.borderColor);
+        if (comp.fill) el.setAttribute('data-comp-fill', comp.fill);
+        if (comp.stroke) el.setAttribute('data-comp-stroke', comp.stroke);
+      }
+    });
+
       
-      const canvas = await htmlToImage.toCanvas(target, {
-        pixelRatio: 4,
-        backgroundColor: '#ffffff'
+      const canvas = await html2canvas(target, {
+        scale: 3, // reduced for speed
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        onclone: 
+        (doc) => {
+          const elements = doc.querySelectorAll('*');
+          elements.forEach((el) => {
+            if (el instanceof HTMLElement || el instanceof SVGElement) {
+              const color = el.getAttribute('data-comp-color');
+              const bg = el.getAttribute('data-comp-bg');
+              const border = el.getAttribute('data-comp-border');
+              const fill = el.getAttribute('data-comp-fill');
+              const stroke = el.getAttribute('data-comp-stroke');
+              
+              if (color) el.style.setProperty('color', color, 'important');
+              if (bg) el.style.setProperty('background-color', bg, 'important');
+              if (border) el.style.setProperty('border-color', border, 'important');
+              if (fill) el.style.setProperty('fill', fill, 'important');
+              if (stroke) el.style.setProperty('stroke', stroke, 'important');
+            }
+          });
+        }
       });
       
       const fn = `${baseFilename()}-card.png`;
@@ -581,10 +700,43 @@ export function PadgenApp() {
     }
     showStatusMessage('Rendering Pad PNG…');
     try {
+
+    const origElements = target.querySelectorAll('*');
+    origElements.forEach((el) => {
+      if (el instanceof HTMLElement || el instanceof SVGElement) {
+        const comp = window.getComputedStyle(el);
+        if (comp.color) el.setAttribute('data-comp-color', comp.color);
+        if (comp.backgroundColor) el.setAttribute('data-comp-bg', comp.backgroundColor);
+        if (comp.borderColor) el.setAttribute('data-comp-border', comp.borderColor);
+        if (comp.fill) el.setAttribute('data-comp-fill', comp.fill);
+        if (comp.stroke) el.setAttribute('data-comp-stroke', comp.stroke);
+      }
+    });
+
       
-      const canvas = await htmlToImage.toCanvas(target, {
-        pixelRatio: 2.5,
-        backgroundColor: '#ffffff'
+      const canvas = await html2canvas(target, {
+        scale: 2, // reduced for speed
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        onclone: 
+        (doc) => {
+          const elements = doc.querySelectorAll('*');
+          elements.forEach((el) => {
+            if (el instanceof HTMLElement || el instanceof SVGElement) {
+              const color = el.getAttribute('data-comp-color');
+              const bg = el.getAttribute('data-comp-bg');
+              const border = el.getAttribute('data-comp-border');
+              const fill = el.getAttribute('data-comp-fill');
+              const stroke = el.getAttribute('data-comp-stroke');
+              
+              if (color) el.style.setProperty('color', color, 'important');
+              if (bg) el.style.setProperty('background-color', bg, 'important');
+              if (border) el.style.setProperty('border-color', border, 'important');
+              if (fill) el.style.setProperty('fill', fill, 'important');
+              if (stroke) el.style.setProperty('stroke', stroke, 'important');
+            }
+          });
+        }
       });
       
       const fn = `${baseFilename()}-pad.png`;
@@ -637,10 +789,53 @@ export function PadgenApp() {
     if (!target) return;
     showStatusMessage('Preparing layered document stream…');
     try {
-      const canvas = await htmlToImage.toCanvas(target, {
-        pixelRatio: 3,
-        backgroundColor: '#ffffff'
+
+    const origElements = target.querySelectorAll('*');
+    origElements.forEach((el) => {
+      if (el instanceof HTMLElement || el instanceof SVGElement) {
+        const comp = window.getComputedStyle(el);
+        if (comp.color) el.setAttribute('data-comp-color', comp.color);
+        if (comp.backgroundColor) el.setAttribute('data-comp-bg', comp.backgroundColor);
+        if (comp.borderColor) el.setAttribute('data-comp-border', comp.borderColor);
+        if (comp.fill) el.setAttribute('data-comp-fill', comp.fill);
+        if (comp.stroke) el.setAttribute('data-comp-stroke', comp.stroke);
+      }
+    });
+
+      const canvas = await html2canvas(target, {
+        scale: 2, // reduced for speed
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        onclone: 
+        (doc) => {
+          const elements = doc.querySelectorAll('*');
+          elements.forEach((el) => {
+            if (el instanceof HTMLElement || el instanceof SVGElement) {
+              const color = el.getAttribute('data-comp-color');
+              const bg = el.getAttribute('data-comp-bg');
+              const border = el.getAttribute('data-comp-border');
+              const fill = el.getAttribute('data-comp-fill');
+              const stroke = el.getAttribute('data-comp-stroke');
+              
+              if (color) el.style.setProperty('color', color, 'important');
+              if (bg) el.style.setProperty('background-color', bg, 'important');
+              if (border) el.style.setProperty('border-color', border, 'important');
+              if (fill) el.style.setProperty('fill', fill, 'important');
+              if (stroke) el.style.setProperty('stroke', stroke, 'important');
+            }
+          });
+        }
       });
+      
+      const origElementsClean = target.querySelectorAll('*');
+      origElementsClean.forEach((el) => {
+        el.removeAttribute('data-comp-color');
+        el.removeAttribute('data-comp-bg');
+        el.removeAttribute('data-comp-border');
+        el.removeAttribute('data-comp-fill');
+        el.removeAttribute('data-comp-stroke');
+      });
+
       canvas.toBlob((blob) => {
         if (!blob) return;
         const fn = `${baseFilename()}-document.psd`;
