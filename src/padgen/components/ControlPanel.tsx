@@ -66,7 +66,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
     value: companyData[field] === (DEFAULT_COMPANY_DATA as any)[field] ? '' : (companyData[field] || ''),
     placeholder: (DEFAULT_COMPANY_DATA as any)[field] || placeholder,
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(field, e.target.value),
-    className: "w-full p-2 border border-[#DDDEDC] rounded text-[13px] bg-[#FBFBFA] text-[#1C1E22] focus:outline-none focus:border-[#3B4658]",
+    className: "w-full py-1 px-1.5 border border-[#DDDEDC] rounded text-[11px] bg-[#FBFBFA] text-[#1C1E22] focus:outline-none focus:border-[#3B4658]",
   });
 
   const handleControlChange = <K extends keyof DesignControls>(
@@ -148,14 +148,14 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           </div>
 
             <div className="flex flex-col gap-1">
-            <label className="text-[12px] font-mono text-[#6B7076] uppercase tracking-wider">
+            <label className="text-[10px] font-mono text-[#6B7076] uppercase tracking-wider">
               Company Name
             </label>
             <input type="text" {...getInputProps('companyName', 'e.g. Subarna Traders')} />
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-[12px] font-mono text-[#6B7076] uppercase tracking-wider">
+            <label className="text-[10px] font-mono text-[#6B7076] uppercase tracking-wider">
               Company Name Casing Style
             </label>
             <div className="flex gap-2">
@@ -164,7 +164,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                   key={c}
                   type="button"
                   onClick={() => handleInputChange('casing', c)}
-                  className={`flex-1 py-2 px-3 rounded border text-[11px] font-semibold cursor-pointer transition-all duration-150 ${
+                  className={`flex-1 py-1 px-2 rounded border text-[10px] font-semibold cursor-pointer transition-all duration-150 ${
                     (companyData.casing || 'title') === c
                       ? 'bg-[#3B4658] text-white border-[#3B4658]'
                       : 'bg-[#FBFBFA] text-[#1C1E22] border-[#DDDEDC] hover:border-[#3B4658]'
@@ -177,13 +177,13 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-[12px] font-mono text-[#6B7076] uppercase tracking-wider">
+            <label className="text-[10px] font-mono text-[#6B7076] uppercase tracking-wider">
               Business Industry / Domain
             </label>
             <select
               value={companyData.industry || 'corporate'}
               onChange={(e) => handleInputChange('industry', e.target.value as any)}
-              className="w-full p-2 border border-[#DDDEDC] rounded text-[13px] bg-[#FBFBFA] text-[#1C1E22] focus:outline-none focus:border-[#3B4658] font-semibold cursor-pointer"
+              className="w-full py-1 px-1.5 border border-[#DDDEDC] rounded text-[11px] bg-[#FBFBFA] text-[#1C1E22] focus:outline-none focus:border-[#3B4658] font-semibold cursor-pointer"
             >
               {INDUSTRIES.map((ind) => (
                 <option key={ind} value={ind}>
@@ -194,7 +194,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-[12px] font-mono text-[#6B7076] uppercase tracking-wider">
+            <label className="text-[10px] font-mono text-[#6B7076] uppercase tracking-wider">
               Address
             </label>
             <input type="text" {...getInputProps('address', 'e.g. 24 Motijheel C/A, Dhaka-1000')} />
@@ -202,14 +202,14 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1">
-              <label className="text-[12px] font-mono text-[#6B7076] uppercase tracking-wider">
+              <label className="text-[10px] font-mono text-[#6B7076] uppercase tracking-wider">
                 Telephone
               </label>
               <input type="text" {...getInputProps('phone', 'Phone number')} />
             </div>
 
             <div className="flex flex-col gap-1">
-              <label className="text-[12px] font-mono text-[#6B7076] uppercase tracking-wider">
+              <label className="text-[10px] font-mono text-[#6B7076] uppercase tracking-wider">
                 Email
               </label>
               <input type="email" {...getInputProps('email', 'Email address')} />
@@ -217,7 +217,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-[12px] font-mono text-[#6B7076] uppercase tracking-wider">
+            <label className="text-[10px] font-mono text-[#6B7076] uppercase tracking-wider">
               Website / Tagline
             </label>
             <input type="text" {...getInputProps('tagline', 'e.g. www.subarnatraders.com')} />
@@ -273,7 +273,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               Typography Stack
             </label>
             <select
-              className="w-full p-2 border border-[#DDDEDC] rounded text-[13px] bg-[#FBFBFA] text-[#1C1E22] cursor-pointer focus:outline-none focus:border-[#3B4658]"
+              className="w-full py-1 px-1.5 border border-[#DDDEDC] rounded text-[11px] bg-[#FBFBFA] text-[#1C1E22] cursor-pointer focus:outline-none focus:border-[#3B4658]"
               value={controls.font}
               onChange={(e) => handleControlChange('font', e.target.value)}
             >
@@ -297,7 +297,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                   key={sh}
                   type="button"
                   onClick={() => handleControlChange('shape', sh)}
-                  className={`px-2 py-1 rounded border text-[11px] font-semibold cursor-pointer transition-all duration-150 ${
+                  className={`px-1.5 py-0.5 rounded border text-[10px] font-semibold cursor-pointer transition-all duration-150 ${
                     controls.shape === sh
                       ? 'bg-[#3B4658] text-white border-[#3B4658]'
                       : 'bg-[#FBFBFA] text-[#1C1E22] border-[#DDDEDC] hover:border-[#3B4658]'
@@ -320,7 +320,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                   key={sty}
                   type="button"
                   onClick={() => handleControlChange('logoStyle', sty)}
-                  className={`px-2 py-1 rounded border text-[11px] font-semibold cursor-pointer transition-all duration-150 ${
+                  className={`px-1.5 py-0.5 rounded border text-[10px] font-semibold cursor-pointer transition-all duration-150 ${
                     controls.logoStyle === sty
                       ? 'bg-[#3B4658] text-white border-[#3B4658]'
                       : 'bg-[#FBFBFA] text-[#1C1E22] border-[#DDDEDC] hover:border-[#3B4658]'
@@ -343,7 +343,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                   key={lay}
                   type="button"
                   onClick={() => handleControlChange('padLayout', lay)}
-                  className={`px-2 py-1 rounded border text-[11px] font-semibold cursor-pointer transition-all duration-150 ${
+                  className={`px-1.5 py-0.5 rounded border text-[10px] font-semibold cursor-pointer transition-all duration-150 ${
                     controls.padLayout === lay
                       ? 'bg-[#3B4658] text-white border-[#3B4658]'
                       : 'bg-[#FBFBFA] text-[#1C1E22] border-[#DDDEDC] hover:border-[#3B4658]'
@@ -363,7 +363,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             <select
               value={controls.gridStyle}
               onChange={(e) => handleControlChange("gridStyle", e.target.value as any)}
-              className="px-2 py-1.5 rounded border border-[#DDDEDC] bg-[#FBFBFA] text-[#1C1E22] text-[12px] font-medium outline-none focus:border-[#3B4658] transition-colors"
+              className="w-full py-1 px-1.5 rounded border border-[#DDDEDC] bg-[#FBFBFA] text-[#1C1E22] text-[11px] font-medium outline-none focus:border-[#3B4658] transition-colors"
             >
               <option value="random">Random</option>
               {GRID_STYLES.map((gSty) => (
@@ -380,7 +380,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             <select
               value={controls.texture}
               onChange={(e) => handleControlChange("texture", e.target.value as any)}
-              className="px-2 py-1.5 rounded border border-[#DDDEDC] bg-[#FBFBFA] text-[#1C1E22] text-[12px] font-medium outline-none focus:border-[#3B4658] transition-colors"
+              className="w-full py-1 px-1.5 rounded border border-[#DDDEDC] bg-[#FBFBFA] text-[#1C1E22] text-[11px] font-medium outline-none focus:border-[#3B4658] transition-colors"
             >
               <option value="random">Random</option>
               {TEXTURES.map((tex) => (
@@ -400,7 +400,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                   key={lay}
                   type="button"
                   onClick={() => handleControlChange('cardLayout', lay)}
-                  className={`px-2 py-1 rounded border text-[11px] font-semibold cursor-pointer transition-all duration-150 ${
+                  className={`px-1.5 py-0.5 rounded border text-[10px] font-semibold cursor-pointer transition-all duration-150 ${
                     controls.cardLayout === lay
                       ? 'bg-[#3B4658] text-white border-[#3B4658]'
                       : 'bg-[#FBFBFA] text-[#1C1E22] border-[#DDDEDC] hover:border-[#3B4658]'

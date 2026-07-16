@@ -87,10 +87,10 @@ export function ResultsSection({
                 {data && (
                   <button
                     onClick={() => setResultsTab('profile')}
-                    className={`slide-btn slide-btn-purple text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer transition-none border min-h-[40px] ripple-btn ${
+                    className={`text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer transition-colors border min-h-[40px] ${
                       resultsTab === 'profile'
-                        ? 'active shadow-[0_2px_10px_rgba(0,0,0,0.02)] font-black border-[#2DD4BF]/50'
-                        : 'border-slate-205 dark:border-zinc-800'
+                        ? 'bg-[#FFD700] text-black shadow-lg font-black border-[#FFD700]'
+                        : 'bg-[#00FA9A] text-black border-transparent hover:bg-[#00e08a]'
                      }`}
                   >
                     <span className="relative z-10">Passport Profile</span>
@@ -99,10 +99,10 @@ export function ResultsSection({
                 {data && isUndertakingConfigured && undertakingData && activeItem?.documentType !== 'visa_application' && (
                   <button
                     onClick={() => setResultsTab('undertaking')}
-                    className={`slide-btn slide-btn-purple text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer transition-none border min-h-[40px] ripple-btn ${
+                    className={`text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer transition-colors border min-h-[40px] ${
                       resultsTab === 'undertaking'
-                        ? 'active shadow-[0_2px_10px_rgba(0,0,0,0.02)] font-black border-[#2DD4BF]/50'
-                        : 'border-slate-205 dark:border-zinc-800'
+                        ? 'bg-[#FFD700] text-black shadow-lg font-black border-[#FFD700]'
+                        : 'bg-[#00FA9A] text-black border-transparent hover:bg-[#00e08a]'
                      }`}
                   >
                     <span className="relative z-10">Undertaking Form</span>
@@ -111,10 +111,10 @@ export function ResultsSection({
                 {activeItem && activeItem?.documentType !== 'visa_application' && (
                   <button
                     onClick={() => setResultsTab('passport-pdf')}
-                    className={`slide-btn slide-btn-purple text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer transition-none border min-h-[40px] ripple-btn ${
+                    className={`text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer transition-colors border min-h-[40px] ${
                       resultsTab === 'passport-pdf'
-                        ? 'active shadow-[0_2px_10px_rgba(0,0,0,0.02)] font-black border-[#2DD4BF]/50'
-                        : 'border-slate-205 dark:border-zinc-800'
+                        ? 'bg-[#FFD700] text-black shadow-lg font-black border-[#FFD700]'
+                        : 'bg-[#00FA9A] text-black border-transparent hover:bg-[#00e08a]'
                      }`}
                   >
                     <span className="relative z-10">Image to PDF</span>
@@ -123,10 +123,10 @@ export function ResultsSection({
                 {data && (
                   <button
                     onClick={() => setResultsTab('padgen')}
-                    className={`slide-btn slide-btn-purple text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer transition-none border min-h-[40px] ripple-btn ${
+                    className={`text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer transition-colors border min-h-[40px] ${
                       resultsTab === 'padgen'
-                        ? 'active shadow-[0_2px_10px_rgba(0,0,0,0.02)] font-black border-[#2DD4BF]/50'
-                        : 'border-slate-205 dark:border-zinc-800'
+                        ? 'bg-[#FFD700] text-black shadow-lg font-black border-[#FFD700]'
+                        : 'bg-[#00FA9A] text-black border-transparent hover:bg-[#00e08a]'
                      }`}
                   >
                     <span className="relative z-10">Card & Letter Head</span>
