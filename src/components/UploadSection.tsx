@@ -86,7 +86,7 @@ export function UploadSection(props: UploadSectionProps) {
         
         {!props.preview && !isPdf ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 relative">
-              {/* Passport Dropzone (Blue) */}
+              {/* Passport Dropzone (Matte Slate) */}
               <motion.div 
                 layout
                 onMouseEnter={() => setHoveredSection('passport')}
@@ -102,11 +102,11 @@ export function UploadSection(props: UploadSectionProps) {
                 }}
                 animate={{
                   scale: dragActivePassport ? 1.04 : hoveredSection === 'passport' ? 1.025 : hoveredSection === 'pdf' ? 0.98 : 1,
-                  borderColor: dragActivePassport ? '#3b82f6' : '#2b0c10',
+                  borderColor: dragActivePassport ? '#3b82f6' : '#93c5fd',
                 }}
                 transition={{ type: 'spring', stiffness: 220, damping: 20 }}
-                className={`retro-dropzone group flex flex-col items-center justify-center text-center min-h-[220px] p-6 cursor-pointer relative ${
-                  dragActivePassport ? 'ring-4 ring-blue-500/20 border-blue-500 shadow-[6px_6px_0px_0px_rgba(59,130,246,0.5)]' : ''
+                className={`retro-dropzone group flex flex-col items-center justify-center text-center min-h-[220px] p-6 cursor-pointer relative bg-gradient-to-br from-blue-50/85 to-indigo-50/40 dark:from-blue-950/20 dark:to-slate-900/40 border-2 border-blue-200 dark:border-blue-800/60 rounded-3xl shadow-[0_10px_25px_rgba(59,130,246,0.08)] dark:shadow-[0_10px_30px_rgba(29,78,216,0.15)] hover:shadow-[0_15px_35px_rgba(59,130,246,0.18)] dark:hover:shadow-[0_15px_40px_rgba(29,78,216,0.25)] transition-all duration-300 ${
+                  dragActivePassport ? 'ring-4 ring-blue-400/20 border-blue-500 shadow-[0_15px_35px_rgba(59,130,246,0.25)]' : ''
                 }`} 
                 onClick={() => props.fileInputRef.current?.click()}
               >
@@ -122,15 +122,13 @@ export function UploadSection(props: UploadSectionProps) {
                 {/* Premium Glassmorphic Overlay triggered when the adjacent section is hovered */}
                 <div className={`glass-overlay-shield ${hoveredSection === 'pdf' ? 'active' : ''}`} />
                 
-                <div className="absolute w-32 h-32 bg-[#881337]/5 rounded-full blur-2xl top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
-                
                 <div className="flex flex-col items-center justify-center p-4 w-full h-full relative z-10">
-                  <div className="w-16 h-16 bg-white dark:bg-zinc-800 rounded-2xl shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 border-2 border-[#2b0c10] dark:border-zinc-900 shadow-[2px_2px_0px_0px_#2b0c10] dark:shadow-[2px_2px_0px_0px_#000]">
-                    <UploadCloud className="w-8 h-8 text-[#881337] dark:text-rose-300" />
+                  <div className="w-16 h-16 bg-white dark:bg-zinc-900 rounded-2xl shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 border border-blue-100 dark:border-blue-800/80 shadow-[0_4px_12px_rgba(59,130,246,0.1)] dark:shadow-[0_4px_12px_rgba(0,0,0,0.3)]">
+                    <UploadCloud className="w-8 h-8 text-blue-600 dark:text-blue-400" />
                   </div>
-                  <p className="font-extrabold text-[#881337] dark:text-rose-200 text-sm">Upload Passport Photo</p>
-                  <p className="text-xs text-slate-500 dark:text-zinc-400 font-bold mt-1.5">Tap or drag passport image</p>
-                  <p className="text-[10px] text-[#881337] dark:text-rose-300 mt-4 bg-[#f5ece1] dark:bg-zinc-800 border-2 border-[#2b0c10] dark:border-zinc-900 px-3 py-1 rounded-full font-mono font-bold shadow-[1.5px_1.5px_0px_0px_#2b0c10]">
+                  <p className="font-extrabold text-blue-950 dark:text-blue-50 text-sm">Upload Passport Photo</p>
+                  <p className="text-xs text-blue-700/70 dark:text-blue-300/70 font-bold mt-1.5">Tap or drag passport image</p>
+                  <p className="text-[10px] text-blue-700 dark:text-blue-300 mt-4 bg-blue-100/60 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 px-3 py-1 rounded-full font-mono font-bold shadow-sm">
                     JPEG, PNG, WEBP
                   </p>
                 </div>
@@ -142,23 +140,23 @@ export function UploadSection(props: UploadSectionProps) {
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.95 }}
-                      className="absolute inset-0 bg-blue-50/95 dark:bg-zinc-900/95 backdrop-blur-md z-30 flex flex-col items-center justify-center p-4 rounded-[14px] border-2 border-dashed border-blue-500"
+                      className="absolute inset-0 bg-slate-200/95 dark:bg-zinc-900/95 backdrop-blur-md z-30 flex flex-col items-center justify-center p-4 rounded-[14px] border-2 border-dashed border-slate-500"
                     >
                       <motion.div
                         animate={{ y: [0, -8, 0] }}
                         transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                        className="w-16 h-16 bg-blue-500 text-white rounded-full flex items-center justify-center shadow-lg mb-3"
+                        className="w-16 h-16 bg-slate-600 text-white rounded-full flex items-center justify-center shadow-lg mb-3"
                       >
                         <UploadCloud className="w-8 h-8" />
                       </motion.div>
-                      <p className="font-black text-blue-600 dark:text-blue-400 text-base">এখানে ছেড়ে দিন!</p>
-                      <p className="text-xs text-blue-500/80 dark:text-zinc-300 font-bold mt-1">পাসপোর্ট ফটো ড্রপ করুন</p>
+                      <p className="font-black text-slate-700 dark:text-slate-300 text-base">এখানে ছেড়ে দিন!</p>
+                      <p className="text-xs text-slate-500 dark:text-zinc-300 font-bold mt-1">পাসপোর্ট ফটো ড্রপ করুন</p>
                     </motion.div>
                   )}
                 </AnimatePresence>
               </motion.div>
 
-              {/* Visa Application PDF Dropzone (Emerald) */}
+              {/* Visa Application PDF Dropzone (Matte Zinc) */}
               <motion.div 
                 layout
                 onMouseEnter={() => setHoveredSection('pdf')}
@@ -174,11 +172,11 @@ export function UploadSection(props: UploadSectionProps) {
                 }}
                 animate={{
                   scale: dragActivePdf ? 1.04 : hoveredSection === 'pdf' ? 1.025 : hoveredSection === 'passport' ? 0.98 : 1,
-                  borderColor: dragActivePdf ? '#10b981' : '#2b0c10',
+                  borderColor: dragActivePdf ? '#10b981' : '#a7f3d0',
                 }}
                 transition={{ type: 'spring', stiffness: 220, damping: 20 }}
-                className={`retro-dropzone group flex flex-col items-center justify-center text-center min-h-[220px] p-6 cursor-pointer relative ${
-                  dragActivePdf ? 'ring-4 ring-emerald-500/20 border-emerald-500 shadow-[6px_6px_0px_0px_rgba(16,185,129,0.5)]' : ''
+                className={`retro-dropzone group flex flex-col items-center justify-center text-center min-h-[220px] p-6 cursor-pointer relative bg-gradient-to-br from-emerald-50/80 to-teal-50/40 dark:from-emerald-950/20 dark:to-zinc-900/40 border-2 border-emerald-200 dark:border-emerald-800/60 rounded-3xl shadow-[0_10px_25px_rgba(16,185,129,0.08)] dark:shadow-[0_10px_30px_rgba(4,120,87,0.15)] hover:shadow-[0_15px_35px_rgba(16,185,129,0.18)] dark:hover:shadow-[0_15px_40px_rgba(4,120,87,0.25)] transition-all duration-300 ${
+                  dragActivePdf ? 'ring-4 ring-emerald-400/20 border-emerald-500 shadow-[0_15px_35px_rgba(16,185,129,0.25)]' : ''
                 }`} 
                 onClick={() => props.visaFileInputRef.current?.click()}
               >
@@ -193,15 +191,13 @@ export function UploadSection(props: UploadSectionProps) {
                 {/* Premium Glassmorphic Overlay triggered when the adjacent section is hovered */}
                 <div className={`glass-overlay-shield ${hoveredSection === 'passport' ? 'active' : ''}`} />
                 
-                <div className="absolute w-32 h-32 bg-[#881337]/5 rounded-full blur-2xl top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
-                
                 <div className="flex flex-col items-center justify-center p-4 w-full h-full relative z-10">
-                  <div className="w-16 h-16 bg-white dark:bg-zinc-800 rounded-2xl shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 border-2 border-[#2b0c10] dark:border-zinc-900 shadow-[2px_2px_0px_0px_#2b0c10] dark:shadow-[2px_2px_0px_0px_#000]">
-                    <FileText className="w-8 h-8 text-[#881337] dark:text-rose-300" />
+                  <div className="w-16 h-16 bg-white dark:bg-zinc-900 rounded-2xl shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 border border-emerald-100 dark:border-emerald-800/80 shadow-[0_4px_12px_rgba(16,185,129,0.1)] dark:shadow-[0_4px_12px_rgba(0,0,0,0.3)]">
+                    <FileText className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
                   </div>
-                  <p className="font-extrabold text-[#881337] dark:text-rose-200 text-sm">Upload BGD Form</p>
-                  <p className="text-xs text-slate-500 dark:text-zinc-400 font-bold mt-1.5">Tap or drag submitted PDF</p>
-                  <p className="text-[10px] text-[#881337] dark:text-rose-300 mt-4 bg-[#f5ece1] dark:bg-zinc-800 border-2 border-[#2b0c10] dark:border-zinc-900 px-3 py-1 rounded-full font-mono font-bold shadow-[1.5px_1.5px_0px_0px_#2b0c10]">
+                  <p className="font-extrabold text-emerald-950 dark:text-emerald-50 text-sm">Upload BGD Form</p>
+                  <p className="text-xs text-emerald-700/70 dark:text-emerald-300/70 font-bold mt-1.5">Tap or drag submitted PDF</p>
+                  <p className="text-[10px] text-emerald-700 dark:text-emerald-300 mt-4 bg-emerald-100/60 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-3 py-1 rounded-full font-mono font-bold shadow-sm">
                     application/pdf only
                   </p>
                 </div>
@@ -213,17 +209,17 @@ export function UploadSection(props: UploadSectionProps) {
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.95 }}
-                      className="absolute inset-0 bg-emerald-50/95 dark:bg-zinc-900/95 backdrop-blur-md z-30 flex flex-col items-center justify-center p-4 rounded-[14px] border-2 border-dashed border-emerald-500"
+                      className="absolute inset-0 bg-zinc-200/95 dark:bg-zinc-900/95 backdrop-blur-md z-30 flex flex-col items-center justify-center p-4 rounded-[14px] border-2 border-dashed border-zinc-500"
                     >
                       <motion.div
                         animate={{ y: [0, -8, 0] }}
                         transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                        className="w-16 h-16 bg-emerald-500 text-white rounded-full flex items-center justify-center shadow-lg mb-3"
+                        className="w-16 h-16 bg-zinc-600 text-white rounded-full flex items-center justify-center shadow-lg mb-3"
                       >
                         <FileText className="w-8 h-8" />
                       </motion.div>
-                      <p className="font-black text-emerald-600 dark:text-emerald-400 text-base">এখানে ছেড়ে দিন!</p>
-                      <p className="text-xs text-emerald-500/80 dark:text-zinc-300 font-bold mt-1">BGD ফর্ম পিডিএফ ড্রপ করুন</p>
+                      <p className="font-black text-zinc-700 dark:text-zinc-300 text-base">এখানে ছেড়ে দিন!</p>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-300 font-bold mt-1">BGD ফর্ম পিডিএফ ড্রপ করুন</p>
                     </motion.div>
                   )}
                 </AnimatePresence>

@@ -135,16 +135,16 @@ export const PreviewStage: React.FC<PreviewStageProps> = ({
         </div>
 
         {/* Buttons side-by-side */}
-        <div className="flex gap-4 w-full max-w-[420px] justify-center items-center px-4 mt-4 mb-2">
+        <div className="flex gap-4 w-full max-w-[420px] justify-center items-center px-4 mt-6 mb-2">
           <button
             onClick={onDownloadPadPDF}
-            className="flex-1 border border-[#DDDEDC] bg-[#E8F0FE] text-[#1967D2] rounded-lg py-2.5 px-3 text-xs font-bold hover:bg-[#D2E3FC] transition-colors duration-150 cursor-pointer shadow-sm text-center flex items-center justify-center gap-1.5"
+            className="slide-btn slide-btn-blue text-white flex-1 py-2.5 px-3 text-xs font-black rounded-xl cursor-pointer shadow-md text-center flex items-center justify-center gap-1.5"
           >
             Download Pad PDF
           </button>
           <button
             onClick={onDownloadCardPDF}
-            className="flex-1 border border-[#DDDEDC] bg-[#E8F0FE] text-[#1967D2] rounded-lg py-2.5 px-3 text-xs font-bold hover:bg-[#D2E3FC] transition-colors duration-150 cursor-pointer shadow-sm text-center flex items-center justify-center gap-1.5"
+            className="slide-btn slide-btn-purple text-white flex-1 py-2.5 px-3 text-xs font-black rounded-xl cursor-pointer shadow-md text-center flex items-center justify-center gap-1.5"
           >
             Download Card PDF
           </button>

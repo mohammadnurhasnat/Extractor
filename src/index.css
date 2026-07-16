@@ -88,42 +88,46 @@
   }
 }
 
-/* WhatsApp Brand Style */
-.slide-btn-whatsapp {
-  background-color: #25D366 !important;
-  color: #ffffff !important;
-  border: 1px solid #128C7E !important;
-  border-radius: 12px !important;
-  box-shadow: 0 4px 0 0 #075E54 !important;
+/* Matte Yellow Button Style */
+.slide-btn-yellow {
+  background-color: #ca8a04 !important; /* More matte/mustard yellow */
+  color: #000000 !important;
+  border: 1px solid #854d0e !important;
+  border-radius: 8px !important; /* Slightly less rounded */
+  box-shadow: 0 3px 0 0 #713f12 !important;
   transform: translateY(0) !important;
 }
 
-.slide-btn-whatsapp:hover {
-  background-color: #22c35e !important;
-  transform: translateY(-1.5px) !important;
-  box-shadow: 0 5.5px 0 0 #075E54 !important;
+.slide-btn-yellow:hover {
+  background-color: #eab308 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 0 0 #713f12 !important;
 }
 
-.slide-btn-whatsapp:active {
-  background-color: #1ebe57 !important;
-  transform: translateY(4px) !important;
-  box-shadow: 0 0px 0 0 #075E54 !important;
+.slide-btn-yellow:active,
+.slide-btn-yellow.active {
+  background-color: #854d0e !important;
+  transform: translateY(3px) !important;
+  box-shadow: 0 0px 0 0 #713f12 !important;
 }
 
-.dark .slide-btn-whatsapp {
-  background-color: #25D366 !important;
-  border-color: #075E54 !important;
-  box-shadow: 0 4px 0 0 #043933 !important;
+.dark .slide-btn-yellow {
+  background-color: #ca8a04 !important;
+  color: #000000 !important;
+  border-color: #854d0e !important;
+  box-shadow: 0 3px 0 0 rgba(0, 0, 0, 0.5) !important;
 }
 
-.dark .slide-btn-whatsapp:hover {
-  background-color: #22c35e !important;
-  box-shadow: 0 5.5px 0 0 #043933 !important;
+.dark .slide-btn-yellow:hover {
+  background-color: #eab308 !important;
+  box-shadow: 0 4px 0 0 rgba(0, 0, 0, 0.5) !important;
 }
 
-.dark .slide-btn-whatsapp:active {
-  background-color: #1ebe57 !important;
-  box-shadow: 0 0px 0 0 #043933 !important;
+.dark .slide-btn-yellow:active,
+.dark .slide-btn-yellow.active {
+  background-color: #854d0e !important;
+  transform: translateY(3px) !important;
+  box-shadow: 0 0px 0 0 #000000 !important;
 }
 .ripple-btn {
   position: relative;

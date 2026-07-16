@@ -115,13 +115,13 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
         </div>
         <button
           onClick={onOpenHistory}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#DDDEDC] hover:border-[#3B4658] text-[11px] font-bold text-[#3B4658] hover:bg-[#FAFBF9] transition-all cursor-pointer shadow-xs shrink-0 bg-white"
+          className="slide-btn slide-btn-slate flex items-center gap-1.5 px-3 py-1 text-[11px] font-bold cursor-pointer shrink-0"
           title="Open Saved Downloads History"
         >
-          <History className="w-3.5 h-3.5 text-[#3B4658]" />
+          <History className="w-3.5 h-3.5 text-white" />
           <span>History</span>
           {historyCount > 0 && (
-            <span className="bg-[#3B4658] text-white text-[9.5px] px-1.5 py-0.2 rounded-full font-extrabold shrink-0">
+            <span className="bg-red-500 text-white text-[9.5px] px-1.5 py-0.2 rounded-full font-extrabold shrink-0">
               {historyCount}
             </span>
           )}
@@ -414,39 +414,39 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
         </div>
 
         {/* Actions Grid */}
-        <div className="flex flex-col gap-2 border-t border-[#DDDEDC] pt-3">
+        <div className="flex flex-col gap-3.5 border-t border-[#DDDEDC] pt-3.5">
           <button
             onClick={onGenerate}
-            className="w-full bg-[#3B4658] text-white rounded py-2 px-4 text-[12.5px] font-semibold hover:bg-[#2A3240] transition-colors duration-150 cursor-pointer"
+            className="slide-btn slide-btn-slate w-full py-2.5 px-4 text-[12.5px] font-black rounded-xl cursor-pointer shadow-md"
           >
             Generate New Design
           </button>
 
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-3.5">
             <button
               onClick={onRandomTheme}
-              className="border border-[#DDDEDC] text-[#3B4658] rounded py-1.5 px-2 text-[11.5px] font-semibold hover:bg-[#F2F3F1] transition-colors duration-150 cursor-pointer"
+              className="slide-btn slide-btn-teal py-2 px-2 text-[11px] font-black rounded-xl cursor-pointer shadow-sm"
             >
               Random Theme
             </button>
             <button
               onClick={onResetAll}
-              className="border border-[#DDDEDC] text-[#3B4658] rounded py-1.5 px-2 text-[11.5px] font-semibold hover:bg-[#F2F3F1] transition-colors duration-150 cursor-pointer"
+              className="slide-btn slide-btn-orange py-2 px-2 text-[11px] font-black rounded-xl cursor-pointer shadow-sm"
             >
               Reset Inputs
             </button>
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-3.5">
             <button
               onClick={onSaveTemplate}
-              className="border border-[#DDDEDC] text-[#3B4658] rounded py-1.5 px-2 text-[11.5px] font-semibold hover:bg-[#F2F3F1] transition-colors duration-150 cursor-pointer"
+              className="slide-btn slide-btn-blue py-2 px-2 text-[11px] font-black rounded-xl cursor-pointer shadow-sm"
             >
               Save Template
             </button>
             <button
               onClick={triggerFileSelect}
-              className="border border-[#DDDEDC] text-[#3B4658] rounded py-1.5 px-2 text-[11.5px] font-semibold hover:bg-[#F2F3F1] transition-colors duration-150 cursor-pointer"
+              className="slide-btn slide-btn-yellow py-2 px-2 text-[11px] font-black rounded-xl cursor-pointer shadow-sm"
             >
               Load Template
             </button>
