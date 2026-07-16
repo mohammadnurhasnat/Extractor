@@ -99,7 +99,7 @@ export function PassportDataTab({
           {helperInfo && onOpenRefHelper && (
             <button
               onClick={onOpenRefHelper}
-              className={`slide-btn ${helperInfo.btnClass} flex items-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-extrabold rounded-lg cursor-pointer ripple-btn`}
+              className={`slide-btn ${helperInfo.purpose === 'Medical' ? 'slide-btn-teal' : 'slide-btn-orange'} flex items-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-extrabold rounded-full cursor-pointer`}
             >
               <ClipboardList className="w-4.5 h-4.5 relative z-10" />
               <span className="relative z-10">{helperInfo.label}</span>
@@ -107,10 +107,10 @@ export function PassportDataTab({
           )}
           <button 
             onClick={handleCopyAll}
-            className="slide-btn slide-btn-slate flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg cursor-pointer shadow-sm hover:shadow ripple-btn"
+            className="slide-btn slide-btn-purple flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-extrabold rounded-full cursor-pointer shadow-sm"
           >
             {isCopied ? (
-              <Check className="w-4.5 h-4.5 text-emerald-500 relative z-10 font-bold" />
+              <Check className="w-4.5 h-4.5 text-emerald-300 relative z-10 font-black animate-scaleIn" />
             ) : (
               <Copy className="w-4.5 h-4.5 relative z-10" />
             )}
@@ -118,23 +118,23 @@ export function PassportDataTab({
           </button>
           <button 
             onClick={handleDownloadText}
-            className="slide-btn slide-btn-slate flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg cursor-pointer ripple-btn"
+            className="slide-btn slide-btn-slate flex items-center gap-1.5 px-3.5 py-2 text-xs sm:text-sm font-bold rounded-full cursor-pointer"
           >
-            <Download className="w-3.5 h-3.5 relative z-10" />
+            <Download className="w-4 h-4 relative z-10" />
             <span className="relative z-10">Download TXT</span>
           </button>
           <button 
             onClick={handleDownloadPDF}
-            className="slide-btn slide-btn-orange flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-lg cursor-pointer ripple-btn"
+            className="slide-btn slide-btn-orange flex items-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-extrabold rounded-full cursor-pointer"
           >
-            <FileText className="w-3.5 h-3.5 relative z-10" />
+            <FileText className="w-4 h-4 relative z-10" />
             <span className="relative z-10">Download</span>
           </button>
           <button 
             onClick={handleDownloadJSON}
-            className="slide-btn slide-btn-slate flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg cursor-pointer ripple-btn"
+            className="slide-btn slide-btn-blue flex items-center gap-1.5 px-3.5 py-2 text-xs sm:text-sm font-bold rounded-full cursor-pointer"
           >
-            <Braces className="w-3.5 h-3.5 relative z-10" />
+            <Braces className="w-4 h-4 relative z-10" />
             <span className="relative z-10">JSON</span>
           </button>
         </div>

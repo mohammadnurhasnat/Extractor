@@ -462,6 +462,39 @@ export default function App() {
 
         <OfflineBanner isOnline={isOnline} />
 
+        <div className="w-full px-4 mt-6">
+          <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/60 dark:border-zinc-800/60 shadow-sm">
+            <h2 className="text-sm font-bold text-slate-800 dark:text-zinc-100 mb-4 tracking-wide">
+              কি কি কাজ করতে পারবেন:
+            </h2>
+            <ul className="space-y-2.5 text-xs text-slate-600 dark:text-zinc-400 mb-6">
+              <li className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                পাসপোর্ট থেকে তথ্য অটোমেটিক এক্সট্রাক্ট করা।
+              </li>
+              <li className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                আন্ডারটেকিং ফর্ম তৈরি ও এডিট করা।
+              </li>
+              <li className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                পাসপোর্ট ইমেজ থেকে পিডিএফ তৈরি করা।
+              </li>
+              <li className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                NOC ও ভিজিটিং কার্ড তৈরি করা।
+              </li>
+            </ul>
+            <button
+              onClick={() => setResultsTab('padgen')}
+              className="w-full text-white font-extrabold py-2.5 px-4 rounded-full shadow-lg flex items-center justify-center gap-2 text-sm slide-btn slide-btn-blue"
+            >
+              <FileText className="w-5 h-5" />
+              NOC & Card Create
+            </button>
+          </div>
+        </div>
+
         <main className="w-full px-4 mt-10 print:mt-2 print:w-full print:px-0">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 print:block">
             

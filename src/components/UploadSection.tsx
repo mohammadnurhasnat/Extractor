@@ -474,7 +474,7 @@ export function UploadSection(props: UploadSectionProps) {
               <button 
                 onClick={props.clearAll}
                 disabled={props.loading || props.isBatchProcessing}
-                className="slide-btn slide-btn-purple w-full sm:flex-1 py-3 px-4 rounded-xl font-bold text-sm cursor-pointer disabled:opacity-50 min-h-[48px] ripple-btn"
+                className="slide-btn slide-btn-purple w-full sm:flex-1 py-3 px-4 rounded-full font-bold text-sm cursor-pointer disabled:opacity-50 min-h-[48px]"
               >
                 <span className="relative z-10">Clear All</span>
               </button>
@@ -483,20 +483,20 @@ export function UploadSection(props: UploadSectionProps) {
                   <button 
                     onClick={props.loading || props.isBatchProcessing ? props.cancelExtraction : props.extractData}
                     disabled={!props.isOnline && !props.loading && !props.isBatchProcessing}
-                    className={`slide-btn w-full py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 cursor-pointer min-h-[48px] ripple-btn ${
+                    className={`slide-btn w-full py-3 px-4 rounded-full font-bold text-sm flex items-center justify-center gap-2 cursor-pointer min-h-[48px] ${
                       props.loading || props.isBatchProcessing
-                        ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100 dark:bg-red-950/30 dark:text-red-400 dark:border-red-900/50 dark:hover:bg-red-900/40' 
+                        ? 'bg-red-500 hover:bg-red-600 text-white border-red-700 shadow-[0_4.5px_0_0_#991b1b]' 
                         : !props.isOnline 
-                        ? 'bg-slate-200 dark:bg-zinc-800 text-slate-400 dark:text-zinc-500 cursor-not-allowed border-transparent' 
+                        ? 'bg-slate-200 dark:bg-zinc-800 text-slate-400 dark:text-zinc-500 cursor-not-allowed border-transparent shadow-none' 
                         : 'slide-btn-orange'
                     }`}
                   >
                     {props.loading || props.isBatchProcessing ? (
-                      <><div className="w-2 h-2 rounded-sm bg-red-600 dark:bg-red-400 relative z-10" /><span className="relative z-10">STOP EXTRACTION</span></>
+                      <><div className="w-2.5 h-2.5 rounded-full bg-white relative z-10 animate-ping" /><span className="relative z-10 font-extrabold">STOP EXTRACTION</span></>
                     ) : !props.isOnline ? (
                       <><ZapOff className="w-4 h-4 text-red-500 relative z-10" /><span className="relative z-10">Offline: Disabled</span></>
                     ) : (
-                      <span className="relative z-10">Extract Active</span>
+                      <span className="relative z-10 font-extrabold text-white">Extract Active</span>
                     )}
                   </button>
                   {!props.isOnline && (

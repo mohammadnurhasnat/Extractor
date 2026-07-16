@@ -184,54 +184,88 @@
    - Smooth press-down animation on click
    =========================================
 */
-.slide-btn-orange,
 .slide-btn-teal {
   background-color: #0d9488 !important;
   color: #ffffff !important;
   border: 1px solid #0f766e !important;
-  border-radius: 12px !important;
-  box-shadow: 0 4px 0 0 #0f766e !important;
+  border-radius: 10px !important;
+  box-shadow: 0 4.5px 0 0 #0f766e !important;
   transform: translateY(0) !important;
 }
 
-.slide-btn-orange:hover,
 .slide-btn-teal:hover {
   background-color: #14b8a6 !important;
   transform: translateY(-1.5px) !important;
-  box-shadow: 0 5.5px 0 0 #0f766e !important;
+  box-shadow: 0 6px 0 0 #0f766e !important;
 }
 
-.slide-btn-orange:active,
 .slide-btn-teal:active,
-.slide-btn-orange.active,
 .slide-btn-teal.active {
   background-color: #0f766e !important;
   transform: translateY(4px) !important;
   box-shadow: 0 0px 0 0 #0f766e !important;
 }
 
-/* Dark mode support for Style 1 */
-.dark .slide-btn-orange,
+/* Dark mode support for Teal */
 .dark .slide-btn-teal {
-  background-color: #14b8a6 !important;
+  background-color: #0d9488 !important;
   color: #ffffff !important;
   border-color: #0f766e !important;
-  box-shadow: 0 4px 0 0 rgba(255, 255, 255, 0.35) !important;
+  box-shadow: 0 4.5px 0 0 rgba(255, 255, 255, 0.3) !important;
 }
 
-.dark .slide-btn-orange:hover,
-.slide-btn-teal:hover {
-  background-color: #e06e4b !important;
-  box-shadow: 0 5.5px 0 0 rgba(255, 255, 255, 0.35) !important;
+.dark .slide-btn-teal:hover {
+  background-color: #14b8a6 !important;
+  box-shadow: 0 6px 0 0 rgba(255, 255, 255, 0.3) !important;
 }
 
-.dark .slide-btn-orange:active,
 .dark .slide-btn-teal:active,
-.dark .slide-btn-orange.active,
 .dark .slide-btn-teal.active {
   background-color: #0d9488 !important;
   transform: translateY(4px) !important;
   box-shadow: 0 0px 0 0 #042f2c !important;
+}
+
+/* Orange 3D Pill Raised Button */
+.slide-btn-orange {
+  background-color: #f97316 !important;
+  color: #ffffff !important;
+  border: 1px solid #ea580c !important;
+  border-radius: 10px !important;
+  box-shadow: 0 4.5px 0 0 #c2410c !important;
+  transform: translateY(0) !important;
+}
+
+.slide-btn-orange:hover {
+  background-color: #fb923c !important;
+  transform: translateY(-1.5px) !important;
+  box-shadow: 0 6px 0 0 #c2410c !important;
+}
+
+.slide-btn-orange:active,
+.slide-btn-orange.active {
+  background-color: #ea580c !important;
+  transform: translateY(4px) !important;
+  box-shadow: 0 0px 0 0 #c2410c !important;
+}
+
+.dark .slide-btn-orange {
+  background-color: #f97316 !important;
+  color: #ffffff !important;
+  border-color: #ea580c !important;
+  box-shadow: 0 4.5px 0 0 rgba(255, 255, 255, 0.3) !important;
+}
+
+.dark .slide-btn-orange:hover {
+  background-color: #fb923c !important;
+  box-shadow: 0 6px 0 0 rgba(255, 255, 255, 0.3) !important;
+}
+
+.dark .slide-btn-orange:active,
+.dark .slide-btn-orange.active {
+  background-color: #ea580c !important;
+  transform: translateY(4px) !important;
+  box-shadow: 0 0px 0 0 #7c2d12 !important;
 }
 
 
@@ -243,99 +277,91 @@
    - 2D offset shadow (#2b0c10)
    =========================================
 */
+/* Slate 3D Pill Raised Button */
 .slide-btn-slate {
-  background-color: #881337 !important;
+  background-color: #4b5563 !important;
   color: #ffffff !important;
-  border: 2px solid #2b0c10 !important;
-  border-radius: 9999px !important;
-  box-shadow: 3.5px 3.5px 0px 0px #2b0c10 !important;
-  transform: translate(0, 0) !important;
+  border: 1px solid #374151 !important;
+  border-radius: 10px !important;
+  box-shadow: 0 4.5px 0 0 #1f2937 !important;
+  transform: translateY(0) !important;
 }
 
 .slide-btn-slate:hover {
-  background-color: #9f1239 !important;
-  transform: translate(-1.5px, -1.5px) !important;
-  box-shadow: 5px 5px 0px 0px #2b0c10 !important;
+  background-color: #6b7280 !important;
+  transform: translateY(-1.5px) !important;
+  box-shadow: 0 6px 0 0 #1f2937 !important;
 }
 
 .slide-btn-slate:active,
 .slide-btn-slate.active {
-  background-color: #70112c !important;
-  transform: translate(3.5px, 3.5px) !important;
-  box-shadow: 0px 0px 0px 0px #2b0c10 !important;
+  background-color: #374151 !important;
+  transform: translateY(4px) !important;
+  box-shadow: 0 0px 0 0 #1f2937 !important;
 }
 
-/* Dark mode support for Style 2 Solid */
+/* Dark mode support for Slate */
 .dark .slide-btn-slate {
-  background-color: #9f1239 !important;
+  background-color: #4b5563 !important;
   color: #ffffff !important;
-  border-color: #1c0507 !important;
-  box-shadow: 3.5px 3.5px 0px 0px rgba(255, 255, 255, 0.25) !important;
+  border-color: #374151 !important;
+  box-shadow: 0 4.5px 0 0 rgba(255, 255, 255, 0.3) !important;
 }
 
 .dark .slide-btn-slate:hover {
-  background-color: #be123c !important;
-  box-shadow: 5px 5px 0px 0px rgba(255, 255, 255, 0.25) !important;
+  background-color: #6b7280 !important;
+  box-shadow: 0 6px 0 0 rgba(255, 255, 255, 0.3) !important;
 }
 
 .dark .slide-btn-slate:active,
 .dark .slide-btn-slate.active {
-  background-color: #881337 !important;
-  transform: translate(3.5px, 3.5px) !important;
-  box-shadow: 0px 0px 0px 0px #1c0507 !important;
+  background-color: #374151 !important;
+  transform: translateY(4px) !important;
+  box-shadow: 0 0px 0 0 #111827 !important;
 }
 
 
-/* 
-   =========================================
-   STYLE 2 OUTLINE (Second Photo - "Add to cart"): RETRO BURGUNDY OUTLINE
-   - Cream off-white background (#faf6f0)
-   - Thick solid dark outline (#2b0c10)
-   - Deep burgundy text (#881337)
-   - Pill rounded (9999px) shape
-   - 2D offset shadow (#2b0c10)
-   =========================================
-*/
+/* Purple 3D Pill Raised Button */
 .slide-btn-purple {
-  background-color: #faf6f0 !important;
-  color: #881337 !important;
-  border: 2px solid #2b0c10 !important;
-  border-radius: 9999px !important;
-  box-shadow: 3.5px 3.5px 0px 0px #2b0c10 !important;
-  transform: translate(0, 0) !important;
+  background-color: #8b5cf6 !important;
+  color: #ffffff !important;
+  border: 1px solid #7c3aed !important;
+  border-radius: 10px !important;
+  box-shadow: 0 4.5px 0 0 #5b21b6 !important;
+  transform: translateY(0) !important;
 }
 
 .slide-btn-purple:hover {
-  background-color: #f5ece1 !important;
-  transform: translate(-1.5px, -1.5px) !important;
-  box-shadow: 5px 5px 0px 0px #2b0c10 !important;
+  background-color: #a78bfa !important;
+  transform: translateY(-1.5px) !important;
+  box-shadow: 0 6px 0 0 #5b21b6 !important;
 }
 
 .slide-btn-purple:active,
 .slide-btn-purple.active {
-  background-color: #ebd9c2 !important;
-  transform: translate(3.5px, 3.5px) !important;
-  box-shadow: 0px 0px 0px 0px #2b0c10 !important;
+  background-color: #7c3aed !important;
+  transform: translateY(4px) !important;
+  box-shadow: 0 0px 0 0 #5b21b6 !important;
 }
 
-/* Dark mode support for Style 2 Outline */
+/* Dark mode support for Purple */
 .dark .slide-btn-purple {
-  background-color: #27272a !important;
-  color: #fda4af !important;
-  border-color: #1c0507 !important;
-  box-shadow: 3.5px 3.5px 0px 0px rgba(255, 255, 255, 0.2) !important;
+  background-color: #8b5cf6 !important;
+  color: #ffffff !important;
+  border-color: #7c3aed !important;
+  box-shadow: 0 4.5px 0 0 rgba(255, 255, 255, 0.3) !important;
 }
 
 .dark .slide-btn-purple:hover {
-  background-color: #1f1f23 !important;
-  box-shadow: 5px 5px 0px 0px rgba(255, 255, 255, 0.2) !important;
+  background-color: #a78bfa !important;
+  box-shadow: 0 6px 0 0 rgba(255, 255, 255, 0.3) !important;
 }
 
 .dark .slide-btn-purple:active,
 .dark .slide-btn-purple.active {
-  background-color: #18181b !important;
-  transform: translate(3.5px, 3.5px) !important;
-  box-shadow: 0px 0px 0px 0px #1c0507 !important;
+  background-color: #7c3aed !important;
+  transform: translateY(4px) !important;
+  box-shadow: 0 0px 0 0 #4c1d95 !important;
 }
 
 /* 
@@ -595,14 +621,14 @@ button, .slide-btn {
   background-color: #1d4ed8 !important;
   color: #ffffff !important;
   border: 1px solid #1e3a8a !important;
-  border-radius: 12px !important;
-  box-shadow: 0 4px 0 0 #1e3a8a !important;
+  border-radius: 10px !important;
+  box-shadow: 0 4.5px 0 0 #1e3a8a !important;
   transform: translateY(0) !important;
 }
 .slide-btn-blue:hover {
   background-color: #2563eb !important;
   transform: translateY(-1.5px) !important;
-  box-shadow: 0 5.5px 0 0 #1e3a8a !important;
+  box-shadow: 0 6px 0 0 #1e3a8a !important;
 }
 .slide-btn-blue:active, .slide-btn-blue.active {
   background-color: #1e40af !important;
@@ -613,11 +639,11 @@ button, .slide-btn {
   background-color: #2563eb !important;
   color: #ffffff !important;
   border-color: #1e3a8a !important;
-  box-shadow: 0 4px 0 0 rgba(255, 255, 255, 0.35) !important;
+  box-shadow: 0 4.5px 0 0 rgba(255, 255, 255, 0.3) !important;
 }
 .dark .slide-btn-blue:hover {
   background-color: #3b82f6 !important;
-  box-shadow: 0 5.5px 0 0 rgba(255, 255, 255, 0.35) !important;
+  box-shadow: 0 6px 0 0 rgba(255, 255, 255, 0.3) !important;
 }
 .dark .slide-btn-blue:active, .dark .slide-btn-blue.active {
   background-color: #1d4ed8 !important;
@@ -630,14 +656,14 @@ button, .slide-btn {
   background-color: #ef4444 !important;
   color: #ffffff !important;
   border: 1px solid #b91c1c !important;
-  border-radius: 12px !important;
-  box-shadow: 0 4px 0 0 #991b1b !important;
+  border-radius: 10px !important;
+  box-shadow: 0 4.5px 0 0 #991b1b !important;
   transform: translateY(0) !important;
 }
 .slide-btn-red:hover {
   background-color: #f87171 !important;
   transform: translateY(-1.5px) !important;
-  box-shadow: 0 5.5px 0 0 #991b1b !important;
+  box-shadow: 0 6px 0 0 #991b1b !important;
 }
 .slide-btn-red:active, .slide-btn-red.active {
   background-color: #dc2626 !important;
@@ -648,11 +674,11 @@ button, .slide-btn {
   background-color: #ef4444 !important;
   color: #ffffff !important;
   border-color: #b91c1c !important;
-  box-shadow: 0 4px 0 0 rgba(255, 255, 255, 0.35) !important;
+  box-shadow: 0 4.5px 0 0 rgba(255, 255, 255, 0.3) !important;
 }
 .dark .slide-btn-red:hover {
   background-color: #f87171 !important;
-  box-shadow: 0 5.5px 0 0 rgba(255, 255, 255, 0.35) !important;
+  box-shadow: 0 6px 0 0 rgba(255, 255, 255, 0.3) !important;
 }
 .dark .slide-btn-red:active, .dark .slide-btn-red.active {
   background-color: #dc2626 !important;
@@ -660,19 +686,19 @@ button, .slide-btn {
   box-shadow: 0 0px 0 0 #7f1d1d !important;
 }
 
-/* Mix Color (Gradient) with 10px Border Radius */
+/* Mix Color (Gradient) with 9999px Border Radius */
 .slide-btn-mix {
   background: linear-gradient(to right, #3b82f6, #6366f1, #a855f7) !important;
   color: #ffffff !important;
   border: 1px solid #4f46e5 !important;
   border-radius: 10px !important;
-  box-shadow: 0 4px 0 0 #3730a3 !important;
+  box-shadow: 0 4.5px 0 0 #3730a3 !important;
   transform: translateY(0) !important;
 }
 .slide-btn-mix:hover {
   background: linear-gradient(to right, #60a5fa, #818cf8, #c084fc) !important;
   transform: translateY(-1.5px) !important;
-  box-shadow: 0 5.5px 0 0 #3730a3 !important;
+  box-shadow: 0 6px 0 0 #3730a3 !important;
 }
 .slide-btn-mix:active, .slide-btn-mix.active {
   background: linear-gradient(to right, #2563eb, #4f46e5, #9333ea) !important;
@@ -683,7 +709,7 @@ button, .slide-btn {
   background: linear-gradient(to right, #3b82f6, #6366f1, #a855f7) !important;
   color: #ffffff !important;
   border-color: #4f46e5 !important;
-  box-shadow: 0 4px 0 0 rgba(255, 255, 255, 0.35) !important;
+  box-shadow: 0 4.5px 0 0 rgba(255, 255, 255, 0.3) !important;
 }
 .dark .slide-btn-mix:hover {
   background: linear-gradient(to right, #60a5fa, #818cf8, #c084fc) !important;

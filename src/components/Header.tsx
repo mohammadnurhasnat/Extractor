@@ -112,7 +112,7 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center justify-start shrink-0">
           <button
             onClick={handleThemeToggle}
-            className="slide-btn slide-btn-slate p-1.5 sm:p-2 rounded-[5px] flex items-center justify-center shrink-0 group active:scale-95 transition-transform"
+            className="slide-btn slide-btn-slate p-1.5 sm:p-2 rounded-full flex items-center justify-center shrink-0 group active:scale-95 transition-transform"
             aria-label="Toggle dark mode"
           >
             <div
@@ -167,7 +167,7 @@ export const Header: React.FC<HeaderProps> = ({
               {/* Profile Button - Only icon on ultra-small screens */}
               <button
                 onClick={onOpenProfile}
-                className="slide-btn slide-btn-purple px-1.5 sm:px-2.5 py-1 rounded-[4px] font-bold text-[9px] sm:text-[11px] flex items-center gap-1 sm:gap-1.5 hover:shadow-sm shrink-0 min-w-0 ripple-btn"
+                className="slide-btn slide-btn-purple px-1.5 sm:px-3 py-1 rounded-full font-bold text-[9px] sm:text-[11px] flex items-center gap-1 sm:gap-1.5 hover:shadow-sm shrink-0 min-w-0"
                 title="Profile Settings"
               >
                 <span className="relative z-10 flex items-center gap-1">
@@ -181,7 +181,7 @@ export const Header: React.FC<HeaderProps> = ({
               {/* Logout Button */}
               <button
                 onClick={onLogout}
-                className="slide-btn slide-btn-red p-1.5 sm:px-3 sm:py-1.5 rounded-[4px] font-bold text-[9px] sm:text-[11px] flex items-center justify-center gap-1 shrink-0 ripple-btn"
+                className="slide-btn slide-btn-red p-1.5 sm:px-3.5 sm:py-1.5 rounded-full font-bold text-[9px] sm:text-[11px] flex items-center justify-center gap-1 shrink-0"
                 title="Sign out"
               >
                 <span className="relative z-10 flex items-center justify-center gap-1.5">
