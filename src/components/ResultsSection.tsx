@@ -60,7 +60,7 @@ export function ResultsSection({
   return (
     <div className="lg:col-span-7 print:w-full print:col-span-12 lg:max-h-[calc(100vh-130px)] lg:overflow-y-auto overscroll-contain pr-1.5 scrollbar-thin">
       {hasContent ? (
-        <div id="printable-results-card" className="bg-gradient-to-br from-white/95 to-emerald-50/40 dark:from-zinc-900/95 dark:to-zinc-950/40 backdrop-blur-md p-6 rounded-2xl shadow-[0_12px_40px_rgba(16,185,129,0.04)] border-t-[3px] border-t-emerald-500 border-x border-b border-slate-200/80 dark:border-zinc-800/60 transition-all sticky top-6 print:relative print:top-0 print:border-none print:shadow-none print:bg-transparent print:p-0 print:m-0 w-full min-h-[500px]">
+        <div id="printable-results-card" className="bg-gradient-to-br from-white/95 to-emerald-50/40 dark:from-zinc-900/95 dark:to-zinc-950/40 backdrop-blur-md p-3 sm:p-6 rounded-2xl shadow-[0_12px_40px_rgba(16,185,129,0.04)] border-t-[3px] border-t-emerald-500 border-x border-b border-slate-200/80 dark:border-zinc-800/60 transition-all sticky top-6 print:relative print:top-0 print:border-none print:shadow-none print:bg-transparent print:p-0 print:m-0 w-full min-h-[500px]">
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -83,7 +83,7 @@ export function ResultsSection({
 
             {/* TABS SELECTOR */}
             {(data && isUndertakingConfigured && undertakingData) || activeItem ? (
-              <div className="flex flex-col sm:grid sm:grid-cols-4 bg-slate-100/60 dark:bg-zinc-950/65 p-2 rounded-2xl mb-6 print:hidden gap-2 w-full text-center">
+              <div className="flex flex-col sm:grid sm:grid-cols-4 bg-slate-100/60 dark:bg-zinc-950/65 p-2 rounded-2xl mb-3 print:hidden gap-2 w-full text-center">
                 {data && (
                   <button
                     onClick={() => setResultsTab('profile')}

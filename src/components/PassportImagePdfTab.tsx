@@ -78,16 +78,16 @@ export function PassportImagePdfTab({ activeItem, currentUser }: PassportImagePd
         <button
           onClick={handleDownload}
           disabled={isGenerating}
-          className="slide-btn slide-btn-teal flex items-center gap-2 px-6 py-3 font-medium rounded-xl disabled:opacity-70 disabled:cursor-not-allowed border border-transparent shadow-sm shadow-blue-500/10 cursor-pointer"
+          className="slide-btn slide-btn-teal flex items-center gap-1.5 px-4 py-2 font-medium rounded-full disabled:opacity-70 disabled:cursor-not-allowed border border-transparent shadow-sm shadow-blue-500/10 cursor-pointer text-xs"
         >
           {isGenerating ? (
             <>
-              <Loader2 className="w-5 h-5 animate-spin relative z-10" />
-              <span className="relative z-10">Optimizing & Generating...</span>
+              <Loader2 className="w-4 h-4 animate-spin relative z-10" />
+              <span className="relative z-10">Optimizing...</span>
             </>
           ) : (
             <>
-              <FileDown className="w-5 h-5 relative z-10" />
+              <FileDown className="w-4 h-4 relative z-10" />
               <span className="relative z-10">Download Optimized PDF</span>
             </>
           )}

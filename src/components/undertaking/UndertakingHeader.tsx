@@ -31,10 +31,10 @@ export function UndertakingHeader({
         <div className="bg-slate-100 dark:bg-zinc-800/50 p-1 rounded-lg flex items-center gap-1 text-xs border border-slate-200 dark:border-zinc-700/60 print:hidden shrink-0">
           <button
              onClick={() => setIsUndertakingEditable(false)}
-             className={`slide-btn slide-btn-purple flex items-center gap-1.5 px-3 py-1.5 rounded-md font-bold cursor-pointer border ripple-btn ${
+             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-bold cursor-pointer border transition-all duration-150 ${
                !isUndertakingEditable
-                ? 'active shadow-sm font-extrabold border-[#2DD4BF]/50'
-                : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-zinc-400 dark:hover:text-zinc-350 bg-transparent!'
+                ? 'slide-btn slide-btn-purple active shadow-sm font-extrabold border-[#2DD4BF]/50 text-white!'
+                : 'border-transparent text-slate-700 hover:text-slate-900 dark:text-zinc-300 dark:hover:text-zinc-100 bg-transparent'
              }`}
           >
             <Eye className="w-3.5 h-3.5 relative z-10" />
@@ -42,10 +42,10 @@ export function UndertakingHeader({
           </button>
           <button
              onClick={() => setIsUndertakingEditable(true)}
-             className={`slide-btn slide-btn-purple flex items-center gap-1.5 px-3 py-1.5 rounded-md font-bold cursor-pointer border ripple-btn ${
+             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-bold cursor-pointer border transition-all duration-150 ${
                isUndertakingEditable
-                ? 'active shadow-sm font-extrabold border-[#2DD4BF]/50'
-                : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-zinc-400 dark:hover:text-zinc-350 bg-transparent!'
+                ? 'slide-btn slide-btn-purple active shadow-sm font-extrabold border-[#2DD4BF]/50 text-white!'
+                : 'border-transparent text-slate-700 hover:text-slate-900 dark:text-zinc-300 dark:hover:text-zinc-100 bg-transparent'
              }`}
           >
             <Settings className="w-3.5 h-3.5 relative z-10" />

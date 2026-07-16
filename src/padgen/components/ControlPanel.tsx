@@ -105,16 +105,13 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   };
 
   return (
-    <div id="panel" className="bg-white border-b md:border-b-0 md:border-r border-[#DDDEDC] h-[45vh] md:h-screen flex flex-col overflow-hidden w-full md:w-[380px] shrink-0">
+    <div id="panel" className="bg-white border-b md:border-b-0 md:border-r border-[#DDDEDC] h-[65vh] md:h-screen flex flex-col overflow-hidden w-full md:w-[380px] shrink-0">
       {/* 1. FIXED HEADER AND MAIN TITLE */}
       <div className="p-5 border-b border-[#DDDEDC] bg-[#FBFBFA] flex justify-between items-center shrink-0">
         <div>
           <h1 className="text-[14px] font-bold tracking-wider text-[#1C1E22] m-0">
             PadGen
           </h1>
-          <div className="font-mono text-[9.5px] text-[#6B7076] tracking-widest uppercase mt-0.5">
-            A4 Letterhead &nbsp;/&nbsp; Business Card 89×51mm
-          </div>
         </div>
         <button
           onClick={onOpenHistory}
@@ -143,7 +140,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
       )}
 
       {/* 2. SCROLLABLE BODY CONTAINING FORM & DESIGN OPTIONS */}
-      <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-5">
+      <div className="flex-1 overflow-y-auto p-3.5 sm:p-5 flex flex-col gap-3.5 sm:gap-5">
         {/* Company Fields */}
         <div className="flex flex-col gap-3">
           <div className="text-[10px] font-mono text-[#6B7076] uppercase tracking-wider font-bold border-b border-[#DDDEDC] pb-1">
@@ -154,7 +151,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             <label className="text-[12px] font-mono text-[#6B7076] uppercase tracking-wider">
               Company Name
             </label>
-            <input type="text" {...getInputProps('companyName', 'e.g. Subarna Traders')} className="w-full p-3 border border-[#DDDEDC] rounded text-[15px] bg-[#FBFBFA] text-[#1C1E22] focus:outline-none focus:border-[#3B4658]" />
+            <input type="text" {...getInputProps('companyName', 'e.g. Subarna Traders')} />
           </div>
 
           <div className="flex flex-col gap-1">
@@ -167,7 +164,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                   key={c}
                   type="button"
                   onClick={() => handleInputChange('casing', c)}
-                  className={`flex-1 py-3 px-4 rounded border text-[13px] font-semibold cursor-pointer transition-all duration-150 ${
+                  className={`flex-1 py-2 px-3 rounded border text-[11px] font-semibold cursor-pointer transition-all duration-150 ${
                     (companyData.casing || 'title') === c
                       ? 'bg-[#3B4658] text-white border-[#3B4658]'
                       : 'bg-[#FBFBFA] text-[#1C1E22] border-[#DDDEDC] hover:border-[#3B4658]'
@@ -186,7 +183,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             <select
               value={companyData.industry || 'corporate'}
               onChange={(e) => handleInputChange('industry', e.target.value as any)}
-              className="w-full p-3 border border-[#DDDEDC] rounded text-[15px] bg-[#FBFBFA] text-[#1C1E22] focus:outline-none focus:border-[#3B4658] font-semibold cursor-pointer"
+              className="w-full p-2 border border-[#DDDEDC] rounded text-[13px] bg-[#FBFBFA] text-[#1C1E22] focus:outline-none focus:border-[#3B4658] font-semibold cursor-pointer"
             >
               {INDUSTRIES.map((ind) => (
                 <option key={ind} value={ind}>
@@ -200,7 +197,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             <label className="text-[12px] font-mono text-[#6B7076] uppercase tracking-wider">
               Address
             </label>
-            <input type="text" {...getInputProps('address', 'e.g. 24 Motijheel C/A, Dhaka-1000')} className="w-full p-3 border border-[#DDDEDC] rounded text-[15px] bg-[#FBFBFA] text-[#1C1E22] focus:outline-none focus:border-[#3B4658]" />
+            <input type="text" {...getInputProps('address', 'e.g. 24 Motijheel C/A, Dhaka-1000')} />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -208,14 +205,14 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               <label className="text-[12px] font-mono text-[#6B7076] uppercase tracking-wider">
                 Telephone
               </label>
-              <input type="text" {...getInputProps('phone', 'Phone number')} className="w-full p-3 border border-[#DDDEDC] rounded text-[15px] bg-[#FBFBFA] text-[#1C1E22] focus:outline-none focus:border-[#3B4658]" />
+              <input type="text" {...getInputProps('phone', 'Phone number')} />
             </div>
 
             <div className="flex flex-col gap-1">
               <label className="text-[12px] font-mono text-[#6B7076] uppercase tracking-wider">
                 Email
               </label>
-              <input type="email" {...getInputProps('email', 'Email address')} className="w-full p-3 border border-[#DDDEDC] rounded text-[15px] bg-[#FBFBFA] text-[#1C1E22] focus:outline-none focus:border-[#3B4658]" />
+              <input type="email" {...getInputProps('email', 'Email address')} />
             </div>
           </div>
 
@@ -223,7 +220,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             <label className="text-[12px] font-mono text-[#6B7076] uppercase tracking-wider">
               Website / Tagline
             </label>
-            <input type="text" {...getInputProps('tagline', 'e.g. www.subarnatraders.com')} className="w-full p-3 border border-[#DDDEDC] rounded text-[15px] bg-[#FBFBFA] text-[#1C1E22] focus:outline-none focus:border-[#3B4658]" />
+            <input type="text" {...getInputProps('tagline', 'e.g. www.subarnatraders.com')} />
           </div>
         </div>
 
@@ -413,21 +410,6 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                 </button>
               ))}
             </div>
-            {/* Card Downloads grouped under Card Layouts */}
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={onDownloadCardPDF}
-                className="border border-[#DDDEDC] bg-[#E8F0FE] text-[#1967D2] rounded py-1.5 px-2 text-[11.5px] font-semibold hover:bg-[#D2E3FC] transition-colors duration-150 cursor-pointer"
-              >
-                Download Card PDF
-              </button>
-              <button
-                onClick={onDownloadCardPNG}
-                className="border border-[#DDDEDC] bg-[#E8F0FE] text-[#1967D2] rounded py-1.5 px-2 text-[11.5px] font-semibold hover:bg-[#D2E3FC] transition-colors duration-150 cursor-pointer"
-              >
-                Download Card PNG
-              </button>
-            </div>
           </div>
         </div>
 
@@ -454,26 +436,6 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               Reset Inputs
             </button>
           </div>
-
-          
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={onDownloadPadPDF}
-              className="border border-[#DDDEDC] bg-[#E8F0FE] text-[#1967D2] rounded py-1.5 px-2 text-[11.5px] font-semibold hover:bg-[#D2E3FC] transition-colors duration-150 cursor-pointer"
-            >
-              Download Pad PDF
-            </button>
-            <button
-              onClick={onDownloadPadPNG}
-              className="border border-[#DDDEDC] bg-[#E8F0FE] text-[#1967D2] rounded py-1.5 px-2 text-[11.5px] font-semibold hover:bg-[#D2E3FC] transition-colors duration-150 cursor-pointer"
-            >
-              Download Pad PNG
-            </button>
-          </div>
-
-
-
-
 
           <div className="grid grid-cols-2 gap-2">
             <button

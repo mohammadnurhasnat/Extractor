@@ -773,6 +773,8 @@ export function PadgenApp() {
         texture={activeTexture as any}
         previewPadRef={previewPadRef}
         previewCardRef={previewCardRef}
+        onDownloadPadPDF={handleDownloadPadPDF}
+        onDownloadCardPDF={handleDownloadCardPDF}
       />
 
       {/* Off-screen/Print nodes (unscaled at 100% dimensions in mm) */}

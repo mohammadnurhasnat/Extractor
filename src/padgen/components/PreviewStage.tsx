@@ -15,6 +15,8 @@ interface PreviewStageProps {
   texture: 'none' | 'linen' | 'vellum' | 'canvas';
   previewPadRef: React.RefObject<HTMLDivElement | null>;
   previewCardRef: React.RefObject<HTMLDivElement | null>;
+  onDownloadPadPDF: () => void;
+  onDownloadCardPDF: () => void;
 }
 
 export const PreviewStage: React.FC<PreviewStageProps> = ({
@@ -29,6 +31,8 @@ export const PreviewStage: React.FC<PreviewStageProps> = ({
   texture,
   previewPadRef,
   previewCardRef,
+  onDownloadPadPDF,
+  onDownloadCardPDF,
 }) => {
   const [scales, setScales] = useState({ padScale: 0.48, cardScale: 0.95 });
   const containerRef = useRef<HTMLDivElement>(null);
@@ -72,66 +76,78 @@ export const PreviewStage: React.FC<PreviewStageProps> = ({
     <div
       ref={containerRef}
       id="stage"
-      className="flex-1 p-6 md:p-10 overflow-auto flex justify-center items-start bg-[#EFEFED]"
+      className="flex-1 p-3 md:p-10 overflow-auto flex flex-col justify-start items-center bg-[#EFEFED]"
     >
-      <div className="flex gap-9 justify-center items-start flex-wrap">
-        {/* Pad (A4) Preview Frame */}
-        <div className="flex flex-col items-center">
-          <div
-            className="shadow-[0_10px_34px_rgba(0,0,0,0.20)] origin-top-left transition-transform duration-100"
-            style={{
-              width: '210mm',
-              height: '297mm',
-              transform: `scale(${scales.padScale})`,
-              marginBottom: `-${(1 - scales.padScale) * padHeight}px`,
-              marginRight: `-${(1 - scales.padScale) * padWidth}px`,
-            }}
-          >
-            <div ref={previewPadRef}>
-              <PadPreview
-                data={companyData}
-                theme={theme}
-                shape={shape}
-                layout={padLayout}
-                headlineFont={headlineFont}
-                logoStyle={logoStyle}
-                gridStyle={gridStyle}
-                texture={texture}
-              />
+      <div className="flex flex-col gap-6 items-center w-full">
+        <div className="flex gap-9 justify-center items-start flex-wrap">
+          {/* Pad (A4) Preview Frame */}
+          <div className="flex flex-col items-center">
+            <div
+              className="shadow-[0_10px_34px_rgba(0,0,0,0.20)] origin-top-left transition-transform duration-100"
+              style={{
+                width: '210mm',
+                height: '297mm',
+                transform: `scale(${scales.padScale})`,
+                marginBottom: `-${(1 - scales.padScale) * padHeight}px`,
+                marginRight: `-${(1 - scales.padScale) * padWidth}px`,
+              }}
+            >
+              <div ref={previewPadRef}>
+                <PadPreview
+                  data={companyData}
+                  theme={theme}
+                  shape={shape}
+                  layout={padLayout}
+                  headlineFont={headlineFont}
+                  logoStyle={logoStyle}
+                  gridStyle={gridStyle}
+                  texture={texture}
+                />
+              </div>
             </div>
           </div>
-          <div className="font-mono text-[10.5px] text-[#6B7076] mt-3 tracking-wider select-none">
-            A4 · 210 × 297mm
+
+          {/* Business Visiting Card Preview Frame */}
+          <div className="flex flex-col items-center">
+            <div
+              className="shadow-[0_10px_34px_rgba(0,0,0,0.20)] origin-top-left transition-transform duration-100"
+              style={{
+                width: '89mm',
+                height: '51mm',
+                transform: `scale(${scales.cardScale})`,
+                marginBottom: `-${(1 - scales.cardScale) * cardHeight}px`,
+                marginRight: `-${(1 - scales.cardScale) * cardWidth}px`,
+              }}
+            >
+              <div ref={previewCardRef}>
+                <CardPreview
+                  data={companyData}
+                  theme={theme}
+                  shape={shape}
+                  layout={cardLayout}
+                  headlineFont={headlineFont}
+                  logoStyle={logoStyle}
+                  texture={texture}
+                />
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Business Visiting Card Preview Frame */}
-        <div className="flex flex-col items-center">
-          <div
-            className="shadow-[0_10px_34px_rgba(0,0,0,0.20)] origin-top-left transition-transform duration-100"
-            style={{
-              width: '89mm',
-              height: '51mm',
-              transform: `scale(${scales.cardScale})`,
-              marginBottom: `-${(1 - scales.cardScale) * cardHeight}px`,
-              marginRight: `-${(1 - scales.cardScale) * cardWidth}px`,
-            }}
+        {/* Buttons side-by-side */}
+        <div className="flex gap-4 w-full max-w-[420px] justify-center items-center px-4 mt-4 mb-2">
+          <button
+            onClick={onDownloadPadPDF}
+            className="flex-1 border border-[#DDDEDC] bg-[#E8F0FE] text-[#1967D2] rounded-lg py-2.5 px-3 text-xs font-bold hover:bg-[#D2E3FC] transition-colors duration-150 cursor-pointer shadow-sm text-center flex items-center justify-center gap-1.5"
           >
-            <div ref={previewCardRef}>
-              <CardPreview
-                data={companyData}
-                theme={theme}
-                shape={shape}
-                layout={cardLayout}
-                headlineFont={headlineFont}
-                logoStyle={logoStyle}
-                texture={texture}
-              />
-            </div>
-          </div>
-          <div className="font-mono text-[10.5px] text-[#6B7076] mt-3 tracking-wider select-none">
-            Business Card · 89 × 51mm
-          </div>
+            Download Pad PDF
+          </button>
+          <button
+            onClick={onDownloadCardPDF}
+            className="flex-1 border border-[#DDDEDC] bg-[#E8F0FE] text-[#1967D2] rounded-lg py-2.5 px-3 text-xs font-bold hover:bg-[#D2E3FC] transition-colors duration-150 cursor-pointer shadow-sm text-center flex items-center justify-center gap-1.5"
+          >
+            Download Card PDF
+          </button>
         </div>
       </div>
     </div>
