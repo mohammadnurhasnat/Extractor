@@ -397,7 +397,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             <label className="text-[10px] font-mono text-[#6B7076] uppercase tracking-wider mb-1">
               Visiting Card Format
             </label>
-            <div className="flex gap-1 flex-wrap">
+            <div className="flex gap-1 flex-wrap mb-2">
               {(['random', ...CARD_LAYOUTS] as const).map((lay) => (
                 <button
                   key={lay}
@@ -412,6 +412,21 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                   {lay === 'random' ? 'Random' : CARD_LAYOUT_LABELS[lay]?.split(' ')[0] || lay}
                 </button>
               ))}
+            </div>
+            {/* Card Downloads grouped under Card Layouts */}
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={onDownloadCardPDF}
+                className="border border-[#DDDEDC] bg-[#E8F0FE] text-[#1967D2] rounded py-1.5 px-2 text-[11.5px] font-semibold hover:bg-[#D2E3FC] transition-colors duration-150 cursor-pointer"
+              >
+                Download Card PDF
+              </button>
+              <button
+                onClick={onDownloadCardPNG}
+                className="border border-[#DDDEDC] bg-[#E8F0FE] text-[#1967D2] rounded py-1.5 px-2 text-[11.5px] font-semibold hover:bg-[#D2E3FC] transition-colors duration-150 cursor-pointer"
+              >
+                Download Card PNG
+              </button>
             </div>
           </div>
         </div>
@@ -449,26 +464,13 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               Download Pad PDF
             </button>
             <button
-              onClick={onDownloadCardPDF}
-              className="border border-[#DDDEDC] bg-[#E8F0FE] text-[#1967D2] rounded py-1.5 px-2 text-[11.5px] font-semibold hover:bg-[#D2E3FC] transition-colors duration-150 cursor-pointer"
-            >
-              Download Card PDF
-            </button>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <button
               onClick={onDownloadPadPNG}
               className="border border-[#DDDEDC] bg-[#E8F0FE] text-[#1967D2] rounded py-1.5 px-2 text-[11.5px] font-semibold hover:bg-[#D2E3FC] transition-colors duration-150 cursor-pointer"
             >
               Download Pad PNG
             </button>
-            <button
-              onClick={onDownloadCardPNG}
-              className="border border-[#DDDEDC] bg-[#E8F0FE] text-[#1967D2] rounded py-1.5 px-2 text-[11.5px] font-semibold hover:bg-[#D2E3FC] transition-colors duration-150 cursor-pointer"
-            >
-              Download Card PNG
-            </button>
           </div>
+
 
 
 

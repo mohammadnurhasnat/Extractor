@@ -486,8 +486,14 @@ export default function App() {
               </li>
             </ul>
             <button
-              onClick={() => setResultsTab('padgen')}
-              className="w-full text-white font-extrabold py-2.5 px-4 rounded-full shadow-lg flex items-center justify-center gap-2 text-sm slide-btn slide-btn-blue"
+              onClick={() => {
+                setResultsTab('padgen');
+                const resultsSection = document.getElementById('printable-results-card');
+                if (resultsSection) {
+                  resultsSection.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
+              className="w-full text-white font-extrabold py-2 px-4 rounded-full shadow-lg flex items-center justify-center gap-2 text-sm slide-btn slide-btn-blue"
             >
               <FileText className="w-5 h-5" />
               NOC & Card Create
