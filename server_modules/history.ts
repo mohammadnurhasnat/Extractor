@@ -3,6 +3,7 @@ import {
   getUsersStore, 
   getLocalHistory, 
   saveLocalHistory, 
+  saveLocalHistoryBulk,
   deleteLocalHistoryItem, 
   clearLocalHistory, 
   getLimitStatus, 
@@ -104,6 +105,53 @@ historyRouter.post('/history', async (req, res) => {
   } catch (error: any) {
     console.error('Failed to save history:', error);
     res.status(500).json({ success: false, error: error.message || 'Failed to save history.' });
+  }
+});
+
+historyRouter.post('/history/bulk', async (req, res) => {
+  try {
+    const { userId, items } = req.body;
+    if (!userId || !items || !Array.isArray(items)) {
+      return res.status(400).json({ success: false, error: 'User ID and items array are required.' });
+    }
+
+    const requesterId = req.headers['x-user-id']?.toString();
+    if (!requesterId) {
+      return res.status(401).json({ success: false, error: 'Unauthorized.' });
+    }
+    
+    const users = getUsersStore();
+    const adminUser = users.find(u => u.id === requesterId);
+    const isAdmin = adminUser && adminUser.email.toLowerCase() === 'mohammadnurhasnat@gmail.com';
+    
+    if (requesterId !== userId && !isAdmin) {
+      return res.status(403).json({ success: false, error: 'Forbidden.' });
+    }
+
+    const db = getDb();
+    if (!db) {
+      saveLocalHistoryBulk(userId, items);
+      return res.json({ success: true });
+    }
+
+    try {
+      const batch = db.batch();
+      for (const item of items) {
+        if (item && item.id) {
+          const docRef = db.collection('users').doc(userId).collection('history').doc(item.id);
+          batch.set(docRef, item);
+        }
+      }
+      await batch.commit();
+      return res.json({ success: true });
+    } catch (firestoreError: any) {
+      console.warn('Firestore bulk write failed, falling back to local history storage:', firestoreError.message || firestoreError);
+      saveLocalHistoryBulk(userId, items);
+      return res.json({ success: true });
+    }
+  } catch (error: any) {
+    console.error('Failed to save bulk history:', error);
+    res.status(500).json({ success: false, error: error.message || 'Failed to save bulk history.' });
   }
 });
 

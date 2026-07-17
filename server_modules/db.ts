@@ -124,45 +124,95 @@ export function parseUsersTsContent(content: string): any[] {
   return [];
 }
 
-export function getLocalHistory(userId: string): any[] {
+let cachedHistoryStore: HistoryStore | null = null;
+
+function getHistoryStore(): HistoryStore {
+  if (cachedHistoryStore) {
+    return cachedHistoryStore;
+  }
   try {
     if (fs.existsSync(HISTORY_STORE_FILE)) {
       const data = fs.readFileSync(HISTORY_STORE_FILE, 'utf8');
-      const store: HistoryStore = JSON.parse(data);
-      return store[userId] || [];
+      if (data.trim()) {
+        cachedHistoryStore = JSON.parse(data);
+        return cachedHistoryStore || {};
+      }
     }
   } catch (error) {
-    console.error('Error reading local history file:', error);
+    console.error('Error reading local history file, attempting backup recovery:', error);
+    try {
+      const backupFile = HISTORY_STORE_FILE + '.bak';
+      if (fs.existsSync(backupFile)) {
+        const backupData = fs.readFileSync(backupFile, 'utf8');
+        cachedHistoryStore = JSON.parse(backupData);
+        return cachedHistoryStore || {};
+      }
+    } catch (e) {
+      console.error('Error reading backup history file:', e);
+    }
   }
-  return [];
+  cachedHistoryStore = {};
+  return cachedHistoryStore;
+}
+
+function saveHistoryStoreToDisk() {
+  if (!cachedHistoryStore) return;
+  try {
+    const tempFile = HISTORY_STORE_FILE + '.tmp';
+    const backupFile = HISTORY_STORE_FILE + '.bak';
+    const content = JSON.stringify(cachedHistoryStore, null, 2);
+    
+    // Atomic write to temporary file
+    fs.writeFileSync(tempFile, content, 'utf8');
+    
+    // Create backup of current valid file if it exists
+    if (fs.existsSync(HISTORY_STORE_FILE)) {
+      try {
+        fs.copyFileSync(HISTORY_STORE_FILE, backupFile);
+      } catch (e) {}
+    }
+    
+    // Atomically swap temp file to final location
+    fs.renameSync(tempFile, HISTORY_STORE_FILE);
+  } catch (error) {
+    console.error('Error saving history store to disk:', error);
+  }
+}
+
+export function getLocalHistory(userId: string): any[] {
+  const store = getHistoryStore();
+  return store[userId] || [];
 }
 
 export function saveLocalHistory(userId: string, item: any) {
   try {
-    let store: HistoryStore = {};
-    if (fs.existsSync(HISTORY_STORE_FILE)) {
-      const data = fs.readFileSync(HISTORY_STORE_FILE, 'utf8');
-      store = JSON.parse(data);
-    }
+    const store = getHistoryStore();
     const userHistory = store[userId] || [];
     const filtered = userHistory.filter((i: any) => i.id !== item.id);
     filtered.unshift(item);
     store[userId] = filtered;
-    fs.writeFileSync(HISTORY_STORE_FILE, JSON.stringify(store, null, 2), 'utf8');
+    saveHistoryStoreToDisk();
   } catch (error) {
-    console.error('Error writing local history file:', error);
+    console.error('Error writing local history:', error);
+  }
+}
+
+export function saveLocalHistoryBulk(userId: string, items: any[]) {
+  try {
+    const store = getHistoryStore();
+    store[userId] = items;
+    saveHistoryStoreToDisk();
+  } catch (error) {
+    console.error('Error writing local history bulk:', error);
   }
 }
 
 export function deleteLocalHistoryItem(userId: string, itemId: string) {
   try {
-    if (fs.existsSync(HISTORY_STORE_FILE)) {
-      const data = fs.readFileSync(HISTORY_STORE_FILE, 'utf8');
-      const store: HistoryStore = JSON.parse(data);
-      if (store[userId]) {
-        store[userId] = store[userId].filter((i: any) => i.id !== itemId);
-        fs.writeFileSync(HISTORY_STORE_FILE, JSON.stringify(store, null, 2), 'utf8');
-      }
+    const store = getHistoryStore();
+    if (store[userId]) {
+      store[userId] = store[userId].filter((i: any) => i.id !== itemId);
+      saveHistoryStoreToDisk();
     }
   } catch (error) {
     console.error('Error deleting local history item:', error);
@@ -171,12 +221,9 @@ export function deleteLocalHistoryItem(userId: string, itemId: string) {
 
 export function clearLocalHistory(userId: string) {
   try {
-    if (fs.existsSync(HISTORY_STORE_FILE)) {
-      const data = fs.readFileSync(HISTORY_STORE_FILE, 'utf8');
-      const store: HistoryStore = JSON.parse(data);
-      store[userId] = [];
-      fs.writeFileSync(HISTORY_STORE_FILE, JSON.stringify(store, null, 2), 'utf8');
-    }
+    const store = getHistoryStore();
+    store[userId] = [];
+    saveHistoryStoreToDisk();
   } catch (error) {
     console.error('Error clearing local history:', error);
   }

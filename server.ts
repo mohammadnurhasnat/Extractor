@@ -55,21 +55,24 @@ async function startServer() {
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`📡 Core Server bound to 0.0.0.0:${PORT} in ${process.env.NODE_ENV || 'development'} mode.`);
 
-    // Render Keep-Alive Trick (Self-ping to avoid spin-down)
-    const externalUrl = process.env.RENDER_EXTERNAL_URL;
+    // Render/Cloud Run Keep-Alive Trick (Self-ping to avoid spin-down)
+    const externalUrl = process.env.APP_URL || process.env.RENDER_EXTERNAL_URL;
     if (externalUrl) {
-      console.log(`Render external URL detected: ${externalUrl}. Initializing self-ping keep-alive...`);
+      console.log(`External URL detected: ${externalUrl}. Initializing self-ping keep-alive every 10 minutes...`);
       // Ping every 10 minutes (600,000 ms) to keep the service warm
       setInterval(async () => {
         try {
-          const response = await fetch(`${externalUrl}/api/health`);
-          console.log(`[Keep-Alive] Self-ping successful: ${response.status} - ${response.statusText}`);
+          const pingUrl = externalUrl.endsWith('/') 
+            ? `${externalUrl}api/health` 
+            : `${externalUrl}/api/health`;
+          const response = await fetch(pingUrl);
+          console.log(`[Keep-Alive] Self-ping successful to ${pingUrl}: ${response.status} - ${response.statusText}`);
         } catch (error: any) {
           console.error(`[Keep-Alive] Self-ping failed:`, error.message);
         }
       }, 10 * 60 * 1000);
     } else {
-      console.log("No RENDER_EXTERNAL_URL environment variable found. Keep-alive self-ping is ready but disabled.");
+      console.log("No APP_URL or RENDER_EXTERNAL_URL environment variable found. Keep-alive self-ping is ready but disabled.");
     }
   });
 }

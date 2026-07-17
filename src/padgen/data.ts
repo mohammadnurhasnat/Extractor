@@ -468,15 +468,16 @@ export const TEXTURE_LABELS = {
 };
 
 export const DEFAULT_COMPANY_DATA: CompanyData = {
-  companyName: "Business Solutions Inc.",
-  address: "123 Professional Way, Suite 100, City, State 12345",
-  phone: "+1 (555) 123-4567",
-  email: "contact@business-solutions.com",
-  tagline: "Innovative Professional Services",
-  empName: "John Doe",
-  empRole: "CEO",
-  empPhone: "+1 (555) 987-6543",
-  empEmail: "johndoe@business-solutions.com",
+  companyName: "Processing Hub",
+  address: "House 42, Road 11, Dhanmandi, Dhaka-1209",
+  phone: "+8801332601510",
+  email: "processinghubbd@gmail.com",
+  website: "processinghubbd.com",
+  tagline: "Visa Processing Service Provider",
+  empName: "Mohammad Nur Hasanat",
+  empRole: "Manager",
+  empPhone: "+8801861186863",
+  empEmail: "mohammadnurhasnat@gmail.com",
   casing: 'title',
   industry: 'corporate',
 };

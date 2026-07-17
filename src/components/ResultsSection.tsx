@@ -83,11 +83,11 @@ export function ResultsSection({
 
             {/* TABS SELECTOR */}
             {(data && isUndertakingConfigured && undertakingData) || activeItem || resultsTab === 'padgen' ? (
-              <div className="flex flex-col sm:grid sm:grid-cols-4 bg-slate-100/60 dark:bg-zinc-950/65 p-2 rounded-2xl mb-3 print:hidden gap-2 w-full text-center">
+              <div className="flex flex-col sm:flex-row bg-slate-100/60 dark:bg-zinc-950/65 p-2 rounded-2xl mb-3 print:hidden gap-2 w-full text-center items-stretch">
                 {data && (
                   <button
                     onClick={() => setResultsTab('profile')}
-                    className={`text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer transition-colors border min-h-[40px] ${
+                    className={`flex-1 text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer transition-colors border min-h-[40px] ${
                       resultsTab === 'profile'
                         ? 'bg-[#FFD700] text-black shadow-lg font-black border-[#FFD700]'
                         : 'bg-[#00FA9A] text-black border-transparent hover:bg-[#00e08a]'
@@ -99,7 +99,7 @@ export function ResultsSection({
                 {data && isUndertakingConfigured && undertakingData && activeItem?.documentType !== 'visa_application' && (
                   <button
                     onClick={() => setResultsTab('undertaking')}
-                    className={`text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer transition-colors border min-h-[40px] ${
+                    className={`flex-1 text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer transition-colors border min-h-[40px] ${
                       resultsTab === 'undertaking'
                         ? 'bg-[#FFD700] text-black shadow-lg font-black border-[#FFD700]'
                         : 'bg-[#00FA9A] text-black border-transparent hover:bg-[#00e08a]'
@@ -111,7 +111,7 @@ export function ResultsSection({
                 {activeItem && activeItem?.documentType !== 'visa_application' && (
                   <button
                     onClick={() => setResultsTab('passport-pdf')}
-                    className={`text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer transition-colors border min-h-[40px] ${
+                    className={`flex-1 text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer transition-colors border min-h-[40px] ${
                       resultsTab === 'passport-pdf'
                         ? 'bg-[#FFD700] text-black shadow-lg font-black border-[#FFD700]'
                         : 'bg-[#00FA9A] text-black border-transparent hover:bg-[#00e08a]'
@@ -123,10 +123,10 @@ export function ResultsSection({
                 {(data || resultsTab === 'padgen') && (
                   <button
                     onClick={() => setResultsTab('padgen')}
-                    className={`text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer transition-colors border min-h-[40px] ${
+                    className={`flex-[1.4] text-center py-2 px-6 sm:px-8 rounded-lg text-xs font-black cursor-pointer transition-all border min-h-[40px] ${
                       resultsTab === 'padgen'
-                        ? 'bg-[#FFD700] text-black shadow-lg font-black border-[#FFD700]'
-                        : 'bg-[#00FA9A] text-black border-transparent hover:bg-[#00e08a]'
+                        ? 'slide-btn slide-btn-coral text-white shadow-lg font-black scale-102 border-rose-600'
+                        : 'bg-rose-100 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border-rose-200 dark:border-rose-800/60 hover:bg-rose-200/80 transition-colors duration-150'
                      }`}
                   >
                     <span className="relative z-10">Card & Letter Head</span>

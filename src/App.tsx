@@ -524,7 +524,7 @@ export default function App() {
                     }
                   }, 100);
                 }}
-                className="w-fit text-white font-extrabold py-2 px-6 rounded-full shadow-lg flex items-center justify-center gap-2 text-sm slide-btn slide-btn-blue cursor-pointer transition-transform hover:scale-105"
+                className="w-fit text-white font-extrabold py-2 px-6 rounded-full shadow-lg flex items-center justify-center gap-2 text-sm slide-btn slide-btn-yellow cursor-pointer transition-transform hover:scale-105"
               >
                 <FileText className="w-5 h-5" />
                 NOC & Card Create

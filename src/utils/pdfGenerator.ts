@@ -207,7 +207,17 @@ export const generatePassportImagePDF = async (imageSource: File | Blob | string
             const passportNumber = passportData?.passportNumber ? passportData.passportNumber.toUpperCase().trim() : 'UNKNOWN';
             const fullName = [givenName, surname].filter(Boolean).join('-');
             
-            doc.save(`${fullName}-${passportNumber}.pdf`);
+            const filename = `${fullName}-${passportNumber}.pdf`;
+            const pdfBlob = doc.output('blob');
+            const blob = new Blob([pdfBlob], { type: 'application/octet-stream' });
+            const blobUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(blobUrl);
             resolve();
           } catch (e) {
             console.error('jsPDF addImage error:', e);
@@ -412,7 +422,17 @@ export const getPDFDocument = (data: PassportData): jsPDF => {
 
 export const generatePDF = (data: PassportData): void => {
   const doc = getPDFDocument(data);
-  doc.save(`Passport_Report_${data.givenName || 'Summary'}.pdf`);
+  const filename = `Passport_Report_${data.givenName || 'Summary'}.pdf`;
+  const pdfBlob = doc.output('blob');
+  const blob = new Blob([pdfBlob], { type: 'application/octet-stream' });
+  const blobUrl = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = blobUrl;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(blobUrl);
 };
 
 export const getUndertakingPDFDocument = (formData: UndertakingFormData): jsPDF => {
@@ -652,5 +672,15 @@ export const getUndertakingPDFDocument = (formData: UndertakingFormData): jsPDF 
 export const generateUndertakingPDF = (formData: UndertakingFormData): void => {
   const doc = getUndertakingPDFDocument(formData);
   const passportNumber = formData.passportNumber ? formData.passportNumber.toUpperCase().trim() : 'UNKNOWN';
-  doc.save(`UnderTaking-${passportNumber}.pdf`);
+  const filename = `UnderTaking-${passportNumber}.pdf`;
+  const pdfBlob = doc.output('blob');
+  const blob = new Blob([pdfBlob], { type: 'application/octet-stream' });
+  const blobUrl = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = blobUrl;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(blobUrl);
 };

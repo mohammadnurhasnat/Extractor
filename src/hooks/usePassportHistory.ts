@@ -11,6 +11,15 @@ export function usePassportHistory(userId: string | null, options?: {
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
   const latestHistoryRef = useRef<HistoryItem[]>([]);
+  const syncTimeoutRef = useRef<any>(null);
+
+  useEffect(() => {
+    return () => {
+      if (syncTimeoutRef.current) {
+        clearTimeout(syncTimeoutRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     latestHistoryRef.current = history;
@@ -79,20 +88,29 @@ export function usePassportHistory(userId: string | null, options?: {
       localStorage.setItem('passport_core_history', encryptData(newHistory));
       return;
     }
-    
-    // Save all to server proxy
-    try {
-      for (const item of newHistory) {
-        // Cache image locally if present
-        if (item.imageBase64) {
-          try {
-            localStorage.setItem(`passport_img_${item.id}`, encryptData(item.imageBase64));
-          } catch (e) {}
-        }
-        
-        // Strip imageBase64 from Firestore payload to stay under 1MB limit
-        const { imageBase64: _, ...firestoreData } = item;
-        await fetch('/api/history', {
+
+    // Cache images locally if present
+    for (const item of newHistory) {
+      if (item.imageBase64) {
+        try {
+          localStorage.setItem(`passport_img_${item.id}`, encryptData(item.imageBase64));
+        } catch (e) {}
+      }
+    }
+
+    // Debounce backend sync on repeated edits (e.g. typing)
+    if (syncTimeoutRef.current) {
+      clearTimeout(syncTimeoutRef.current);
+    }
+
+    syncTimeoutRef.current = setTimeout(async () => {
+      try {
+        const itemsToSync = newHistory.map(item => {
+          const { imageBase64: _, ...firestoreData } = item;
+          return firestoreData;
+        });
+
+        await fetch('/api/history/bulk', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -100,13 +118,13 @@ export function usePassportHistory(userId: string | null, options?: {
           },
           body: JSON.stringify({
             userId,
-            item: firestoreData
+            items: itemsToSync
           })
         });
+      } catch (e) {
+        console.error("Error saving history batch:", e);
       }
-    } catch (e) {
-      console.error("Error saving history batch:", e);
-    }
+    }, 1000); // 1 second debounce
   }, [userId]);
 
   const addToHistory = useCallback(async (data: PassportData, imageBase64?: string): Promise<PassportData> => {
