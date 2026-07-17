@@ -132,7 +132,9 @@ export function LoginModal({
             </span>
             <a
               href="https://wa.me/8801861186863"
-              className="slide-btn slide-btn-whatsapp w-full max-w-[200px] py-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 uppercase tracking-wider ripple-btn"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full max-w-[200px] py-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 uppercase tracking-wider transition-all duration-200 bg-[#25D366] text-white hover:bg-[#1ebd5d] active:scale-95 ripple-btn"
             >
               <span className="relative z-10 flex items-center gap-1">
                 <WhatsAppIcon className="w-3.5 h-3.5" />
