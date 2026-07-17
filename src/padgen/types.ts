@@ -3,6 +3,7 @@ export interface CompanyData {
   address: string;
   phone: string;
   email: string;
+  website?: string;
   tagline: string;
   empName: string;
   empRole: string;

@@ -7,6 +7,19 @@ import {
   getJobRole
 } from './addressUtils';
 
+async function downloadFile(url: string, filename: string): Promise<void> {
+  const response = await fetch(url);
+  const blob = await response.blob();
+  const blobUrl = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = blobUrl;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  window.URL.revokeObjectURL(blobUrl);
+}
+
 async function ensureFileObject(imageSource: File | Blob | string, defaultFilename: string = 'passport.jpg'): Promise<File> {
   if (imageSource instanceof File) {
     return imageSource;
@@ -95,7 +108,7 @@ export const generatePassportImagePDF = async (imageSource: File | Blob | string
         const maxHeight = pageHeight - (margin * 2);
         
         const img = new Image();
-        img.onload = () => {
+        img.onload = async () => {
           try {
             const imgWidth = img.width;
             const imgHeight = img.height;
@@ -208,16 +221,11 @@ export const generatePassportImagePDF = async (imageSource: File | Blob | string
             const fullName = [givenName, surname].filter(Boolean).join('-');
             
             const filename = `${fullName}-${passportNumber}.pdf`;
-            const pdfBlob = doc.output('blob');
-            const blob = new Blob([pdfBlob], { type: 'application/octet-stream' });
-            const blobUrl = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = blobUrl;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(blobUrl);
+            const pdfArrayBuffer = doc.output('arraybuffer');
+            const blob = new Blob([pdfArrayBuffer], { type: 'application/octet-stream' });
+            const blobUrl = window.URL.createObjectURL(blob);
+            await downloadFile(blobUrl, filename);
+            window.URL.revokeObjectURL(blobUrl);
             resolve();
           } catch (e) {
             console.error('jsPDF addImage error:', e);
@@ -420,19 +428,14 @@ export const getPDFDocument = (data: PassportData): jsPDF => {
   return doc;
 };
 
-export const generatePDF = (data: PassportData): void => {
+export const generatePDF = async (data: PassportData): Promise<void> => {
   const doc = getPDFDocument(data);
   const filename = `Passport_Report_${data.givenName || 'Summary'}.pdf`;
-  const pdfBlob = doc.output('blob');
-  const blob = new Blob([pdfBlob], { type: 'application/octet-stream' });
-  const blobUrl = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = blobUrl;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(blobUrl);
+  const pdfArrayBuffer = doc.output('arraybuffer');
+  const blob = new Blob([pdfArrayBuffer], { type: 'application/octet-stream' });
+  const blobUrl = window.URL.createObjectURL(blob);
+  await downloadFile(blobUrl, filename);
+  window.URL.revokeObjectURL(blobUrl);
 };
 
 export const getUndertakingPDFDocument = (formData: UndertakingFormData): jsPDF => {
@@ -669,18 +672,13 @@ export const getUndertakingPDFDocument = (formData: UndertakingFormData): jsPDF 
   return doc;
 };
 
-export const generateUndertakingPDF = (formData: UndertakingFormData): void => {
+export const generateUndertakingPDF = async (formData: UndertakingFormData): Promise<void> => {
   const doc = getUndertakingPDFDocument(formData);
   const passportNumber = formData.passportNumber ? formData.passportNumber.toUpperCase().trim() : 'UNKNOWN';
   const filename = `UnderTaking-${passportNumber}.pdf`;
-  const pdfBlob = doc.output('blob');
-  const blob = new Blob([pdfBlob], { type: 'application/octet-stream' });
-  const blobUrl = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = blobUrl;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(blobUrl);
+  const pdfArrayBuffer = doc.output('arraybuffer');
+  const blob = new Blob([pdfArrayBuffer], { type: 'application/octet-stream' });
+  const blobUrl = window.URL.createObjectURL(blob);
+  await downloadFile(blobUrl, filename);
+  window.URL.revokeObjectURL(blobUrl);
 };

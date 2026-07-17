@@ -24,6 +24,19 @@ import { HistoryPanel } from './components/HistoryPanel';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 
+async function downloadFile(url: string, filename: string): Promise<void> {
+  const response = await fetch(url);
+  const blob = await response.blob();
+  const blobUrl = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = blobUrl;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  window.URL.revokeObjectURL(blobUrl);
+}
+
 export function PadgenApp() {
   const [companyData, setCompanyData] = useState<CompanyData>(DEFAULT_COMPANY_DATA);
   const { user } = useAuth();
@@ -548,16 +561,11 @@ export function PadgenApp() {
       });
 
       const fn = `${baseFilename()}-pad.pdf`;
-      const pdfBlob = pdf.output('blob');
-      const blob = new Blob([pdfBlob], { type: 'application/octet-stream' });
-      const blobUrl = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = blobUrl;
-      a.download = fn;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(blobUrl);
+      const pdfArrayBuffer = pdf.output('arraybuffer');
+      const blob = new Blob([pdfArrayBuffer], { type: 'application/octet-stream' });
+      const blobUrl = window.URL.createObjectURL(blob);
+      await downloadFile(blobUrl, fn);
+      window.URL.revokeObjectURL(blobUrl);
       showStatusMessage('Pad PDF downloaded.');
       addDownloadToHistory('pad-pdf', fn);
       if (user) {
@@ -647,16 +655,11 @@ export function PadgenApp() {
       });
 
       const fn = `${baseFilename()}-card-a4.pdf`;
-      const pdfBlob = pdf.output('blob');
-      const blob = new Blob([pdfBlob], { type: 'application/octet-stream' });
-      const blobUrl = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = blobUrl;
-      a.download = fn;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(blobUrl);
+      const pdfArrayBuffer = pdf.output('arraybuffer');
+      const blob = new Blob([pdfArrayBuffer], { type: 'application/octet-stream' });
+      const blobUrl = window.URL.createObjectURL(blob);
+      await downloadFile(blobUrl, fn);
+      window.URL.revokeObjectURL(blobUrl);
       showStatusMessage('A4 Card Sheet PDF downloaded.');
       addDownloadToHistory('card-pdf', fn);
       if (user) {
