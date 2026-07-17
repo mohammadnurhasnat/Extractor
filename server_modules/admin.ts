@@ -22,7 +22,7 @@ adminRouter.get('/admin/users', (req, res) => {
   }
 });
 
-adminRouter.post('/admin/add-user', (req, res) => {
+adminRouter.post('/admin/add-user', async (req, res) => {
   try {
     const adminId = req.headers['x-user-id']?.toString();
     if (!adminId) {
@@ -61,7 +61,7 @@ adminRouter.post('/admin/add-user', (req, res) => {
     users.push(newUser);
     saveUsersStore(users);
     
-    appendAuditLog({ userId: adminId, action: 'USER_ADDED', details: `Added new user ${newUser.id} (${newUser.email})` });
+    await appendAuditLog({ userId: adminId, action: 'USER_ADDED', details: `Added new user ${newUser.id} (${newUser.email})` });
 
     res.json({ success: true, user: newUser });
   } catch (error: any) {
@@ -69,7 +69,7 @@ adminRouter.post('/admin/add-user', (req, res) => {
   }
 });
 
-adminRouter.post('/admin/update-user-limit', (req, res) => {
+adminRouter.post('/admin/update-user-limit', async (req, res) => {
   try {
     const adminId = req.headers['x-user-id']?.toString();
     if (!adminId) {
@@ -95,7 +95,7 @@ adminRouter.post('/admin/update-user-limit', (req, res) => {
     users[targetUserIndex].dailyLimit = newLimit;
     saveUsersStore(users);
     
-    appendAuditLog({ userId: adminId, action: 'LIMIT_CHANGE', details: `Changed daily limit for user ${userId} to ${newLimit}` });
+    await appendAuditLog({ userId: adminId, action: 'LIMIT_CHANGE', details: `Changed daily limit for user ${userId} to ${newLimit}` });
 
     res.json({ success: true, user: users[targetUserIndex] });
   } catch (error: any) {
@@ -103,7 +103,7 @@ adminRouter.post('/admin/update-user-limit', (req, res) => {
   }
 });
 
-adminRouter.post('/admin/toggle-suspend', (req, res) => {
+adminRouter.post('/admin/toggle-suspend', async (req, res) => {
   try {
     const adminId = req.headers['x-user-id']?.toString();
     if (!adminId) {
@@ -133,7 +133,7 @@ adminRouter.post('/admin/toggle-suspend', (req, res) => {
     users[targetUserIndex].isSuspended = !!isSuspended;
     saveUsersStore(users);
     
-    appendAuditLog({ userId: adminId, action: 'USER_SUSPENDED', details: `${isSuspended ? 'Suspended' : 'Unsuspended'} user ${userId}` });
+    await appendAuditLog({ userId: adminId, action: 'USER_SUSPENDED', details: `${isSuspended ? 'Suspended' : 'Unsuspended'} user ${userId}` });
 
     res.json({ success: true, user: users[targetUserIndex] });
   } catch (error: any) {
@@ -141,7 +141,7 @@ adminRouter.post('/admin/toggle-suspend', (req, res) => {
   }
 });
 
-adminRouter.post('/admin/delete-user', (req, res) => {
+adminRouter.post('/admin/delete-user', async (req, res) => {
   try {
     const adminId = req.headers['x-user-id']?.toString();
     if (!adminId) {
@@ -171,7 +171,7 @@ adminRouter.post('/admin/delete-user', (req, res) => {
     users.splice(targetUserIndex, 1);
     saveUsersStore(users);
     
-    appendAuditLog({ userId: adminId, action: 'USER_DELETED', details: `Deleted user ${userId}` });
+    await appendAuditLog({ userId: adminId, action: 'USER_DELETED', details: `Deleted user ${userId}` });
 
     res.json({ success: true });
   } catch (error: any) {
@@ -228,7 +228,7 @@ adminRouter.post('/admin/edit-user', (req, res) => {
   }
 });
 
-adminRouter.get('/admin/audit-logs', (req, res) => {
+adminRouter.get('/admin/audit-logs', async (req, res) => {
   try {
     const adminId = req.headers['x-user-id']?.toString();
     if (!adminId) {
@@ -241,7 +241,7 @@ adminRouter.get('/admin/audit-logs', (req, res) => {
       return res.status(403).json({ success: false, error: 'Access denied.' });
     }
 
-    const logs = getAuditLogs();
+    const logs = await getAuditLogs();
     res.json({ success: true, logs });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message || 'Failed to fetch audit logs.' });

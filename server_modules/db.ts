@@ -1,6 +1,8 @@
+import { Firestore } from '@google-cloud/firestore';
 import path from 'path';
 import fs from 'fs';
-import { Firestore } from '@google-cloud/firestore';
+
+let firestore: Firestore | null = null; // Uses environment credentials automatically
 import { USERS_DATABASE } from '../src/users';
 
 const DATA_DIR = path.join(process.cwd(), '.data');
@@ -55,31 +57,43 @@ interface HistoryStore {
 }
 
 export let cachedUsers: any[] = [];
-export let db: any = null;
-
 export function getDb() {
-  return db;
+  return firestore;
 }
 
 export function setDb(val: any) {
-  db = val;
+  firestore = val;
 }
 
-export function getAuditLogs(): AuditLog[] {
+export async function getAuditLogs(): Promise<AuditLog[]> {
   try {
+    if (firestore) {
+      const snapshot = await firestore.collection('audit_logs').orderBy('timestamp', 'desc').limit(1000).get();
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AuditLog));
+    }
+    // Fallback to local
     if (fs.existsSync(AUDIT_LOGS_FILE)) {
       const data = fs.readFileSync(AUDIT_LOGS_FILE, 'utf8');
       return JSON.parse(data);
     }
   } catch (error) {
-    console.error('Error reading audit logs file:', error);
+    console.error('Error reading audit logs:', error);
   }
   return [];
 }
 
-export function appendAuditLog(log: Omit<AuditLog, 'id' | 'timestamp'>) {
+export async function appendAuditLog(log: Omit<AuditLog, 'id' | 'timestamp'>) {
   try {
-    const logs = getAuditLogs();
+    if (firestore) {
+      const newLog: Omit<AuditLog, 'id'> = {
+        ...log,
+        timestamp: new Date().toISOString()
+      };
+      await firestore.collection('audit_logs').add(newLog);
+      return;
+    }
+    // Fallback to local
+    const logs = await getAuditLogs();
     const newLog: AuditLog = {
       ...log,
       id: Math.random().toString(36).substr(2, 9),
@@ -88,7 +102,7 @@ export function appendAuditLog(log: Omit<AuditLog, 'id' | 'timestamp'>) {
     const updatedLogs = [newLog, ...logs].slice(0, 1000);
     fs.writeFileSync(AUDIT_LOGS_FILE, JSON.stringify(updatedLogs, null, 2), 'utf8');
   } catch (error) {
-    console.error('Error writing audit logs file:', error);
+    console.error('Error writing audit logs:', error);
   }
 }
 
@@ -307,23 +321,23 @@ export function saveUsersStoreLocal(users: typeof USERS_DATABASE) {
 }
 
 export async function syncUsersToFirestore(newUsers: typeof USERS_DATABASE) {
-  if (!db) return;
+  if (!firestore) return;
   try {
-    const snapshot = await db.collection('registered_users').get();
+    const snapshot = await firestore.collection('registered_users').get();
     const existingIds = snapshot.docs.map((doc: any) => doc.id);
     const newIds = new Set(newUsers.map(u => u.id));
     
-    const batch = db.batch();
+    const batch = firestore.batch();
     
     existingIds.forEach((id: string) => {
       if (!newIds.has(id)) {
-        const docRef = db.collection('registered_users').doc(id);
+        const docRef = firestore.collection('registered_users').doc(id);
         batch.delete(docRef);
       }
     });
     
     newUsers.forEach((user: any) => {
-      const docRef = db.collection('registered_users').doc(user.id);
+      const docRef = firestore.collection('registered_users').doc(user.id);
       batch.set(docRef, user);
     });
     
@@ -427,12 +441,12 @@ export async function loadUsersFromFirestore() {
     if (process.env.RENDER || (!process.env.GOOGLE_APPLICATION_CREDENTIALS && !process.env.K_SERVICE)) {
       console.warn("Running in non-GCP environment (e.g., Render) without credentials. Bypassing Firestore and using local fallbacks.");
       cachedUsers = getUsersStoreLocal();
-      db = null;
+      firestore = null;
       return;
     }
 
     const firebaseConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-    db = new Firestore({
+    firestore = new Firestore({
       projectId: firebaseConfig.projectId,
       databaseId: firebaseConfig.firestoreDatabaseId || '(default)'
     });
@@ -440,14 +454,14 @@ export async function loadUsersFromFirestore() {
     // Test connectivity and permissions before proceeding to setup real-time listener
     try {
       console.log("Testing Firestore connectivity and permissions...");
-      await db.collection('registered_users').limit(1).get();
+      await firestore.collection('registered_users').limit(1).get();
       console.log("Firestore connectivity and permission test passed!");
     } catch (testError: any) {
       console.warn("Firestore connection test failed:", testError.message || testError);
       const errStr = String(testError.message || testError);
       if (errStr.includes('PERMISSION_DENIED') || errStr.includes('7') || testError.code === 7) {
         console.warn("Permission denied for Firestore. Gracefully disabling Firestore and falling back to local JSON storage.");
-        db = null;
+        firestore = null;
         cachedUsers = getUsersStoreLocal();
         return;
       }
@@ -457,7 +471,7 @@ export async function loadUsersFromFirestore() {
     
     await new Promise<void>((resolve) => {
       let isFirstSnapshot = true;
-      db.collection('registered_users').onSnapshot(async (snapshot: any) => {
+      firestore.collection('registered_users').onSnapshot(async (snapshot: any) => {
         try {
           const dbUsers: any[] = [];
           snapshot.forEach((doc: any) => {
@@ -497,9 +511,9 @@ export async function loadUsersFromFirestore() {
 
             if (duplicatesToDelete.length > 0) {
               console.warn(`Found and cleaning up ${duplicatesToDelete.length} duplicate user records in Firestore:`, duplicatesToDelete);
-              const batch = db.batch();
+              const batch = firestore.batch();
               duplicatesToDelete.forEach((id: string) => {
-                const docRef = db.collection('registered_users').doc(id);
+                const docRef = firestore.collection('registered_users').doc(id);
                 batch.delete(docRef);
               });
               try {
@@ -512,9 +526,9 @@ export async function loadUsersFromFirestore() {
           } else {
             console.log("Firestore 'registered_users' collection is empty. Seeding with default users database...");
             cachedUsers = getUsersStoreLocal();
-            const batch = db.batch();
+            const batch = firestore.batch();
             cachedUsers.forEach((user: any) => {
-              const docRef = db.collection('registered_users').doc(user.id);
+              const docRef = firestore.collection('registered_users').doc(user.id);
               batch.set(docRef, user);
             });
             await batch.commit();
@@ -534,7 +548,7 @@ export async function loadUsersFromFirestore() {
         }
       }, (error: any) => {
         console.error("Firestore onSnapshot error:", error);
-        db = null; // Gracefully disable Firestore on snapshot error
+        firestore = null; // Gracefully disable Firestore on snapshot error
         if (isFirstSnapshot) {
           isFirstSnapshot = false;
           resolve();
@@ -543,7 +557,7 @@ export async function loadUsersFromFirestore() {
     });
   } catch (error) {
     console.error("Failed to load users from Firestore. Falling back to local files:", error);
-    db = null;
+    firestore = null;
     cachedUsers = getUsersStoreLocal();
   }
 }
