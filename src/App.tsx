@@ -35,7 +35,7 @@ import { generateDataText, getKolkataHotelForPassport, getDelhiHotelForPassport,
 import { generatePDF, getPDFDocument, generateUndertakingPDF } from './utils/pdfGenerator';
 import { logoutGoogle, auth, db } from './lib/firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, addDoc, doc, getDoc } from 'firebase/firestore';
 
 import { useUndertakingState } from './hooks/useUndertakingState';
 import { useSessionQueue } from './hooks/useSessionQueue';
@@ -375,6 +375,7 @@ export default function App() {
   const [isBackupOpen, setIsBackupOpen] = useState(false);
   const [isRestoreOpen, setIsRestoreOpen] = useState(false);
   const [isRefHelperOpen, setIsRefHelperOpen] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('passport_active_results_tab', resultsTab);
@@ -410,6 +411,82 @@ export default function App() {
       return () => clearTimeout(timer);
     }
   }, [toast]);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const shareId = urlParams.get('share');
+    if (shareId) {
+      const loadSharedCard = async () => {
+        setToast({ message: 'শেয়ার করা ডাটা লোড করা হচ্ছে... (Loading shared data...)', type: 'info' });
+        try {
+          const docRef = doc(db, 'shared_cards', shareId);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            const sharedData = docSnap.data();
+            if (sharedData && sharedData.passportData) {
+              setData(sharedData.passportData);
+              if (sharedData.undertakingData) {
+                setUndertakingData(sharedData.undertakingData);
+              }
+              setToast({ message: 'শেয়ার করা ডাটা সফলভাবে লোড হয়েছে! (Shared data loaded successfully!)', type: 'success' });
+            } else {
+              setToast({ message: 'শেয়ার করা ডাটা পাওয়া যায়নি। (Shared data not found.)', type: 'error' });
+            }
+          } else {
+            setToast({ message: 'শেয়ার করা ডাটা পাওয়া যায়নি। (Shared data not found.)', type: 'error' });
+          }
+        } catch (err) {
+          console.error('Error loading shared card:', err);
+          setToast({ message: 'শেয়ার করা ডাটা লোড করতে ব্যর্থ হয়েছে। (Failed to load shared data.)', type: 'error' });
+        }
+      };
+      loadSharedCard();
+    }
+  }, []);
+
+  const handleShare = async () => {
+    if (!data) return;
+    setIsSharing(true);
+    try {
+      const docRef = await addDoc(collection(db, 'shared_cards'), {
+        passportData: data,
+        undertakingData: undertakingData,
+        timestamp: Date.now(),
+        createdBy: currentUser?.id || 'anonymous'
+      });
+      
+      const shareUrl = `${window.location.origin}/?share=${docRef.id}`;
+      
+      const formattedText = `📋 PASSPORT DATA REPORT (SHARED CARD)
+--------------------------------------
+• Name: ${data.givenName || ''} ${data.surname || ''}
+• Passport Number: ${data.passportNumber || ''}
+• Date of Birth: ${data.dob || ''}
+• Gender: ${data.gender || ''}
+• Birth Place: ${data.birthPlace || ''}
+• Issue Date: ${data.issueDate || ''}
+• Expiry Date: ${data.expiryDate || ''}
+• NID/Birth Cert No: ${data.nidOrBirthCertNumber || ''}
+
+🔗 View Full Interactive Card Online:
+${shareUrl}
+--------------------------------------`;
+
+      await navigator.clipboard.writeText(formattedText);
+      setToast({
+        message: 'শেয়ার লিংক এবং কার্ডের ডাটা কপি করা হয়েছে! (Share link & card data copied!)',
+        type: 'success'
+      });
+    } catch (err) {
+      console.error('Error sharing card:', err);
+      setToast({
+        message: 'শেয়ার করতে সমস্যা হয়েছে। (Failed to share. Please try again.)',
+        type: 'error'
+      });
+    } finally {
+      setIsSharing(false);
+    }
+  };
 
   const isUndertakingConfigured = !!(utPurpose || utFromDate || utToDate);
 
@@ -688,6 +765,8 @@ export default function App() {
               utPurpose={utPurpose}
               onOpenRefHelper={() => setIsRefHelperOpen(true)}
               currentUser={currentUser}
+              onShare={handleShare}
+              isSharing={isSharing}
             />
           </div>
         </main>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckCircle2, Check, Copy, Download, FileText, Braces, ClipboardList } from 'lucide-react';
+import { CheckCircle2, Check, Copy, Download, FileText, Braces, ClipboardList, Share2, Loader2 } from 'lucide-react';
 import { PassportData } from '../types';
 import { DataField } from './DataField';
 import {
@@ -21,6 +21,8 @@ interface PassportDataTabProps {
   onGenerateAddresses?: () => void;
   utPurpose?: string;
   onOpenRefHelper?: () => void;
+  onShare?: () => void;
+  isSharing?: boolean;
 }
 
 export function PassportDataTab({
@@ -34,7 +36,9 @@ export function PassportDataTab({
   isGeneratingAddresses = false,
   onGenerateAddresses,
   utPurpose,
-  onOpenRefHelper
+  onOpenRefHelper,
+  onShare,
+  isSharing = false
 }: PassportDataTabProps) {
 
   const isExpiryWarning = (() => {
@@ -103,6 +107,20 @@ export function PassportDataTab({
             >
               <ClipboardList className="w-4.5 h-4.5 relative z-10" />
               <span className="relative z-10">{helperInfo.label}</span>
+            </button>
+          )}
+          {onShare && (
+            <button
+              onClick={onShare}
+              disabled={isSharing}
+              className="slide-btn slide-btn-teal flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-extrabold rounded-full cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSharing ? (
+                <Loader2 className="w-4.5 h-4.5 animate-spin relative z-10" />
+              ) : (
+                <Share2 className="w-4.5 h-4.5 relative z-10" />
+              )}
+              <span className="relative z-10">{isSharing ? 'Sharing...' : 'Share'}</span>
             </button>
           )}
           <button 

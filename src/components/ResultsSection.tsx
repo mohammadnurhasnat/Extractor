@@ -29,6 +29,8 @@ interface ResultsSectionProps {
   utPurpose?: string;
   onOpenRefHelper?: () => void;
   currentUser?: any;
+  onShare?: () => void;
+  isSharing?: boolean;
 }
 
 export function ResultsSection({
@@ -52,7 +54,9 @@ export function ResultsSection({
   onGenerateAddresses,
   utPurpose,
   onOpenRefHelper,
-  currentUser
+  currentUser,
+  onShare,
+  isSharing = false
 }: ResultsSectionProps) {
   // If there's data, active item, or active padgen tab, show the results card
   const hasContent = !!data || !!activeItem || resultsTab === 'padgen';
@@ -148,6 +152,8 @@ export function ResultsSection({
                 onGenerateAddresses={onGenerateAddresses}
                 utPurpose={utPurpose}
                 onOpenRefHelper={onOpenRefHelper}
+                onShare={onShare}
+                isSharing={isSharing}
               />
             ) : resultsTab === 'undertaking' && data && undertakingData ? (
               <UndertakingFormTab

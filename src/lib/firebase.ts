@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, User } from 'firebase/auth';
-import { initializeFirestore } from 'firebase/firestore';
+import { initializeFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
 const app = initializeApp(firebaseConfig);
@@ -8,6 +8,15 @@ export const auth = getAuth(app);
 export const db = initializeFirestore(app, {
   experimentalAutoDetectLongPolling: true,
 }, firebaseConfig.firestoreDatabaseId);
+
+// Enable Firestore offline persistence
+try {
+  enableIndexedDbPersistence(db).catch((err) => {
+    console.warn("Firestore offline persistence setup issue:", err.code, err.message);
+  });
+} catch (err) {
+  console.warn("Could not call enableIndexedDbPersistence:", err);
+}
 
 export const googleProvider = new GoogleAuthProvider();
 // Request Drive and Email/Profile scopes

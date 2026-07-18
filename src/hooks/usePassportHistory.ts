@@ -122,16 +122,24 @@ export function usePassportHistory(userId: string | null, options?: {
     };
   }, [userId]);
 
-  const saveHistory = useCallback(async (newHistory: HistoryItem[]) => {
-    setInternalHistory(newHistory);
-    latestHistoryRef.current = newHistory;
+  const saveHistory = useCallback((newHistoryOrUpdater: HistoryItem[] | ((prev: HistoryItem[]) => HistoryItem[])) => {
+    let resolvedHistory: HistoryItem[];
+    if (typeof newHistoryOrUpdater === 'function') {
+      resolvedHistory = newHistoryOrUpdater(latestHistoryRef.current);
+    } else {
+      resolvedHistory = newHistoryOrUpdater;
+    }
+
+    setInternalHistory(resolvedHistory);
+    latestHistoryRef.current = resolvedHistory;
+
     if (!userId) {
-      localStorage.setItem('passport_core_history', encryptData(newHistory));
+      localStorage.setItem('passport_core_history', encryptData(resolvedHistory));
       return;
     }
 
     // Cache images locally if present
-    for (const item of newHistory) {
+    for (const item of resolvedHistory) {
       if (item.imageBase64) {
         try {
           localStorage.setItem(`passport_img_${item.id}`, encryptData(item.imageBase64));
@@ -146,7 +154,7 @@ export function usePassportHistory(userId: string | null, options?: {
 
     syncTimeoutRef.current = setTimeout(async () => {
       try {
-        const itemsToSync = newHistory.map(item => {
+        const itemsToSync = resolvedHistory.map(item => {
           const { imageBase64: _, ...firestoreData } = item;
           return firestoreData;
         });
