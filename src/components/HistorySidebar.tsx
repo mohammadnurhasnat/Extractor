@@ -107,7 +107,7 @@ Expiry Date: ${item.data.expiryDate || ''}
             </button>
             <button 
               onClick={onOpenRestore}
-              className="slide-btn slide-btn-teal w-full sm:w-auto px-4 py-2 sm:py-1.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 uppercase ripple-btn"
+              className="slide-btn slide-btn-emerald w-full sm:w-auto px-4 py-2 sm:py-1.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 uppercase ripple-btn"
               title="Open Secure Data Restore"
             >
               <span className="relative z-10 flex items-center gap-1">

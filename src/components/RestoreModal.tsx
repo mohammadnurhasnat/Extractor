@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
-  X, UploadCloud, ShieldCheck, AlertCircle, CheckCircle2, FileText, Loader2
+  X, UploadCloud, ShieldCheck, AlertCircle, FileText, Loader2, Trash2
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { HistoryItem, PassportData } from '../types';
@@ -22,6 +22,11 @@ interface BackupPayload {
   data: any;
 }
 
+interface AttachedBackup {
+  file: File;
+  payload: BackupPayload;
+}
+
 export function RestoreModal({
   isOpen,
   onClose,
@@ -31,8 +36,7 @@ export function RestoreModal({
 }: RestoreModalProps) {
   useLockBodyScroll(isOpen);
   const [isDragging, setIsDragging] = useState(false);
-  const [attachedFile, setAttachedFile] = useState<File | null>(null);
-  const [parsedData, setParsedData] = useState<BackupPayload | null>(null);
+  const [attachedFiles, setAttachedFiles] = useState<AttachedBackup[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isRestoring, setIsRestoring] = useState(false);
   const [restoreProgress, setRestoreProgress] = useState(0);
@@ -43,49 +47,51 @@ export function RestoreModal({
 
   const handleProcessFileContent = (encryptedText: string, file: File) => {
     try {
+      if (attachedFiles.some(item => item.file.name === file.name)) {
+        throw new Error(`"${file.name}" ইতিপূর্বে সংযুক্ত করা হয়েছে! ("${file.name}" is already attached!)`);
+      }
+
       const decrypted = decryptData(encryptedText);
       if (!decrypted || typeof decrypted !== 'object') {
-        throw new Error('Decryption failed. Invalid format.');
+        throw new Error('ডিক্রিপশন ব্যর্থ হয়েছে। সঠিক ফরমেটের ফাইল নয়। (Decryption failed. Invalid file format.)');
       }
 
       if (decrypted.type === 'single_passport_profile' && decrypted.data) {
         if (!decrypted.data.passportNumber) {
-          throw new Error('Invalid backup: Missing Passport ID.');
+          throw new Error('অকার্যকর ব্যাকআপ: পাসপোর্ট আইডি নেই। (Invalid backup: Missing Passport ID.)');
         }
-        setParsedData(decrypted as BackupPayload);
-        setAttachedFile(file);
+        const payload = decrypted as BackupPayload;
+        setAttachedFiles(prev => [...prev, { file, payload }]);
         setError(null);
         return;
       }
 
       if (decrypted.type === 'passport_history_backup' && Array.isArray(decrypted.data)) {
-        setParsedData(decrypted as BackupPayload);
-        setAttachedFile(file);
+        const payload = decrypted as BackupPayload;
+        setAttachedFiles(prev => [...prev, { file, payload }]);
         setError(null);
         return;
       }
 
-      throw new Error('Unrecognized backup signature.');
+      throw new Error('অপরিচিত ব্যাকআপ সিগনেচার। (Unrecognized backup signature.)');
     } catch (err: any) {
       console.error(err);
-      setError(err.message || 'Verification failed. Upload .pass or .enc.');
-      setAttachedFile(null);
-      setParsedData(null);
+      setError(err.message || 'ভেরিফিকেশন ব্যর্থ হয়েছে। .pass বা .enc ফাইল আপলোড করুন। (Verification failed. Upload .pass or .enc file.)');
     }
   };
 
   const handleExecuteRestore = () => {
-    if (!parsedData) return;
+    if (attachedFiles.length === 0) return;
 
     setIsRestoring(true);
     setRestoreProgress(5);
-    setRestorePhase('Reading uploaded backup payload...');
+    setRestorePhase('সংযুক্ত ব্যাকআপ ফাইলসমূহ রিড করা হচ্ছে... (Reading attached backup files...)');
 
     const steps = [
-      { progress: 30, phase: 'Verifying cryptographic signature...', delay: 250 },
-      { progress: 60, phase: 'Decrypting dataset...', delay: 550 },
-      { progress: 85, phase: 'Merging restored profile data...', delay: 850 },
-      { progress: 100, phase: 'Finalizing database sync...', delay: 1150 },
+      { progress: 30, phase: 'ক্রিপ্টোগ্রাফিক সিগনেচার ভেরিফাই করা হচ্ছে... (Verifying cryptographic signatures...)', delay: 250 },
+      { progress: 60, phase: 'ডাটাসেট ডিক্রিপ্ট করা হচ্ছে... (Decrypting datasets...)', delay: 550 },
+      { progress: 85, phase: 'রিস্টোরকৃত প্রোফাইল ডাটা মার্জ করা হচ্ছে... (Merging restored profile data...)', delay: 850 },
+      { progress: 100, phase: 'ডাটাবেস সিঙ্ক শেষ করা হচ্ছে... (Finalizing database sync...)', delay: 1150 },
     ];
 
     steps.forEach((step) => {
@@ -96,80 +102,78 @@ export function RestoreModal({
         if (step.progress === 100) {
           setTimeout(() => {
             try {
-              if (parsedData.type === 'single_passport_profile') {
-                const singleData = parsedData.data as PassportData;
-                
-                const duplicateIndex = history.findIndex(
-                  item => item.data.passportNumber?.toUpperCase() === singleData.passportNumber?.toUpperCase()
-                );
+              let currentHistory = [...history];
+              let importedCount = 0;
+              let updatedCount = 0;
 
-                let updatedHistory: HistoryItem[];
-                if (duplicateIndex >= 0) {
-                  const existing = history[duplicateIndex];
-                  const updatedItem: HistoryItem = {
-                    ...existing,
-                    timestamp: Date.now(),
-                    data: { ...existing.data, ...singleData }
-                  };
-                  updatedHistory = [updatedItem, ...history.filter((_, idx) => idx !== duplicateIndex)];
-                } else {
-                  const newItem: HistoryItem = {
-                    id: Date.now().toString(),
-                    timestamp: Date.now(),
-                    data: singleData
-                  };
-                  updatedHistory = [newItem, ...history];
-                }
+              for (const { payload } of attachedFiles) {
+                if (payload.type === 'single_passport_profile') {
+                  const singleData = payload.data as PassportData;
+                  if (!singleData.passportNumber) continue;
 
-                setHistory(updatedHistory);
-                setToast({
-                  message: `${singleData.givenName || 'Profile'} restored successfully.`,
-                  type: 'success'
-                });
-              } 
-              else if (parsedData.type === 'passport_history_backup') {
-                const restoredList = parsedData.data as HistoryItem[];
-                
-                const merged = [...history];
-                let importedCount = 0;
-                let updatedCount = 0;
-
-                restoredList.forEach(restoredItem => {
-                  if (!restoredItem.data?.passportNumber) return;
-
-                  const existingIndex = merged.findIndex(
-                    item => item.data.passportNumber?.toUpperCase() === restoredItem.data.passportNumber?.toUpperCase()
+                  const duplicateIndex = currentHistory.findIndex(
+                    item => item.data.passportNumber?.toUpperCase() === singleData.passportNumber?.toUpperCase()
                   );
 
-                  if (existingIndex >= 0) {
-                    merged[existingIndex] = {
-                      ...merged[existingIndex],
-                      timestamp: Math.max(merged[existingIndex].timestamp, restoredItem.timestamp || Date.now()),
-                      data: { ...merged[existingIndex].data, ...restoredItem.data }
+                  if (duplicateIndex >= 0) {
+                    const existing = currentHistory[duplicateIndex];
+                    const updatedItem: HistoryItem = {
+                      ...existing,
+                      timestamp: Date.now(),
+                      data: { ...existing.data, ...singleData }
                     };
+                    currentHistory = [updatedItem, ...currentHistory.filter((_, idx) => idx !== duplicateIndex)];
                     updatedCount++;
                   } else {
-                    merged.push({
-                      ...restoredItem,
-                      id: restoredItem.id || Date.now().toString() + Math.random().toString(36).substring(2, 5)
-                    });
+                    const newItem: HistoryItem = {
+                      id: Date.now().toString() + Math.random().toString(36).substring(2, 5),
+                      timestamp: Date.now(),
+                      data: singleData
+                    };
+                    currentHistory = [newItem, ...currentHistory];
                     importedCount++;
                   }
-                });
+                } 
+                else if (payload.type === 'passport_history_backup') {
+                  const restoredList = payload.data as HistoryItem[];
+                  
+                  restoredList.forEach(restoredItem => {
+                    if (!restoredItem.data?.passportNumber) return;
 
-                merged.sort((a, b) => b.timestamp - a.timestamp);
-                
-                setHistory(merged);
-                setToast({
-                  message: `Restored ${importedCount} new & updated ${updatedCount} profiles.`,
-                  type: 'success'
-                });
+                    const existingIndex = currentHistory.findIndex(
+                      item => item.data.passportNumber?.toUpperCase() === restoredItem.data.passportNumber?.toUpperCase()
+                    );
+
+                    if (existingIndex >= 0) {
+                      currentHistory[existingIndex] = {
+                        ...currentHistory[existingIndex],
+                        timestamp: Math.max(currentHistory[existingIndex].timestamp, restoredItem.timestamp || Date.now()),
+                        data: { ...currentHistory[existingIndex].data, ...restoredItem.data }
+                      };
+                      updatedCount++;
+                    } else {
+                      currentHistory.push({
+                        ...restoredItem,
+                        id: restoredItem.id || Date.now().toString() + Math.random().toString(36).substring(2, 5)
+                      });
+                      importedCount++;
+                    }
+                  });
+                }
               }
+
+              currentHistory.sort((a, b) => b.timestamp - a.timestamp);
+              
+              setHistory(currentHistory);
+              setToast({
+                message: `সফলভাবে ${importedCount} টি নতুন প্রোফাইল রিস্টোর এবং ${updatedCount} টি আপডেট করা হয়েছে! (Successfully restored ${importedCount} new & updated ${updatedCount} profiles.)`,
+                type: 'success'
+              });
 
               onClose();
             } catch (err) {
               console.error(err);
-              setToast({ message: 'Restore failed.', type: 'error' });
+              setToast({ message: 'রিস্টোর করতে সমস্যা হয়েছে। (Restore failed.)', type: 'error' });
             } finally {
               setIsRestoring(false);
               setRestoreProgress(0);
@@ -194,15 +198,20 @@ export function RestoreModal({
     e.preventDefault();
     setIsDragging(false);
     
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      readAndProcessFile(e.dataTransfer.files[0]);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      Array.from(e.dataTransfer.files).forEach(file => {
+        readAndProcessFile(file);
+      });
     }
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      readAndProcessFile(e.target.files[0]);
+    if (e.target.files && e.target.files.length > 0) {
+      Array.from(e.target.files).forEach(file => {
+        readAndProcessFile(file);
+      });
     }
+    e.target.value = '';
   };
 
   const readAndProcessFile = (file: File) => {
@@ -214,25 +223,6 @@ export function RestoreModal({
     };
     reader.readAsText(file);
   };
-
-  const getPreviewMetadata = () => {
-    if (!parsedData) return null;
-    if (parsedData.type === 'single_passport_profile') {
-      const p = parsedData.data as PassportData;
-      return {
-        title: `${p.givenName || ''} ${p.surname || ''}`.trim() || 'Profile',
-        id: p.passportNumber || 'No ID',
-      };
-    } else {
-      const count = Array.isArray(parsedData.data) ? parsedData.data.length : 0;
-      return {
-        title: `Master Archive`,
-        id: `${count} profile(s)`,
-      };
-    }
-  };
-
-  const preview = getPreviewMetadata();
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
@@ -267,13 +257,12 @@ export function RestoreModal({
           >
             <X className="w-3 h-3" />
           </button>
-
         </div>
 
         {/* Single-line elegant instruction */}
         <div className="mx-3 mt-3 p-2.5 bg-gradient-to-br from-emerald-50/50 to-teal-50/50 dark:from-emerald-950/15 dark:to-teal-950/15 rounded-[5px] border border-emerald-100/30 dark:border-emerald-900/10 text-[11px] text-center text-slate-650 dark:text-zinc-300 relative z-10">
           <p className="font-medium">
-            Attach a backup file (<span className="font-bold text-emerald-600 dark:text-emerald-400">.pass</span> or <span className="font-bold text-emerald-600 dark:text-emerald-400">.enc</span>) and click <span className="font-bold">"OK"</span> to restore.
+            Attach a backup file (<span className="font-bold text-emerald-600 dark:text-emerald-400">.pass</span> or <span className="font-bold text-emerald-600 dark:text-emerald-400">.enc</span>) and click <span className="font-bold">"Restore"</span> to restore.
           </p>
         </div>
 
@@ -314,6 +303,7 @@ export function RestoreModal({
                   accept=".pass,.enc" 
                   className="hidden" 
                   onChange={handleFileSelect}
+                  multiple
                 />
 
                 <UploadCloud className="w-5 h-5 text-emerald-500 dark:text-emerald-400 group-hover:scale-105 transition-transform duration-300 mb-1" />
@@ -334,23 +324,61 @@ export function RestoreModal({
                 </div>
               )}
 
-              {/* Verified File Preview (Super Compact to keep height minimal) */}
-              {attachedFile && preview && (
-                <div className="border border-emerald-200 dark:border-emerald-900/50 rounded-[5px] p-2 bg-emerald-50/20 dark:bg-emerald-950/10 flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 overflow-hidden">
-                    <FileText className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                    <div className="overflow-hidden">
-                      <h4 className="text-[11px] font-bold text-slate-900 dark:text-white truncate">
-                        {preview.title}
-                      </h4>
-                      <p className="text-[9px] text-zinc-400 font-mono">
-                        {preview.id}
-                      </p>
-                    </div>
-                  </div>
-                  <span className="flex items-center gap-1 text-[9px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 dark:bg-emerald-400/25 px-1.5 py-0.5 rounded-[5px] shrink-0">
-                    <ShieldCheck className="w-3 h-3 text-emerald-500" /> Valid
-                  </span>
+              {/* Verified File List */}
+              {attachedFiles.length > 0 && (
+                <div className="space-y-1.5 max-h-[160px] overflow-y-auto pr-1">
+                  {attachedFiles.map(({ file, payload }, index) => {
+                    const getPreviewMeta = () => {
+                      if (payload.type === 'single_passport_profile') {
+                        const p = payload.data as PassportData;
+                        return {
+                          title: `${p.givenName || ''} ${p.surname || ''}`.trim() || 'Profile',
+                          id: p.passportNumber || 'No ID',
+                        };
+                      } else {
+                        const count = Array.isArray(payload.data) ? payload.data.length : 0;
+                        return {
+                          title: `Master Archive`,
+                          id: `${count} profile(s)`,
+                        };
+                      }
+                    };
+                    const itemPreview = getPreviewMeta();
+                    return (
+                      <div 
+                        key={`${file.name}-${index}`}
+                        className="border border-emerald-200 dark:border-emerald-900/50 rounded-[5px] p-2 bg-emerald-50/20 dark:bg-emerald-950/10 flex items-center justify-between gap-2"
+                      >
+                        <div className="flex items-center gap-2 overflow-hidden">
+                          <FileText className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                          <div className="overflow-hidden">
+                            <h4 className="text-[11px] font-bold text-slate-900 dark:text-white truncate" title={file.name}>
+                              {itemPreview.title}
+                            </h4>
+                            <p className="text-[9px] text-zinc-400 font-mono truncate">
+                              {itemPreview.id} ({file.name})
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <span className="flex items-center gap-1 text-[9px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 dark:bg-emerald-400/25 px-1.5 py-0.5 rounded-[5px]">
+                            <ShieldCheck className="w-3 h-3 text-emerald-500" /> Valid
+                          </span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setAttachedFiles(prev => prev.filter((_, idx) => idx !== index));
+                            }}
+                            className="p-1 hover:bg-rose-500/10 dark:hover:bg-rose-500/20 rounded-[5px] text-rose-600 dark:text-rose-400 cursor-pointer transition-colors"
+                            title="Remove file"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </>
@@ -360,17 +388,14 @@ export function RestoreModal({
           <button
             disabled={isRestoring}
             onClick={onClose}
-
+            className="px-4 py-2 hover:bg-slate-100 dark:hover:bg-zinc-900 text-slate-700 dark:text-zinc-300 rounded-xl font-bold text-xs"
           >
-            <span className="absolute inset-0 w-full h-full bg-red-600 -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></span>
-            <span className="relative z-10 text-black dark:text-zinc-200 group-hover:text-white dark:group-hover:text-white transition-colors duration-300">
-              Cancel
-            </span>
+            Cancel
           </button>
           <button 
-             disabled={!attachedFile || isRestoring}
+            disabled={attachedFiles.length === 0 || isRestoring}
             onClick={handleExecuteRestore}
-            className={`slide-btn ${attachedFile ? "slide-btn-teal" : "slide-btn-slate"} px-4 py-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 uppercase tracking-wider`}
+            className={`slide-btn slide-btn-emerald px-4 py-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 uppercase tracking-wider transition-all duration-300 ${attachedFiles.length > 0 ? "opacity-100" : "opacity-20 cursor-not-allowed"}`}
           >
             <span className="relative z-10 flex items-center gap-1.5">
               {isRestoring ? (
@@ -381,7 +406,7 @@ export function RestoreModal({
               ) : (
                 <>
                   <UploadCloud className="w-4 h-4" />
-                  <span>Execute Database Recovery</span>
+                  <span>Restore</span>
                 </>
               )}
             </span>
