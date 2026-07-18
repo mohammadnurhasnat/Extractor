@@ -1,8 +1,190 @@
-import { Firestore } from '@google-cloud/firestore';
+import { initializeApp } from 'firebase/app';
+import { 
+  getFirestore, 
+  collection, 
+  doc, 
+  getDocs, 
+  getDoc, 
+  setDoc, 
+  addDoc, 
+  deleteDoc, 
+  writeBatch, 
+  query, 
+  orderBy, 
+  limit, 
+  onSnapshot 
+} from 'firebase/firestore';
 import path from 'path';
 import fs from 'fs';
 
-let firestore: Firestore | null = null; // Uses environment credentials automatically
+// Lightweight wrapper to match the @google-cloud/firestore Admin SDK interface
+class ClientFirestoreWrapper {
+  private db: any;
+
+  constructor(db: any) {
+    this.db = db;
+  }
+
+  collection(collectionName: string) {
+    return new ClientCollectionWrapper(this.db, collectionName);
+  }
+
+  batch() {
+    return new ClientBatchWrapper(this.db);
+  }
+}
+
+class ClientCollectionWrapper {
+  private db: any;
+  private path: string;
+  private queryConstraints: any[];
+
+  constructor(db: any, path: string, queryConstraints: any[] = []) {
+    this.db = db;
+    this.path = path;
+    this.queryConstraints = queryConstraints;
+  }
+
+  doc(docId: string) {
+    return new ClientDocWrapper(this.db, `${this.path}/${docId}`);
+  }
+
+  orderBy(field: string, direction: 'asc' | 'desc' = 'asc') {
+    return new ClientCollectionWrapper(this.db, this.path, [
+      ...this.queryConstraints,
+      orderBy(field, direction)
+    ]);
+  }
+
+  limit(n: number) {
+    return new ClientCollectionWrapper(this.db, this.path, [
+      ...this.queryConstraints,
+      limit(n)
+    ]);
+  }
+
+  async get() {
+    let q = collection(this.db, this.path);
+    if (this.queryConstraints.length > 0) {
+      q = query(q, ...this.queryConstraints) as any;
+    }
+    const snap = await getDocs(q);
+    return {
+      docs: snap.docs.map(d => ({
+        id: d.id,
+        ref: d.ref,
+        data: () => d.data()
+      })),
+      forEach: (cb: any) => {
+        snap.forEach(d => {
+          cb({
+            id: d.id,
+            ref: d.ref,
+            data: () => d.data()
+          });
+        });
+      },
+      size: snap.size
+    };
+  }
+
+  async add(data: any) {
+    const colRef = collection(this.db, this.path);
+    const docRef = await addDoc(colRef, data);
+    return { id: docRef.id };
+  }
+
+  onSnapshot(onNext: any, onError?: any) {
+    const colRef = collection(this.db, this.path);
+    let q = colRef as any;
+    if (this.queryConstraints.length > 0) {
+      q = query(colRef, ...this.queryConstraints);
+    }
+    return onSnapshot(q, (snap: any) => {
+      const wrappedSnap = {
+        docs: snap.docs.map((d: any) => ({
+          id: d.id,
+          ref: d.ref,
+          data: () => d.data()
+        })),
+        forEach: (cb: any) => {
+          snap.forEach((d: any) => {
+            cb({
+              id: d.id,
+              ref: d.ref,
+              data: () => d.data()
+            });
+          });
+        },
+        size: snap.size
+      };
+      onNext(wrappedSnap);
+    }, (err: any) => {
+      if (onError) onError(err);
+    });
+  }
+}
+
+class ClientDocWrapper {
+  private db: any;
+  public docPath: string;
+
+  constructor(db: any, docPath: string) {
+    this.db = db;
+    this.docPath = docPath;
+  }
+
+  collection(subCollectionName: string) {
+    return new ClientCollectionWrapper(this.db, `${this.docPath}/${subCollectionName}`);
+  }
+
+  async get() {
+    const docRef = doc(this.db, this.docPath);
+    const snap = await getDoc(docRef);
+    return {
+      id: snap.id,
+      exists: snap.exists(),
+      data: () => snap.data()
+    };
+  }
+
+  async set(data: any) {
+    const docRef = doc(this.db, this.docPath);
+    await setDoc(docRef, data);
+  }
+
+  async delete() {
+    const docRef = doc(this.db, this.docPath);
+    await deleteDoc(docRef);
+  }
+}
+
+class ClientBatchWrapper {
+  private batchInstance: any;
+  private db: any;
+
+  constructor(db: any) {
+    this.db = db;
+    this.batchInstance = writeBatch(db);
+  }
+
+  set(docWrapper: ClientDocWrapper, data: any) {
+    const docRef = doc(this.db, (docWrapper as any).docPath);
+    this.batchInstance.set(docRef, data);
+  }
+
+  delete(docWrapper: ClientDocWrapper) {
+    const docRef = doc(this.db, (docWrapper as any).docPath);
+    this.batchInstance.delete(docRef);
+  }
+
+  async commit() {
+    await this.batchInstance.commit();
+  }
+}
+
+let firestore: any = null; // Lightweight wrapper for standard Firebase client SDK
+
 import { USERS_DATABASE } from '../src/users';
 
 const DATA_DIR = path.join(process.cwd(), '.data');
@@ -438,18 +620,17 @@ export async function loadUsersFromFirestore() {
       return;
     }
 
-    if (process.env.RENDER || (!process.env.GOOGLE_APPLICATION_CREDENTIALS && !process.env.K_SERVICE)) {
-      console.warn("Running in non-GCP environment (e.g., Render) without credentials. Bypassing Firestore and using local fallbacks.");
+    if (process.env.RENDER) {
+      console.warn("Running in Render environment. Bypassing Firestore and using local fallbacks.");
       cachedUsers = getUsersStoreLocal();
       firestore = null;
       return;
     }
 
     const firebaseConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-    firestore = new Firestore({
-      projectId: firebaseConfig.projectId,
-      databaseId: firebaseConfig.firestoreDatabaseId || '(default)'
-    });
+    const app = initializeApp(firebaseConfig);
+    const rawDb = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+    firestore = new ClientFirestoreWrapper(rawDb);
 
     // Test connectivity and permissions before proceeding to setup real-time listener
     try {
@@ -467,7 +648,7 @@ export async function loadUsersFromFirestore() {
       }
     }
 
-    console.log("Firebase Admin SDK initialized on server backend. Setting up real-time listener for users...");
+    console.log("Firebase client SDK initialized on server backend. Setting up real-time listener for users...");
     
     await new Promise<void>((resolve) => {
       let isFirstSnapshot = true;
