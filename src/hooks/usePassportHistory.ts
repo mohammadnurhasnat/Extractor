@@ -1,6 +1,8 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { HistoryItem, PassportData } from '../types';
 import { encryptData, decryptData } from '../utils/crypto';
+import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 
 export function usePassportHistory(userId: string | null, options?: {
   onItemAdded?: (item: HistoryItem) => void;
@@ -45,8 +47,8 @@ export function usePassportHistory(userId: string | null, options?: {
       return;
     }
 
-    // Load from Express Proxy API if user exists
-    const fetchHistory = async () => {
+    // Load from Express Proxy API as a fallback
+    const fetchHistoryFallback = async () => {
       try {
         const response = await fetch(`/api/history?userId=${encodeURIComponent(userId)}`, {
           headers: {
@@ -74,11 +76,50 @@ export function usePassportHistory(userId: string | null, options?: {
           latestHistoryRef.current = fetchedHistory;
         }
       } catch (err) {
-        console.error("Error fetching history from API:", err);
+        console.error("Error fetching history fallback from API:", err);
       }
     };
 
-    fetchHistory();
+    // Set up a real-time Firestore listener to sync instantly across multiple devices
+    let unsubscribe: (() => void) | null = null;
+    try {
+      const historyColRef = collection(db, 'users', userId, 'history');
+      const q = query(historyColRef, orderBy('timestamp', 'desc'));
+      
+      unsubscribe = onSnapshot(q, (snapshot) => {
+        const fetchedHistory: HistoryItem[] = [];
+        snapshot.forEach((docSnap) => {
+          const item = docSnap.data() as any;
+          let cachedImage = '';
+          try {
+            const stored = localStorage.getItem(`passport_img_${item.id}`);
+            if (stored) {
+              cachedImage = decryptData(stored) || '';
+            }
+          } catch (e) {
+            console.error("Failed to load cached image:", e);
+          }
+          fetchedHistory.push({
+            ...item,
+            imageBase64: cachedImage || item.imageBase64 || ''
+          });
+        });
+        setInternalHistory(fetchedHistory);
+        latestHistoryRef.current = fetchedHistory;
+      }, (error) => {
+        console.warn("Real-time Firestore listener failed, using fallbacks:", error);
+        fetchHistoryFallback();
+      });
+    } catch (err) {
+      console.warn("Could not set up real-time Firestore listener, using fallbacks:", err);
+      fetchHistoryFallback();
+    }
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, [userId]);
 
   const saveHistory = useCallback(async (newHistory: HistoryItem[]) => {

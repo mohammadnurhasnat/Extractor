@@ -33,7 +33,9 @@ import { AppModals } from './components/AppModals';
 // Utilities
 import { generateDataText, getKolkataHotelForPassport, getDelhiHotelForPassport, getKolkataBusinessForPassport, formatIndianVisaAddress } from './utils/addressUtils';
 import { generatePDF, getPDFDocument, generateUndertakingPDF } from './utils/pdfGenerator';
-import { logoutGoogle } from './lib/firebase';
+import { logoutGoogle, auth, db } from './lib/firebase';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 
 import { useUndertakingState } from './hooks/useUndertakingState';
 import { useSessionQueue } from './hooks/useSessionQueue';
@@ -138,21 +140,89 @@ export default function App() {
     setLoginError(null);
     setIsLoggingIn(true);
     try {
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ loginIdentifier, password: loginPassword })
-      });
-      const result = await response.json();
-      if (response.ok && result.success) {
-        localStorage.setItem('passport_extractor_user', JSON.stringify(result.user));
-        setCurrentUser(result.user);
-        setShowLoginGreeting(true);
-      } else {
-        setLoginError(result.error || 'Login failed. Please provide correct credentials.');
+      const trimmedIdentifier = loginIdentifier.trim();
+      const password = loginPassword;
+
+      if (!trimmedIdentifier || !password) {
+        setLoginError('Email/Mobile and Password are required.');
+        setIsLoggingIn(false);
+        return;
       }
-    } catch (err) {
-      setLoginError('Could not connect to the server. Please try again.');
+
+      // Step 1: Query registered_users from Firestore to match email or mobile
+      const usersCol = collection(db, 'registered_users');
+      let matchedUser: any = null;
+
+      const qEmail = query(usersCol, where('email', '==', trimmedIdentifier));
+      const snapEmail = await getDocs(qEmail);
+      if (!snapEmail.empty) {
+        matchedUser = snapEmail.docs[0].data();
+      } else {
+        const qMobile = query(usersCol, where('mobileNumber', '==', trimmedIdentifier));
+        const snapMobile = await getDocs(qMobile);
+        if (!snapMobile.empty) {
+          matchedUser = snapMobile.docs[0].data();
+        }
+      }
+
+      if (!matchedUser) {
+        setLoginError('ভুল ইমেইল/মোবাইল নাম্বার অথবা পাসওয়ার্ড দিয়েছেন।');
+        setIsLoggingIn(false);
+        return;
+      }
+
+      if (matchedUser.isSuspended) {
+        setLoginError('আপনার অ্যাকাউন্টটি স্থগিত করা হয়েছে। Users have been suspended. Now, contact support.');
+        setIsLoggingIn(false);
+        return;
+      }
+
+      if (matchedUser.password !== password) {
+        setLoginError('ভুল ইমেইল/মোবাইল নাম্বার অথবা পাসওয়ার্ড দিয়েছেন।');
+        setIsLoggingIn(false);
+        return;
+      }
+
+      const userEmail = matchedUser.email;
+
+      // Step 2: Use Firebase Authentication SDK to authenticate properly
+      try {
+        await signInWithEmailAndPassword(auth, userEmail, password);
+      } catch (authErr: any) {
+        // Fallback: If user is validated but auth account is missing in Firebase Auth, register on-the-fly
+        if (authErr.code === 'auth/user-not-found' || authErr.code === 'auth/invalid-credential') {
+          try {
+            await createUserWithEmailAndPassword(auth, userEmail, password);
+          } catch (createErr) {
+            console.error('Failed to create user on-the-fly in Firebase Auth:', createErr);
+            throw authErr;
+          }
+        } else {
+          throw authErr;
+        }
+      }
+
+      // Append login audit log via server proxy
+      try {
+        await fetch('/api/log-action', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            userId: matchedUser.id, 
+            action: 'LOGIN', 
+            details: 'User logged in successfully using Firebase Authentication SDK client-side' 
+          })
+        });
+      } catch (logErr) {
+        console.error('Failed to append login audit log:', logErr);
+      }
+
+      localStorage.setItem('passport_extractor_user', JSON.stringify(matchedUser));
+      setCurrentUser(matchedUser);
+      setShowLoginGreeting(true);
+    } catch (err: any) {
+      console.error('Login SDK Error:', err);
+      setLoginError('Authentication handshake failed. Please try again.');
     } finally {
       setIsLoggingIn(false);
     }
