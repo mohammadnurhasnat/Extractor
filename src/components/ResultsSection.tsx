@@ -123,7 +123,7 @@ export function ResultsSection({
                 {(data || resultsTab === 'padgen') && (
                   <button
                     onClick={() => setResultsTab('padgen')}
-                    className={`flex-[1.4] text-center py-2 px-6 sm:px-8 rounded-lg text-xs font-black cursor-pointer transition-all border min-h-[40px] ${
+                    className={`flex-1 text-center py-2 px-3 rounded-lg text-xs font-black cursor-pointer transition-all border min-h-[40px] ${
                       resultsTab === 'padgen'
                         ? 'slide-btn slide-btn-coral text-white shadow-lg font-black scale-102 border-rose-600'
                         : 'bg-rose-100 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border-rose-200 dark:border-rose-800/60 hover:bg-rose-200/80 transition-colors duration-150'
