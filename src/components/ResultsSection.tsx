@@ -95,10 +95,10 @@ export function ResultsSection({
                 {data && (
                   <button
                     onClick={() => setResultsTab('profile')}
-                    className={`flex-1 min-w-[45%] md:min-w-0 text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer border min-h-[40px] transition-colors ${
+                    className={`flex-1 min-w-[45%] md:min-w-0 text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer border min-h-[40px] transition-all duration-200 hover:bg-white/40 dark:hover:bg-white/25 hover:text-black dark:hover:text-black hover:backdrop-blur-md hover:border-slate-300/80 hover:shadow-md ${
                       resultsTab === 'profile'
                         ? 'bg-[#0C8493] text-white shadow-md border-[#0C8493]'
-                        : 'bg-slate-200/50 dark:bg-zinc-900/50 text-slate-700 dark:text-zinc-400 border-slate-300/40 dark:border-zinc-800/60 hover:bg-slate-200 dark:hover:bg-zinc-850 hover:text-slate-900 dark:hover:text-zinc-200'
+                        : 'bg-slate-200/40 dark:bg-zinc-900/40 text-slate-700 dark:text-zinc-400 border-slate-300/30 dark:border-zinc-800/40'
                      }`}
                   >
                     <span className="relative z-10">Passport Profile</span>
@@ -107,10 +107,10 @@ export function ResultsSection({
                 {data && isUndertakingConfigured && undertakingData && activeItem?.documentType !== 'visa_application' && (
                   <button
                     onClick={() => setResultsTab('undertaking')}
-                    className={`flex-1 min-w-[45%] md:min-w-0 text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer border min-h-[40px] transition-colors ${
+                    className={`flex-1 min-w-[45%] md:min-w-0 text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer border min-h-[40px] transition-all duration-200 hover:bg-white/40 dark:hover:bg-white/25 hover:text-black dark:hover:text-black hover:backdrop-blur-md hover:border-slate-300/80 hover:shadow-md ${
                       resultsTab === 'undertaking'
                         ? 'bg-[#0C8493] text-white shadow-md border-[#0C8493]'
-                        : 'bg-slate-200/50 dark:bg-zinc-900/50 text-slate-700 dark:text-zinc-400 border-slate-300/40 dark:border-zinc-800/60 hover:bg-slate-200 dark:hover:bg-zinc-850 hover:text-slate-900 dark:hover:text-zinc-200'
+                        : 'bg-slate-200/40 dark:bg-zinc-900/40 text-slate-700 dark:text-zinc-400 border-slate-300/30 dark:border-zinc-800/40'
                      }`}
                   >
                     <span className="relative z-10">Undertaking Form</span>
@@ -119,10 +119,10 @@ export function ResultsSection({
                 {activeItem && activeItem?.documentType !== 'visa_application' && (
                   <button
                     onClick={() => setResultsTab('passport-pdf')}
-                    className={`flex-1 min-w-[45%] md:min-w-0 text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer border min-h-[40px] transition-colors ${
+                    className={`flex-1 min-w-[45%] md:min-w-0 text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer border min-h-[40px] transition-all duration-200 hover:bg-white/40 dark:hover:bg-white/25 hover:text-black dark:hover:text-black hover:backdrop-blur-md hover:border-slate-300/80 hover:shadow-md ${
                       resultsTab === 'passport-pdf'
                         ? 'bg-[#0C8493] text-white shadow-md border-[#0C8493]'
-                        : 'bg-slate-200/50 dark:bg-zinc-900/50 text-slate-700 dark:text-zinc-400 border-slate-300/40 dark:border-zinc-800/60 hover:bg-slate-200 dark:hover:bg-zinc-850 hover:text-slate-900 dark:hover:text-zinc-200'
+                        : 'bg-slate-200/40 dark:bg-zinc-900/40 text-slate-700 dark:text-zinc-400 border-slate-300/30 dark:border-zinc-800/40'
                      }`}
                   >
                     <span className="relative z-10">Image to PDF</span>
@@ -131,10 +131,10 @@ export function ResultsSection({
                 {(data || resultsTab === 'padgen') && (
                   <button
                     onClick={() => setResultsTab('padgen')}
-                    className={`flex-1 min-w-[45%] md:min-w-0 text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer border min-h-[40px] transition-colors ${
+                    className={`flex-1 min-w-[45%] md:min-w-0 text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer border min-h-[40px] transition-all duration-200 hover:bg-white/40 dark:hover:bg-white/25 hover:text-black dark:hover:text-black hover:backdrop-blur-md hover:border-slate-300/80 hover:shadow-md ${
                       resultsTab === 'padgen'
                         ? 'bg-[#0C8493] text-white shadow-md border-[#0C8493]'
-                        : 'bg-slate-200/50 dark:bg-zinc-900/50 text-slate-700 dark:text-zinc-400 border-slate-300/40 dark:border-zinc-800/60 hover:bg-slate-200 dark:hover:bg-zinc-850 hover:text-slate-900 dark:hover:text-zinc-200'
+                        : 'bg-slate-200/40 dark:bg-zinc-900/40 text-slate-700 dark:text-zinc-400 border-slate-300/30 dark:border-zinc-800/40'
                      }`}
                   >
                     <span className="relative z-10">Card & Letter Head</span>
@@ -143,10 +143,10 @@ export function ResultsSection({
                 {data && (
                   <button
                     onClick={() => setResultsTab('cover-letter')}
-                    className={`flex-1 min-w-[45%] md:min-w-0 text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer border min-h-[40px] transition-colors ${
+                    className={`flex-1 min-w-[45%] md:min-w-0 text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer border min-h-[40px] transition-all duration-200 hover:bg-white/40 dark:hover:bg-white/25 hover:text-black dark:hover:text-black hover:backdrop-blur-md hover:border-slate-300/80 hover:shadow-md ${
                       resultsTab === 'cover-letter'
                         ? 'bg-[#0C8493] text-white shadow-md border-[#0C8493]'
-                        : 'bg-slate-200/50 dark:bg-zinc-900/50 text-slate-700 dark:text-zinc-400 border-slate-300/40 dark:border-zinc-800/60 hover:bg-slate-200 dark:hover:bg-zinc-850 hover:text-slate-900 dark:hover:text-zinc-200'
+                        : 'bg-slate-200/40 dark:bg-zinc-900/40 text-slate-700 dark:text-zinc-400 border-slate-300/30 dark:border-zinc-800/40'
                      }`}
                   >
                     <span className="relative z-10">Cover Letter</span>
