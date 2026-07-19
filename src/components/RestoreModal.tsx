@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { 
   X, UploadCloud, ShieldCheck, AlertCircle, FileText, Loader2, Trash2
 } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { HistoryItem, PassportData } from '../types';
 import { decryptData } from '../utils/crypto';
 import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
@@ -42,6 +42,13 @@ export function RestoreModal({
   const [restoreProgress, setRestoreProgress] = useState(0);
   const [restorePhase, setRestorePhase] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    const kb = bytes / 1024;
+    if (kb < 1024) return `${kb.toFixed(1)} KB`;
+    return `${(kb / 1024).toFixed(1)} MB`;
+  };
 
   if (!isOpen) return null;
 
@@ -327,58 +334,64 @@ export function RestoreModal({
               {/* Verified File List */}
               {attachedFiles.length > 0 && (
                 <div className="space-y-1.5 max-h-[160px] overflow-y-auto pr-1">
-                  {attachedFiles.map(({ file, payload }, index) => {
-                    const getPreviewMeta = () => {
-                      if (payload.type === 'single_passport_profile') {
-                        const p = payload.data as PassportData;
-                        return {
-                          title: `${p.givenName || ''} ${p.surname || ''}`.trim() || 'Profile',
-                          id: p.passportNumber || 'No ID',
-                        };
-                      } else {
-                        const count = Array.isArray(payload.data) ? payload.data.length : 0;
-                        return {
-                          title: `Master Archive`,
-                          id: `${count} profile(s)`,
-                        };
-                      }
-                    };
-                    const itemPreview = getPreviewMeta();
-                    return (
-                      <div 
-                        key={`${file.name}-${index}`}
-                        className="border border-emerald-200 dark:border-emerald-900/50 rounded-[5px] p-2 bg-emerald-50/20 dark:bg-emerald-950/10 flex items-center justify-between gap-2"
-                      >
-                        <div className="flex items-center gap-2 overflow-hidden">
-                          <FileText className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                          <div className="overflow-hidden">
-                            <h4 className="text-[11px] font-bold text-slate-900 dark:text-white truncate" title={file.name}>
-                              {itemPreview.title}
-                            </h4>
-                            <p className="text-[9px] text-zinc-400 font-mono truncate">
-                              {itemPreview.id} ({file.name})
-                            </p>
+                  <AnimatePresence initial={false}>
+                    {attachedFiles.map(({ file, payload }, index) => {
+                      const getPreviewMeta = () => {
+                        if (payload.type === 'single_passport_profile') {
+                          const p = payload.data as PassportData;
+                          return {
+                            title: `${p.givenName || ''} ${p.surname || ''}`.trim() || 'Profile',
+                            id: p.passportNumber || 'No ID',
+                          };
+                        } else {
+                          const count = Array.isArray(payload.data) ? payload.data.length : 0;
+                          return {
+                            title: `Master Archive`,
+                            id: `${count} profile(s)`,
+                          };
+                        }
+                      };
+                      const itemPreview = getPreviewMeta();
+                      return (
+                        <motion.div 
+                          key={`${file.name}-${index}`}
+                          initial={{ opacity: 0, height: 0, y: -10 }}
+                          animate={{ opacity: 1, height: 'auto', y: 0 }}
+                          exit={{ opacity: 0, height: 0, y: -10, transition: { duration: 0.2 } }}
+                          transition={{ type: 'spring', stiffness: 500, damping: 30, mass: 0.5 }}
+                          className="border border-emerald-200 dark:border-emerald-900/50 rounded-[5px] p-2 bg-emerald-50/20 dark:bg-emerald-950/10 flex items-center justify-between gap-2 overflow-hidden"
+                        >
+                          <div className="flex items-center gap-2 overflow-hidden">
+                            <FileText className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                            <div className="overflow-hidden">
+                              <h4 className="text-[11px] font-bold text-slate-900 dark:text-white truncate" title={file.name}>
+                                {itemPreview.title}
+                              </h4>
+                              <p className="text-[9px] text-zinc-400 font-mono truncate">
+                                {itemPreview.id} ({file.name} • {formatFileSize(file.size)})
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          <span className="flex items-center gap-1 text-[9px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 dark:bg-emerald-400/25 px-1.5 py-0.5 rounded-[5px]">
-                            <ShieldCheck className="w-3 h-3 text-emerald-500" /> Valid
-                          </span>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setAttachedFiles(prev => prev.filter((_, idx) => idx !== index));
-                            }}
-                            className="p-1 hover:bg-rose-500/10 dark:hover:bg-rose-500/20 rounded-[5px] text-rose-600 dark:text-rose-400 cursor-pointer transition-colors"
-                            title="Remove file"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <span className="flex items-center gap-1 text-[9px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 dark:bg-emerald-400/25 px-1.5 py-0.5 rounded-[5px]">
+                              <ShieldCheck className="w-3 h-3 text-emerald-500" /> Valid
+                            </span>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setAttachedFiles(prev => prev.filter((_, idx) => idx !== index));
+                              }}
+                              className="p-1 hover:bg-rose-500/10 dark:hover:bg-rose-500/20 rounded-[5px] text-rose-600 dark:text-rose-400 cursor-pointer transition-colors"
+                              title="Remove file"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </AnimatePresence>
                 </div>
               )}
             </>
