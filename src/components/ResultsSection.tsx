@@ -5,13 +5,14 @@ import { PassportDataTab } from './PassportDataTab';
 import { UndertakingFormTab } from './UndertakingFormTab';
 import { PassportImagePdfTab } from './PassportImagePdfTab';
 import { PadgenApp } from '../padgen/PadgenApp';
+import { CoverLetterTab } from './CoverLetterTab';
 import { PassportData, UndertakingFormData, QueueItem } from '../types';
 
 interface ResultsSectionProps {
   data: PassportData | null;
   activeItem: QueueItem | null;
-  resultsTab: 'profile' | 'undertaking' | 'passport-pdf' | 'padgen';
-  setResultsTab: (tab: 'profile' | 'undertaking' | 'passport-pdf' | 'padgen') => void;
+  resultsTab: 'profile' | 'undertaking' | 'passport-pdf' | 'padgen' | 'cover-letter';
+  setResultsTab: (tab: 'profile' | 'undertaking' | 'passport-pdf' | 'padgen' | 'cover-letter') => void;
   isUndertakingConfigured: boolean;
   undertakingData: UndertakingFormData | null;
   updateDataField: (field: keyof PassportData, value: string) => void;
@@ -62,19 +63,19 @@ export function ResultsSection({
   const hasContent = !!data || !!activeItem || resultsTab === 'padgen';
 
   return (
-    <div className="lg:col-span-7 print:w-full print:col-span-12 lg:max-h-[calc(100vh-130px)] lg:overflow-y-auto overscroll-contain pr-1.5 scrollbar-thin">
+    <div className="lg:col-span-7 print:w-full print:col-span-12 h-[calc(100vh-140px)] lg:h-[calc(100vh-130px)] flex flex-col pr-1.5 scrollbar-none">
       {hasContent ? (
         <motion.div 
           id="printable-results-card" 
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, ease: 'easeOut' }}
-          className="bg-gradient-to-br from-white/95 to-emerald-50/40 dark:from-zinc-900/95 dark:to-zinc-950/40 backdrop-blur-md p-3 sm:p-6 rounded-2xl shadow-[0_12px_40px_rgba(16,185,129,0.04)] border-t-[3px] border-t-emerald-500 border-x border-b border-slate-200/80 dark:border-zinc-800/60 transition-all sticky top-6 print:relative print:top-0 print:border-none print:shadow-none print:bg-transparent print:p-0 print:m-0 w-full min-h-[500px]"
+          className="bg-gradient-to-br from-white/95 to-emerald-50/40 dark:from-zinc-900/95 dark:to-zinc-950/40 backdrop-blur-md p-3 sm:p-5 rounded-2xl shadow-[0_12px_40px_rgba(16,185,129,0.04)] border-t-[3px] border-t-emerald-500 border-x border-b border-slate-200/80 dark:border-zinc-800/60 sticky top-6 print:relative print:top-0 print:border-none print:shadow-none print:bg-transparent print:p-0 print:m-0 w-full h-full flex flex-col overflow-hidden min-h-[500px]"
         >
-          <div className="w-full h-full">
+          <div className="w-full h-full flex flex-col overflow-hidden">
             {/* PRINT-ONLY PROFESSIONAL HEADER/LETTERHEAD */}
             {resultsTab === 'profile' && data && (
-              <div className="hidden print:block mb-8 border-b-2 border-[#0C8493] pb-4">
+              <div className="hidden print:block mb-8 border-b-2 border-[#0C8493] pb-4 shrink-0">
                 <div className="flex justify-between items-end">
                   <div>
                     <h1 className="text-2xl font-black text-[#0C8493]">PASSPORT DATA EXTRACTION REPORT</h1>
@@ -88,16 +89,16 @@ export function ResultsSection({
               </div>
             )}
 
-            {/* TABS SELECTOR */}
+            {/* TABS SELECTOR (STATIONARY AT THE TOP) */}
             {(data && isUndertakingConfigured && undertakingData) || activeItem || resultsTab === 'padgen' ? (
-              <div className="flex flex-col sm:flex-row bg-slate-100/60 dark:bg-zinc-950/65 p-2 rounded-2xl mb-3 print:hidden gap-2 w-full text-center items-stretch">
+              <div className="flex flex-wrap md:flex-nowrap bg-slate-100/60 dark:bg-zinc-950/65 p-1.5 rounded-2xl mb-3 print:hidden gap-1.5 w-full items-center shrink-0">
                 {data && (
                   <button
                     onClick={() => setResultsTab('profile')}
-                    className={`flex-1 text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer transition-colors border min-h-[40px] ${
+                    className={`flex-1 min-w-[45%] md:min-w-0 text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer border min-h-[40px] transition-colors ${
                       resultsTab === 'profile'
-                        ? 'bg-[#FFD700] text-black shadow-lg font-black border-[#FFD700]'
-                        : 'bg-[#00FA9A] text-black border-transparent hover:bg-[#00e08a]'
+                        ? 'bg-[#0C8493] text-white shadow-md border-[#0C8493]'
+                        : 'bg-slate-200/50 dark:bg-zinc-900/50 text-slate-700 dark:text-zinc-400 border-slate-300/40 dark:border-zinc-800/60 hover:bg-slate-200 dark:hover:bg-zinc-850 hover:text-slate-900 dark:hover:text-zinc-200'
                      }`}
                   >
                     <span className="relative z-10">Passport Profile</span>
@@ -106,10 +107,10 @@ export function ResultsSection({
                 {data && isUndertakingConfigured && undertakingData && activeItem?.documentType !== 'visa_application' && (
                   <button
                     onClick={() => setResultsTab('undertaking')}
-                    className={`flex-1 text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer transition-colors border min-h-[40px] ${
+                    className={`flex-1 min-w-[45%] md:min-w-0 text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer border min-h-[40px] transition-colors ${
                       resultsTab === 'undertaking'
-                        ? 'bg-[#FFD700] text-black shadow-lg font-black border-[#FFD700]'
-                        : 'bg-[#00FA9A] text-black border-transparent hover:bg-[#00e08a]'
+                        ? 'bg-[#0C8493] text-white shadow-md border-[#0C8493]'
+                        : 'bg-slate-200/50 dark:bg-zinc-900/50 text-slate-700 dark:text-zinc-400 border-slate-300/40 dark:border-zinc-800/60 hover:bg-slate-200 dark:hover:bg-zinc-850 hover:text-slate-900 dark:hover:text-zinc-200'
                      }`}
                   >
                     <span className="relative z-10">Undertaking Form</span>
@@ -118,10 +119,10 @@ export function ResultsSection({
                 {activeItem && activeItem?.documentType !== 'visa_application' && (
                   <button
                     onClick={() => setResultsTab('passport-pdf')}
-                    className={`flex-1 text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer transition-colors border min-h-[40px] ${
+                    className={`flex-1 min-w-[45%] md:min-w-0 text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer border min-h-[40px] transition-colors ${
                       resultsTab === 'passport-pdf'
-                        ? 'bg-[#FFD700] text-black shadow-lg font-black border-[#FFD700]'
-                        : 'bg-[#00FA9A] text-black border-transparent hover:bg-[#00e08a]'
+                        ? 'bg-[#0C8493] text-white shadow-md border-[#0C8493]'
+                        : 'bg-slate-200/50 dark:bg-zinc-900/50 text-slate-700 dark:text-zinc-400 border-slate-300/40 dark:border-zinc-800/60 hover:bg-slate-200 dark:hover:bg-zinc-850 hover:text-slate-900 dark:hover:text-zinc-200'
                      }`}
                   >
                     <span className="relative z-10">Image to PDF</span>
@@ -130,47 +131,64 @@ export function ResultsSection({
                 {(data || resultsTab === 'padgen') && (
                   <button
                     onClick={() => setResultsTab('padgen')}
-                    className={`flex-1 text-center py-2 px-3 rounded-lg text-xs font-black cursor-pointer transition-all border min-h-[40px] ${
+                    className={`flex-1 min-w-[45%] md:min-w-0 text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer border min-h-[40px] transition-colors ${
                       resultsTab === 'padgen'
-                        ? 'slide-btn slide-btn-coral text-white shadow-lg font-black scale-102 border-rose-600'
-                        : 'bg-rose-100 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border-rose-200 dark:border-rose-800/60 hover:bg-rose-200/80 transition-colors duration-150'
+                        ? 'bg-[#0C8493] text-white shadow-md border-[#0C8493]'
+                        : 'bg-slate-200/50 dark:bg-zinc-900/50 text-slate-700 dark:text-zinc-400 border-slate-300/40 dark:border-zinc-800/60 hover:bg-slate-200 dark:hover:bg-zinc-850 hover:text-slate-900 dark:hover:text-zinc-200'
                      }`}
                   >
                     <span className="relative z-10">Card & Letter Head</span>
                   </button>
                 )}
+                {data && (
+                  <button
+                    onClick={() => setResultsTab('cover-letter')}
+                    className={`flex-1 min-w-[45%] md:min-w-0 text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer border min-h-[40px] transition-colors ${
+                      resultsTab === 'cover-letter'
+                        ? 'bg-[#0C8493] text-white shadow-md border-[#0C8493]'
+                        : 'bg-slate-200/50 dark:bg-zinc-900/50 text-slate-700 dark:text-zinc-400 border-slate-300/40 dark:border-zinc-800/60 hover:bg-slate-200 dark:hover:bg-zinc-850 hover:text-slate-900 dark:hover:text-zinc-200'
+                     }`}
+                  >
+                    <span className="relative z-10">Cover Letter</span>
+                  </button>
+                )}
               </div>
             ) : null}
 
-            {resultsTab === 'profile' && data ? (
-              <PassportDataTab
-                data={data}
-                updateDataField={updateDataField}
-                handleCopyAll={handleCopyAll}
-                handleDownloadText={handleDownloadText}
-                handleDownloadPDF={handleDownloadPDF}
-                handleDownloadJSON={handleDownloadJSON}
-                isCopied={isCopied}
-                isGeneratingAddresses={isGeneratingAddresses}
-                onGenerateAddresses={onGenerateAddresses}
-                utPurpose={utPurpose}
-                onOpenRefHelper={onOpenRefHelper}
-                onShare={onShare}
-                isSharing={isSharing}
-              />
-            ) : resultsTab === 'undertaking' && data && undertakingData ? (
-              <UndertakingFormTab
-                undertakingData={undertakingData}
-                isUndertakingEditable={isUndertakingEditable}
-                setIsUndertakingEditable={setIsUndertakingEditable}
-                handleUpdateUndertakingField={handleUpdateUndertakingField}
-                handleDownloadUndertaking={handleDownloadUndertaking}
-              />
-            ) : resultsTab === 'passport-pdf' && activeItem ? (
-              <PassportImagePdfTab activeItem={activeItem} currentUser={currentUser} />
-            ) : resultsTab === 'padgen' ? (
-              <PadgenApp />
-            ) : null}
+            {/* INDEPENDENTLY SCROLLABLE ACTIVE TAB CONTENT AREA */}
+            <div className="flex-1 overflow-y-auto pr-1 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-slate-300 dark:scrollbar-thumb-zinc-700 hover:scrollbar-thumb-slate-400 dark:hover:scrollbar-thumb-zinc-600 print:overflow-visible">
+              {resultsTab === 'profile' && data ? (
+                <PassportDataTab
+                  data={data}
+                  updateDataField={updateDataField}
+                  handleCopyAll={handleCopyAll}
+                  handleDownloadText={handleDownloadText}
+                  handleDownloadPDF={handleDownloadPDF}
+                  handleDownloadJSON={handleDownloadJSON}
+                  isCopied={isCopied}
+                  isGeneratingAddresses={isGeneratingAddresses}
+                  onGenerateAddresses={onGenerateAddresses}
+                  utPurpose={utPurpose}
+                  onOpenRefHelper={onOpenRefHelper}
+                  onShare={onShare}
+                  isSharing={isSharing}
+                />
+              ) : resultsTab === 'undertaking' && data && undertakingData ? (
+                <UndertakingFormTab
+                  undertakingData={undertakingData}
+                  isUndertakingEditable={isUndertakingEditable}
+                  setIsUndertakingEditable={setIsUndertakingEditable}
+                  handleUpdateUndertakingField={handleUpdateUndertakingField}
+                  handleDownloadUndertaking={handleDownloadUndertaking}
+                />
+              ) : resultsTab === 'passport-pdf' && activeItem ? (
+                <PassportImagePdfTab activeItem={activeItem} currentUser={currentUser} />
+              ) : resultsTab === 'padgen' ? (
+                <PadgenApp />
+              ) : resultsTab === 'cover-letter' && data ? (
+                <CoverLetterTab data={data} utPurpose={utPurpose} updateDataField={updateDataField} />
+              ) : null}
+            </div>
           </div>
         </motion.div>
       ) : (

@@ -369,15 +369,16 @@ export default function App() {
 
 
 
-  const [resultsTab, setResultsTab] = useState<'profile' | 'undertaking' | 'passport-pdf' | 'padgen'>(() => {
+  const [resultsTab, setResultsTab] = useState<'profile' | 'undertaking' | 'passport-pdf' | 'padgen' | 'cover-letter'>(() => {
     const hash = window.location.hash.replace('#', '');
-    if (['profile', 'undertaking', 'passport-pdf', 'padgen'].includes(hash)) {
+    if (['profile', 'undertaking', 'passport-pdf', 'padgen', 'cover-letter'].includes(hash)) {
       return hash as any;
     }
     const saved = localStorage.getItem('passport_active_results_tab');
     if (saved === 'undertaking') return 'undertaking';
     if (saved === 'passport-pdf') return 'passport-pdf';
     if (saved === 'padgen') return 'padgen';
+    if (saved === 'cover-letter') return 'cover-letter';
     return 'profile';
   });
 
@@ -424,7 +425,7 @@ export default function App() {
   useEffect(() => {
     const handlePopState = () => {
       const hash = window.location.hash.replace('#', '');
-      if (['profile', 'undertaking', 'passport-pdf', 'padgen'].includes(hash)) {
+      if (['profile', 'undertaking', 'passport-pdf', 'padgen', 'cover-letter'].includes(hash)) {
         setResultsTab(hash as any);
       } else {
         setResultsTab('profile'); // Default fallback
