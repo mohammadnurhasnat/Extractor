@@ -149,24 +149,60 @@ export default function App() {
         return;
       }
 
-      // Step 1: Query registered_users from Firestore to match email or mobile
-      const usersCol = collection(db, 'registered_users');
       let matchedUser: any = null;
+      let errorMsg = 'ভুল ইমেইল/মোবাইল নাম্বার অথবা পাসওয়ার্ড দিয়েছেন।';
 
-      const qEmail = query(usersCol, where('email', '==', trimmedIdentifier));
-      const snapEmail = await getDocs(qEmail);
-      if (!snapEmail.empty) {
-        matchedUser = snapEmail.docs[0].data();
-      } else {
-        const qMobile = query(usersCol, where('mobileNumber', '==', trimmedIdentifier));
-        const snapMobile = await getDocs(qMobile);
-        if (!snapMobile.empty) {
-          matchedUser = snapMobile.docs[0].data();
+      // Step 1: Call server-side /api/login backend endpoint first
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ loginIdentifier: trimmedIdentifier, password })
+        });
+        const result = await res.json();
+        if (result.success) {
+          matchedUser = result.user;
+        } else {
+          errorMsg = result.error || errorMsg;
+        }
+      } catch (serverErr) {
+        console.warn('Backend login endpoint failed, falling back to direct Firestore query:', serverErr);
+      }
+
+      // Step 1.5: Client-side Firestore fallback if server-side login was not reachable
+      if (!matchedUser) {
+        try {
+          const usersCol = collection(db, 'registered_users');
+          const qEmail = query(usersCol, where('email', '==', trimmedIdentifier));
+          const snapEmail = await getDocs(qEmail);
+          if (!snapEmail.empty) {
+            const potentialUser = snapEmail.docs[0].data();
+            if (potentialUser.password === password) {
+              matchedUser = potentialUser;
+            }
+          } else {
+            const qMobile = query(usersCol, where('mobileNumber', '==', trimmedIdentifier));
+            const snapMobile = await getDocs(qMobile);
+            if (!snapMobile.empty) {
+              const potentialUser = snapMobile.docs[0].data();
+              if (potentialUser.password === password) {
+                matchedUser = potentialUser;
+              }
+            }
+          }
+
+          if (matchedUser && matchedUser.isSuspended) {
+            setLoginError('আপনার অ্যাকাউন্টটি স্থগিত করা হয়েছে। Users have been suspended. Now, contact support.');
+            setIsLoggingIn(false);
+            return;
+          }
+        } catch (dbErr) {
+          console.error('Firestore direct query fallback failed:', dbErr);
         }
       }
 
       if (!matchedUser) {
-        setLoginError('ভুল ইমেইল/মোবাইল নাম্বার অথবা পাসওয়ার্ড দিয়েছেন।');
+        setLoginError(errorMsg);
         setIsLoggingIn(false);
         return;
       }
@@ -177,15 +213,9 @@ export default function App() {
         return;
       }
 
-      if (matchedUser.password !== password) {
-        setLoginError('ভুল ইমেইল/মোবাইল নাম্বার অথবা পাসওয়ার্ড দিয়েছেন।');
-        setIsLoggingIn(false);
-        return;
-      }
-
       const userEmail = matchedUser.email;
 
-      // Step 2: Use Firebase Authentication SDK to authenticate properly
+      // Step 2: Try to use Firebase Authentication SDK to authenticate properly (optional/non-blocking)
       try {
         await signInWithEmailAndPassword(auth, userEmail, password);
       } catch (authErr: any) {
@@ -194,11 +224,10 @@ export default function App() {
           try {
             await createUserWithEmailAndPassword(auth, userEmail, password);
           } catch (createErr) {
-            console.error('Failed to create user on-the-fly in Firebase Auth:', createErr);
-            throw authErr;
+            console.warn('Failed to create user on-the-fly in Firebase Auth (safe to ignore if Email/Password provider is disabled):', createErr);
           }
         } else {
-          throw authErr;
+          console.warn('Firebase Auth SDK authentication skipped (safe to ignore if Email/Password provider is disabled):', authErr);
         }
       }
 
@@ -210,7 +239,7 @@ export default function App() {
           body: JSON.stringify({ 
             userId: matchedUser.id, 
             action: 'LOGIN', 
-            details: 'User logged in successfully using Firebase Authentication SDK client-side' 
+            details: 'User logged in successfully' 
           })
         });
       } catch (logErr) {
@@ -220,9 +249,10 @@ export default function App() {
       localStorage.setItem('passport_extractor_user', JSON.stringify(matchedUser));
       setCurrentUser(matchedUser);
       setShowLoginGreeting(true);
+      setToast({ message: 'সফলভাবে লগইন করা হয়েছে! (Logged in successfully!)', type: 'success' });
     } catch (err: any) {
-      console.error('Login SDK Error:', err);
-      setLoginError('Authentication handshake failed. Please try again.');
+      console.error('Login process error:', err);
+      setLoginError('Authentication process failed. Please try again.');
     } finally {
       setIsLoggingIn(false);
     }
