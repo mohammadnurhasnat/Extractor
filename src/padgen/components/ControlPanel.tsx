@@ -1,5 +1,5 @@
-import React, { useRef } from 'react';
-import { Sparkles, Loader2, History } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { Sparkles, Loader2, History, UploadCloud, Trash2 } from 'lucide-react';
 import { CompanyData, DesignControls } from '../types';
 import { HEADLINE_FONTS, SHAPES, PAD_LAYOUTS, CARD_LAYOUTS, PAD_LAYOUT_LABELS, CARD_LAYOUT_LABELS, LOGO_STYLES, LOGO_STYLE_LABELS, INDUSTRIES, INDUSTRY_LABELS, GRID_STYLES, GRID_STYLE_LABELS, TEXTURES, TEXTURE_LABELS, DEFAULT_COMPANY_DATA } from '../data';
 
@@ -54,6 +54,60 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   historyCount,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
+
+  const handleLogoUpload = (file: File) => {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      alert('Please upload an image file (PNG, JPG, etc.)');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      onDataChange({
+        ...companyData,
+        customLogo: e.target?.result as string,
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleLogoUpload(file);
+    }
+  };
+
+  const clearLogo = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onDataChange({
+      ...companyData,
+      customLogo: undefined,
+    });
+    if (logoInputRef.current) {
+      logoInputRef.current.value = '';
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      handleLogoUpload(file);
+    }
+  };
 
   const handleInputChange = (field: keyof CompanyData, value: string) => {
     onDataChange({
@@ -173,6 +227,66 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                   {c === 'title' ? 'Title Case' : c === 'upper' ? 'UPPERCASE' : 'As Typed'}
                 </button>
               ))}
+            </div>
+          </div>
+
+          {/* Custom Brand Logo Upload */}
+          <div className="flex flex-col gap-1 mt-1">
+            <label className="text-[10px] font-mono text-[#6B7076] uppercase tracking-wider">
+              Custom Brand Logo (Optional)
+            </label>
+            <div
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={() => logoInputRef.current?.click()}
+              className={`border-2 border-dashed rounded-lg p-3 text-center cursor-pointer transition-all duration-150 flex flex-col items-center justify-center gap-1.5 ${
+                isDragOver
+                  ? 'border-[#3B4658] bg-[#F1F3F5]'
+                  : companyData.customLogo
+                  ? 'border-emerald-300 bg-emerald-50/10 hover:border-emerald-400'
+                  : 'border-[#DDDEDC] bg-[#FBFBFA] hover:border-[#3B4658]'
+              }`}
+            >
+              <input
+                type="file"
+                ref={logoInputRef}
+                accept="image/*"
+                onChange={handleLogoChange}
+                className="hidden"
+              />
+              
+              {companyData.customLogo ? (
+                <div className="flex items-center justify-between w-full gap-2">
+                  <div className="flex items-center gap-2 overflow-hidden">
+                    <img
+                      src={companyData.customLogo}
+                      alt="Custom logo"
+                      className="w-10 h-10 object-contain rounded border border-gray-100 bg-white shrink-0"
+                    />
+                    <div className="text-left overflow-hidden">
+                      <span className="text-[11px] font-bold text-[#1C1E22] block truncate">Custom Logo Uploaded</span>
+                      <span className="text-[9px] text-[#6B7076] block">Displayed on card & letterhead</span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={clearLogo}
+                    className="p-1.5 hover:bg-rose-500/10 rounded text-rose-600 transition-colors shrink-0"
+                    title="Remove custom logo"
+                  >
+                    <Trash2 className="w-4.5 h-4.5" />
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <UploadCloud className="w-5 h-5 text-[#6B7076]" />
+                  <div className="text-[11px] text-[#1C1E22]">
+                    <span className="font-bold text-[#3B4658] underline">Click to upload</span> or drag and drop image
+                  </div>
+                  <div className="text-[9px] text-[#6B7076]">Supports PNG, JPG, GIF, WebP, SVG</div>
+                </>
+              )}
             </div>
           </div>
 

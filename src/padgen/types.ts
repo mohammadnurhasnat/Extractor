@@ -11,6 +11,7 @@ export interface CompanyData {
   empEmail?: string;
   casing?: 'title' | 'upper' | 'as-typed';
   industry?: 'corporate' | 'legal' | 'medical' | 'creative' | 'hospitality';
+  customLogo?: string;
 }
 
 export interface Theme {

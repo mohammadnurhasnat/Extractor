@@ -129,8 +129,11 @@ const CardPreviewInner: React.FC<CardPreviewProps> = ({
   texture = 'none',
 }) => {
   const initials = getInitials(data.companyName);
-  const mark = logoMarkSVG(initials, shape, theme.primary, theme.accent, '#FFFFFF', logoStyle);
-  const whiteLogoMark = logoMarkSVG(initials, shape, '#FFFFFF', theme.accent, theme.primary, logoStyle);
+  const logoImgHtml = data.customLogo
+    ? `<img src="${data.customLogo}" style="width:100%; height:100%; object-fit:contain; border-radius:inherit;" />`
+    : null;
+  const mark = logoImgHtml || logoMarkSVG(initials, shape, theme.primary, theme.accent, '#FFFFFF', logoStyle);
+  const whiteLogoMark = logoImgHtml || logoMarkSVG(initials, shape, '#FFFFFF', theme.accent, theme.primary, logoStyle);
   const roleLine = data.empRole || '';
   const cardNameSize = (data.companyName || '').length <= 18 ? 12 : 9.5;
   const chipBg = hexToRgba(theme.paper === '#FFFFFF' ? '#FFFFFF' : theme.paper, 0.9);
@@ -892,7 +895,7 @@ const CardPreviewInner: React.FC<CardPreviewProps> = ({
 
   // 24. Luxury Gold Foil
   if (layout === 'luxury-gold-foil') {
-    const goldLogo = logoMarkSVG(initials, shape, '#FFFFFF', '#FCF6BA', '#AA771C', logoStyle);
+    const goldLogo = logoImgHtml || logoMarkSVG(initials, shape, '#FFFFFF', '#FCF6BA', '#AA771C', logoStyle);
     return (
       <div className="card" style={{ background: '#111111', color: '#F1E6C8', fontFamily: "'Georgia', serif", border: '1mm solid #AA771C', padding: '5mm', boxSizing: 'border-box', position: 'relative' }}>
          <div style={{ display: 'flex', justifyContent: 'space-between', height: '100%', alignItems: 'center' }}>

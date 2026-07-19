@@ -250,8 +250,11 @@ const PadPreviewInner: React.FC<PadPreviewProps> = ({
   texture = 'none',
 }) => {
   const initials = getInitials(data.companyName);
-  const mark = logoMarkSVG(initials, shape, theme.primary, theme.accent, '#FFFFFF', logoStyle);
-  const whiteLogoMark = logoMarkSVG(initials, shape, '#FFFFFF', theme.accent, theme.primary, logoStyle);
+  const logoImgHtml = data.customLogo
+    ? `<img src="${data.customLogo}" style="width:100%; height:100%; object-fit:contain; border-radius:inherit;" />`
+    : null;
+  const mark = logoImgHtml || logoMarkSVG(initials, shape, theme.primary, theme.accent, '#FFFFFF', logoStyle);
+  const whiteLogoMark = logoImgHtml || logoMarkSVG(initials, shape, '#FFFFFF', theme.accent, theme.primary, logoStyle);
   const detailsMuted = hexToRgba(theme.primary, 0.75);
   const nameSize = nameFontSize(data.companyName);
   const industry = data.industry || 'corporate';
