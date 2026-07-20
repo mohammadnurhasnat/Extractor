@@ -17,8 +17,6 @@ interface PreviewStageProps {
   previewCardRef: React.RefObject<HTMLDivElement | null>;
   onDownloadPadPDF: () => void;
   onDownloadCardPDF: () => void;
-  onPrintPadVector: () => void;
-  onPrintCardVector: () => void;
 }
 
 export const PreviewStage: React.FC<PreviewStageProps> = ({
@@ -35,8 +33,6 @@ export const PreviewStage: React.FC<PreviewStageProps> = ({
   previewCardRef,
   onDownloadPadPDF,
   onDownloadCardPDF,
-  onPrintPadVector,
-  onPrintCardVector,
 }) => {
   const [scales, setScales] = useState({ padScale: 0.48, cardScale: 0.95 });
   const containerRef = useRef<HTMLDivElement>(null);
@@ -155,35 +151,19 @@ export const PreviewStage: React.FC<PreviewStageProps> = ({
         </div>
 
         {/* Buttons side-by-side */}
-        <div className="flex flex-col gap-3.5 w-full max-w-[420px] px-4 mt-8 mb-2">
-          <div className="flex gap-3 w-full">
-            <button
-              onClick={onDownloadPadPDF}
-              className="slide-btn slide-btn-blue text-white flex-1 py-2.5 px-3 text-xs font-black rounded-xl cursor-pointer shadow-md text-center flex items-center justify-center gap-1.5"
-            >
-              Download Pad PDF (HQ)
-            </button>
-            <button
-              onClick={onDownloadCardPDF}
-              className="slide-btn slide-btn-purple text-white flex-1 py-2.5 px-3 text-xs font-black rounded-xl cursor-pointer shadow-md text-center flex items-center justify-center gap-1.5"
-            >
-              Download Card PDF (HQ)
-            </button>
-          </div>
-          <div className="flex gap-3 w-full">
-            <button
-              onClick={onPrintPadVector}
-              className="slide-btn slide-btn-teal text-white flex-1 py-2.5 px-3 text-xs font-black rounded-xl cursor-pointer shadow-md text-center flex items-center justify-center gap-1.5"
-            >
-              Print Pad (Vector PDF)
-            </button>
-            <button
-              onClick={onPrintCardVector}
-              className="slide-btn slide-btn-orange text-white flex-1 py-2.5 px-3 text-xs font-black rounded-xl cursor-pointer shadow-md text-center flex items-center justify-center gap-1.5"
-            >
-              Print Cards (Vector PDF)
-            </button>
-          </div>
+        <div className="flex gap-4 w-full max-w-[420px] justify-center items-center px-4 mt-8 mb-2">
+          <button
+            onClick={onDownloadPadPDF}
+            className="slide-btn slide-btn-blue text-white flex-1 py-2.5 px-3 text-xs font-black rounded-xl cursor-pointer shadow-md text-center flex items-center justify-center gap-1.5"
+          >
+            Download Pad PDF (HQ)
+          </button>
+          <button
+            onClick={onDownloadCardPDF}
+            className="slide-btn slide-btn-purple text-white flex-1 py-2.5 px-3 text-xs font-black rounded-xl cursor-pointer shadow-md text-center flex items-center justify-center gap-1.5"
+          >
+            Download Card PDF (HQ)
+          </button>
         </div>
       </div>
     </div>

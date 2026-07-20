@@ -677,24 +677,6 @@ export function PadgenApp() {
     }
   };
 
-  const handlePrintPad = () => {
-    showStatusMessage('Opening Browser Print dialog for Vector Pad…');
-    document.body.classList.add('printing-pad');
-    window.print();
-    setTimeout(() => {
-      document.body.classList.remove('printing-pad');
-    }, 1000);
-  };
-
-  const handlePrintCard = () => {
-    showStatusMessage('Opening Browser Print dialog for Vector A4 Card Sheet…');
-    document.body.classList.add('printing-card-a4');
-    window.print();
-    setTimeout(() => {
-      document.body.classList.remove('printing-card-a4');
-    }, 1000);
-  };
-
   // Run initial generation on mount
   useEffect(() => {
     generateDesign();
@@ -1054,8 +1036,6 @@ export function PadgenApp() {
         previewCardRef={previewCardRef}
         onDownloadPadPDF={handleDownloadPadPDF}
         onDownloadCardPDF={handleDownloadCardPDF}
-        onPrintPadVector={handlePrintPad}
-        onPrintCardVector={handlePrintCard}
       />
 
       {/* Off-screen/Print nodes (unscaled at 100% dimensions in mm) */}
