@@ -815,7 +815,7 @@ button, .slide-btn {
 .pad .topbar { position: absolute; top: 0; left: 0; right: 0; height: 3.2mm; z-index: 2; }
 .pad .frame-line { position: absolute; top: 9mm; left: 9mm; right: 9mm; bottom: 9mm; border: 1px solid; z-index: 1; pointer-events: none; }
 .pad .content { position: relative; z-index: 2; height: 100%; display: flex; flex-direction: column; }
-.card { width: 89mm; height: 51mm; position: relative; overflow: hidden; background: #fff; box-sizing: border-box; }
+.card { width: 89mm; height: 51mm; position: relative; overflow: hidden; background: #fff; box-sizing: border-box; border: 1px solid #bcbcbc; }
 .card .content { position: relative; z-index: 1; height: 100%; }
 .card .frame-line { position: absolute; top: 1.6mm; left: 1.6mm; right: 1.6mm; bottom: 1.6mm; border: 1px solid; z-index: 0; pointer-events: none; }
 /* Hidden elements for print & snapshots */
@@ -831,11 +831,11 @@ button, .slide-btn {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
-  body > *:not(#printPad):not(#printCard):not(#printCardA4) { display: none !important; }
+  #app { display: none !important; }
   #printPad, #printCard, #printCardA4 { display: none !important; }
-  body.printing-pad #printPad { display: block !important; position: fixed !important; left: 0 !important; top: 0 !important; z-index: 9999999 !important; }
-  body.printing-card #printCard { display: block !important; position: fixed !important; left: 0 !important; top: 0 !important; z-index: 9999999 !important; }
-  body.printing-card-a4 #printCardA4 { display: block !important; position: fixed !important; left: 0 !important; top: 0 !important; z-index: 9999999 !important; }
+  body.printing-pad #printPad { display: block !important; position: fixed !important; left: 0 !important; top: 0 !important; z-index: 9999999 !important; width: 210mm !important; height: 297mm !important; }
+  body.printing-card #printCard { display: block !important; position: fixed !important; left: 0 !important; top: 0 !important; z-index: 9999999 !important; width: 89mm !important; height: 51mm !important; }
+  body.printing-card-a4 #printCardA4 { display: block !important; position: fixed !important; left: 0 !important; top: 0 !important; z-index: 9999999 !important; width: 210mm !important; height: 297mm !important; }
 }
 /* Premium Glossy Finish Styling */
 .card, .pad { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); }

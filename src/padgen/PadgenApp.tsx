@@ -1095,7 +1095,7 @@ export function PadgenApp() {
                 logoStyle={activeLogoStyle}
                 texture={activeTexture as any}
               />
-              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, border: '1px solid #a3a3a3', pointerEvents: 'none', zIndex: 100 }} />
+              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, border: '1px solid #bcbcbc', pointerEvents: 'none', zIndex: 100, boxSizing: 'border-box' }} />
             </div>
             <div style={{ width: '89mm', height: '51mm', position: 'relative', overflow: 'hidden' }}>
               <CardPreview
@@ -1107,7 +1107,7 @@ export function PadgenApp() {
                 logoStyle={activeLogoStyle}
                 texture={activeTexture as any}
               />
-              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, border: '1px solid #a3a3a3', pointerEvents: 'none', zIndex: 100 }} />
+              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, border: '1px solid #bcbcbc', pointerEvents: 'none', zIndex: 100, boxSizing: 'border-box' }} />
             </div>
           </div>
         </div>
