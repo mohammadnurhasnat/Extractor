@@ -513,7 +513,7 @@ export function PadgenApp() {
 
       
       const canvas = await html2canvas(target, {
-        scale: 2, // reduced for speed
+        scale: 3, // increased to 3 for crystal-clear 300 DPI high-res output
         useCORS: true,
         backgroundColor: '#ffffff',
         ignoreElements: (node) => {
@@ -607,7 +607,7 @@ export function PadgenApp() {
 
       
       const canvas = await html2canvas(target, {
-        scale: 2, // reduced for speed
+        scale: 3, // increased to 3 for crystal-clear 300 DPI high-res output
         useCORS: true,
         backgroundColor: '#ffffff',
         ignoreElements: (node) => {
@@ -675,6 +675,24 @@ export function PadgenApp() {
     } catch (err: any) {
       setError('PDF export failed: ' + err.message);
     }
+  };
+
+  const handlePrintPad = () => {
+    showStatusMessage('Opening Browser Print dialog for Vector Pad…');
+    document.body.classList.add('printing-pad');
+    window.print();
+    setTimeout(() => {
+      document.body.classList.remove('printing-pad');
+    }, 1000);
+  };
+
+  const handlePrintCard = () => {
+    showStatusMessage('Opening Browser Print dialog for Vector A4 Card Sheet…');
+    document.body.classList.add('printing-card-a4');
+    window.print();
+    setTimeout(() => {
+      document.body.classList.remove('printing-card-a4');
+    }, 1000);
   };
 
   // Run initial generation on mount
@@ -1036,6 +1054,8 @@ export function PadgenApp() {
         previewCardRef={previewCardRef}
         onDownloadPadPDF={handleDownloadPadPDF}
         onDownloadCardPDF={handleDownloadCardPDF}
+        onPrintPadVector={handlePrintPad}
+        onPrintCardVector={handlePrintCard}
       />
 
       {/* Off-screen/Print nodes (unscaled at 100% dimensions in mm) */}
@@ -1063,9 +1083,9 @@ export function PadgenApp() {
         />
       </div>
       <div id="printCardA4" style={{ color: '#000000' }}>
-        <div style={{ width: '210mm', height: '297mm', background: '#ffffff', padding: '10mm', color: '#000000' }}>
-          <div style={{ display: 'flex', gap: '5mm' }}>
-            <div style={{ width: '89mm', height: '51mm', border: '1px solid #ccc' }}>
+        <div style={{ width: '210mm', height: '297mm', background: '#ffffff', padding: '20mm 15mm', color: '#000000', boxSizing: 'border-box' }}>
+          <div style={{ display: 'flex', gap: '8mm', justifyContent: 'center' }}>
+            <div style={{ width: '89mm', height: '51mm', position: 'relative', overflow: 'hidden' }}>
               <CardPreview
                 data={activeState.data}
                 theme={activeTheme}
@@ -1075,8 +1095,9 @@ export function PadgenApp() {
                 logoStyle={activeLogoStyle}
                 texture={activeTexture as any}
               />
+              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, border: '1px solid #a3a3a3', pointerEvents: 'none', zIndex: 100 }} />
             </div>
-            <div style={{ width: '89mm', height: '51mm', border: '1px solid #ccc' }}>
+            <div style={{ width: '89mm', height: '51mm', position: 'relative', overflow: 'hidden' }}>
               <CardPreview
                 data={activeState.data}
                 theme={activeTheme}
@@ -1086,6 +1107,7 @@ export function PadgenApp() {
                 logoStyle={activeLogoStyle}
                 texture={activeTexture as any}
               />
+              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, border: '1px solid #a3a3a3', pointerEvents: 'none', zIndex: 100 }} />
             </div>
           </div>
         </div>

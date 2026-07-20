@@ -480,4 +480,6 @@ export const DEFAULT_COMPANY_DATA: CompanyData = {
   empEmail: "mohammadnurhasnat@gmail.com",
   casing: 'title',
   industry: 'corporate',
+  logoScale: 90,
+  logoOpacity: 0.12,
 };

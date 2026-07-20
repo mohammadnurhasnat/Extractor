@@ -17,6 +17,8 @@ interface PreviewStageProps {
   previewCardRef: React.RefObject<HTMLDivElement | null>;
   onDownloadPadPDF: () => void;
   onDownloadCardPDF: () => void;
+  onPrintPadVector: () => void;
+  onPrintCardVector: () => void;
 }
 
 export const PreviewStage: React.FC<PreviewStageProps> = ({
@@ -33,6 +35,8 @@ export const PreviewStage: React.FC<PreviewStageProps> = ({
   previewCardRef,
   onDownloadPadPDF,
   onDownloadCardPDF,
+  onPrintPadVector,
+  onPrintCardVector,
 }) => {
   const [scales, setScales] = useState({ padScale: 0.48, cardScale: 0.95 });
   const containerRef = useRef<HTMLDivElement>(null);
@@ -76,14 +80,24 @@ export const PreviewStage: React.FC<PreviewStageProps> = ({
     <div
       ref={containerRef}
       id="stage"
-      className="flex-1 p-3 md:p-10 overflow-auto flex flex-col justify-start items-center bg-[#EFEFED]"
+      className="flex-1 p-4 md:p-10 overflow-auto flex flex-col justify-start items-center bg-gradient-to-tr from-[#F4F4F2] via-[#EFEFED] to-[#E5E5E2] relative"
+      style={{
+        backgroundImage: 'radial-gradient(#D1D5DB 1.2px, transparent 1.2px)',
+        backgroundSize: '20px 20px',
+      }}
     >
-      <div className="flex flex-col gap-6 items-center w-full">
-        <div className="flex gap-9 justify-center items-start flex-wrap">
+      <div className="flex flex-col gap-6 items-center w-full z-10">
+        <div className="flex gap-10 justify-center items-start flex-wrap w-full max-w-5xl">
           {/* Pad (A4) Preview Frame */}
           <div className="flex flex-col items-center">
+            {/* Header label */}
+            <div className="mb-4 flex items-center gap-2 text-[10px] font-mono font-bold text-[#4B5563] bg-white/80 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-[#DDDEDC] shadow-sm tracking-widest">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+              A4 LETTERHEAD PAD PREVIEW
+            </div>
+            
             <div
-              className="shadow-[0_10px_34px_rgba(0,0,0,0.20)] origin-top-left transition-transform duration-100"
+              className="shadow-[0_25px_60px_-15px_rgba(0,0,0,0.18),0_12px_24px_-10px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] origin-top-left transition-all duration-300 hover:shadow-[0_35px_70px_-10px_rgba(0,0,0,0.22)] bg-white rounded-sm overflow-hidden border border-black/[0.03]"
               style={{
                 width: '210mm',
                 height: '297mm',
@@ -92,7 +106,7 @@ export const PreviewStage: React.FC<PreviewStageProps> = ({
                 marginRight: `-${(1 - scales.padScale) * padWidth}px`,
               }}
             >
-              <div ref={previewPadRef}>
+              <div ref={previewPadRef} className="h-full w-full">
                 <PadPreview
                   data={companyData}
                   theme={theme}
@@ -109,8 +123,14 @@ export const PreviewStage: React.FC<PreviewStageProps> = ({
 
           {/* Business Visiting Card Preview Frame */}
           <div className="flex flex-col items-center">
+            {/* Header label */}
+            <div className="mb-4 flex items-center gap-2 text-[10px] font-mono font-bold text-[#4B5563] bg-white/80 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-[#DDDEDC] shadow-sm tracking-widest">
+              <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse"></span>
+              VISITING CARD PREVIEW (FRONT)
+            </div>
+
             <div
-              className="shadow-[0_10px_34px_rgba(0,0,0,0.20)] origin-top-left transition-transform duration-100"
+              className="shadow-[0_25px_60px_-15px_rgba(0,0,0,0.18),0_12px_24px_-10px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] origin-top-left transition-all duration-300 hover:shadow-[0_35px_70px_-10px_rgba(0,0,0,0.22)] bg-white rounded-[3.8mm] overflow-hidden border border-black/[0.08]"
               style={{
                 width: '89mm',
                 height: '51mm',
@@ -119,7 +139,7 @@ export const PreviewStage: React.FC<PreviewStageProps> = ({
                 marginRight: `-${(1 - scales.cardScale) * cardWidth}px`,
               }}
             >
-              <div ref={previewCardRef}>
+              <div ref={previewCardRef} className="h-full w-full">
                 <CardPreview
                   data={companyData}
                   theme={theme}
@@ -135,19 +155,35 @@ export const PreviewStage: React.FC<PreviewStageProps> = ({
         </div>
 
         {/* Buttons side-by-side */}
-        <div className="flex gap-4 w-full max-w-[420px] justify-center items-center px-4 mt-6 mb-2">
-          <button
-            onClick={onDownloadPadPDF}
-            className="slide-btn slide-btn-blue text-white flex-1 py-2.5 px-3 text-xs font-black rounded-xl cursor-pointer shadow-md text-center flex items-center justify-center gap-1.5"
-          >
-            Download Pad PDF
-          </button>
-          <button
-            onClick={onDownloadCardPDF}
-            className="slide-btn slide-btn-purple text-white flex-1 py-2.5 px-3 text-xs font-black rounded-xl cursor-pointer shadow-md text-center flex items-center justify-center gap-1.5"
-          >
-            Download Card PDF
-          </button>
+        <div className="flex flex-col gap-3.5 w-full max-w-[420px] px-4 mt-8 mb-2">
+          <div className="flex gap-3 w-full">
+            <button
+              onClick={onDownloadPadPDF}
+              className="slide-btn slide-btn-blue text-white flex-1 py-2.5 px-3 text-xs font-black rounded-xl cursor-pointer shadow-md text-center flex items-center justify-center gap-1.5"
+            >
+              Download Pad PDF (HQ)
+            </button>
+            <button
+              onClick={onDownloadCardPDF}
+              className="slide-btn slide-btn-purple text-white flex-1 py-2.5 px-3 text-xs font-black rounded-xl cursor-pointer shadow-md text-center flex items-center justify-center gap-1.5"
+            >
+              Download Card PDF (HQ)
+            </button>
+          </div>
+          <div className="flex gap-3 w-full">
+            <button
+              onClick={onPrintPadVector}
+              className="slide-btn slide-btn-teal text-white flex-1 py-2.5 px-3 text-xs font-black rounded-xl cursor-pointer shadow-md text-center flex items-center justify-center gap-1.5"
+            >
+              Print Pad (Vector PDF)
+            </button>
+            <button
+              onClick={onPrintCardVector}
+              className="slide-btn slide-btn-orange text-white flex-1 py-2.5 px-3 text-xs font-black rounded-xl cursor-pointer shadow-md text-center flex items-center justify-center gap-1.5"
+            >
+              Print Cards (Vector PDF)
+            </button>
+          </div>
         </div>
       </div>
     </div>

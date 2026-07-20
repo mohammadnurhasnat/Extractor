@@ -257,26 +257,63 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               />
               
               {companyData.customLogo ? (
-                <div className="flex items-center justify-between w-full gap-2">
-                  <div className="flex items-center gap-2 overflow-hidden">
-                    <img
-                      src={companyData.customLogo}
-                      alt="Custom logo"
-                      className="w-10 h-10 object-contain rounded border border-gray-100 bg-white shrink-0"
-                    />
-                    <div className="text-left overflow-hidden">
-                      <span className="text-[11px] font-bold text-[#1C1E22] block truncate">Custom Logo Uploaded</span>
-                      <span className="text-[9px] text-[#6B7076] block">Displayed on card & letterhead</span>
+                <div className="w-full flex flex-col gap-2.5">
+                  <div className="flex items-center justify-between w-full gap-2">
+                    <div className="flex items-center gap-2 overflow-hidden">
+                      <img
+                        src={companyData.customLogo}
+                        alt="Custom logo"
+                        className="w-10 h-10 object-contain rounded border border-gray-100 bg-white shrink-0"
+                      />
+                      <div className="text-left overflow-hidden">
+                        <span className="text-[11px] font-bold text-[#1C1E22] block truncate">Custom Logo Uploaded</span>
+                        <span className="text-[9px] text-[#6B7076] block">Displayed on card & letterhead</span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={clearLogo}
+                      className="p-1.5 hover:bg-rose-500/10 rounded text-rose-600 transition-colors shrink-0"
+                      title="Remove custom logo"
+                    >
+                      <Trash2 className="w-4.5 h-4.5" />
+                    </button>
+                  </div>
+
+                  {/* Logo Scale & Opacity Sliders */}
+                  <div className="p-2.5 bg-[#F6F6F5] rounded border border-[#DDDEDC] flex flex-col gap-2">
+                    <div className="flex flex-col gap-1">
+                      <div className="flex justify-between items-center text-[9px] font-mono text-[#6B7076] font-bold">
+                        <span>LOGO CENTER SIZE</span>
+                        <span className="text-[#1C1E22] bg-[#DDDEDC] px-1 rounded-sm text-[8px]">{companyData.logoScale ?? 90}mm</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="30"
+                        max="180"
+                        step="1"
+                        value={companyData.logoScale ?? 90}
+                        onChange={(e) => onDataChange({ ...companyData, logoScale: parseInt(e.target.value) })}
+                        className="w-full h-1 bg-[#DDDEDC] rounded-lg appearance-none cursor-pointer accent-[#3B4658]"
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                      <div className="flex justify-between items-center text-[9px] font-mono text-[#6B7076] font-bold">
+                        <span>LOGO CENTER OPACITY</span>
+                        <span className="text-[#1C1E22] bg-[#DDDEDC] px-1 rounded-sm text-[8px]">{Math.round((companyData.logoOpacity ?? 0.12) * 100)}%</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0.02"
+                        max="1.00"
+                        step="0.01"
+                        value={companyData.logoOpacity ?? 0.12}
+                        onChange={(e) => onDataChange({ ...companyData, logoOpacity: parseFloat(e.target.value) })}
+                        className="w-full h-1 bg-[#DDDEDC] rounded-lg appearance-none cursor-pointer accent-[#3B4658]"
+                      />
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={clearLogo}
-                    className="p-1.5 hover:bg-rose-500/10 rounded text-rose-600 transition-colors shrink-0"
-                    title="Remove custom logo"
-                  >
-                    <Trash2 className="w-4.5 h-4.5" />
-                  </button>
                 </div>
               ) : (
                 <>

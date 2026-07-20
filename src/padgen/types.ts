@@ -12,6 +12,8 @@ export interface CompanyData {
   casing?: 'title' | 'upper' | 'as-typed';
   industry?: 'corporate' | 'legal' | 'medical' | 'creative' | 'hospitality';
   customLogo?: string;
+  logoScale?: number;
+  logoOpacity?: number;
 }
 
 export interface Theme {

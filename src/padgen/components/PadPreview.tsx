@@ -291,11 +291,14 @@ const PadPreviewInner: React.FC<PadPreviewProps> = ({
         top: '55%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
-        width: '90mm',
-        height: '90mm',
-        opacity: 0.12,
+        width: `${data.logoScale ?? 90}mm`,
+        height: `${data.logoScale ?? 90}mm`,
+        opacity: data.logoOpacity !== undefined ? data.logoOpacity : 0.12,
         zIndex: 0,
         pointerEvents: 'none',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
       }}
       dangerouslySetInnerHTML={{ __html: mark }}
     />
