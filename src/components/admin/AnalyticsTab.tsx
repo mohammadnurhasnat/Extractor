@@ -80,8 +80,6 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
       extractions: { today: 0, week: 0, month: 0, total: 0 },
       undertakings: { today: 0, week: 0, month: 0, total: 0 },
       imageToPdf: { today: 0, week: 0, month: 0, total: 0 },
-      businessPads: { today: 0, week: 0, month: 0, total: 0 },
-      visitingCards: { today: 0, week: 0, month: 0, total: 0 },
       downloads: { today: 0, week: 0, month: 0, total: 0 }
     };
 
@@ -114,22 +112,6 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
         if (isThisWeek) stats.imageToPdf.week++;
         if (isThisMonth) stats.imageToPdf.month++;
       }
-      
-      // Handle Business Pads
-      if (log.action === 'PAD_DOWNLOAD') {
-        stats.businessPads.total++;
-        if (isToday) stats.businessPads.today++;
-        if (isThisWeek) stats.businessPads.week++;
-        if (isThisMonth) stats.businessPads.month++;
-      }
-
-      // Handle Visiting Cards
-      if (log.action === 'CARD_DOWNLOAD') {
-        stats.visitingCards.total++;
-        if (isToday) stats.visitingCards.today++;
-        if (isThisWeek) stats.visitingCards.week++;
-        if (isThisMonth) stats.visitingCards.month++;
-      }
 
       // Handle all downloads/exports
       if (['PDF_DOWNLOAD', 'UNDERTAKING_DOWNLOAD', 'IMAGE_TO_PDF', 'PAD_DOWNLOAD', 'CARD_DOWNLOAD'].includes(log.action)) {
@@ -145,18 +127,18 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
 
   // 4. Process logs into detailed User Breakdown table
   const userBreakdown = useMemo(() => {
-    const userMap: { [userId: string]: { extractions: number; undertakings: number; imageToPdf: number; businessPads: number; visitingCards: number; total: number } } = {};
+    const userMap: { [userId: string]: { extractions: number; undertakings: number; imageToPdf: number; total: number } } = {};
 
     // Initialize all users from database so we see 0 stats too
     users.forEach(u => {
-      userMap[u.id] = { extractions: 0, undertakings: 0, imageToPdf: 0, businessPads: 0, visitingCards: 0, total: 0 };
+      userMap[u.id] = { extractions: 0, undertakings: 0, imageToPdf: 0, total: 0 };
     });
 
     // Populate stats from logs
     logs.forEach(log => {
       const uId = log.userId;
       if (!userMap[uId]) {
-        userMap[uId] = { extractions: 0, undertakings: 0, imageToPdf: 0, businessPads: 0, visitingCards: 0, total: 0 };
+        userMap[uId] = { extractions: 0, undertakings: 0, imageToPdf: 0, total: 0 };
       }
 
       if (log.action === 'EXTRACTION') {
@@ -167,12 +149,6 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
         userMap[uId].total++;
       } else if (log.action === 'IMAGE_TO_PDF') {
         userMap[uId].imageToPdf++;
-        userMap[uId].total++;
-      } else if (log.action === 'PAD_DOWNLOAD') {
-        userMap[uId].businessPads++;
-        userMap[uId].total++;
-      } else if (log.action === 'CARD_DOWNLOAD') {
-        userMap[uId].visitingCards++;
         userMap[uId].total++;
       } else if (log.action === 'PDF_DOWNLOAD') {
         userMap[uId].total++;
@@ -369,24 +345,6 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
                 <td className="p-3 text-center text-slate-700 dark:text-zinc-200 font-bold group-hover:bg-violet-50/30 dark:group-hover:bg-violet-900/10">{metrics.undertakings.month}</td>
                 <td className="p-3 text-center font-black text-fuchsia-700 dark:text-fuchsia-300 bg-fuchsia-50/30 dark:bg-fuchsia-900/10">{metrics.undertakings.total}</td>
               </tr>
-              <tr className="hover:bg-amber-50/50 dark:hover:bg-amber-950/10 border-l-4 border-amber-500 transition-colors group">
-                <td className="p-3 font-semibold text-amber-800 dark:text-amber-300 bg-amber-50/30 dark:bg-amber-900/10">
-                  Business Pads
-                </td>
-                <td className="p-3 text-center text-slate-700 dark:text-zinc-200 font-bold group-hover:bg-sky-50/30 dark:group-hover:bg-sky-900/10">{metrics.businessPads.today}</td>
-                <td className="p-3 text-center text-slate-700 dark:text-zinc-200 font-bold group-hover:bg-indigo-50/30 dark:group-hover:bg-indigo-900/10">{metrics.businessPads.week}</td>
-                <td className="p-3 text-center text-slate-700 dark:text-zinc-200 font-bold group-hover:bg-violet-50/30 dark:group-hover:bg-violet-900/10">{metrics.businessPads.month}</td>
-                <td className="p-3 text-center font-black text-fuchsia-700 dark:text-fuchsia-300 bg-fuchsia-50/30 dark:bg-fuchsia-900/10">{metrics.businessPads.total}</td>
-              </tr>
-              <tr className="hover:bg-rose-50/50 dark:hover:bg-rose-950/10 border-l-4 border-rose-500 transition-colors group">
-                <td className="p-3 font-semibold text-rose-800 dark:text-rose-300 bg-rose-50/30 dark:bg-rose-900/10">
-                  Visiting Cards
-                </td>
-                <td className="p-3 text-center text-slate-700 dark:text-zinc-200 font-bold group-hover:bg-sky-50/30 dark:group-hover:bg-sky-900/10">{metrics.visitingCards.today}</td>
-                <td className="p-3 text-center text-slate-700 dark:text-zinc-200 font-bold group-hover:bg-indigo-50/30 dark:group-hover:bg-indigo-900/10">{metrics.visitingCards.week}</td>
-                <td className="p-3 text-center text-slate-700 dark:text-zinc-200 font-bold group-hover:bg-violet-50/30 dark:group-hover:bg-violet-900/10">{metrics.visitingCards.month}</td>
-                <td className="p-3 text-center font-black text-fuchsia-700 dark:text-fuchsia-300 bg-fuchsia-50/30 dark:bg-fuchsia-900/10">{metrics.visitingCards.total}</td>
-              </tr>
             </tbody>
           </table>
         </div>
@@ -418,15 +376,13 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
                 <th className="p-3 text-center">Passport Extractions</th>
                 <th className="p-3 text-center">Undertakings Downloaded</th>
                 <th className="p-3 text-center">Image-to-PDF</th>
-                <th className="p-3 text-center">Business Pads</th>
-                <th className="p-3 text-center">Visiting Cards</th>
                 <th className="p-3 text-center">Total Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-zinc-800 text-xs">
               {userBreakdown.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="p-6 text-center text-slate-400 text-xs">No user information found.</td>
+                  <td colSpan={5} className="p-6 text-center text-slate-400 text-xs">No user information found.</td>
                 </tr>
               ) : (
                 userBreakdown.map((user, index) => (
@@ -452,12 +408,6 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
                     </td>
                     <td className="p-3 text-center font-semibold text-slate-700 dark:text-zinc-200">
                       {user.imageToPdf}
-                    </td>
-                    <td className="p-3 text-center font-semibold text-slate-700 dark:text-zinc-200">
-                      {user.businessPads}
-                    </td>
-                    <td className="p-3 text-center font-semibold text-slate-700 dark:text-zinc-200">
-                      {user.visitingCards}
                     </td>
                     <td className="p-3 text-center">
                       <span className="px-2 py-0.5 rounded font-bold text-[10px] bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">

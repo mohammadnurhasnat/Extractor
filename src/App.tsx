@@ -369,16 +369,14 @@ export default function App() {
 
 
 
-  const [resultsTab, setResultsTab] = useState<'profile' | 'undertaking' | 'passport-pdf' | 'padgen' | 'cover-letter'>(() => {
+  const [resultsTab, setResultsTab] = useState<'profile' | 'undertaking' | 'passport-pdf'>(() => {
     const hash = window.location.hash.replace('#', '');
-    if (['profile', 'undertaking', 'passport-pdf', 'padgen', 'cover-letter'].includes(hash)) {
+    if (['profile', 'undertaking', 'passport-pdf'].includes(hash)) {
       return hash as any;
     }
     const saved = localStorage.getItem('passport_active_results_tab');
     if (saved === 'undertaking') return 'undertaking';
     if (saved === 'passport-pdf') return 'passport-pdf';
-    if (saved === 'padgen') return 'padgen';
-    if (saved === 'cover-letter') return 'cover-letter';
     return 'profile';
   });
 
@@ -425,7 +423,7 @@ export default function App() {
   useEffect(() => {
     const handlePopState = () => {
       const hash = window.location.hash.replace('#', '');
-      if (['profile', 'undertaking', 'passport-pdf', 'padgen', 'cover-letter'].includes(hash)) {
+      if (['profile', 'undertaking', 'passport-pdf'].includes(hash)) {
         setResultsTab(hash as any);
       } else {
         setResultsTab('profile'); // Default fallback
@@ -686,28 +684,7 @@ ${shareUrl}
                 <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                 পাসপোর্ট ইমেজ থেকে পিডিএফ তৈরি করা।
               </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                NOC ও ভিজিটিং কার্ড তৈরি করা।
-              </li>
             </ul>
-            <div className="flex justify-center w-full mt-2">
-              <button
-                onClick={() => {
-                  setResultsTab('padgen');
-                  setTimeout(() => {
-                    const resultsSection = document.getElementById('printable-results-card');
-                    if (resultsSection) {
-                      resultsSection.scrollIntoView({ behavior: 'smooth' });
-                    }
-                  }, 100);
-                }}
-                className="w-fit text-white font-extrabold py-2 px-6 rounded-full shadow-lg flex items-center justify-center gap-2 text-sm slide-btn slide-btn-yellow cursor-pointer transition-transform hover:scale-105"
-              >
-                <FileText className="w-5 h-5" />
-                NOC & Card Create
-              </button>
-            </div>
           </div>
         </div>
 

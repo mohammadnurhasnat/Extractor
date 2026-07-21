@@ -4,15 +4,13 @@ import { FileText } from 'lucide-react';
 import { PassportDataTab } from './PassportDataTab';
 import { UndertakingFormTab } from './UndertakingFormTab';
 import { PassportImagePdfTab } from './PassportImagePdfTab';
-import { PadgenApp } from '../padgen/PadgenApp';
-import { CoverLetterTab } from './CoverLetterTab';
 import { PassportData, UndertakingFormData, QueueItem } from '../types';
 
 interface ResultsSectionProps {
   data: PassportData | null;
   activeItem: QueueItem | null;
-  resultsTab: 'profile' | 'undertaking' | 'passport-pdf' | 'padgen' | 'cover-letter';
-  setResultsTab: (tab: 'profile' | 'undertaking' | 'passport-pdf' | 'padgen' | 'cover-letter') => void;
+  resultsTab: 'profile' | 'undertaking' | 'passport-pdf';
+  setResultsTab: (tab: 'profile' | 'undertaking' | 'passport-pdf') => void;
   isUndertakingConfigured: boolean;
   undertakingData: UndertakingFormData | null;
   updateDataField: (field: keyof PassportData, value: string) => void;
@@ -59,8 +57,8 @@ export function ResultsSection({
   onShare,
   isSharing = false
 }: ResultsSectionProps) {
-  // If there's data, active item, or active padgen tab, show the results card
-  const hasContent = !!data || !!activeItem || resultsTab === 'padgen';
+  // If there's data or active item, show the results card
+  const hasContent = !!data || !!activeItem;
 
   return (
     <div className="lg:col-span-7 print:w-full print:col-span-12 h-[calc(100vh-140px)] lg:h-[calc(100vh-130px)] flex flex-col pr-1.5 scrollbar-none">
@@ -90,7 +88,7 @@ export function ResultsSection({
             )}
 
             {/* TABS SELECTOR (STATIONARY AT THE TOP) */}
-            {(data && isUndertakingConfigured && undertakingData) || activeItem || resultsTab === 'padgen' ? (
+            {(data && isUndertakingConfigured && undertakingData) || activeItem ? (
               <div className="flex flex-wrap md:flex-nowrap bg-slate-100/60 dark:bg-zinc-950/65 p-1.5 rounded-2xl mb-3 print:hidden gap-1.5 w-full items-center shrink-0">
                 {data && (
                   <button
@@ -128,30 +126,6 @@ export function ResultsSection({
                     <span className="relative z-10">Image to PDF</span>
                   </button>
                 )}
-                {(data || resultsTab === 'padgen') && (
-                  <button
-                    onClick={() => setResultsTab('padgen')}
-                    className={`flex-1 min-w-[45%] md:min-w-0 text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer border min-h-[40px] transition-all duration-200 hover:bg-white/40 dark:hover:bg-white/25 hover:text-black dark:hover:text-black hover:backdrop-blur-md hover:border-slate-300/80 hover:shadow-md ${
-                      resultsTab === 'padgen'
-                        ? 'bg-[#0C8493] text-white shadow-md border-[#0C8493]'
-                        : 'bg-slate-200/40 dark:bg-zinc-900/40 text-slate-700 dark:text-zinc-400 border-slate-300/30 dark:border-zinc-800/40'
-                     }`}
-                  >
-                    <span className="relative z-10">Pad & Card</span>
-                  </button>
-                )}
-                {data && (
-                  <button
-                    onClick={() => setResultsTab('cover-letter')}
-                    className={`flex-1 min-w-[45%] md:min-w-0 text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer border min-h-[40px] transition-all duration-200 hover:bg-white/40 dark:hover:bg-white/25 hover:text-black dark:hover:text-black hover:backdrop-blur-md hover:border-slate-300/80 hover:shadow-md ${
-                      resultsTab === 'cover-letter'
-                        ? 'bg-[#0C8493] text-white shadow-md border-[#0C8493]'
-                        : 'bg-slate-200/40 dark:bg-zinc-900/40 text-slate-700 dark:text-zinc-400 border-slate-300/30 dark:border-zinc-800/40'
-                     }`}
-                  >
-                    <span className="relative z-10">Cover Letter</span>
-                  </button>
-                )}
               </div>
             ) : null}
 
@@ -183,10 +157,6 @@ export function ResultsSection({
                 />
               ) : resultsTab === 'passport-pdf' && activeItem ? (
                 <PassportImagePdfTab activeItem={activeItem} currentUser={currentUser} />
-              ) : resultsTab === 'padgen' ? (
-                <PadgenApp />
-              ) : resultsTab === 'cover-letter' && data ? (
-                <CoverLetterTab data={data} utPurpose={utPurpose} updateDataField={updateDataField} />
               ) : null}
             </div>
           </div>
