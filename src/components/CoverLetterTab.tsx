@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
-import { Copy, Printer, RotateCcw, Check, Download, FileText, FileSpreadsheet, Edit3 } from 'lucide-react';
+import { Copy, Printer, RotateCcw, Check, Download, FileText, FileSpreadsheet, Edit3, Eye, Settings } from 'lucide-react';
+import jsPDF from 'jspdf';
 import { PassportData } from '../types';
 import { getGeneratedEmail, getProprietorBusinessName, getJobCompanyName, getJobRole } from '../utils/addressUtils';
 
@@ -14,6 +15,7 @@ type VisaCategory = 'Tourism' | 'Business' | 'Medical - Patient' | 'Medical - At
 
 export function CoverLetterTab({ data, utPurpose, updateDataField }: CoverLetterTabProps) {
   // 1. Manage state for all editable parameters
+  const [isCoverLetterEditable, setIsCoverLetterEditable] = useState(true);
   const [candidateName, setCandidateName] = useState('');
   const [passportNumber, setPassportNumber] = useState('');
   const [dob, setDob] = useState('');
@@ -275,219 +277,356 @@ Company: ${companyName}`;
     printWindow.document.close();
   };
 
+  const handleDownloadCoverLetter = async () => {
+    try {
+      const doc = new jsPDF({
+        orientation: 'p',
+        unit: 'mm',
+        format: 'a4',
+        compress: false
+      });
+
+      // Pad size to > 100KB to maintain standard file structure
+      const paddingSize = 105 * 1024;
+      const paddingChars = Array(paddingSize).fill('0').join('');
+      doc.setProperties({
+        keywords: paddingChars
+      });
+
+      // Draw top decorative bar (Teal color `#0C8493`)
+      doc.setFillColor(12, 132, 147);
+      doc.rect(0, 0, 210, 5, 'F');
+
+      // Draw bottom decorative bar (Orange color `#FF8006`)
+      doc.setFillColor(255, 128, 6);
+      doc.rect(0, 292, 210, 5, 'F');
+
+      let y = 25;
+      const leftMargin = 20;
+      const rightMargin = 20;
+      const contentWidth = 210 - leftMargin - rightMargin; // 170mm
+
+      doc.setFont('times', 'normal');
+      doc.setFontSize(11.5);
+
+      const paragraphs = letterBody.split('\n');
+      
+      paragraphs.forEach((para) => {
+        if (para.trim() === '') {
+          y += 5.5;
+          return;
+        }
+
+        const lines = doc.splitTextToSize(para, contentWidth);
+        
+        lines.forEach((line: string) => {
+          if (y > 275) {
+            doc.addPage();
+            // Re-draw header & footer on new page
+            doc.setFillColor(12, 132, 147);
+            doc.rect(0, 0, 210, 5, 'F');
+            doc.setFillColor(255, 128, 6);
+            doc.rect(0, 292, 210, 5, 'F');
+            y = 25;
+          }
+          
+          if (line.startsWith('Subject:') || line.startsWith('To,') || line.startsWith('Dear ')) {
+            doc.setFont('times', 'bold');
+          } else {
+            doc.setFont('times', 'normal');
+          }
+
+          doc.text(line, leftMargin, y);
+          y += 6;
+        });
+      });
+
+      const filename = `Cover_Letter_${candidateName.replace(/\s+/g, '_') || 'Applicant'}.pdf`;
+
+      const pdfArrayBuffer = doc.output('arraybuffer');
+      const blob = new Blob([pdfArrayBuffer], { type: 'application/octet-stream' });
+      const blobUrl = window.URL.createObjectURL(blob);
+      
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error('Error generating cover letter PDF:', error);
+    }
+  };
+
   return (
     <div className="space-y-6">
+      {/* Top Header Section like UndertakingHeader with direct Preview/Edit toggling and Download */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 dark:border-zinc-800/50 gap-4 print:hidden">
+        <div>
+          <h2 className="text-lg font-bold flex items-center gap-2 text-slate-800 dark:text-zinc-100">
+            <FileText className="w-5 h-5 text-[#0C8493]" />
+            {isCoverLetterEditable ? "Edit Cover Letter Document" : "Preview Cover Letter Document"}
+          </h2>
+          <p className="text-xs text-slate-400 dark:text-zinc-500 font-medium font-sans">
+            {isCoverLetterEditable 
+              ? "Modify parameters on the left or edit the letter directly on the right." 
+              : "This is a polished, read-only live preview of your final Cover Letter."
+            }
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 sm:gap-3 flex-nowrap shrink-0">
+          <div className="bg-slate-100 dark:bg-zinc-800/50 p-1 rounded-lg flex items-center gap-1 text-xs border border-slate-200 dark:border-zinc-700/60 print:hidden shrink-0">
+            <button
+               onClick={() => setIsCoverLetterEditable(false)}
+               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-bold cursor-pointer border transition-all duration-150 ${
+                  !isCoverLetterEditable
+                   ? 'bg-[#0d9488] border-[#0f766e] text-white shadow-sm font-extrabold'
+                   : 'border-transparent text-slate-700 hover:text-slate-900 dark:text-zinc-300 dark:hover:text-zinc-100 bg-transparent'
+               }`}
+            >
+              <Eye className="w-3.5 h-3.5" />
+              <span>Preview</span>
+            </button>
+            <button
+               onClick={() => setIsCoverLetterEditable(true)}
+               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-bold cursor-pointer border transition-all duration-150 ${
+                 isCoverLetterEditable
+                  ? 'bg-[#0d9488] border-[#0f766e] text-white shadow-sm font-extrabold'
+                  : 'border-transparent text-slate-700 hover:text-slate-900 dark:text-zinc-300 dark:hover:text-zinc-100 bg-transparent'
+               }`}
+            >
+              <Settings className="w-3.5 h-3.5" />
+              <span>Edit</span>
+            </button>
+          </div>
+
+          <button
+            onClick={handleDownloadCoverLetter}
+            className="slide-btn slide-btn-orange flex items-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-bold rounded-lg cursor-pointer print:hidden shrink-0 ripple-btn"
+          >
+            <Download className="w-4 h-4 relative z-10" />
+            <span className="relative z-10">Download</span>
+          </button>
+        </div>
+      </div>
+
       {/* Dynamic cover letter action and editor panel */}
       <div className="flex flex-col xl:flex-row gap-6">
         
-        {/* Left Side: Field Controls */}
-        <div className="w-full xl:w-2/5 space-y-4">
-          <div className="bg-slate-50 dark:bg-zinc-900/40 p-4 rounded-xl border border-slate-100 dark:border-zinc-800/50">
-            <h3 className="text-sm font-extrabold text-slate-800 dark:text-zinc-100 mb-3 uppercase tracking-wider">
-              Cover Letter Parameters
-            </h3>
-            
-            {/* Template Selector */}
-            <div className="mb-4">
-              <label className="text-[10px] font-mono text-[#6B7076] dark:text-zinc-400 uppercase tracking-wider block mb-1">
-                Visa Category (Template Format)
-              </label>
-              <select
-                value={category}
-                onChange={(e) => {
-                  setCategory(e.target.value as VisaCategory);
-                  setIsDirectEditing(false); // Reset to new template
-                }}
-                className="w-full text-xs font-semibold p-2.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-slate-800 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-              >
-                <option value="Tourism">Tourist Visa (Tourism)</option>
-                <option value="Business">Business Visa (Corporate)</option>
-                <option value="Medical - Patient">Medical Visa (Patient)</option>
-                <option value="Medical - Attendant">Medical Attendant Visa (Attendant)</option>
-                <option value="Double Entry">Double Entry Visa (DNT)</option>
-              </select>
-            </div>
-
-            <div className="space-y-3.5">
-              {/* Dynamic Inputs based on selection */}
-              <div>
-                <label className="text-[10px] font-mono text-[#6B7076] dark:text-zinc-400 uppercase tracking-wider block mb-0.5">
-                  Applicant Name
+        {/* Left Side: Field Controls (Only visible in Edit Mode) */}
+        {isCoverLetterEditable && (
+          <div className="w-full xl:w-2/5 space-y-4">
+            <div className="bg-slate-50 dark:bg-zinc-900/40 p-4 rounded-xl border border-slate-100 dark:border-zinc-800/50">
+              <h3 className="text-sm font-extrabold text-slate-800 dark:text-zinc-100 mb-3 uppercase tracking-wider">
+                Cover Letter Parameters
+              </h3>
+              
+              {/* Template Selector */}
+              <div className="mb-4">
+                <label className="text-[10px] font-mono text-[#6B7076] dark:text-zinc-400 uppercase tracking-wider block mb-1">
+                  Visa Category (Template Format)
                 </label>
-                <input
-                  type="text"
-                  value={candidateName}
-                  onChange={(e) => setCandidateName(e.target.value)}
-                  className="w-full text-xs p-2.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-slate-800 dark:text-zinc-100"
-                  placeholder="Applicant Name"
-                />
+                <select
+                  value={category}
+                  onChange={(e) => {
+                    setCategory(e.target.value as VisaCategory);
+                    setIsDirectEditing(false); // Reset to new template
+                  }}
+                  className="w-full text-xs font-semibold p-2.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-slate-800 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                >
+                  <option value="Tourism">Tourist Visa (Tourism)</option>
+                  <option value="Business">Business Visa (Corporate)</option>
+                  <option value="Medical - Patient">Medical Visa (Patient)</option>
+                  <option value="Medical - Attendant">Medical Attendant Visa (Attendant)</option>
+                  <option value="Double Entry">Double Entry Visa (DNT)</option>
+                </select>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-3.5">
+                {/* Dynamic Inputs based on selection */}
                 <div>
                   <label className="text-[10px] font-mono text-[#6B7076] dark:text-zinc-400 uppercase tracking-wider block mb-0.5">
-                    Passport Number
+                    Applicant Name
                   </label>
                   <input
                     type="text"
-                    value={passportNumber}
-                    onChange={(e) => setPassportNumber(e.target.value)}
+                    value={candidateName}
+                    onChange={(e) => setCandidateName(e.target.value)}
                     className="w-full text-xs p-2.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-slate-800 dark:text-zinc-100"
-                    placeholder="Passport No"
+                    placeholder="Applicant Name"
                   />
                 </div>
-                <div>
-                  <label className="text-[10px] font-mono text-[#6B7076] dark:text-zinc-400 uppercase tracking-wider block mb-0.5">
-                    Date of Birth
-                  </label>
-                  <input
-                    type="text"
-                    value={dob}
-                    onChange={(e) => setDob(e.target.value)}
-                    className="w-full text-xs p-2.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-slate-800 dark:text-zinc-100"
-                    placeholder="DD-MM-YYYY"
-                  />
-                </div>
-              </div>
 
-              {category !== 'Medical - Patient' && category !== 'Medical - Attendant' && (
                 <div className="grid grid-cols-2 gap-2">
-                  <div className="col-span-2">
+                  <div>
                     <label className="text-[10px] font-mono text-[#6B7076] dark:text-zinc-400 uppercase tracking-wider block mb-0.5">
-                      Company Name
+                      Passport Number
                     </label>
                     <input
                       type="text"
-                      value={companyName}
-                      onChange={(e) => setCompanyName(e.target.value)}
+                      value={passportNumber}
+                      onChange={(e) => setPassportNumber(e.target.value)}
                       className="w-full text-xs p-2.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-slate-800 dark:text-zinc-100"
-                      placeholder="Company Name"
+                      placeholder="Passport No"
                     />
                   </div>
                   <div>
                     <label className="text-[10px] font-mono text-[#6B7076] dark:text-zinc-400 uppercase tracking-wider block mb-0.5">
-                      Designation
+                      Date of Birth
                     </label>
                     <input
                       type="text"
-                      value={designation}
-                      onChange={(e) => setDesignation(e.target.value)}
-                      className="w-full text-xs p-2.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-slate-800 dark:text-zinc-100"
-                      placeholder="Designation"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-mono text-[#6B7076] dark:text-zinc-400 uppercase tracking-wider block mb-0.5">
-                      Joining Date
-                    </label>
-                    <input
-                      type="text"
-                      value={joiningDate}
-                      onChange={(e) => setJoiningDate(e.target.value)}
+                      value={dob}
+                      onChange={(e) => setDob(e.target.value)}
                       className="w-full text-xs p-2.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-slate-800 dark:text-zinc-100"
                       placeholder="DD-MM-YYYY"
                     />
                   </div>
                 </div>
-              )}
 
-              {category === 'Medical - Attendant' && (
-                <div className="grid grid-cols-2 gap-2 p-3 bg-rose-50/50 dark:bg-rose-950/20 rounded-lg border border-rose-100 dark:border-rose-900/20">
-                  <h4 className="col-span-2 text-[11px] font-bold text-rose-600 dark:text-rose-400 uppercase">Patient Information</h4>
+                {category !== 'Medical - Patient' && category !== 'Medical - Attendant' && (
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="col-span-2">
+                      <label className="text-[10px] font-mono text-[#6B7076] dark:text-zinc-400 uppercase tracking-wider block mb-0.5">
+                        Company Name
+                      </label>
+                      <input
+                        type="text"
+                        value={companyName}
+                        onChange={(e) => setCompanyName(e.target.value)}
+                        className="w-full text-xs p-2.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-slate-800 dark:text-zinc-100"
+                        placeholder="Company Name"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-mono text-[#6B7076] dark:text-zinc-400 uppercase tracking-wider block mb-0.5">
+                        Designation
+                      </label>
+                      <input
+                        type="text"
+                        value={designation}
+                        onChange={(e) => setDesignation(e.target.value)}
+                        className="w-full text-xs p-2.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-slate-800 dark:text-zinc-100"
+                        placeholder="Designation"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-mono text-[#6B7076] dark:text-zinc-400 uppercase tracking-wider block mb-0.5">
+                        Joining Date
+                      </label>
+                      <input
+                        type="text"
+                        value={joiningDate}
+                        onChange={(e) => setJoiningDate(e.target.value)}
+                        className="w-full text-xs p-2.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-slate-800 dark:text-zinc-100"
+                        placeholder="DD-MM-YYYY"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {category === 'Medical - Attendant' && (
+                  <div className="grid grid-cols-2 gap-2 p-3 bg-rose-50/50 dark:bg-rose-950/20 rounded-lg border border-rose-100 dark:border-rose-900/20">
+                    <h4 className="col-span-2 text-[11px] font-bold text-rose-600 dark:text-rose-400 uppercase">Patient Information</h4>
+                    <div>
+                      <label className="text-[9px] font-mono text-rose-500 uppercase block mb-0.5">Patient Name</label>
+                      <input
+                        type="text"
+                        value={patientName}
+                        onChange={(e) => setPatientName(e.target.value)}
+                        className="w-full text-xs p-2 rounded border border-rose-200 dark:border-rose-800 bg-white dark:bg-zinc-950 text-slate-800 dark:text-zinc-100"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[9px] font-mono text-rose-500 uppercase block mb-0.5">Patient Passport</label>
+                      <input
+                        type="text"
+                        value={patientPassport}
+                        onChange={(e) => setPatientPassport(e.target.value)}
+                        className="w-full text-xs p-2 rounded border border-rose-200 dark:border-rose-800 bg-white dark:bg-zinc-950 text-slate-800 dark:text-zinc-100"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="text-[9px] font-mono text-rose-500 uppercase block mb-0.5">Patient Name</label>
+                    <label className="text-[10px] font-mono text-[#6B7076] dark:text-zinc-400 uppercase tracking-wider block mb-0.5">
+                      Travel From Date
+                    </label>
                     <input
                       type="text"
-                      value={patientName}
-                      onChange={(e) => setPatientName(e.target.value)}
-                      className="w-full text-xs p-2 rounded border border-rose-200 dark:border-rose-800 bg-white dark:bg-zinc-950 text-slate-800 dark:text-zinc-100"
+                      value={travelFrom}
+                      onChange={(e) => setTravelFrom(e.target.value)}
+                      className="w-full text-xs p-2.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-slate-800 dark:text-zinc-100"
+                      placeholder="DD-MM-YYYY"
                     />
                   </div>
                   <div>
-                    <label className="text-[9px] font-mono text-rose-500 uppercase block mb-0.5">Patient Passport</label>
+                    <label className="text-[10px] font-mono text-[#6B7076] dark:text-zinc-400 uppercase tracking-wider block mb-0.5">
+                      Travel To Date
+                    </label>
                     <input
                       type="text"
-                      value={patientPassport}
-                      onChange={(e) => setPatientPassport(e.target.value)}
-                      className="w-full text-xs p-2 rounded border border-rose-200 dark:border-rose-800 bg-white dark:bg-zinc-950 text-slate-800 dark:text-zinc-100"
+                      value={travelTo}
+                      onChange={(e) => setTravelTo(e.target.value)}
+                      className="w-full text-xs p-2.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-slate-800 dark:text-zinc-100"
+                      placeholder="DD-MM-YYYY"
                     />
                   </div>
                 </div>
-              )}
 
-              <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="text-[10px] font-mono text-[#6B7076] dark:text-zinc-400 uppercase tracking-wider block mb-0.5">
-                    Travel From Date
+                    India Reference / Accommodation
                   </label>
                   <input
                     type="text"
-                    value={travelFrom}
-                    onChange={(e) => setTravelFrom(e.target.value)}
+                    value={indianReference}
+                    onChange={(e) => setIndianReference(e.target.value)}
                     className="w-full text-xs p-2.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-slate-800 dark:text-zinc-100"
-                    placeholder="DD-MM-YYYY"
+                    placeholder="Hotel/Reference details"
                   />
                 </div>
+
                 <div>
                   <label className="text-[10px] font-mono text-[#6B7076] dark:text-zinc-400 uppercase tracking-wider block mb-0.5">
-                    Travel To Date
+                    Letter Date
                   </label>
                   <input
                     type="text"
-                    value={travelTo}
-                    onChange={(e) => setTravelTo(e.target.value)}
+                    value={letterDate}
+                    onChange={(e) => setLetterDate(e.target.value)}
                     className="w-full text-xs p-2.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-slate-800 dark:text-zinc-100"
-                    placeholder="DD-MM-YYYY"
+                    placeholder="Current Date"
                   />
                 </div>
-              </div>
 
-              <div>
-                <label className="text-[10px] font-mono text-[#6B7076] dark:text-zinc-400 uppercase tracking-wider block mb-0.5">
-                  India Reference / Accommodation
-                </label>
-                <input
-                  type="text"
-                  value={indianReference}
-                  onChange={(e) => setIndianReference(e.target.value)}
-                  className="w-full text-xs p-2.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-slate-800 dark:text-zinc-100"
-                  placeholder="Hotel/Reference details"
-                />
               </div>
-
-              <div>
-                <label className="text-[10px] font-mono text-[#6B7076] dark:text-zinc-400 uppercase tracking-wider block mb-0.5">
-                  Letter Date
-                </label>
-                <input
-                  type="text"
-                  value={letterDate}
-                  onChange={(e) => setLetterDate(e.target.value)}
-                  className="w-full text-xs p-2.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-slate-800 dark:text-zinc-100"
-                  placeholder="Current Date"
-                />
-              </div>
-
             </div>
           </div>
-        </div>
+        )}
 
         {/* Right Side: A4 Live Paper Preview & Direct Editing */}
-        <div className="w-full xl:w-3/5 space-y-4">
+        <div className={`w-full ${isCoverLetterEditable ? 'xl:w-3/5' : 'max-w-3xl mx-auto'} space-y-4`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/30 px-2 py-0.5 rounded uppercase tracking-wider">
-                A4 Live Draft
+              <span className="text-xs font-extrabold text-[#0C8493] dark:text-[#0C8493] bg-[#0C8493]/10 border border-[#0C8493]/20 px-2 py-0.5 rounded uppercase tracking-wider">
+                {isCoverLetterEditable ? "A4 Live Draft" : "A4 Preview Document"}
               </span>
-              <span className="text-xs text-slate-500 dark:text-zinc-400">
-                (Click content to edit directly)
-              </span>
+              {isCoverLetterEditable && (
+                <span className="text-xs text-slate-500 dark:text-zinc-400">
+                  (Click content to edit directly)
+                </span>
+              )}
             </div>
             
             <div className="flex gap-2">
               <button
                 onClick={handleReset}
-                className="p-1.5 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded text-slate-500 hover:text-slate-700 dark:hover:text-zinc-300 transition-all"
+                className="p-1.5 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded text-slate-500 hover:text-slate-700 dark:hover:text-zinc-300 transition-all cursor-pointer"
                 title="Reset to original template"
               >
                 <RotateCcw className="w-4 h-4" />
@@ -495,7 +634,7 @@ Company: ${companyName}`;
               
               <button
                 onClick={handleCopyText}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 text-xs font-bold rounded-lg transition-all"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 text-xs font-bold rounded-lg transition-all cursor-pointer"
               >
                 {isCopied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
                 <span>{isCopied ? 'Copied!' : 'Copy Text'}</span>
@@ -503,7 +642,7 @@ Company: ${companyName}`;
 
               <button
                 onClick={handlePrint}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-extrabold rounded-lg transition-all"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0C8493] hover:bg-[#0C8493]/90 text-white text-xs font-extrabold rounded-lg transition-all cursor-pointer"
               >
                 <Printer className="w-4 h-4" />
                 <span>Print Cover Letter</span>
@@ -516,21 +655,32 @@ Company: ${companyName}`;
             {/* Top decorative header rail */}
             <div className="h-2 bg-[#0C8493]"></div>
 
-            <div className="p-6 md:p-8 space-y-4">
-              {/* Direct Editing Cover Letter Content Textarea */}
-              <textarea
-                value={letterBody}
-                onChange={(e) => {
-                  setIsDirectEditing(true);
-                  setLetterBody(e.target.value);
-                }}
-                className="w-full h-[480px] text-[13px] leading-relaxed border-none focus:outline-none focus:ring-0 bg-transparent text-slate-800 dark:text-zinc-200 font-sans resize-none scrollbar-thin"
-                style={{
-                  whiteSpace: 'pre-wrap',
-                  fontFamily: "'Inter', sans-serif"
-                }}
-              />
-            </div>
+            {isCoverLetterEditable ? (
+              <div className="p-6 md:p-8 space-y-4">
+                {/* Direct Editing Cover Letter Content Textarea */}
+                <textarea
+                  value={letterBody}
+                  onChange={(e) => {
+                    setIsDirectEditing(true);
+                    setLetterBody(e.target.value);
+                  }}
+                  className="w-full h-[520px] text-[13px] leading-relaxed border-none focus:outline-none focus:ring-0 bg-transparent text-slate-800 dark:text-zinc-200 font-sans resize-none scrollbar-thin"
+                  style={{
+                    whiteSpace: 'pre-wrap',
+                    fontFamily: "'Inter', sans-serif"
+                  }}
+                />
+              </div>
+            ) : (
+              <div className="p-8 md:p-12 min-h-[580px] space-y-4">
+                <div 
+                  className="whitespace-pre-wrap text-[13.5px] leading-relaxed text-slate-800 dark:text-zinc-200 font-sans"
+                  style={{ fontFamily: "'Inter', sans-serif" }}
+                >
+                  {letterBody}
+                </div>
+              </div>
+            )}
             
             {/* Bottom decorative rail */}
             <div className="h-1 bg-[#FF8006]"></div>

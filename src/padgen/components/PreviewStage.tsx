@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { PadPreview } from './PadPreview';
 import { CardPreview } from './CardPreview';
+import { IdCardPreview } from './IdCardPreview';
 import { CompanyData, Theme } from '../types';
 
 interface PreviewStageProps {
@@ -17,6 +18,10 @@ interface PreviewStageProps {
   previewCardRef: React.RefObject<HTMLDivElement | null>;
   onDownloadPadPDF: () => void;
   onDownloadCardPDF: () => void;
+  onPrintPadVector: () => void;
+  onPrintCardVector: () => void;
+  activeTab: 'company' | 'employee' | 'style';
+  onDownloadIdCardPDF: () => void;
 }
 
 export const PreviewStage: React.FC<PreviewStageProps> = ({
@@ -33,6 +38,10 @@ export const PreviewStage: React.FC<PreviewStageProps> = ({
   previewCardRef,
   onDownloadPadPDF,
   onDownloadCardPDF,
+  onPrintPadVector,
+  onPrintCardVector,
+  activeTab,
+  onDownloadIdCardPDF,
 }) => {
   const [scales, setScales] = useState({ padScale: 0.48, cardScale: 0.95 });
   const containerRef = useRef<HTMLDivElement>(null);
@@ -83,13 +92,13 @@ export const PreviewStage: React.FC<PreviewStageProps> = ({
       }}
     >
       <div className="flex flex-col gap-6 items-center w-full z-10">
-        <div className="flex gap-10 justify-center items-start flex-wrap w-full max-w-5xl">
-          {/* Pad (A4) Preview Frame */}
-          <div className="flex flex-col items-center">
-            {/* Header label */}
+        
+        {/* Company View (Only Pad Preview) */}
+        {activeTab === 'company' && (
+          <div className="flex flex-col items-center w-full max-w-5xl">
             <div className="mb-4 flex items-center gap-2 text-[10px] font-mono font-bold text-[#4B5563] bg-white/80 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-[#DDDEDC] shadow-sm tracking-widest">
               <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
-              A4 LETTERHEAD PAD PREVIEW
+              A4 PAD PREVIEW
             </div>
             
             <div
@@ -115,57 +124,173 @@ export const PreviewStage: React.FC<PreviewStageProps> = ({
                 />
               </div>
             </div>
-          </div>
 
-          {/* Business Visiting Card Preview Frame */}
-          <div className="flex flex-col items-center">
-            {/* Header label */}
-            <div className="mb-4 flex items-center gap-2 text-[10px] font-mono font-bold text-[#4B5563] bg-white/80 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-[#DDDEDC] shadow-sm tracking-widest">
-              <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse"></span>
-              VISITING CARD PREVIEW (FRONT)
+            {/* Pad Download Button */}
+            <div className="flex flex-col gap-3.5 w-full max-w-[220px] px-4 mt-8 mb-2">
+              <button
+                onClick={onDownloadPadPDF}
+                className="slide-btn slide-btn-teal text-white w-full py-2.5 px-3 text-xs font-black rounded-xl cursor-pointer shadow-md text-center flex items-center justify-center gap-1.5"
+              >
+                Download Pad PDF (HQ)
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Employee View (Visiting Card + Office ID Card Preview) */}
+        {activeTab === 'employee' && (
+          <div className="flex flex-col items-center justify-center w-full max-w-5xl">
+            <div className="flex flex-col xl:flex-row gap-10 items-center xl:items-start justify-center w-full">
+              
+              {/* Left Column: Visiting Card */}
+              <div className="flex flex-col items-center">
+                <div className="mb-4 flex items-center gap-2 text-[10px] font-mono font-bold text-[#4B5563] bg-white/80 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-[#DDDEDC] shadow-sm tracking-widest">
+                  <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse"></span>
+                  VISITING CARD PREVIEW (FRONT)
+                </div>
+
+                <div
+                  className="shadow-[0_25px_60px_-15px_rgba(0,0,0,0.18),0_12px_24px_-10px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] origin-top-left transition-all duration-300 hover:shadow-[0_35px_70px_-10px_rgba(0,0,0,0.22)] bg-white rounded-[3.8mm] overflow-hidden border border-black/[0.08]"
+                  style={{
+                    width: '89mm',
+                    height: '51mm',
+                    transform: `scale(${scales.cardScale})`,
+                    marginBottom: `-${(1 - scales.cardScale) * cardHeight}px`,
+                    marginRight: `-${(1 - scales.cardScale) * cardWidth}px`,
+                  }}
+                >
+                  <div ref={previewCardRef} className="h-full w-full">
+                    <CardPreview
+                      data={companyData}
+                      theme={theme}
+                      shape={shape}
+                      layout={cardLayout}
+                      headlineFont={headlineFont}
+                      logoStyle={logoStyle}
+                      texture={texture}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: Office ID Card Preview */}
+              <div className="flex flex-col items-center">
+                <div className="mb-4 flex items-center gap-2 text-[10px] font-mono font-bold text-[#4B5563] bg-white/80 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-[#DDDEDC] shadow-sm tracking-widest">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  OFFICE ID CARD PREVIEW
+                </div>
+
+                <IdCardPreview data={companyData} theme={theme} />
+              </div>
+
             </div>
 
-            <div
-              className="shadow-[0_25px_60px_-15px_rgba(0,0,0,0.18),0_12px_24px_-10px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] origin-top-left transition-all duration-300 hover:shadow-[0_35px_70px_-10px_rgba(0,0,0,0.22)] bg-white rounded-[3.8mm] overflow-hidden border border-black/[0.08]"
-              style={{
-                width: '89mm',
-                height: '51mm',
-                transform: `scale(${scales.cardScale})`,
-                marginBottom: `-${(1 - scales.cardScale) * cardHeight}px`,
-                marginRight: `-${(1 - scales.cardScale) * cardWidth}px`,
-              }}
-            >
-              <div ref={previewCardRef} className="h-full w-full">
-                <CardPreview
-                  data={companyData}
-                  theme={theme}
-                  shape={shape}
-                  layout={cardLayout}
-                  headlineFont={headlineFont}
-                  logoStyle={logoStyle}
-                  texture={texture}
-                />
+            {/* Employee Section Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3.5 w-full max-w-[460px] px-4 mt-8 mb-2">
+              <button
+                onClick={onDownloadCardPDF}
+                className="slide-btn slide-btn-orange text-white flex-1 py-2.5 px-3 text-xs font-black rounded-xl cursor-pointer shadow-md text-center flex items-center justify-center gap-1.5"
+              >
+                Download Card PDF (HQ)
+              </button>
+              <button
+                onClick={onDownloadIdCardPDF}
+                className="slide-btn slide-btn-teal text-white flex-1 py-2.5 px-3 text-xs font-black rounded-xl cursor-pointer shadow-md text-center flex items-center justify-center gap-1.5"
+              >
+                Download ID Card PDF
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Style/Design Tab View (Displays both side-by-side to allow fast live tuning) */}
+        {activeTab === 'style' && (
+          <div className="flex flex-col items-center w-full max-w-5xl">
+            <div className="flex gap-10 justify-center items-start flex-wrap w-full">
+              {/* Pad (A4) Preview Frame */}
+              <div className="flex flex-col items-center">
+                <div className="mb-4 flex items-center gap-2 text-[10px] font-mono font-bold text-[#4B5563] bg-white/80 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-[#DDDEDC] shadow-sm tracking-widest">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+                  A4 PAD PREVIEW
+                </div>
+                
+                <div
+                  className="shadow-[0_25px_60px_-15px_rgba(0,0,0,0.18),0_12px_24px_-10px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] origin-top-left transition-all duration-300 hover:shadow-[0_35px_70px_-10px_rgba(0,0,0,0.22)] bg-white rounded-sm overflow-hidden border border-black/[0.03]"
+                  style={{
+                    width: '210mm',
+                    height: '297mm',
+                    transform: `scale(${scales.padScale})`,
+                    marginBottom: `-${(1 - scales.padScale) * padHeight}px`,
+                    marginRight: `-${(1 - scales.padScale) * padWidth}px`,
+                  }}
+                >
+                  <div ref={previewPadRef} className="h-full w-full">
+                    <PadPreview
+                      data={companyData}
+                      theme={theme}
+                      shape={shape}
+                      layout={padLayout}
+                      headlineFont={headlineFont}
+                      logoStyle={logoStyle}
+                      gridStyle={gridStyle}
+                      texture={texture}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Business Visiting Card Preview Frame */}
+              <div className="flex flex-col items-center">
+                <div className="mb-4 flex items-center gap-2 text-[10px] font-mono font-bold text-[#4B5563] bg-white/80 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-[#DDDEDC] shadow-sm tracking-widest">
+                  <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse"></span>
+                  VISITING CARD PREVIEW (FRONT)
+                </div>
+
+                <div
+                  className="shadow-[0_25px_60px_-15px_rgba(0,0,0,0.18),0_12px_24px_-10px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] origin-top-left transition-all duration-300 hover:shadow-[0_35px_70px_-10px_rgba(0,0,0,0.22)] bg-white rounded-[3.8mm] overflow-hidden border border-black/[0.08]"
+                  style={{
+                    width: '89mm',
+                    height: '51mm',
+                    transform: `scale(${scales.cardScale})`,
+                    marginBottom: `-${(1 - scales.cardScale) * cardHeight}px`,
+                    marginRight: `-${(1 - scales.cardScale) * cardWidth}px`,
+                  }}
+                >
+                  <div ref={previewCardRef} className="h-full w-full">
+                    <CardPreview
+                      data={companyData}
+                      theme={theme}
+                      shape={shape}
+                      layout={cardLayout}
+                      headlineFont={headlineFont}
+                      logoStyle={logoStyle}
+                      texture={texture}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Buttons side-by-side */}
-        <div className="flex gap-4 w-full max-w-[420px] justify-center items-center px-4 mt-8 mb-2">
-          <button
-            onClick={onDownloadPadPDF}
-            className="slide-btn slide-btn-blue text-white flex-1 py-2.5 px-3 text-xs font-black rounded-xl cursor-pointer shadow-md text-center flex items-center justify-center gap-1.5"
-          >
-            Download Pad PDF (HQ)
-          </button>
-          <button
-            onClick={onDownloadCardPDF}
-            className="slide-btn slide-btn-purple text-white flex-1 py-2.5 px-3 text-xs font-black rounded-xl cursor-pointer shadow-md text-center flex items-center justify-center gap-1.5"
-          >
-            Download Card PDF (HQ)
-          </button>
-        </div>
+            {/* Buttons side-by-side */}
+            <div className="flex flex-col sm:flex-row gap-3.5 w-full max-w-[420px] px-4 mt-8 mb-2">
+              <button
+                onClick={onDownloadPadPDF}
+                className="slide-btn slide-btn-teal text-white flex-1 py-2.5 px-3 text-xs font-black rounded-xl cursor-pointer shadow-md text-center flex items-center justify-center gap-1.5"
+              >
+                Download Pad PDF (HQ)
+              </button>
+              <button
+                onClick={onDownloadCardPDF}
+                className="slide-btn slide-btn-orange text-white flex-1 py-2.5 px-3 text-xs font-black rounded-xl cursor-pointer shadow-md text-center flex items-center justify-center gap-1.5"
+              >
+                Download Card PDF (HQ)
+              </button>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );
 };
+

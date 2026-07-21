@@ -27,11 +27,11 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({
 
   const formatTypeLabel = (type: string) => {
     switch (type) {
-      case 'pad-pdf': return 'Letterhead PDF';
+      case 'pad-pdf': return 'Pad PDF';
       case 'card-pdf': return 'Business Card PDF';
-      case 'pad-png': return 'Letterhead PNG';
+      case 'pad-png': return 'Pad PNG';
       case 'card-png': return 'Business Card PNG';
-      case 'pad-svg': return 'Letterhead Vector (SVG)';
+      case 'pad-svg': return 'Pad Vector (SVG)';
       case 'card-svg': return 'Business Card Vector (SVG)';
       case 'vector-ai': return 'Illustrator Vector (.AI)';
       case 'photoshop-psd': return 'Photoshop Container (.PSD)';

@@ -482,4 +482,11 @@ export const DEFAULT_COMPANY_DATA: CompanyData = {
   industry: 'corporate',
   logoScale: 90,
   logoOpacity: 0.12,
+  photoScale: 100,
+  photoX: 0,
+  photoY: 0,
+  photoOpacity: 1,
+  photoBrightness: 100,
+  photoSharpness: 100,
+  empId: "ST-2026-089",
 };

@@ -33,23 +33,23 @@ export function UndertakingHeader({
              onClick={() => setIsUndertakingEditable(false)}
              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-bold cursor-pointer border transition-all duration-150 ${
                !isUndertakingEditable
-                ? 'slide-btn slide-btn-purple active shadow-sm font-extrabold border-[#2DD4BF]/50 text-white!'
+                ? 'bg-[#8b5cf6] border-[#7c3aed] text-white shadow-sm font-extrabold'
                 : 'border-transparent text-slate-700 hover:text-slate-900 dark:text-zinc-300 dark:hover:text-zinc-100 bg-transparent'
              }`}
           >
-            <Eye className="w-3.5 h-3.5 relative z-10" />
-            <span className="relative z-10">Preview</span>
+            <Eye className="w-3.5 h-3.5" />
+            <span>Preview</span>
           </button>
           <button
              onClick={() => setIsUndertakingEditable(true)}
              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-bold cursor-pointer border transition-all duration-150 ${
                isUndertakingEditable
-                ? 'slide-btn slide-btn-purple active shadow-sm font-extrabold border-[#2DD4BF]/50 text-white!'
+                ? 'bg-[#8b5cf6] border-[#7c3aed] text-white shadow-sm font-extrabold'
                 : 'border-transparent text-slate-700 hover:text-slate-900 dark:text-zinc-300 dark:hover:text-zinc-100 bg-transparent'
              }`}
           >
-            <Settings className="w-3.5 h-3.5 relative z-10" />
-            <span className="relative z-10">Edit</span>
+            <Settings className="w-3.5 h-3.5" />
+            <span>Edit</span>
           </button>
         </div>
 

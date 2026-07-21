@@ -18,6 +18,7 @@ import { downloadBlob, svgWrap } from './utils';
 import { ControlPanel } from './components/ControlPanel';
 import { PreviewStage } from './components/PreviewStage';
 import { PadPreview } from './components/PadPreview';
+import { IdCardPreview } from './components/IdCardPreview';
 import { useAuth } from '../lib/AuthContext';
 import { CardPreview } from './components/CardPreview';
 import { HistoryPanel } from './components/HistoryPanel';
@@ -40,6 +41,7 @@ async function downloadFile(url: string, filename: string): Promise<void> {
 export function PadgenApp() {
   const [companyData, setCompanyData] = useState<CompanyData>(DEFAULT_COMPANY_DATA);
   const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState<'company' | 'employee' | 'style'>('company');
 
   const [controls, setControls] = useState<DesignControls>({
     font: 'random',
@@ -677,6 +679,115 @@ export function PadgenApp() {
     }
   };
 
+  const handleDownloadIdCardPDF = async () => {
+    const wrapper = document.getElementById('printIdCardA4');
+    const target = wrapper?.firstElementChild as HTMLElement;
+    if (!target || !wrapper) {
+      setError('Nothing to export yet — generate design first.');
+      return;
+    }
+    showStatusMessage('Rendering A4 ID Card Sheet PDF…');
+    try {
+      const origElements = target.querySelectorAll('*');
+      origElements.forEach((el) => {
+        if (el instanceof HTMLElement || el instanceof SVGElement) {
+          const comp = window.getComputedStyle(el);
+          if (comp.color) el.setAttribute('data-comp-color', comp.color);
+          if (comp.backgroundColor) el.setAttribute('data-comp-bg', comp.backgroundColor);
+          if (comp.borderColor) el.setAttribute('data-comp-border', comp.borderColor);
+          if (comp.fill) el.setAttribute('data-comp-fill', comp.fill);
+          if (comp.stroke) el.setAttribute('data-comp-stroke', comp.stroke);
+        }
+      });
+
+      const canvas = await html2canvas(target, {
+        scale: 3, // crystal-clear DPI
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        ignoreElements: (node) => {
+          if (node instanceof SVGElement) {
+            const rect = node.getBoundingClientRect();
+            if (rect.width === 0 || rect.height === 0) return true;
+          }
+          return false;
+        },
+        onclone: (doc) => {
+          const elements = doc.querySelectorAll('*');
+          elements.forEach((el) => {
+            if (el instanceof HTMLElement || el instanceof SVGElement) {
+              const color = el.getAttribute('data-comp-color');
+              const bg = el.getAttribute('data-comp-bg');
+              const border = el.getAttribute('data-comp-border');
+              const fill = el.getAttribute('data-comp-fill');
+              const stroke = el.getAttribute('data-comp-stroke');
+              
+              if (color) el.style.setProperty('color', color, 'important');
+              if (bg) el.style.setProperty('background-color', bg, 'important');
+              if (border) el.style.setProperty('border-color', border, 'important');
+              if (fill) el.style.setProperty('fill', fill, 'important');
+              if (stroke) el.style.setProperty('stroke', stroke, 'important');
+            }
+          });
+        }
+      });
+      
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+      
+      const origElementsClean = target.querySelectorAll('*');
+      origElementsClean.forEach((el) => {
+        el.removeAttribute('data-comp-color');
+        el.removeAttribute('data-comp-bg');
+        el.removeAttribute('data-comp-border');
+        el.removeAttribute('data-comp-fill');
+        el.removeAttribute('data-comp-stroke');
+      });
+
+      const fn = `${baseFilename()}-id-card.pdf`;
+      const pdfArrayBuffer = pdf.output('arraybuffer');
+      const blob = new Blob([pdfArrayBuffer], { type: 'application/octet-stream' });
+      const blobUrl = window.URL.createObjectURL(blob);
+      await downloadFile(blobUrl, fn);
+      window.URL.revokeObjectURL(blobUrl);
+      showStatusMessage('ID Card PDF downloaded.');
+      addDownloadToHistory('card-pdf', fn);
+      if (user) {
+        fetch('/api/history/log-download', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-user-id': user.uid
+          },
+          body: JSON.stringify({ userId: user.uid, type: 'id-card-pdf' })
+        }).catch(err => console.error('Failed to log download:', err));
+      }
+    } catch (err: any) {
+      setError('PDF export failed: ' + err.message);
+    }
+  };
+
+  const handlePrintPad = () => {
+    showStatusMessage('Opening Browser Print dialog for Vector Pad…');
+    document.body.classList.add('printing-pad');
+    window.print();
+    setTimeout(() => {
+      document.body.classList.remove('printing-pad');
+    }, 1000);
+  };
+
+  const handlePrintCard = () => {
+    showStatusMessage('Opening Browser Print dialog for Vector A4 Card Sheet…');
+    document.body.classList.add('printing-card-a4');
+    window.print();
+    setTimeout(() => {
+      document.body.classList.remove('printing-card-a4');
+    }, 1000);
+  };
+
   // Run initial generation on mount
   useEffect(() => {
     generateDesign();
@@ -1020,6 +1131,8 @@ export function PadgenApp() {
         aiExplanation={aiExplanation}
         onOpenHistory={() => setHistoryDrawerOpen(true)}
         historyCount={downloadHistory.length}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
       />
 
       <PreviewStage
@@ -1036,6 +1149,10 @@ export function PadgenApp() {
         previewCardRef={previewCardRef}
         onDownloadPadPDF={handleDownloadPadPDF}
         onDownloadCardPDF={handleDownloadCardPDF}
+        onPrintPadVector={handlePrintPad}
+        onPrintCardVector={handlePrintCard}
+        activeTab={activeTab}
+        onDownloadIdCardPDF={handleDownloadIdCardPDF}
       />
 
       {/* Off-screen/Print nodes (unscaled at 100% dimensions in mm) */}
@@ -1090,6 +1207,11 @@ export function PadgenApp() {
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, border: '1px solid #bcbcbc', pointerEvents: 'none', zIndex: 100, boxSizing: 'border-box' }} />
             </div>
           </div>
+        </div>
+      </div>
+      <div id="printIdCardA4" style={{ color: '#000000' }}>
+        <div style={{ width: '210mm', height: '297mm', background: '#ffffff', padding: '40mm 15mm', color: '#000000', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          <IdCardPreview data={activeState.data} theme={activeTheme} />
         </div>
       </div>
 

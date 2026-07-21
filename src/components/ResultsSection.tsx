@@ -137,7 +137,7 @@ export function ResultsSection({
                         : 'bg-slate-200/40 dark:bg-zinc-900/40 text-slate-700 dark:text-zinc-400 border-slate-300/30 dark:border-zinc-800/40'
                      }`}
                   >
-                    <span className="relative z-10">Card & Letter Head</span>
+                    <span className="relative z-10">Pad & Card</span>
                   </button>
                 )}
                 {data && (

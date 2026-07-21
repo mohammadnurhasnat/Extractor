@@ -14,6 +14,14 @@ export interface CompanyData {
   customLogo?: string;
   logoScale?: number;
   logoOpacity?: number;
+  empPhoto?: string;
+  photoScale?: number;
+  photoX?: number;
+  photoY?: number;
+  photoOpacity?: number;
+  photoBrightness?: number;
+  photoSharpness?: number;
+  empId?: string;
 }
 
 export interface Theme {
