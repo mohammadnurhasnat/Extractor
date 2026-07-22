@@ -671,18 +671,34 @@ ${shareUrl}
             <h2 className="text-sm font-bold text-slate-800 dark:text-zinc-100 mb-4 tracking-wide">
               কি কি কাজ করতে পারবেন:
             </h2>
-            <ul className="space-y-2.5 text-xs text-slate-600 dark:text-zinc-400 mb-6">
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                পাসপোর্ট থেকে তথ্য অটোমেটিক এক্সট্রাক্ট করা।
+            <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-slate-700 dark:text-zinc-300">
+              <li className="flex items-center gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                <span>পাসপোর্ট থেকে তথ্য অটোমেটিক এক্সট্রাক্ট করা।</span>
               </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                আন্ডারটেকিং ফর্ম তৈরি ও এডিট করা।
+              <li className="flex items-center gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                <span>আন্ডারটেকিং ফর্ম তৈরি ও এডিট করা।</span>
               </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                পাসপোর্ট ইমেজ থেকে পিডিএফ তৈরি করা।
+              <li className="flex items-center gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                <span>পাসপোর্ট ইমেজ থেকে পিডিএফ তৈরি করা।</span>
+              </li>
+              <li className="flex items-center gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                <span>কোম্পানি / বিজনেস প্যাড তৈরি করা।</span>
+              </li>
+              <li className="flex items-center gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                <span>কোম্পানি / বিজনেস / এমপ্লয়ী ভিজিটিং কার্ড তৈরি করা।</span>
+              </li>
+              <li className="flex items-center gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                <span>কভার লেটার তৈরি করা।</span>
+              </li>
+              <li className="flex items-center gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                <span>NOC তৈরি করা।</span>
               </li>
             </ul>
           </div>
@@ -745,6 +761,7 @@ ${shareUrl}
               setSearchTerm={setSearchTerm}
               setHistory={setHistory}
               loadFromHistory={loadFromHistory}
+              activeData={data}
               confirmDelete={confirmDelete}
               onOpenBackup={() => setIsBackupOpen(true)}
               onOpenRestore={() => setIsRestoreOpen(true)}
