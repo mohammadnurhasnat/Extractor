@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Users, X, ShieldCheck, History, UserPlus, BarChart3 } from 'lucide-react';
+import { Users, X, ShieldCheck, History, UserPlus, BarChart3, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
 import { UsersTable } from './admin/UsersTable';
 import { AuditLogsTable } from './admin/AuditLogsTable';
 import { AddUserForm } from './admin/AddUserForm';
 import { AnalyticsTab } from './admin/AnalyticsTab';
+import { SystemSettingsTab } from './admin/SystemSettingsTab';
 
 interface AdminDashboardModalProps {
   isOpen: boolean;
@@ -16,7 +17,7 @@ interface AdminDashboardModalProps {
 
 export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen, onClose, currentUser, setToast }) => {
   useLockBodyScroll(isOpen);
-  const [activeTab, setActiveTab] = useState<'users' | 'audit' | 'analytics'>('analytics');
+  const [activeTab, setActiveTab] = useState<'users' | 'audit' | 'analytics' | 'settings'>('analytics');
   
   // Users State
   const [adminUsersList, setAdminUsersList] = useState<any[]>([]);
@@ -374,6 +375,13 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
                   <History className="w-3.5 h-3.5" />
                   <span>Audit Logs</span>
                 </button>
+                <button
+                  onClick={() => setActiveTab('settings')}
+                  className={`px-2.5 py-1 text-xs font-bold rounded whitespace-nowrap flex items-center gap-1 shrink-0 transition-colors ${activeTab === 'settings' ? 'bg-white dark:bg-zinc-800 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-slate-500 dark:text-zinc-400 hover:text-slate-700 dark:hover:text-zinc-200'}`}
+                >
+                  <Settings className="w-3.5 h-3.5" />
+                  <span>System Settings</span>
+                </button>
               </div>
             </div>
             <button
@@ -434,11 +442,18 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
                   />
                 </div>
               )
-            ) : (
+            ) : activeTab === 'audit' ? (
               <AuditLogsTable
                 logs={auditLogs}
                 isLoading={isLoadingLogs}
                 onRefresh={fetchAuditLogs}
+              />
+            ) : (
+              <SystemSettingsTab
+                currentUser={currentUser}
+                onToast={(toastObj) => setToast(toastObj)}
+                usersCount={adminUsersList.length}
+                logsCount={auditLogs.length}
               />
             )}
           </div>
