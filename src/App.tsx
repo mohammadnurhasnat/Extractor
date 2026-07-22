@@ -800,8 +800,33 @@ ${shareUrl}
       {/* Footer Section */}
       <footer className="w-full border-t border-slate-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-950/50 mt-6 py-2.5 print:hidden">
         <div className="container mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-zinc-400">
-            Built with <Heart className="w-3 h-3 text-red-500 fill-current" /> by <span className="text-slate-700 dark:text-zinc-200 font-bold tracking-wide ml-0.5">MOHAMMAD NUR HASNAT</span>
+          <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-zinc-400 flex-wrap justify-center sm:justify-start">
+            <span>Built with</span> <Heart className="w-3 h-3 text-red-500 fill-current" /> <span>by</span>
+            <span className="font-extrabold text-orange-500 ml-0.5">MOHAMMAD</span>
+            <span className="font-extrabold text-emerald-500 ml-0.5">NUR</span>
+            <span className="font-extrabold text-amber-500 dark:text-amber-400 ml-0.5">HASNAT</span>
+            
+            {/* Animated Eye-Catching Official WhatsApp Icon Only */}
+            <motion.a
+              href="https://wa.me/8801861186863"
+              target="_blank"
+              rel="noopener noreferrer"
+              animate={{ 
+                scale: [1, 1.2, 1, 1.2, 1],
+                rotate: [0, -5, 5, -5, 0]
+              }}
+              transition={{ 
+                duration: 2, 
+                repeat: Infinity, 
+                ease: "easeInOut" 
+              }}
+              className="inline-flex items-center justify-center ml-1 p-1 rounded-[5px] bg-[#25D366] hover:bg-[#20bd5a] text-white shadow-[0_2px_10px_rgba(37,211,102,0.4)] hover:shadow-[0_4px_15px_rgba(37,211,102,0.6)] transition-colors cursor-pointer border border-emerald-300/40 shrink-0"
+              title="Chat on WhatsApp (+8801861186863)"
+            >
+              <svg className="w-3.5 h-3.5 fill-current shrink-0" viewBox="0 0 24 24">
+                <path d="M12.011 0C5.385 0 0 5.385 0 12.011c0 2.116.553 4.184 1.605 6.002L.057 24l6.163-1.605A11.968 11.968 0 0 0 12.011 24c6.626 0 12.011-5.385 12.011-12.011S18.637 0 12.011 0zm0 21.986c-1.802 0-3.568-.485-5.112-1.402l-.367-.218-3.797.989.989-3.797-.218-.367A9.957 9.957 0 0 1 2.025 12.011C2.025 6.495 6.495 2.025 12.011 2.025c5.516 0 9.986 4.47 9.986 9.986 0 5.516-4.47 9.975-9.986 9.975zm5.461-7.604c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
+              </svg>
+            </motion.a>
           </div>
           <p className="text-[11px] text-slate-400 dark:text-zinc-500">
             &copy; {new Date().getFullYear()} Extractor. All rights reserved.
