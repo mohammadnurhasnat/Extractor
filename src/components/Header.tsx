@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { flushSync } from 'react-dom';
 import { Sun, Moon, LogOut, User, RefreshCw, Users, ShieldCheck, Cloud, CloudOff, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -30,12 +30,10 @@ export const Header: React.FC<HeaderProps> = ({
   const isAdmin = currentUser?.email.toLowerCase() === 'mohammadnurhasnat@gmail.com';
   const initials = currentUser?.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'EX';
 
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
   const handleThemeToggle = (event: React.MouseEvent<HTMLButtonElement>) => {
-    const docAny = document as any;
-    if (!docAny.startViewTransition) {
-      onToggleDarkMode();
-      return;
-    }
+    if (isTransitioning) return;
 
     const rect = event.currentTarget.getBoundingClientRect();
     const x = rect.left + rect.width / 2;
@@ -45,64 +43,132 @@ export const Header: React.FC<HeaderProps> = ({
     const bottom = window.innerHeight - y;
     const maxRadius = Math.hypot(Math.max(x, right), Math.max(y, bottom));
 
-    // Determine direction before the transition snapshot is captured
-    const isCurrentlyDark = document.documentElement.classList.contains('dark');
-    if (isCurrentlyDark) {
-      document.documentElement.classList.add('theme-transition-dark-to-light');
-    } else {
-      document.documentElement.classList.add('theme-transition-light-to-dark');
+    const docAny = document as any;
+    if (docAny.startViewTransition) {
+      setIsTransitioning(true);
+
+      const isCurrentlyDark = isDarkMode;
+      if (isCurrentlyDark) {
+        document.documentElement.classList.add('theme-transition-dark-to-light');
+      } else {
+        document.documentElement.classList.add('theme-transition-light-to-dark');
+      }
+
+      const transition = docAny.startViewTransition(() => {
+        flushSync(() => {
+          onToggleDarkMode();
+        });
+      });
+
+      transition.ready.then(() => {
+        const duration = 500;
+        const easing = 'cubic-bezier(0.25, 1, 0.5, 1)';
+
+        if (!isCurrentlyDark) {
+          // Light -> Dark: New view (Dark) expands outward from button center
+          document.documentElement.animate(
+            [
+              { clipPath: `circle(0px at ${x}px ${y}px)` },
+              { clipPath: `circle(${maxRadius}px at ${x}px ${y}px)` }
+            ],
+            {
+              duration,
+              easing,
+              pseudoElement: '::view-transition-new(root)',
+              fill: 'forwards'
+            }
+          );
+        } else {
+          // Dark -> Light: Old view (Dark) shrinks back into button center
+          document.documentElement.animate(
+            [
+              { clipPath: `circle(${maxRadius}px at ${x}px ${y}px)` },
+              { clipPath: `circle(0px at ${x}px ${y}px)` }
+            ],
+            {
+              duration,
+              easing,
+              pseudoElement: '::view-transition-old(root)',
+              fill: 'forwards'
+            }
+          );
+        }
+      });
+
+      transition.finished.finally(() => {
+        document.documentElement.classList.remove('theme-transition-dark-to-light', 'theme-transition-light-to-dark');
+        setIsTransitioning(false);
+      });
+      return;
     }
 
-    const transition = docAny.startViewTransition(() => {
-      // Synchronously update the React state and commit DOM changes
+    // Fallback if startViewTransition is unsupported
+    setIsTransitioning(true);
+
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100vw';
+    overlay.style.height = '100vh';
+    overlay.style.zIndex = '9999999';
+    overlay.style.pointerEvents = 'none';
+    overlay.style.backgroundColor = '#09090b';
+
+    if (!isDarkMode) {
+      // Light -> Dark: Dark overlay expands from button center to fill screen
+      overlay.style.clipPath = `circle(0px at ${x}px ${y}px)`;
+      document.body.appendChild(overlay);
+
+      const anim = overlay.animate(
+        [
+          { clipPath: `circle(0px at ${x}px ${y}px)` },
+          { clipPath: `circle(${maxRadius}px at ${x}px ${y}px)` }
+        ],
+        {
+          duration: 500,
+          easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
+          fill: 'forwards'
+        }
+      );
+
+      anim.onfinish = () => {
+        flushSync(() => {
+          onToggleDarkMode();
+        });
+        if (document.body.contains(overlay)) {
+          document.body.removeChild(overlay);
+        }
+        setIsTransitioning(false);
+      };
+    } else {
+      // Dark -> Light: Dark overlay starts full-screen, site toggles to light mode underneath, then dark overlay contracts back into button center
+      overlay.style.clipPath = `circle(${maxRadius}px at ${x}px ${y}px)`;
+      document.body.appendChild(overlay);
+
       flushSync(() => {
         onToggleDarkMode();
       });
-      
-      // Toggle class synchronously on documentElement inside the callback to ensure snapshot accuracy
-      if (isCurrentlyDark) {
-        document.documentElement.classList.remove('dark');
-      } else {
-        document.documentElement.classList.add('dark');
-      }
-    });
 
-    transition.ready.then(() => {
-      if (isCurrentlyDark) {
-        // Dark to Light: Old view (Dark) is on top. We collapse/shrink it back into the button (Accelerated for 144Hz)
-        document.documentElement.animate(
-          [
-            { clipPath: `circle(${maxRadius}px at ${x}px ${y}px)` },
-            { clipPath: `circle(0px at ${x}px ${y}px)` }
-          ],
-          {
-            duration: 480,
-            easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
-            pseudoElement: '::view-transition-old(root)',
-            fill: 'forwards'
-          }
-        );
-      } else {
-        // Light to Dark: New view (Dark) is on top. We expand it outwards from the button (Accelerated for 144Hz)
-        document.documentElement.animate(
-          [
-            { clipPath: `circle(0px at ${x}px ${y}px)` },
-            { clipPath: `circle(${maxRadius}px at ${x}px ${y}px)` }
-          ],
-          {
-            duration: 480,
-            easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
-            pseudoElement: '::view-transition-new(root)',
-            fill: 'forwards'
-          }
-        );
-      }
-    });
+      const anim = overlay.animate(
+        [
+          { clipPath: `circle(${maxRadius}px at ${x}px ${y}px)` },
+          { clipPath: `circle(0px at ${x}px ${y}px)` }
+        ],
+        {
+          duration: 500,
+          easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
+          fill: 'forwards'
+        }
+      );
 
-    // Cleanup transition classes when transition completes or fails
-    transition.finished.finally(() => {
-      document.documentElement.classList.remove('theme-transition-dark-to-light', 'theme-transition-light-to-dark');
-    });
+      anim.onfinish = () => {
+        if (document.body.contains(overlay)) {
+          document.body.removeChild(overlay);
+        }
+        setIsTransitioning(false);
+      };
+    }
   };
 
   return (
