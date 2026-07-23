@@ -47,6 +47,37 @@ export function SystemSettingsTab({ currentUser, onToast, usersCount, logsCount 
 
   const [dbLatency, setDbLatency] = useState<number>(18);
   const [isCheckingHealth, setIsCheckingHealth] = useState(false);
+  const [isLoadingSettings, setIsLoadingSettings] = useState(false);
+  const [isSavingSettings, setIsSavingSettings] = useState(false);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      setIsLoadingSettings(true);
+      try {
+        const res = await fetch('/api/system-settings');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.settings) {
+            setBroadcastNotice(data.settings.broadcastNotice || '');
+            setIsNoticeActive(!!data.settings.isNoticeActive);
+            setDefaultDailyLimit(data.settings.defaultDailyLimit || 5);
+            setMaintenanceMode(!!data.settings.maintenanceMode);
+
+            localStorage.setItem('app_broadcast_notice', data.settings.broadcastNotice || '');
+            localStorage.setItem('app_broadcast_notice_active', data.settings.isNoticeActive ? 'true' : 'false');
+            localStorage.setItem('app_default_daily_limit', (data.settings.defaultDailyLimit || 5).toString());
+            localStorage.setItem('app_maintenance_mode', data.settings.maintenanceMode ? 'true' : 'false');
+          }
+        }
+      } catch (err) {
+        console.error('Error loading settings from API:', err);
+      } finally {
+        setIsLoadingSettings(false);
+      }
+    };
+
+    fetchSettings();
+  }, []);
 
   const handleCheckHealth = async () => {
     setIsCheckingHealth(true);
@@ -67,20 +98,51 @@ export function SystemSettingsTab({ currentUser, onToast, usersCount, logsCount 
     }
   };
 
-  const handleSaveSettings = () => {
-    localStorage.setItem('app_default_daily_limit', defaultDailyLimit.toString());
-    localStorage.setItem('app_broadcast_notice', broadcastNotice);
-    localStorage.setItem('app_broadcast_notice_active', isNoticeActive ? 'true' : 'false');
-    localStorage.setItem('app_maintenance_mode', maintenanceMode ? 'true' : 'false');
+  const handleSaveSettings = async () => {
+    setIsSavingSettings(true);
+    try {
+      const res = await fetch('/api/system-settings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': currentUser.id
+        },
+        body: JSON.stringify({
+          broadcastNotice,
+          isNoticeActive,
+          defaultDailyLimit,
+          maintenanceMode
+        })
+      });
 
-    // Trigger storage and custom event for other components in same and other tabs
-    window.dispatchEvent(new Event('storage'));
-    window.dispatchEvent(new CustomEvent('app_settings_updated'));
+      const data = await res.json();
+      if (data.success) {
+        localStorage.setItem('app_default_daily_limit', defaultDailyLimit.toString());
+        localStorage.setItem('app_broadcast_notice', broadcastNotice);
+        localStorage.setItem('app_broadcast_notice_active', isNoticeActive ? 'true' : 'false');
+        localStorage.setItem('app_maintenance_mode', maintenanceMode ? 'true' : 'false');
 
-    onToast({ 
-      message: 'সিস্টেম সেটিং সফলভাবে সংরক্ষণ করা হয়েছে! (Settings saved successfully!)', 
-      type: 'success' 
-    });
+        window.dispatchEvent(new Event('storage'));
+        window.dispatchEvent(new CustomEvent('app_settings_updated'));
+
+        onToast({ 
+          message: 'সিস্টেম সেটিং ও অ্যানাউন্সমেন্ট ব্যানার সফলভাবে সকল ইউজারদের জন্য সেভ করা হয়েছে!', 
+          type: 'success' 
+        });
+      } else {
+        onToast({ 
+          message: data.error || 'সিস্টেম সেটিং সেভ করতে ব্যর্থ হয়েছে!', 
+          type: 'error' 
+        });
+      }
+    } catch (err: any) {
+      onToast({ 
+        message: 'নেটওয়ার্ক ত্রুটি! সেটিং সেভ করা যায়নি।', 
+        type: 'error' 
+      });
+    } finally {
+      setIsSavingSettings(false);
+    }
   };
 
   const handleExportSystemReport = () => {
@@ -276,10 +338,15 @@ export function SystemSettingsTab({ currentUser, onToast, usersCount, logsCount 
 
         <button
           onClick={handleSaveSettings}
-          className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-lg transition flex items-center gap-1.5 shadow-md shadow-blue-500/20"
+          disabled={isSavingSettings}
+          className="px-5 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-bold text-xs rounded-lg transition flex items-center gap-1.5 shadow-md shadow-blue-500/20"
         >
-          <Save className="w-3.5 h-3.5" />
-          <span>Save System Settings</span>
+          {isSavingSettings ? (
+            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <Save className="w-3.5 h-3.5" />
+          )}
+          <span>{isSavingSettings ? 'সেভ হচ্ছে...' : 'Save System Settings'}</span>
         </button>
       </div>
     </div>

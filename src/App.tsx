@@ -301,6 +301,27 @@ export default function App() {
     };
   }, []);
 
+  // Auto-sync limit status every 10 seconds for multi-device real-time consistency
+  useEffect(() => {
+    if (!currentUser?.id) return;
+
+    loadLimitStatus(currentUser.id);
+
+    const interval = setInterval(() => {
+      loadLimitStatus(currentUser.id);
+    }, 10000);
+
+    const handleFocus = () => {
+      loadLimitStatus(currentUser.id);
+    };
+
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [currentUser?.id]);
   // 🕒 ৩০ মিনিট নিষ্ক্রিয় থাকার পর অটো-লগআউট করা (Auto-logout on 30 min inactivity)
   useEffect(() => {
     if (!currentUser) return;

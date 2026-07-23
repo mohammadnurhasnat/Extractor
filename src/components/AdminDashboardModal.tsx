@@ -49,14 +49,21 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
 
   useEffect(() => {
     if (isOpen && currentUser) {
-      if (activeTab === 'users') {
-        fetchAdminUsers();
-      } else if (activeTab === 'audit') {
-        fetchAuditLogs();
-      } else if (activeTab === 'analytics') {
-        fetchAdminUsers();
-        fetchAuditLogs();
-      }
+      const loadTabContent = () => {
+        if (activeTab === 'users') {
+          fetchAdminUsers();
+        } else if (activeTab === 'audit') {
+          fetchAuditLogs();
+        } else if (activeTab === 'analytics') {
+          fetchAdminUsers();
+          fetchAuditLogs();
+        }
+      };
+
+      loadTabContent();
+
+      const pollInterval = setInterval(loadTabContent, 10000);
+      return () => clearInterval(pollInterval);
     }
   }, [isOpen, activeTab, currentUser]);
 

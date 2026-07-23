@@ -7,31 +7,56 @@ export function BroadcastBanner() {
   const [isActive, setIsActive] = useState<boolean>(false);
   const [isDismissed, setIsDismissed] = useState<boolean>(false);
 
-  const loadSettings = () => {
+  const fetchLiveSettings = async () => {
+    try {
+      const res = await fetch('/api/system-settings');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.settings) {
+          setNoticeText(data.settings.broadcastNotice || '');
+          setIsActive(!!data.settings.isNoticeActive);
+          localStorage.setItem('app_broadcast_notice', data.settings.broadcastNotice || '');
+          localStorage.setItem('app_broadcast_notice_active', data.settings.isNoticeActive ? 'true' : 'false');
+          return;
+        }
+      }
+    } catch (err) {
+      // Fallback to local storage
+    }
+
     const text = localStorage.getItem('app_broadcast_notice') || '';
     const active = localStorage.getItem('app_broadcast_notice_active') === 'true';
     setNoticeText(text);
     setIsActive(active);
-    setIsDismissed(false);
   };
 
   useEffect(() => {
-    loadSettings();
+    fetchLiveSettings();
+
+    // Poll every 10 seconds for real-time announcement updates across all user sessions
+    const intervalId = setInterval(fetchLiveSettings, 10000);
 
     const handleStorageChange = () => {
-      loadSettings();
+      fetchLiveSettings();
     };
 
     const handleCustomUpdate = () => {
-      loadSettings();
+      fetchLiveSettings();
+    };
+
+    const handleFocus = () => {
+      fetchLiveSettings();
     };
 
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('app_settings_updated', handleCustomUpdate);
+    window.addEventListener('focus', handleFocus);
 
     return () => {
+      clearInterval(intervalId);
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('app_settings_updated', handleCustomUpdate);
+      window.removeEventListener('focus', handleFocus);
     };
   }, []);
 

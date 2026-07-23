@@ -80,6 +80,20 @@ export function usePassportHistory(userId: string | null, options?: {
       }
     };
 
+    // Load initial history
+    fetchHistoryFallback();
+
+    // 10-second periodic auto-polling for instant real-time multi-device sync
+    const pollInterval = setInterval(() => {
+      fetchHistoryFallback();
+    }, 10000);
+
+    const handleFocus = () => {
+      fetchHistoryFallback();
+    };
+
+    window.addEventListener('focus', handleFocus);
+
     // Set up a real-time Firestore listener to sync instantly across multiple devices
     let unsubscribe: (() => void) | null = null;
     try {
@@ -108,14 +122,14 @@ export function usePassportHistory(userId: string | null, options?: {
         latestHistoryRef.current = fetchedHistory;
       }, (error) => {
         console.warn("Real-time Firestore listener failed, using fallbacks:", error);
-        fetchHistoryFallback();
       });
     } catch (err) {
       console.warn("Could not set up real-time Firestore listener, using fallbacks:", err);
-      fetchHistoryFallback();
     }
 
     return () => {
+      clearInterval(pollInterval);
+      window.removeEventListener('focus', handleFocus);
       if (unsubscribe) {
         unsubscribe();
       }

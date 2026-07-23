@@ -1,7 +1,49 @@
 import { Router } from 'express';
-import { getUsersStore, saveUsersStore, appendAuditLog, getAuditLogs } from './db';
+import { getUsersStore, saveUsersStore, appendAuditLog, getAuditLogs, getSystemSettings, saveSystemSettings } from './db';
 
 export const adminRouter = Router();
+
+adminRouter.get('/system-settings', async (req, res) => {
+  try {
+    const settings = await getSystemSettings();
+    res.json({ success: true, settings });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message || 'Failed to fetch system settings.' });
+  }
+});
+
+adminRouter.post('/system-settings', async (req, res) => {
+  try {
+    const adminId = req.headers['x-user-id']?.toString();
+    if (!adminId) {
+      return res.status(403).json({ success: false, error: 'Access denied. Please log in.' });
+    }
+
+    const users = getUsersStore();
+    const adminUser = users.find(u => u.id === adminId);
+    if (!adminUser || adminUser.email.toLowerCase() !== 'mohammadnurhasnat@gmail.com') {
+      return res.status(403).json({ success: false, error: 'Access denied. Only Mohammad Nur Hasnat can change system settings.' });
+    }
+
+    const { broadcastNotice, isNoticeActive, defaultDailyLimit, maintenanceMode } = req.body;
+    const updatedSettings = await saveSystemSettings({
+      broadcastNotice: typeof broadcastNotice === 'string' ? broadcastNotice : '',
+      isNoticeActive: !!isNoticeActive,
+      defaultDailyLimit: typeof defaultDailyLimit === 'number' ? defaultDailyLimit : 5,
+      maintenanceMode: !!maintenanceMode
+    });
+
+    await appendAuditLog({
+      userId: adminId,
+      action: 'LIMIT_CHANGE',
+      details: `Updated system announcement settings: notice="${updatedSettings.broadcastNotice}", active=${updatedSettings.isNoticeActive}`
+    });
+
+    res.json({ success: true, settings: updatedSettings });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message || 'Failed to update system settings.' });
+  }
+});
 
 adminRouter.get('/admin/users', (req, res) => {
   try {

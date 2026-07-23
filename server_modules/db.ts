@@ -218,6 +218,61 @@ const LIMITS_FILE = path.join(DATA_DIR, 'limits_store.json');
 const USERS_STORE_FILE = path.join(DATA_DIR, 'users_store.json');
 const AUDIT_LOGS_FILE = path.join(DATA_DIR, 'audit_logs.json');
 const HISTORY_STORE_FILE = path.join(DATA_DIR, 'history_store.json');
+const SYSTEM_SETTINGS_FILE = path.join(DATA_DIR, 'system_settings.json');
+
+export interface SystemSettings {
+  broadcastNotice: string;
+  isNoticeActive: boolean;
+  defaultDailyLimit: number;
+  maintenanceMode: boolean;
+  updatedAt?: string;
+}
+
+export async function getSystemSettings(): Promise<SystemSettings> {
+  const defaultSettings: SystemSettings = {
+    broadcastNotice: '',
+    isNoticeActive: false,
+    defaultDailyLimit: 5,
+    maintenanceMode: false,
+    updatedAt: new Date().toISOString()
+  };
+
+  try {
+    if (firestore) {
+      const snap = await firestore.collection('system_settings').doc('global').get();
+      if (snap.exists) {
+        return { ...defaultSettings, ...snap.data() };
+      }
+    }
+    if (fs.existsSync(SYSTEM_SETTINGS_FILE)) {
+      const data = fs.readFileSync(SYSTEM_SETTINGS_FILE, 'utf8');
+      return { ...defaultSettings, ...JSON.parse(data) };
+    }
+  } catch (error) {
+    console.error('Error reading system settings:', error);
+  }
+  return defaultSettings;
+}
+
+export async function saveSystemSettings(settings: Partial<SystemSettings>): Promise<SystemSettings> {
+  const current = await getSystemSettings();
+  const updated: SystemSettings = {
+    ...current,
+    ...settings,
+    updatedAt: new Date().toISOString()
+  };
+
+  try {
+    fs.writeFileSync(SYSTEM_SETTINGS_FILE, JSON.stringify(updated, null, 2), 'utf8');
+    if (firestore) {
+      await firestore.collection('system_settings').doc('global').set(updated);
+    }
+  } catch (error) {
+    console.error('Error saving system settings:', error);
+  }
+
+  return updated;
+}
 
 export interface AuditLog {
   id: string;
@@ -660,26 +715,30 @@ export async function loadUsersFromFirestore() {
           });
 
           if (dbUsers.length > 0) {
+            const seenIds = new Set<string>();
             const seenEmails = new Set<string>();
             const seenMobiles = new Set<string>();
             const uniqueUsers: any[] = [];
             const duplicatesToDelete: string[] = [];
 
             dbUsers.forEach((user: any) => {
+              if (!user || !user.id) return;
               const emailKey = user.email ? user.email.toLowerCase().trim() : '';
               const mobileKey = user.mobileNumber ? user.mobileNumber.trim() : '';
               
               let isDuplicate = false;
-              if (emailKey && seenEmails.has(emailKey)) {
+              if (seenIds.has(user.id)) {
                 isDuplicate = true;
-              }
-              if (mobileKey && seenMobiles.has(mobileKey)) {
+              } else if (emailKey && seenEmails.has(emailKey)) {
+                isDuplicate = true;
+              } else if (mobileKey && seenMobiles.has(mobileKey)) {
                 isDuplicate = true;
               }
 
               if (isDuplicate) {
                 duplicatesToDelete.push(user.id);
               } else {
+                seenIds.add(user.id);
                 if (emailKey) seenEmails.add(emailKey);
                 if (mobileKey) seenMobiles.add(mobileKey);
                 uniqueUsers.push(user);
@@ -692,17 +751,19 @@ export async function loadUsersFromFirestore() {
 
             if (duplicatesToDelete.length > 0) {
               console.warn(`Found and cleaning up ${duplicatesToDelete.length} duplicate user records in Firestore:`, duplicatesToDelete);
-              const batch = firestore.batch();
-              duplicatesToDelete.forEach((id: string) => {
-                const docRef = firestore.collection('registered_users').doc(id);
-                batch.delete(docRef);
-              });
-              try {
-                await batch.commit();
-                console.log("Duplicate user records deleted from Firestore successfully.");
-              } catch (delError) {
-                console.error("Error deleting duplicate user records from Firestore:", delError);
-              }
+              setTimeout(async () => {
+                try {
+                  const batch = firestore.batch();
+                  duplicatesToDelete.forEach((id: string) => {
+                    const docRef = firestore.collection('registered_users').doc(id);
+                    batch.delete(docRef);
+                  });
+                  await batch.commit();
+                  console.log("Duplicate user records deleted from Firestore successfully.");
+                } catch (delError) {
+                  console.error("Error deleting duplicate user records from Firestore:", delError);
+                }
+              }, 1000);
             }
           } else {
             console.log("Firestore 'registered_users' collection is empty. Seeding with default users database...");
