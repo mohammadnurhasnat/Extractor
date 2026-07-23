@@ -36,7 +36,7 @@ import { generateDataText, getKolkataHotelForPassport, getDelhiHotelForPassport,
 import { generatePDF, getPDFDocument, generateUndertakingPDF } from './utils/pdfGenerator';
 import { logoutGoogle, auth, db } from './lib/firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-import { collection, query, where, getDocs, addDoc, doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, addDoc, doc, getDoc, onSnapshot } from 'firebase/firestore';
 
 import { useUndertakingState } from './hooks/useUndertakingState';
 import { useSessionQueue } from './hooks/useSessionQueue';
@@ -301,25 +301,38 @@ export default function App() {
     };
   }, []);
 
-  // Auto-sync limit status every 10 seconds for multi-device real-time consistency
+  // Real-time limit status sync without periodic polling reloads
   useEffect(() => {
     if (!currentUser?.id) return;
 
     loadLimitStatus(currentUser.id);
 
-    const interval = setInterval(() => {
-      loadLimitStatus(currentUser.id);
-    }, 10000);
+    // Firestore real-time listener on current user doc for instant zero-reload limit sync
+    let unsubscribe: (() => void) | null = null;
+    try {
+      const userDocRef = doc(db, 'registered_users', currentUser.id);
+      unsubscribe = onSnapshot(userDocRef, (docSnap) => {
+        if (docSnap.exists()) {
+          loadLimitStatus(currentUser.id);
+        }
+      }, (err) => {
+        console.warn("User limit snapshot listener error:", err);
+      });
+    } catch (e) {
+      console.warn("Could not set up user limit snapshot listener:", e);
+    }
 
     const handleFocus = () => {
       loadLimitStatus(currentUser.id);
     };
 
     window.addEventListener('focus', handleFocus);
+    window.addEventListener('app_limit_updated', handleFocus);
 
     return () => {
-      clearInterval(interval);
+      if (unsubscribe) unsubscribe();
       window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('app_limit_updated', handleFocus);
     };
   }, [currentUser?.id]);
   // 🕒 ৩০ মিনিট নিষ্ক্রিয় থাকার পর অটো-লগআউট করা (Auto-logout on 30 min inactivity)

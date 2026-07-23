@@ -47,6 +47,14 @@ export function usePassportHistory(userId: string | null, options?: {
       return;
     }
 
+    const isSameHistory = (a: HistoryItem[], b: HistoryItem[]) => {
+      if (a.length !== b.length) return false;
+      for (let i = 0; i < a.length; i++) {
+        if (a[i].id !== b[i].id || a[i].timestamp !== b[i].timestamp) return false;
+      }
+      return true;
+    };
+
     // Load from Express Proxy API as a fallback
     const fetchHistoryFallback = async () => {
       try {
@@ -72,8 +80,11 @@ export function usePassportHistory(userId: string | null, options?: {
               imageBase64: cachedImage || item.imageBase64 || ''
             };
           });
-          setInternalHistory(fetchedHistory);
-          latestHistoryRef.current = fetchedHistory;
+          
+          if (!isSameHistory(fetchedHistory, latestHistoryRef.current)) {
+            setInternalHistory(fetchedHistory);
+            latestHistoryRef.current = fetchedHistory;
+          }
         }
       } catch (err) {
         console.error("Error fetching history fallback from API:", err);
@@ -83,16 +94,12 @@ export function usePassportHistory(userId: string | null, options?: {
     // Load initial history
     fetchHistoryFallback();
 
-    // 10-second periodic auto-polling for instant real-time multi-device sync
-    const pollInterval = setInterval(() => {
-      fetchHistoryFallback();
-    }, 10000);
-
     const handleFocus = () => {
       fetchHistoryFallback();
     };
 
     window.addEventListener('focus', handleFocus);
+    window.addEventListener('app_history_updated', fetchHistoryFallback);
 
     // Set up a real-time Firestore listener to sync instantly across multiple devices
     let unsubscribe: (() => void) | null = null;
@@ -118,8 +125,10 @@ export function usePassportHistory(userId: string | null, options?: {
             imageBase64: cachedImage || item.imageBase64 || ''
           });
         });
-        setInternalHistory(fetchedHistory);
-        latestHistoryRef.current = fetchedHistory;
+        if (!isSameHistory(fetchedHistory, latestHistoryRef.current)) {
+          setInternalHistory(fetchedHistory);
+          latestHistoryRef.current = fetchedHistory;
+        }
       }, (error) => {
         console.warn("Real-time Firestore listener failed, using fallbacks:", error);
       });
@@ -128,8 +137,8 @@ export function usePassportHistory(userId: string | null, options?: {
     }
 
     return () => {
-      clearInterval(pollInterval);
       window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('app_history_updated', fetchHistoryFallback);
       if (unsubscribe) {
         unsubscribe();
       }

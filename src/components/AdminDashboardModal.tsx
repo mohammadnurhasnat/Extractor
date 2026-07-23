@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Users, X, ShieldCheck, History, UserPlus, BarChart3, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
 import { UsersTable } from './admin/UsersTable';
 import { AuditLogsTable } from './admin/AuditLogsTable';
@@ -49,21 +51,54 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
 
   useEffect(() => {
     if (isOpen && currentUser) {
-      const loadTabContent = () => {
-        if (activeTab === 'users') {
-          fetchAdminUsers();
-        } else if (activeTab === 'audit') {
-          fetchAuditLogs();
-        } else if (activeTab === 'analytics') {
-          fetchAdminUsers();
-          fetchAuditLogs();
+      if (activeTab === 'users') {
+        fetchAdminUsers();
+      } else if (activeTab === 'audit') {
+        fetchAuditLogs();
+      } else if (activeTab === 'analytics') {
+        fetchAdminUsers();
+        fetchAuditLogs();
+      }
+
+      // Real-time Firestore snapshot listeners for zero-reload multi-device sync
+      let unsubUsers: (() => void) | null = null;
+      let unsubLogs: (() => void) | null = null;
+
+      try {
+        if (activeTab === 'users' || activeTab === 'analytics') {
+          const usersColRef = collection(db, 'registered_users');
+          unsubUsers = onSnapshot(usersColRef, (snapshot) => {
+            const list: any[] = [];
+            snapshot.forEach((docSnap) => {
+              list.push(docSnap.data());
+            });
+            if (list.length > 0) {
+              setAdminUsersList(list);
+            }
+          }, (err) => console.warn("Users snapshot error:", err));
         }
+
+        if (activeTab === 'audit' || activeTab === 'analytics') {
+          const logsColRef = collection(db, 'audit_logs');
+          const q = query(logsColRef, orderBy('timestamp', 'desc'));
+          unsubLogs = onSnapshot(q, (snapshot) => {
+            const logs: any[] = [];
+            snapshot.forEach((docSnap) => {
+              logs.push(docSnap.data());
+            });
+            if (logs.length > 0) {
+              setAuditLogs(logs);
+            }
+          }, (err) => console.warn("Logs snapshot error:", err));
+        }
+      } catch (e) {
+        console.warn("Could not set up admin snapshots:", e);
+      }
+
+      return () => {
+        if (unsubUsers) unsubUsers();
+        if (unsubLogs) unsubLogs();
       };
-
-      loadTabContent();
-
-      const pollInterval = setInterval(loadTabContent, 10000);
-      return () => clearInterval(pollInterval);
     }
   }, [isOpen, activeTab, currentUser]);
 
