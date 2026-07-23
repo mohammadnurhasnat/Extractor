@@ -3,7 +3,7 @@ import {
   UploadCloud, CheckCircle2, AlertCircle, FileText, Loader2, ShieldCheck, 
   History, Trash2, ZapOff, Search, Sun, Moon, Copy, Download, Check, 
   AlertTriangle, Printer, Play, X, Clock, Settings, Key, Eye, EyeOff, Heart,
-  MessageCircle, LogOut, Plus, Users
+  MessageCircle, LogOut, Plus, Users, ExternalLink
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import imageCompression from 'browser-image-compression';
@@ -703,7 +703,7 @@ ${shareUrl}
         <OfflineBanner isOnline={isOnline} />
 
         <div className="w-full px-4 mt-6">
-          <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/60 dark:border-zinc-800/60 shadow-sm">
+          <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/60 dark:border-zinc-800/60 shadow-sm relative">
             <h2 className="text-sm font-bold text-slate-800 dark:text-zinc-100 mb-4 tracking-wide">
               কি কি কাজ করতে পারবেন:
             </h2>
@@ -737,6 +737,23 @@ ${shareUrl}
                 <span>NOC তৈরি করা।</span>
               </li>
             </ul>
+
+            {/* Right + Down side button for PadGen */}
+            <div className="mt-5 pt-3 border-t border-slate-100 dark:border-zinc-800/60 flex items-center justify-between sm:justify-end gap-3">
+              <span className="text-[11px] text-slate-500 dark:text-zinc-400 font-medium sm:hidden">
+                প্যাড/ভিজিটিং কার্ড/NOC সার্ভিস:
+              </span>
+              <a
+                href="https://padgen.extractor.fun"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white font-bold text-xs sm:text-sm shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-300 group border border-white/20 cursor-pointer"
+                title="PadGen ওয়েবসাইটে যান"
+              >
+                <ExternalLink className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+                <span>PadGen</span>
+              </a>
+            </div>
           </div>
         </div>
 
