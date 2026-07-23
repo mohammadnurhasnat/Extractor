@@ -115,7 +115,7 @@ export function UploadSection(props: UploadSectionProps) {
                    type="file" 
                    ref={props.fileInputRef} 
                    className="hidden" 
-                   accept="image/jpeg, image/png, image/webp" 
+                   accept="image/jpeg, image/png, image/webp, application/pdf" 
                    onChange={props.handleFileChange}
                    multiple
                 />
@@ -128,9 +128,9 @@ export function UploadSection(props: UploadSectionProps) {
                     <UploadCloud className="w-5 h-5 sm:w-7 sm:h-7 text-blue-600 dark:text-blue-400" />
                   </div>
                   <p className="font-extrabold text-blue-950 dark:text-blue-50 text-xs sm:text-sm leading-tight">Upload Passport</p>
-                  <p className="text-[10px] sm:text-xs text-blue-700/70 dark:text-blue-300/70 font-bold mt-1 hidden sm:block">Tap or drag passport image</p>
+                  <p className="text-[10px] sm:text-xs text-blue-700/70 dark:text-blue-300/70 font-bold mt-1 hidden sm:block">Tap or drag passport image or PDF</p>
                   <p className="text-[9px] sm:text-[10px] text-blue-700 dark:text-blue-300 mt-2 sm:mt-3 bg-blue-100/60 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full font-mono font-bold shadow-sm">
-                    JPEG, PNG, WEBP
+                    JPEG, PNG, WEBP, PDF
                   </p>
                 </div>
 
@@ -151,7 +151,7 @@ export function UploadSection(props: UploadSectionProps) {
                         <UploadCloud className="w-6 h-6" />
                       </motion.div>
                       <p className="font-black text-slate-700 dark:text-slate-300 text-xs sm:text-base">এখানে ছেড়ে দিন!</p>
-                      <p className="text-[10px] text-slate-500 dark:text-zinc-300 font-bold mt-0.5">পাসপোর্ট ফটো ড্রপ করুন</p>
+                      <p className="text-[10px] text-slate-500 dark:text-zinc-300 font-bold mt-0.5">পাসপোর্ট ফটো বা পিডিএফ ড্রপ করুন</p>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -249,20 +249,20 @@ export function UploadSection(props: UploadSectionProps) {
                   props.handleDrop(e);
                 }}
               >
-                <input type="file" ref={props.fileInputRef} className="hidden" accept="image/jpeg, image/png, image/webp" onChange={props.handleFileChange} multiple />
+                <input type="file" ref={props.fileInputRef} className="hidden" accept="image/jpeg, image/png, image/webp, application/pdf" onChange={props.handleFileChange} multiple />
                 <div className="w-9 h-9 bg-white dark:bg-zinc-900 rounded-xl shadow-sm flex items-center justify-center shrink-0 border border-slate-100 dark:border-zinc-800 group-hover:scale-105 transition-transform">
                   <UploadCloud className="w-4.5 h-4.5 text-blue-500 dark:text-blue-400" />
                 </div>
                 <div className="text-left min-w-0 flex-1">
                   <p className="text-xs font-bold text-slate-700 dark:text-zinc-200">Add passports...</p>
-                  <p className="text-[10px] text-slate-400 dark:text-zinc-500 font-medium">Select passport image files</p>
+                  <p className="text-[10px] text-slate-400 dark:text-zinc-500 font-medium">Select passport image or PDF files</p>
                 </div>
                 
                 {/* Micro drag overlay */}
                 {dragActiveAddPassport && (
                   <div className="absolute inset-0 bg-blue-50/90 dark:bg-zinc-900/90 backdrop-blur-xs rounded-xl flex items-center justify-center z-20">
                     <p className="text-[11px] font-black text-blue-600 dark:text-blue-400 animate-pulse flex items-center gap-1">
-                      <UploadCloud className="w-3.5 h-3.5" /> পাসপোর্ট এখানে ড্রপ করুন
+                      <UploadCloud className="w-3.5 h-3.5" /> পাসপোর্ট বা পিডিএফ এখানে ড্রপ করুন
                     </p>
                   </div>
                 )}

@@ -12,7 +12,7 @@ export const extractionRouter = Router();
 
 const ExtractPassportSchema = z.object({
   imageBase64: z.string().min(1, 'Image base64 data is required'),
-  mimeType: z.string().regex(/^image\/(jpeg|jpg|png|webp)$/i, 'Only JPEG, PNG, and WEBP images are supported'),
+  mimeType: z.string().regex(/^(image\/(jpeg|jpg|png|webp)|application\/pdf)$/i, 'Only JPEG, PNG, WEBP images and PDF files are supported'),
 });
 
 const ExtractApplicationPdfSchema = z.object({
