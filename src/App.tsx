@@ -29,6 +29,7 @@ import { LoginModal } from './components/LoginModal';
 import { LoginGreeting } from './components/LoginGreeting';
 import { BackgroundElements } from './components/layout/BackgroundElements';
 import { AppModals } from './components/AppModals';
+import { BroadcastBanner } from './components/BroadcastBanner';
 
 // Utilities
 import { generateDataText, getKolkataHotelForPassport, getDelhiHotelForPassport, getKolkataBusinessForPassport, formatIndianVisaAddress } from './utils/addressUtils';
@@ -663,6 +664,7 @@ ${shareUrl}
           profilePicture={profilePicture}
           onOpenProfile={() => setIsProfileModalOpen(true)}
         />
+        <BroadcastBanner />
 
         <OfflineBanner isOnline={isOnline} />
 

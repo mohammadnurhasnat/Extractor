@@ -73,8 +73,9 @@ export function SystemSettingsTab({ currentUser, onToast, usersCount, logsCount 
     localStorage.setItem('app_broadcast_notice_active', isNoticeActive ? 'true' : 'false');
     localStorage.setItem('app_maintenance_mode', maintenanceMode ? 'true' : 'false');
 
-    // Trigger storage event for other components if listening
+    // Trigger storage and custom event for other components in same and other tabs
     window.dispatchEvent(new Event('storage'));
+    window.dispatchEvent(new CustomEvent('app_settings_updated'));
 
     onToast({ 
       message: 'সিস্টেম সেটিং সফলভাবে সংরক্ষণ করা হয়েছে! (Settings saved successfully!)', 
