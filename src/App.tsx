@@ -747,10 +747,10 @@ ${shareUrl}
                 href="https://padgen.extractor.fun"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white font-bold text-xs sm:text-sm shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-300 group border border-white/20 cursor-pointer"
+                className="relative inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 sm:px-5 sm:py-2.5 rounded-lg sm:rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white font-extrabold text-[11px] sm:text-sm border-b-[3px] sm:border-b-4 border-indigo-950/80 shadow-md sm:shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:-translate-y-0.5 active:translate-y-0.5 active:border-b-0 active:mb-[3px] transition-all duration-150 group cursor-pointer"
                 title="PadGen ওয়েবসাইটে যান"
               >
-                <ExternalLink className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+                <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:rotate-12 transition-transform" />
                 <span>PadGen</span>
               </a>
             </div>
