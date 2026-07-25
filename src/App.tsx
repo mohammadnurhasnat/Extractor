@@ -703,56 +703,73 @@ ${shareUrl}
         <OfflineBanner isOnline={isOnline} />
 
         <div className="w-full px-4 mt-6">
-          <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/60 dark:border-zinc-800/60 shadow-sm relative">
-            <h2 className="text-sm font-bold text-slate-800 dark:text-zinc-100 mb-4 tracking-wide">
-              কি কি কাজ করতে পারবেন:
-            </h2>
-            <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-slate-700 dark:text-zinc-300">
-              <li className="flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>পাসপোর্ট থেকে তথ্য অটোমেটিক এক্সট্রাক্ট করা।</span>
-              </li>
-              <li className="flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>আন্ডারটেকিং ফর্ম তৈরি ও এডিট করা।</span>
-              </li>
-              <li className="flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>পাসপোর্ট ইমেজ থেকে পিডিএফ তৈরি করা।</span>
-              </li>
-              <li className="flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>কোম্পানি / বিজনেস প্যাড তৈরি করা।</span>
-              </li>
-              <li className="flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>কোম্পানি / বিজনেস / এমপ্লয়ী ভিজিটিং কার্ড তৈরি করা।</span>
-              </li>
-              <li className="flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>কভার লেটার তৈরি করা।</span>
-              </li>
-              <li className="flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>NOC তৈরি করা।</span>
-              </li>
-            </ul>
+          <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm rounded-2xl p-4 sm:p-5 border border-slate-200/60 dark:border-zinc-800/60 shadow-sm relative">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+              
+              {/* Left Side: Features List */}
+              <div className="flex-1 min-w-0">
+                <h2 className="text-sm font-bold text-slate-800 dark:text-zinc-100 mb-2.5 tracking-wide">
+                  কি কি কাজ করতে পারবেন:
+                </h2>
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2 text-xs text-slate-700 dark:text-zinc-300">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                    <span>পাসপোর্ট থেকে তথ্য অটোমেটিক এক্সট্রাক্ট করা।</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                    <span>আন্ডারটেকিং ফর্ম তৈরি ও এডিট করা।</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                    <span>পাসপোর্ট ইমেজ থেকে পিডিএফ তৈরি করা।</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                    <span>কোম্পানি / বিজনেস প্যাড তৈরি করা।</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                    <span>কোম্পানি / বিজনেস ভিজিটিং কার্ড তৈরি করা।</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                    <span>কভার লেটার তৈরি ও এডিট করা।</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                    <span>NOC তৈরি ও এডিট করা।</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                    <span>অফিস আইডি কার্ড তৈরি করা।</span>
+                  </li>
+                </ul>
+              </div>
 
-            {/* Right + Down side button for PadGen */}
-            <div className="mt-5 pt-3 border-t border-slate-100 dark:border-zinc-800/60 flex items-center justify-between sm:justify-end gap-3">
-              <span className="text-[11px] text-slate-500 dark:text-zinc-400 font-medium sm:hidden">
-                প্যাড/ভিজিটিং কার্ড/NOC সার্ভিস:
-              </span>
-              <a
-                href="https://padgen.extractor.fun"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="relative inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 sm:px-5 sm:py-2.5 rounded-lg sm:rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white font-extrabold text-[11px] sm:text-sm border-b-[3px] sm:border-b-4 border-indigo-950/80 shadow-md sm:shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:-translate-y-0.5 active:translate-y-0.5 active:border-b-0 active:mb-[3px] transition-all duration-150 group cursor-pointer"
-                title="PadGen ওয়েবসাইটে যান"
-              >
-                <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:rotate-12 transition-transform" />
-                <span>PadGen</span>
-              </a>
+              {/* Right Side Callout Card for PadGen (Desktop) / Bottom Bar (Mobile) */}
+              <div className="lg:w-80 shrink-0 pt-3 lg:pt-0 border-t lg:border-t-0 lg:border-l border-slate-200/60 dark:border-zinc-800/60 lg:pl-5 flex flex-row lg:flex-col items-center lg:items-start justify-between gap-3 bg-slate-50/50 dark:bg-zinc-800/30 lg:bg-transparent lg:dark:bg-transparent p-3 lg:p-0 rounded-xl lg:rounded-none">
+                <div className="flex flex-col">
+                  <span className="text-xs sm:text-sm text-slate-800 dark:text-zinc-200 font-bold">
+                    প্যাড, ভিজিটিং কার্ড, NOC, Office ID:
+                  </span>
+                  <span className="text-[11px] text-slate-500 dark:text-zinc-400 hidden lg:block mt-0.5">
+                    সহজে প্রফেশনাল প্যাড ও কার্ড, NOC, Office ID তৈরি করতে PadGen ভিজিট করুন।
+                  </span>
+                </div>
+                
+                <a
+                  href="https://padgen.extractor.fun"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="relative inline-flex items-center gap-1.5 sm:gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white font-extrabold text-[11px] sm:text-xs border-b-[3px] sm:border-b-4 border-indigo-950/80 shadow-md shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:-translate-y-0.5 active:translate-y-0.5 active:border-b-0 transition-all duration-150 group cursor-pointer shrink-0 mt-0 lg:mt-2"
+                  title="PadGen ওয়েবসাইটে যান"
+                >
+                  <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:rotate-12 transition-transform" />
+                  <span>PadGen</span>
+                </a>
+              </div>
+
             </div>
           </div>
         </div>
