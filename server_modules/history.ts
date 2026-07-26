@@ -1,27 +1,10 @@
 import { Router } from 'express';
-import { 
-  getUsersStore, 
-  getLocalHistory, 
-  saveLocalHistory, 
-  saveLocalHistoryBulk,
-  deleteLocalHistoryItem, 
-  clearLocalHistory, 
-  getLimitStatus, 
-  getDb,
-  appendAuditLog
-} from './db';
+import { db } from './db';
+import { users, history as historySchema } from './schema';
+import { eq, and, desc } from 'drizzle-orm';
+import { appendAuditLog } from './db';
 
 export const historyRouter = Router();
-
-historyRouter.get('/limit-status/:userId', (req, res) => {
-  try {
-    const { userId } = req.params;
-    const status = getLimitStatus(userId);
-    res.json({ success: true, ...status });
-  } catch (error: any) {
-    res.status(500).json({ success: false, error: error.message || 'Failed to fetch limit status' });
-  }
-});
 
 historyRouter.get('/history', async (req, res) => {
   try {
@@ -35,33 +18,16 @@ historyRouter.get('/history', async (req, res) => {
       return res.status(401).json({ success: false, error: 'Unauthorized.' });
     }
     
-    const users = getUsersStore();
-    const adminUser = users.find(u => u.id === requesterId);
+    const adminUser = await db.query.users.findFirst({ where: eq(users.id, requesterId) });
     const isAdmin = adminUser && adminUser.email.toLowerCase() === 'mohammadnurhasnat@gmail.com';
     
     if (requesterId !== userId && !isAdmin) {
       return res.status(403).json({ success: false, error: 'Forbidden.' });
     }
 
-    const db = getDb();
-    if (!db) {
-      const historyItems = getLocalHistory(userId);
-      return res.json({ success: true, history: historyItems });
-    }
-
-    try {
-      const snapshot = await db.collection('users').doc(userId).collection('history').orderBy('timestamp', 'desc').get();
-      const historyItems: any[] = [];
-      snapshot.forEach((doc: any) => {
-        historyItems.push(doc.data());
-      });
-      return res.json({ success: true, history: historyItems });
-    } catch (firestoreError: any) {
-      console.warn('Firestore fetch failed, falling back to local history storage:', firestoreError.message || firestoreError);
-      // We can't easily mutate the main file's db to null here, but we can fall back
-      const historyItems = getLocalHistory(userId);
-      return res.json({ success: true, history: historyItems });
-    }
+    const historyItems = await db.select().from(historySchema).where(eq(historySchema.userId, userId)).orderBy(desc(historySchema.timestamp));
+    
+    return res.json({ success: true, history: historyItems });
   } catch (error: any) {
     console.error('Failed to fetch history:', error);
     res.status(500).json({ success: false, error: error.message || 'Failed to fetch history.' });
@@ -80,28 +46,28 @@ historyRouter.post('/history', async (req, res) => {
       return res.status(401).json({ success: false, error: 'Unauthorized.' });
     }
     
-    const users = getUsersStore();
-    const adminUser = users.find(u => u.id === requesterId);
+    const adminUser = await db.query.users.findFirst({ where: eq(users.id, requesterId) });
     const isAdmin = adminUser && adminUser.email.toLowerCase() === 'mohammadnurhasnat@gmail.com';
     
     if (requesterId !== userId && !isAdmin) {
       return res.status(403).json({ success: false, error: 'Forbidden.' });
     }
 
-    const db = getDb();
-    if (!db) {
-      saveLocalHistory(userId, item);
-      return res.json({ success: true });
-    }
+    await db.insert(historySchema).values({
+      id: item.id,
+      userId: userId,
+      permanentAddress: item.permanentAddress,
+      presentAddress: item.presentAddress,
+      businessAddressDhaka: item.businessAddressDhaka,
+      businessAddressLocal: item.businessAddressLocal,
+      officeAddressDhaka: item.officeAddressDhaka,
+      officeAddressLocal: item.officeAddressLocal,
+      nidName: item.nidName,
+      nidNumber: item.nidNumber,
+      nidDob: item.nidDob,
+    });
 
-    try {
-      await db.collection('users').doc(userId).collection('history').doc(item.id).set(item);
-      return res.json({ success: true });
-    } catch (firestoreError: any) {
-      console.warn('Firestore write failed, falling back to local history storage:', firestoreError.message || firestoreError);
-      saveLocalHistory(userId, item);
-      return res.json({ success: true });
-    }
+    return res.json({ success: true });
   } catch (error: any) {
     console.error('Failed to save history:', error);
     res.status(500).json({ success: false, error: error.message || 'Failed to save history.' });
@@ -120,35 +86,33 @@ historyRouter.post('/history/bulk', async (req, res) => {
       return res.status(401).json({ success: false, error: 'Unauthorized.' });
     }
     
-    const users = getUsersStore();
-    const adminUser = users.find(u => u.id === requesterId);
+    const adminUser = await db.query.users.findFirst({ where: eq(users.id, requesterId) });
     const isAdmin = adminUser && adminUser.email.toLowerCase() === 'mohammadnurhasnat@gmail.com';
     
     if (requesterId !== userId && !isAdmin) {
       return res.status(403).json({ success: false, error: 'Forbidden.' });
     }
 
-    const db = getDb();
-    if (!db) {
-      saveLocalHistoryBulk(userId, items);
-      return res.json({ success: true });
+    if (items.length > 0) {
+      const formattedItems = items.map(item => ({
+        id: item.id,
+        userId: userId,
+        permanentAddress: item.permanentAddress,
+        presentAddress: item.presentAddress,
+        businessAddressDhaka: item.businessAddressDhaka,
+        businessAddressLocal: item.businessAddressLocal,
+        officeAddressDhaka: item.officeAddressDhaka,
+        officeAddressLocal: item.officeAddressLocal,
+        nidName: item.nidName,
+        nidNumber: item.nidNumber,
+        nidDob: item.nidDob,
+      }));
+      
+      // Batch insert logic is typically .insert(schema).values(array) in Drizzle
+      await db.insert(historySchema).values(formattedItems);
     }
-
-    try {
-      const batch = db.batch();
-      for (const item of items) {
-        if (item && item.id) {
-          const docRef = db.collection('users').doc(userId).collection('history').doc(item.id);
-          batch.set(docRef, item);
-        }
-      }
-      await batch.commit();
-      return res.json({ success: true });
-    } catch (firestoreError: any) {
-      console.warn('Firestore bulk write failed, falling back to local history storage:', firestoreError.message || firestoreError);
-      saveLocalHistoryBulk(userId, items);
-      return res.json({ success: true });
-    }
+    
+    return res.json({ success: true });
   } catch (error: any) {
     console.error('Failed to save bulk history:', error);
     res.status(500).json({ success: false, error: error.message || 'Failed to save bulk history.' });
@@ -168,28 +132,15 @@ historyRouter.delete('/history/:id', async (req, res) => {
       return res.status(401).json({ success: false, error: 'Unauthorized.' });
     }
     
-    const users = getUsersStore();
-    const adminUser = users.find(u => u.id === requesterId);
+    const adminUser = await db.query.users.findFirst({ where: eq(users.id, requesterId) });
     const isAdmin = adminUser && adminUser.email.toLowerCase() === 'mohammadnurhasnat@gmail.com';
     
     if (requesterId !== userId && !isAdmin) {
       return res.status(403).json({ success: false, error: 'Forbidden.' });
     }
 
-    const db = getDb();
-    if (!db) {
-      deleteLocalHistoryItem(userId, id);
-      return res.json({ success: true });
-    }
-
-    try {
-      await db.collection('users').doc(userId).collection('history').doc(id).delete();
-      return res.json({ success: true });
-    } catch (firestoreError: any) {
-      console.warn('Firestore delete failed, falling back to local history storage:', firestoreError.message || firestoreError);
-      deleteLocalHistoryItem(userId, id);
-      return res.json({ success: true });
-    }
+    await db.delete(historySchema).where(and(eq(historySchema.id, id), eq(historySchema.userId, userId)));
+    return res.json({ success: true });
   } catch (error: any) {
     console.error('Failed to delete history item:', error);
     res.status(500).json({ success: false, error: error.message || 'Failed to delete history item.' });
@@ -208,33 +159,15 @@ historyRouter.post('/history/clear', async (req, res) => {
       return res.status(401).json({ success: false, error: 'Unauthorized.' });
     }
     
-    const users = getUsersStore();
-    const adminUser = users.find(u => u.id === requesterId);
+    const adminUser = await db.query.users.findFirst({ where: eq(users.id, requesterId) });
     const isAdmin = adminUser && adminUser.email.toLowerCase() === 'mohammadnurhasnat@gmail.com';
     
     if (requesterId !== userId && !isAdmin) {
       return res.status(403).json({ success: false, error: 'Forbidden.' });
     }
 
-    const db = getDb();
-    if (!db) {
-      clearLocalHistory(userId);
-      return res.json({ success: true });
-    }
-
-    try {
-      const snapshot = await db.collection('users').doc(userId).collection('history').get();
-      const batch = db.batch();
-      snapshot.forEach((doc: any) => {
-        batch.delete(doc.ref);
-      });
-      await batch.commit();
-      return res.json({ success: true });
-    } catch (firestoreError: any) {
-      console.warn('Firestore clear failed, falling back to local history storage:', firestoreError.message || firestoreError);
-      clearLocalHistory(userId);
-      return res.json({ success: true });
-    }
+    await db.delete(historySchema).where(eq(historySchema.userId, userId));
+    return res.json({ success: true });
   } catch (error: any) {
     console.error('Failed to clear history:', error);
     res.status(500).json({ success: false, error: error.message || 'Failed to clear history.' });
@@ -254,12 +187,11 @@ historyRouter.post('/history/log-download', async (req, res) => {
     }
 
     const action = type === 'pad-pdf' ? 'PAD_DOWNLOAD' : 'CARD_DOWNLOAD';
-    appendAuditLog({ 
+    await appendAuditLog({ 
       userId, 
       action, 
       details: `${type === 'pad-pdf' ? 'Downloaded Business Pad PDF' : 'Downloaded Visiting Card PDF'}` 
     });
-
     return res.json({ success: true });
   } catch (error: any) {
     console.error('Failed to log download:', error);

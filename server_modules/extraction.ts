@@ -1,9 +1,13 @@
+import { db } from './db';
+import { users } from './schema';
+import { eq } from 'drizzle-orm';
 import { Router } from 'express';
 import { GoogleGenAI, Type } from '@google/genai';
 import { z } from 'zod';
 import { 
   getUsersStore, 
   checkAndIncrementLimit, 
+  checkAndIncrementIPLimit,
   decrementLimit, 
   appendAuditLog 
 } from './db';
@@ -162,8 +166,7 @@ extractionRouter.post('/extract-passport', async (req, res) => {
       return res.status(200).json({ success: false, error: 'প্রবেশাধিকার পাননি। দয়া করে আগে লগইন করুন।' });
     }
 
-    const users = getUsersStore();
-    const user = users.find(u => u.id === userId);
+    const user = await db.query.users.findFirst({ where: eq(users.id, userId) });
     if (!user) {
       return res.status(200).json({ success: false, error: 'অবৈধ সেশন। দয়া করে আবার লগইন করুন।' });
     }
@@ -172,7 +175,16 @@ extractionRouter.post('/extract-passport', async (req, res) => {
       return res.status(200).json({ success: false, error: 'আপনার অ্যাকাউন্টটি স্থগিত করা হয়েছে। দয়া করে এডমিনের সাথে যোগাযোগ করুন।' });
     }
 
-    const limitCheck = checkAndIncrementLimit(userId);
+    const clientIp = req.headers['x-forwarded-for']?.toString().split(',')[0] || req.socket.remoteAddress || 'unknown';
+    const ipLimitCheck = await checkAndIncrementIPLimit(clientIp);
+    if (!ipLimitCheck.allowed) {
+      return res.status(200).json({ 
+        success: false, 
+        error: 'এই আইপি (IP) এড্রেস থেকে আজকের লিমিট শেষ হয়ে গেছে। দয়া করে কালকে আবার চেষ্টা করুন অথবা এডমিনের সাথে যোগাযোগ করুন।' 
+      });
+    }
+
+    const limitCheck = await checkAndIncrementLimit(userId);
     if (!limitCheck.allowed) {
       return res.status(200).json({ 
         success: false, 
@@ -396,7 +408,7 @@ INSTRUCTIONS FOR VALID PASSPORTS:
 
     if (pipelineData.isValidPassport === false) {
       console.warn('⚠️ Passport photo validation failed:', pipelineData.validationError);
-      decrementLimit(userId);
+      await decrementLimit(userId);
       return res.status(200).json({
         success: false,
         error: pipelineData.validationError || 'পাসপোর্টের ছবিটি স্পষ্ট নয় অথবা এটি একটি বৈধ পাসপোর্ট নয়। দয়া করে একটি স্পষ্ট পাসপোর্টের ছবি আপলোড করুন।'
@@ -473,8 +485,7 @@ extractionRouter.post('/extract-application-pdf', async (req, res) => {
       return res.status(200).json({ success: false, error: 'প্রবেশাধিকার পাননি। দয়া করে আগে লগইন করুন।' });
     }
 
-    const users = getUsersStore();
-    const user = users.find(u => u.id === userId);
+    const user = await db.query.users.findFirst({ where: eq(users.id, userId) });
     if (!user) {
       return res.status(200).json({ success: false, error: 'অবৈধ সেশন। দয়া করে আবার লগইন করুন।' });
     }
@@ -483,7 +494,16 @@ extractionRouter.post('/extract-application-pdf', async (req, res) => {
       return res.status(200).json({ success: false, error: 'আপনার অ্যাকাউন্টটি স্থগিত করা হয়েছে। দয়া করে এডমিনের সাথে যোগাযোগ করুন।' });
     }
 
-    const limitCheck = checkAndIncrementLimit(userId);
+    const clientIp = req.headers['x-forwarded-for']?.toString().split(',')[0] || req.socket.remoteAddress || 'unknown';
+    const ipLimitCheck = await checkAndIncrementIPLimit(clientIp);
+    if (!ipLimitCheck.allowed) {
+      return res.status(200).json({ 
+        success: false, 
+        error: 'এই আইপি (IP) এড্রেস থেকে আজকের লিমিট শেষ হয়ে গেছে। দয়া করে কালকে আবার চেষ্টা করুন অথবা এডমিনের সাথে যোগাযোগ করুন।' 
+      });
+    }
+
+    const limitCheck = await checkAndIncrementLimit(userId);
     if (!limitCheck.allowed) {
       return res.status(200).json({ 
         success: false, 
@@ -697,7 +717,7 @@ INSTRUCTIONS FOR VALID APPLICATIONS:
 
     if (pipelineData.isValidApplication === false) {
       console.warn('⚠️ Visa application validation failed:', pipelineData.validationError);
-      decrementLimit(userId);
+      await decrementLimit(userId);
       return res.status(200).json({
         success: false,
         error: pipelineData.validationError || 'পিডিএফ ফাইলটি একটি বৈধ ইন্ডিয়ান ভিসা অ্যাপ্লিকেশন নয়। দয়া করে সঠিক পিডিএফ ফাইল আপলোড করুন।'

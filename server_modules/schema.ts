@@ -1,0 +1,41 @@
+import { mysqlTable, varchar, int, boolean, timestamp, text, mysqlEnum } from 'drizzle-orm/mysql-core';
+
+export const users = mysqlTable('users', {
+  id: varchar('id', { length: 255 }).primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  email: varchar('email', { length: 255 }).notNull(),
+  mobileNumber: varchar('mobileNumber', { length: 20 }),
+  password: varchar('password', { length: 255 }).notNull(),
+  isSuspended: boolean('isSuspended').default(false),
+  dailyLimit: int('dailyLimit').default(5),
+  createdAt: timestamp('createdAt').defaultNow(),
+});
+
+export const auditLogs = mysqlTable('audit_logs', {
+  id: int('id').autoincrement().primaryKey(),
+  userId: varchar('userId', { length: 255 }).notNull(),
+  action: varchar('action', { length: 255 }).notNull(),
+  details: text('details'),
+  timestamp: timestamp('timestamp').defaultNow(),
+});
+
+export const dailyLimits = mysqlTable('daily_limits', {
+  id: varchar('id', { length: 255 }).primaryKey(), // e.g., userId or "ip_192.168.1.1"
+  date: varchar('date', { length: 10 }).notNull(), // YYYY-MM-DD
+  count: int('count').default(0),
+});
+
+export const history = mysqlTable('history', {
+  id: varchar('id', { length: 255 }).primaryKey(),
+  userId: varchar('userId', { length: 255 }).notNull(),
+  permanentAddress: text('permanentAddress'),
+  presentAddress: text('presentAddress'),
+  businessAddressDhaka: text('businessAddressDhaka'),
+  businessAddressLocal: text('businessAddressLocal'),
+  officeAddressDhaka: text('officeAddressDhaka'),
+  officeAddressLocal: text('officeAddressLocal'),
+  nidName: varchar('nidName', { length: 255 }),
+  nidNumber: varchar('nidNumber', { length: 255 }),
+  nidDob: varchar('nidDob', { length: 255 }),
+  timestamp: timestamp('timestamp').defaultNow(),
+});

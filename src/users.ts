@@ -31,20 +31,20 @@ export const USERS_DATABASE: User[] = [
   },
 
    {
-    id: "user_sajid",
-    email: "sajid@gmail.com",
-    mobileNumber: "123",
-    password: "456",
-    name: "MOHAMMAD NUR SAJID"
+    id: "user_",
+    email: "",
+    mobileNumber: "",
+    password: "",
+    name: ""
   },
 
   
    {
-    id: "user_demo",
-    email: "demo",
-    mobileNumber: "123",
-    password: "123",
-    name: "DEMO"
+    id: "user_",
+    email: "",
+    mobileNumber: "",
+    password: "",
+    name: ""
   }
   // ➕ নতুন ইউজার যোগ করতে চাইলে নিচের ব্র্যাকেটের ভেতরের অংশটি আন-কমেন্ট করে কপি-পেস্ট করে বসিয়ে দিন:
   /*

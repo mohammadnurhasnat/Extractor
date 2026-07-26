@@ -1,68 +1,10 @@
 import { Router } from 'express';
-import { getUsersStore, saveUsersStore, appendAuditLog, getAuditLogs, getSystemSettings, saveSystemSettings } from './db';
+import { db } from './db';
+import { users } from './schema';
+import { getAuditLogs, appendAuditLog } from './db';
+import { eq, or, ne, and } from 'drizzle-orm';
 
 export const adminRouter = Router();
-
-adminRouter.get('/system-settings', async (req, res) => {
-  try {
-    const settings = await getSystemSettings();
-    res.json({ success: true, settings });
-  } catch (error: any) {
-    res.status(500).json({ success: false, error: error.message || 'Failed to fetch system settings.' });
-  }
-});
-
-adminRouter.post('/system-settings', async (req, res) => {
-  try {
-    const adminId = req.headers['x-user-id']?.toString();
-    if (!adminId) {
-      return res.status(403).json({ success: false, error: 'Access denied. Please log in.' });
-    }
-
-    const users = getUsersStore();
-    const adminUser = users.find(u => u.id === adminId);
-    if (!adminUser || adminUser.email.toLowerCase() !== 'mohammadnurhasnat@gmail.com') {
-      return res.status(403).json({ success: false, error: 'Access denied. Only Mohammad Nur Hasnat can change system settings.' });
-    }
-
-    const { broadcastNotice, isNoticeActive, defaultDailyLimit, maintenanceMode } = req.body;
-    const updatedSettings = await saveSystemSettings({
-      broadcastNotice: typeof broadcastNotice === 'string' ? broadcastNotice : '',
-      isNoticeActive: !!isNoticeActive,
-      defaultDailyLimit: typeof defaultDailyLimit === 'number' ? defaultDailyLimit : 5,
-      maintenanceMode: !!maintenanceMode
-    });
-
-    await appendAuditLog({
-      userId: adminId,
-      action: 'LIMIT_CHANGE',
-      details: `Updated system announcement settings: notice="${updatedSettings.broadcastNotice}", active=${updatedSettings.isNoticeActive}`
-    });
-
-    res.json({ success: true, settings: updatedSettings });
-  } catch (error: any) {
-    res.status(500).json({ success: false, error: error.message || 'Failed to update system settings.' });
-  }
-});
-
-adminRouter.get('/admin/users', (req, res) => {
-  try {
-    const adminId = req.headers['x-user-id']?.toString();
-    if (!adminId) {
-      return res.status(403).json({ success: false, error: 'Access denied. Please log in.' });
-    }
-    
-    const users = getUsersStore();
-    const adminUser = users.find(u => u.id === adminId);
-    if (!adminUser || adminUser.email.toLowerCase() !== 'mohammadnurhasnat@gmail.com') {
-      return res.status(403).json({ success: false, error: 'Access denied. Only Mohammad Nur Hasnat has access.' });
-    }
-
-    res.json({ success: true, users });
-  } catch (error: any) {
-    res.status(500).json({ success: false, error: error.message || 'Failed to fetch users list.' });
-  }
-});
 
 adminRouter.post('/admin/add-user', async (req, res) => {
   try {
@@ -71,8 +13,7 @@ adminRouter.post('/admin/add-user', async (req, res) => {
       return res.status(403).json({ success: false, error: 'Access denied. Please log in.' });
     }
     
-    const users = getUsersStore();
-    const adminUser = users.find(u => u.id === adminId);
+    const adminUser = await db.query.users.findFirst({ where: eq(users.id, adminId) });
     if (!adminUser || adminUser.email.toLowerCase() !== 'mohammadnurhasnat@gmail.com') {
       return res.status(403).json({ success: false, error: 'Access denied. Only Mohammad Nur Hasnat can add users.' });
     }
@@ -82,11 +23,14 @@ adminRouter.post('/admin/add-user', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Name, Mobile Number, and Password are required fields.' });
     }
 
-    const identifierExists = users.some(u => 
-      u.mobileNumber === mobileNumber || 
-      (email && u.email.toLowerCase() === email.toLowerCase())
-    );
-    if (identifierExists) {
+    const existingUser = await db.query.users.findFirst({
+      where: or(
+        eq(users.mobileNumber, mobileNumber),
+        email ? eq(users.email, email.toLowerCase()) : undefined
+      )
+    });
+
+    if (existingUser) {
       return res.status(400).json({ success: false, error: 'A user with this Email or Mobile Number already exists.' });
     }
 
@@ -94,15 +38,14 @@ adminRouter.post('/admin/add-user', async (req, res) => {
     const newUser = {
       id: newUserId,
       name,
-      email: email || '',
+      email: email ? email.toLowerCase() : '',
       mobileNumber,
       password,
-      dailyLimit: 5
+      dailyLimit: 5,
+      isSuspended: false
     };
 
-    users.push(newUser);
-    saveUsersStore(users);
-    
+    await db.insert(users).values(newUser);
     await appendAuditLog({ userId: adminId, action: 'USER_ADDED', details: `Added new user ${newUser.id} (${newUser.email})` });
 
     res.json({ success: true, user: newUser });
@@ -118,8 +61,7 @@ adminRouter.post('/admin/update-user-limit', async (req, res) => {
       return res.status(403).json({ success: false, error: 'Access denied. Please log in.' });
     }
     
-    const users = getUsersStore();
-    const adminUser = users.find(u => u.id === adminId);
+    const adminUser = await db.query.users.findFirst({ where: eq(users.id, adminId) });
     if (!adminUser || adminUser.email.toLowerCase() !== 'mohammadnurhasnat@gmail.com') {
       return res.status(403).json({ success: false, error: 'Access denied. Only Mohammad Nur Hasnat can update user limits.' });
     }
@@ -129,17 +71,15 @@ adminRouter.post('/admin/update-user-limit', async (req, res) => {
       return res.status(400).json({ success: false, error: 'User ID and numeric limit are required.' });
     }
 
-    const targetUserIndex = users.findIndex(u => u.id === userId);
-    if (targetUserIndex === -1) {
+    const targetUser = await db.query.users.findFirst({ where: eq(users.id, userId) });
+    if (!targetUser) {
       return res.status(404).json({ success: false, error: 'User not found.' });
     }
 
-    users[targetUserIndex].dailyLimit = newLimit;
-    saveUsersStore(users);
-    
+    await db.update(users).set({ dailyLimit: newLimit }).where(eq(users.id, userId));
     await appendAuditLog({ userId: adminId, action: 'LIMIT_CHANGE', details: `Changed daily limit for user ${userId} to ${newLimit}` });
 
-    res.json({ success: true, user: users[targetUserIndex] });
+    res.json({ success: true, user: { ...targetUser, dailyLimit: newLimit } });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message || 'Failed to update user limit.' });
   }
@@ -152,8 +92,7 @@ adminRouter.post('/admin/toggle-suspend', async (req, res) => {
       return res.status(403).json({ success: false, error: 'Access denied. Please log in.' });
     }
     
-    const users = getUsersStore();
-    const adminUser = users.find(u => u.id === adminId);
+    const adminUser = await db.query.users.findFirst({ where: eq(users.id, adminId) });
     if (!adminUser || adminUser.email.toLowerCase() !== 'mohammadnurhasnat@gmail.com') {
       return res.status(403).json({ success: false, error: 'Access denied. Only Mohammad Nur Hasnat can suspend users.' });
     }
@@ -163,21 +102,19 @@ adminRouter.post('/admin/toggle-suspend', async (req, res) => {
       return res.status(400).json({ success: false, error: 'User ID is required.' });
     }
 
-    const targetUserIndex = users.findIndex(u => u.id === userId);
-    if (targetUserIndex === -1) {
+    const targetUser = await db.query.users.findFirst({ where: eq(users.id, userId) });
+    if (!targetUser) {
       return res.status(404).json({ success: false, error: 'User not found.' });
     }
 
-    if (users[targetUserIndex].email.toLowerCase() === 'mohammadnurhasnat@gmail.com') {
+    if (targetUser.email.toLowerCase() === 'mohammadnurhasnat@gmail.com') {
       return res.status(400).json({ success: false, error: 'Admin account cannot be suspended.' });
     }
 
-    users[targetUserIndex].isSuspended = !!isSuspended;
-    saveUsersStore(users);
-    
+    await db.update(users).set({ isSuspended: !!isSuspended }).where(eq(users.id, userId));
     await appendAuditLog({ userId: adminId, action: 'USER_SUSPENDED', details: `${isSuspended ? 'Suspended' : 'Unsuspended'} user ${userId}` });
 
-    res.json({ success: true, user: users[targetUserIndex] });
+    res.json({ success: true, user: { ...targetUser, isSuspended: !!isSuspended } });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message || 'Failed to toggle suspension.' });
   }
@@ -190,8 +127,7 @@ adminRouter.post('/admin/delete-user', async (req, res) => {
       return res.status(403).json({ success: false, error: 'Access denied. Please log in.' });
     }
     
-    const users = getUsersStore();
-    const adminUser = users.find(u => u.id === adminId);
+    const adminUser = await db.query.users.findFirst({ where: eq(users.id, adminId) });
     if (!adminUser || adminUser.email.toLowerCase() !== 'mohammadnurhasnat@gmail.com') {
       return res.status(403).json({ success: false, error: 'Access denied. Only Mohammad Nur Hasnat can delete users.' });
     }
@@ -201,18 +137,16 @@ adminRouter.post('/admin/delete-user', async (req, res) => {
       return res.status(400).json({ success: false, error: 'User ID is required.' });
     }
 
-    const targetUserIndex = users.findIndex(u => u.id === userId);
-    if (targetUserIndex === -1) {
+    const targetUser = await db.query.users.findFirst({ where: eq(users.id, userId) });
+    if (!targetUser) {
       return res.status(404).json({ success: false, error: 'User not found.' });
     }
 
-    if (users[targetUserIndex].email.toLowerCase() === 'mohammadnurhasnat@gmail.com') {
+    if (targetUser.email.toLowerCase() === 'mohammadnurhasnat@gmail.com') {
       return res.status(400).json({ success: false, error: 'Admin account cannot be deleted.' });
     }
 
-    users.splice(targetUserIndex, 1);
-    saveUsersStore(users);
-    
+    await db.delete(users).where(eq(users.id, userId));
     await appendAuditLog({ userId: adminId, action: 'USER_DELETED', details: `Deleted user ${userId}` });
 
     res.json({ success: true });
@@ -221,15 +155,14 @@ adminRouter.post('/admin/delete-user', async (req, res) => {
   }
 });
 
-adminRouter.post('/admin/edit-user', (req, res) => {
+adminRouter.post('/admin/edit-user', async (req, res) => {
   try {
     const adminId = req.headers['x-user-id']?.toString();
     if (!adminId) {
       return res.status(403).json({ success: false, error: 'Access denied. Please log in.' });
     }
     
-    const users = getUsersStore();
-    const adminUser = users.find(u => u.id === adminId);
+    const adminUser = await db.query.users.findFirst({ where: eq(users.id, adminId) });
     if (!adminUser || adminUser.email.toLowerCase() !== 'mohammadnurhasnat@gmail.com') {
       return res.status(403).json({ success: false, error: 'Access denied. Only Mohammad Nur Hasnat has access.' });
     }
@@ -239,32 +172,39 @@ adminRouter.post('/admin/edit-user', (req, res) => {
       return res.status(400).json({ success: false, error: 'User ID, Name, Mobile Number, and Password are required.' });
     }
 
-    const targetUserIndex = users.findIndex(u => u.id === userId);
-    if (targetUserIndex === -1) {
+    const targetUser = await db.query.users.findFirst({ where: eq(users.id, userId) });
+    if (!targetUser) {
       return res.status(404).json({ success: false, error: 'User not found.' });
     }
 
-    const conflictExists = users.some((u, idx) => 
-      idx !== targetUserIndex && 
-      (u.mobileNumber === mobileNumber || (email && u.email && u.email.toLowerCase() === email.toLowerCase()))
-    );
-    if (conflictExists) {
+    const conflictUser = await db.query.users.findFirst({
+      where: and(
+        ne(users.id, userId),
+        or(
+          eq(users.mobileNumber, mobileNumber),
+          email ? eq(users.email, email.toLowerCase()) : undefined
+        )
+      )
+    });
+
+    if (conflictUser) {
       return res.status(400).json({ success: false, error: 'A different user with this Email or Mobile Number already exists.' });
     }
 
-    users[targetUserIndex].name = name;
-    users[targetUserIndex].email = email || '';
-    users[targetUserIndex].mobileNumber = mobileNumber;
-    users[targetUserIndex].password = password;
+    const updateData: any = {
+      name,
+      email: email ? email.toLowerCase() : '',
+      mobileNumber,
+      password,
+    };
     if (typeof dailyLimit === 'number') {
-      users[targetUserIndex].dailyLimit = dailyLimit;
+      updateData.dailyLimit = dailyLimit;
     }
 
-    saveUsersStore(users);
-    
-    appendAuditLog({ userId: adminId, action: 'USER_EDITED', details: `Edited details of user ${userId}` });
+    await db.update(users).set(updateData).where(eq(users.id, userId));
+    await appendAuditLog({ userId: adminId, action: 'USER_EDITED', details: `Edited details of user ${userId}` });
 
-    res.json({ success: true, user: users[targetUserIndex] });
+    res.json({ success: true, user: { ...targetUser, ...updateData } });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message || 'Failed to edit user.' });
   }
@@ -277,8 +217,7 @@ adminRouter.get('/admin/audit-logs', async (req, res) => {
       return res.status(403).json({ success: false, error: 'Access denied. Please log in.' });
     }
     
-    const users = getUsersStore();
-    const adminUser = users.find(u => u.id === adminId);
+    const adminUser = await db.query.users.findFirst({ where: eq(users.id, adminId) });
     if (!adminUser || adminUser.email.toLowerCase() !== 'mohammadnurhasnat@gmail.com') {
       return res.status(403).json({ success: false, error: 'Access denied.' });
     }
