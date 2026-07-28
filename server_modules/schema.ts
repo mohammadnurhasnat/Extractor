@@ -1,31 +1,31 @@
-import { mysqlTable, varchar, int, boolean, timestamp, text, mysqlEnum } from 'drizzle-orm/mysql-core';
+import { pgTable, varchar, integer, boolean, timestamp, text, serial } from 'drizzle-orm/pg-core';
 
-export const users = mysqlTable('users', {
+export const users = pgTable('users', {
   id: varchar('id', { length: 255 }).primaryKey(),
   name: varchar('name', { length: 255 }).notNull(),
   email: varchar('email', { length: 255 }).notNull(),
   mobileNumber: varchar('mobileNumber', { length: 20 }),
   password: varchar('password', { length: 255 }).notNull(),
   isSuspended: boolean('isSuspended').default(false),
-  dailyLimit: int('dailyLimit').default(5),
+  dailyLimit: integer('dailyLimit').default(5),
   createdAt: timestamp('createdAt').defaultNow(),
 });
 
-export const auditLogs = mysqlTable('audit_logs', {
-  id: int('id').autoincrement().primaryKey(),
+export const auditLogs = pgTable('audit_logs', {
+  id: serial('id').primaryKey(),
   userId: varchar('userId', { length: 255 }).notNull(),
   action: varchar('action', { length: 255 }).notNull(),
   details: text('details'),
   timestamp: timestamp('timestamp').defaultNow(),
 });
 
-export const dailyLimits = mysqlTable('daily_limits', {
+export const dailyLimits = pgTable('daily_limits', {
   id: varchar('id', { length: 255 }).primaryKey(), // e.g., userId or "ip_192.168.1.1"
   date: varchar('date', { length: 10 }).notNull(), // YYYY-MM-DD
-  count: int('count').default(0),
+  count: integer('count').default(0),
 });
 
-export const history = mysqlTable('history', {
+export const history = pgTable('history', {
   id: varchar('id', { length: 255 }).primaryKey(),
   userId: varchar('userId', { length: 255 }).notNull(),
   permanentAddress: text('permanentAddress'),
@@ -39,3 +39,4 @@ export const history = mysqlTable('history', {
   nidDob: varchar('nidDob', { length: 255 }),
   timestamp: timestamp('timestamp').defaultNow(),
 });
+

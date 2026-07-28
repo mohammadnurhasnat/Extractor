@@ -1,19 +1,20 @@
-import { drizzle } from 'drizzle-orm/mysql2';
-import mysql from 'mysql2/promise';
+import { drizzle } from 'drizzle-orm/node-postgres';
+import pkg from 'pg';
+const { Pool } = pkg;
 import * as schema from './schema';
 import { eq, desc, and } from 'drizzle-orm';
 import dotenv from 'dotenv';
 dotenv.config();
 
-// Initialize Drizzle ORM with MySQL connection pool
-const poolConnection = mysql.createPool({
-  uri: process.env.DATABASE_URL || 'mysql://root:@localhost:3306/extractor_db',
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
+const dbUrl = process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_rq6wGoD0PHNO@ep-cold-salad-axqbmz2g.c-4.us-east-2.aws.neon.tech/neondb?sslmode=require';
+
+const pool = new Pool({
+  connectionString: dbUrl,
+  ssl: { rejectUnauthorized: false }
 });
 
-export const db = drizzle(poolConnection, { schema, mode: 'default' });
+export const db = drizzle(pool, { schema });
+
 
 // We keep some synchronous behavior logic purely as types, but the actual functions will be async now.
 export type User = typeof schema.users.$inferSelect;
