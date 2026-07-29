@@ -94,13 +94,13 @@ export function UsersTable({
                     <div className="flex items-center justify-end gap-1.5">
                       <button 
                         onClick={() => onToggleSuspend(user.id, !!user.isSuspended)} 
-                        className={`px-1.5 py-0.5 text-[9px] font-bold rounded ${user.isSuspended ? 'bg-emerald-100 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400' : 'bg-amber-100 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400'}`}
+                        className={`px-2 py-1 text-[10px] font-bold rounded-md transition-colors ${user.isSuspended ? 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800' : 'bg-red-100 hover:bg-red-200 dark:bg-red-950/40 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-900'}`}
                       >
                         {user.isSuspended ? 'Unsuspend' : 'Suspend'}
                       </button>
                       <button 
                         onClick={() => onDelete(user.id)} 
-                        className="px-1.5 py-0.5 text-[9px] font-bold bg-rose-100 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 rounded"
+                        className="px-2 py-1 text-[10px] font-bold bg-red-600 hover:bg-red-700 text-white rounded-md shadow-sm transition-colors"
                       >
                         Delete
                       </button>

@@ -570,13 +570,13 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
                     <div className="flex gap-3 justify-center pt-4">
                       <button
                         onClick={confirmDeleteUser}
-                        className="slide-btn slide-btn-blue px-6 py-2 rounded-xl font-extrabold text-xs uppercase ripple-btn"
+                        className="px-6 py-2 rounded-xl font-extrabold text-xs uppercase bg-red-600 hover:bg-red-700 active:bg-red-800 text-white shadow-sm transition-colors"
                       >
                         Yes
                       </button>
                       <button
                         onClick={() => setShowDeleteConfirm(false)}
-                        className="slide-btn slide-btn-blue px-6 py-2 rounded-xl font-extrabold text-xs uppercase ripple-btn"
+                        className="px-6 py-2 rounded-xl font-extrabold text-xs uppercase bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-zinc-800 dark:text-zinc-200 transition-colors"
                       >
                         No
                       </button>
@@ -595,19 +595,19 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
                     <div className="flex gap-2 pt-4 border-t border-slate-100 dark:border-zinc-900">
                       <button 
                         onClick={handleDeleteFromPopup} 
-                        className="slide-btn slide-btn-teal flex-1 py-2 rounded-xl font-extrabold text-xs ripple-btn"
+                        className="flex-1 py-2.5 rounded-xl font-extrabold text-xs bg-red-600 hover:bg-red-700 active:bg-red-800 text-white shadow-sm transition-colors"
                       >
                         Delete
                       </button>
                       <button 
                         onClick={handleToggleSuspendFromPopup} 
-                        className="slide-btn slide-btn-teal flex-1 py-2 rounded-xl font-extrabold text-xs ripple-btn"
+                        className="flex-1 py-2.5 rounded-xl font-extrabold text-xs bg-red-100 hover:bg-red-200 text-red-700 dark:bg-red-950/40 dark:hover:bg-red-900/60 dark:text-red-300 border border-red-200 dark:border-red-900 transition-colors"
                       >
                         {selectedUserForModal.isSuspended ? 'Unsuspend' : 'Suspend'}
                       </button>
                       <button 
                         onClick={() => setIsEditingSelectedUser(true)} 
-                        className="slide-btn slide-btn-teal flex-1 py-2 rounded-xl font-extrabold text-xs ripple-btn"
+                        className="flex-1 py-2.5 rounded-xl font-extrabold text-xs bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white shadow-sm transition-colors"
                       >
                         Edit
                       </button>
