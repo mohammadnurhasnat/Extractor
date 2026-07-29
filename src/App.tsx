@@ -127,8 +127,9 @@ export default function App() {
   const loadLimitStatus = async (userId: string) => {
     try {
       const res = await fetch(`/api/limit-status/${userId}`);
+      if (!res.ok) return;
       const result = await res.json();
-      if (result.success) {
+      if (result && result.success) {
         setLimitStatus({ count: result.count, remaining: result.remaining, limit: result.limit });
       }
     } catch (err) {
@@ -216,36 +217,34 @@ export default function App() {
 
       const userEmail = matchedUser.email;
 
-      // Step 2: Try to use Firebase Authentication SDK to authenticate properly (optional/non-blocking)
-      try {
-        await signInWithEmailAndPassword(auth, userEmail, password);
-      } catch (authErr: any) {
-        // Fallback: If user is validated but auth account is missing in Firebase Auth, register on-the-fly
-        if (authErr.code === 'auth/user-not-found' || authErr.code === 'auth/invalid-credential') {
-          try {
-            await createUserWithEmailAndPassword(auth, userEmail, password);
-          } catch (createErr) {
-            console.warn('Failed to create user on-the-fly in Firebase Auth (safe to ignore if Email/Password provider is disabled):', createErr);
+      // Step 2: Non-blocking background sync with Firebase Auth SDK if available
+      if (userEmail && password) {
+        Promise.race([
+          signInWithEmailAndPassword(auth, userEmail, password),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Firebase Auth timeout')), 1500))
+        ]).catch((authErr: any) => {
+          if (authErr?.code === 'auth/user-not-found' || authErr?.code === 'auth/invalid-credential') {
+            createUserWithEmailAndPassword(auth, userEmail, password).catch((createErr) => {
+              console.warn('Firebase Auth create user skipped:', createErr);
+            });
+          } else {
+            console.warn('Firebase Auth SDK authentication skipped or timed out:', authErr);
           }
-        } else {
-          console.warn('Firebase Auth SDK authentication skipped (safe to ignore if Email/Password provider is disabled):', authErr);
-        }
+        });
       }
 
-      // Append login audit log via server proxy
-      try {
-        await fetch('/api/log-action', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            userId: matchedUser.id, 
-            action: 'LOGIN', 
-            details: 'User logged in successfully' 
-          })
-        });
-      } catch (logErr) {
+      // Append login audit log via server proxy (non-blocking)
+      fetch('/api/log-action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          userId: matchedUser.id, 
+          action: 'LOGIN', 
+          details: 'User logged in successfully' 
+        })
+      }).catch((logErr) => {
         console.error('Failed to append login audit log:', logErr);
-      }
+      });
 
       localStorage.setItem('passport_extractor_user', JSON.stringify(matchedUser));
       setCurrentUser(matchedUser);

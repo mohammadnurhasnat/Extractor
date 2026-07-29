@@ -107,7 +107,10 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
     setAdminUsersError(null);
     try {
       const response = await fetch('/api/admin/users', {
-        headers: { 'x-user-id': currentUser.id }
+        headers: { 
+          'x-user-id': currentUser?.id || '',
+          'x-user-email': currentUser?.email || ''
+        }
       });
       const result = await response.json();
       if (response.ok && result.success) {
@@ -126,7 +129,10 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
     setIsLoadingLogs(true);
     try {
       const response = await fetch('/api/admin/audit-logs', {
-        headers: { 'x-user-id': currentUser.id }
+        headers: { 
+          'x-user-id': currentUser?.id || '',
+          'x-user-email': currentUser?.email || ''
+        }
       });
       const result = await response.json();
       if (response.ok && result.success) {
@@ -147,7 +153,8 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-user-id': currentUser.id
+          'x-user-id': currentUser?.id || '',
+          'x-user-email': currentUser?.email || ''
         },
         body: JSON.stringify({ userId, newLimit })
       });
@@ -169,7 +176,8 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-user-id': currentUser.id
+          'x-user-id': currentUser?.id || '',
+          'x-user-email': currentUser?.email || ''
         },
         body: JSON.stringify({ userId, isSuspended: !currentStatus })
       });
@@ -199,7 +207,8 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-user-id': currentUser.id
+          'x-user-id': currentUser?.id || '',
+          'x-user-email': currentUser?.email || ''
         },
         body: JSON.stringify({ userId })
       });
@@ -228,7 +237,8 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-user-id': currentUser.id
+          'x-user-id': currentUser?.id || '',
+          'x-user-email': currentUser?.email || ''
         },
         body: JSON.stringify({
           name: newUserName,
@@ -278,7 +288,8 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-user-id': currentUser.id
+          'x-user-id': currentUser?.id || '',
+          'x-user-email': currentUser?.email || ''
         },
         body: JSON.stringify({
           userId: selectedUserForModal.id,
@@ -325,7 +336,8 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-user-id': currentUser.id
+          'x-user-id': currentUser?.id || '',
+          'x-user-email': currentUser?.email || ''
         },
         body: JSON.stringify({ userId })
       });
@@ -352,7 +364,8 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-user-id': currentUser.id
+          'x-user-id': currentUser?.id || '',
+          'x-user-email': currentUser?.email || ''
         },
         body: JSON.stringify({ userId, isSuspended: !currentStatus })
       });

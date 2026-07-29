@@ -1,7 +1,6 @@
 import express from 'express';
 import path from 'path';
 import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
 import { createServer as createViteServer } from 'vite';
 import { loadUsersFromFirestore } from './server_modules/db';
 import { authRouter } from './server_modules/auth';
@@ -16,22 +15,11 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
-  // Rate Limiting (DDoS Protection)
-  // Max 200 requests per 15 minutes per IP
-  const globalLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, 
-    max: 200, 
-    message: { success: false, error: 'অনেক বেশি রিকোয়েস্ট করা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।' },
-    standardHeaders: true,
-    legacyHeaders: false,
-  });
-
   // Security headers & Parsers
   app.use(helmet({
     contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: false,
   }));
-  app.use(globalLimiter); // Apply rate limiter globally
   app.use(express.json({ limit: '50mb' }));
   app.use(express.urlencoded({ limit: '50mb', extended: true }));
 

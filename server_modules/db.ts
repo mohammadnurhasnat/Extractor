@@ -6,7 +6,9 @@ import { eq, desc, and } from 'drizzle-orm';
 import dotenv from 'dotenv';
 dotenv.config();
 
-const dbUrl = process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_rq6wGoD0PHNO@ep-cold-salad-axqbmz2g.c-4.us-east-2.aws.neon.tech/neondb?sslmode=require';
+const defaultPgUrl = 'postgresql://neondb_owner:npg_rq6wGoD0PHNO@ep-cold-salad-axqbmz2g.c-4.us-east-2.aws.neon.tech/neondb?sslmode=require';
+const rawUrl = process.env.DATABASE_URL || '';
+const dbUrl = (rawUrl.startsWith('postgres://') || rawUrl.startsWith('postgresql://')) ? rawUrl : defaultPgUrl;
 
 const pool = new Pool({
   connectionString: dbUrl,

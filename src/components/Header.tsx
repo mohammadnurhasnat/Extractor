@@ -27,8 +27,8 @@ export const Header: React.FC<HeaderProps> = ({
   isSynced = true
 }) => {
 
-  const isAdmin = currentUser?.email.toLowerCase() === 'mohammadnurhasnat@gmail.com';
-  const initials = currentUser?.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'EX';
+  const isAdmin = currentUser?.email?.toLowerCase() === 'mohammadnurhasnat@gmail.com';
+  const initials = (currentUser?.name || 'EX').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
   const [isTransitioning, setIsTransitioning] = useState(false);
 

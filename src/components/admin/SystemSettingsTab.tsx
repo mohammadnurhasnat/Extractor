@@ -105,7 +105,8 @@ export function SystemSettingsTab({ currentUser, onToast, usersCount, logsCount 
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-user-id': currentUser.id
+          'x-user-id': currentUser?.id || '',
+          'x-user-email': currentUser?.email || ''
         },
         body: JSON.stringify({
           broadcastNotice,

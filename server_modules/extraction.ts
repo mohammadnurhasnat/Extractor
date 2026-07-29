@@ -9,10 +9,24 @@ import {
   checkAndIncrementLimit, 
   checkAndIncrementIPLimit,
   decrementLimit, 
+  getLimitStatus,
   appendAuditLog 
 } from './db';
 
 export const extractionRouter = Router();
+
+extractionRouter.get('/limit-status/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    if (!userId) {
+      return res.status(400).json({ success: false, error: 'User ID is required' });
+    }
+    const status = await getLimitStatus(userId);
+    res.json({ success: true, ...status });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message || 'Failed to fetch limit status' });
+  }
+});
 
 const ExtractPassportSchema = z.object({
   imageBase64: z.string().min(1, 'Image base64 data is required'),
