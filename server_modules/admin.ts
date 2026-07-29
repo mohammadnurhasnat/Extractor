@@ -3,8 +3,60 @@ import { db } from './db';
 import { users } from './schema';
 import { getAuditLogs, appendAuditLog } from './db';
 import { eq, or, ne, and } from 'drizzle-orm';
+import fs from 'fs';
+import path from 'path';
 
 export const adminRouter = Router();
+
+const settingsPath = path.join(process.cwd(), 'system-settings.json');
+
+const getDefaultSettings = () => ({
+  broadcastNotice: '',
+  isNoticeActive: false,
+  defaultDailyLimit: 5,
+  maintenanceMode: false
+});
+
+const getSystemSettings = () => {
+  try {
+    if (fs.existsSync(settingsPath)) {
+      const data = fs.readFileSync(settingsPath, 'utf-8');
+      return { ...getDefaultSettings(), ...JSON.parse(data) };
+    }
+  } catch (err) {
+    console.error('Error reading settings', err);
+  }
+  return getDefaultSettings();
+};
+
+const saveSystemSettings = (settings: any) => {
+  fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
+};
+
+adminRouter.get('/system-settings', (req, res) => {
+  res.json({ success: true, settings: getSystemSettings() });
+});
+
+adminRouter.post('/system-settings', async (req, res) => {
+  try {
+    const adminId = req.headers['x-user-id']?.toString();
+    if (!adminId) {
+      return res.status(403).json({ success: false, error: 'Access denied. Please log in.' });
+    }
+    const adminUser = await db.query.users.findFirst({ where: eq(users.id, adminId) });
+    if (!adminUser || adminUser.email.toLowerCase() !== 'mohammadnurhasnat@gmail.com') {
+      return res.status(403).json({ success: false, error: 'Access denied.' });
+    }
+    
+    const currentSettings = getSystemSettings();
+    const newSettings = { ...currentSettings, ...req.body };
+    saveSystemSettings(newSettings);
+    
+    res.json({ success: true, settings: newSettings });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
 
 adminRouter.post('/admin/add-user', async (req, res) => {
   try {
@@ -207,6 +259,25 @@ adminRouter.post('/admin/edit-user', async (req, res) => {
     res.json({ success: true, user: { ...targetUser, ...updateData } });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message || 'Failed to edit user.' });
+  }
+});
+
+adminRouter.get('/admin/users', async (req, res) => {
+  try {
+    const adminId = req.headers['x-user-id']?.toString();
+    if (!adminId) {
+      return res.status(403).json({ success: false, error: 'Access denied. Please log in.' });
+    }
+    
+    const adminUser = await db.query.users.findFirst({ where: eq(users.id, adminId) });
+    if (!adminUser || adminUser.email.toLowerCase() !== 'mohammadnurhasnat@gmail.com') {
+      return res.status(403).json({ success: false, error: 'Access denied. Only Mohammad Nur Hasnat has access.' });
+    }
+
+    const allUsers = await db.query.users.findMany();
+    res.json({ success: true, users: allUsers });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message || 'Failed to fetch users.' });
   }
 });
 
