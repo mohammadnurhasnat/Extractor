@@ -35,8 +35,6 @@ import { BroadcastBanner } from './components/BroadcastBanner';
 // Utilities
 import { generateDataText, getKolkataHotelForPassport, getDelhiHotelForPassport, getKolkataBusinessForPassport, formatIndianVisaAddress } from './utils/addressUtils';
 import { generatePDF, getPDFDocument, generateUndertakingPDF } from './utils/pdfGenerator';
-import { logoutGoogle, auth } from './lib/firebase';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 
 import { useUndertakingState } from './hooks/useUndertakingState';
 import { useSessionQueue } from './hooks/useSessionQueue';
@@ -193,22 +191,6 @@ export default function App() {
 
       const userEmail = matchedUser.email;
 
-      // Step 2: Non-blocking background sync with Firebase Auth SDK if available
-      if (userEmail && password) {
-        Promise.race([
-          signInWithEmailAndPassword(auth, userEmail, password),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Firebase Auth timeout')), 1500))
-        ]).catch((authErr: any) => {
-          if (authErr?.code === 'auth/user-not-found' || authErr?.code === 'auth/invalid-credential') {
-            createUserWithEmailAndPassword(auth, userEmail, password).catch((createErr) => {
-              console.warn('Firebase Auth create user skipped:', createErr);
-            });
-          } else {
-            console.warn('Firebase Auth SDK authentication skipped or timed out:', authErr);
-          }
-        });
-      }
-
       // Append login audit log via server proxy (non-blocking)
       fetch('/api/log-action', {
         method: 'POST',
@@ -244,7 +226,7 @@ export default function App() {
     setLimitStatus(null);
     setIsLogoutConfirmOpen(false);
     try {
-      await logoutGoogle();
+      await fetch('/api/sso/logout', { method: 'POST' });
     } catch (e) {
       console.error(e);
     }
