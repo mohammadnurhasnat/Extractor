@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { HistoryItem, PassportData } from '../types';
 import { encryptData, decryptData } from '../utils/crypto';
+import { safeFetchJson } from '../utils/api';
 
 export function usePassportHistory(userId: string | null, options?: {
   onItemAdded?: (item: HistoryItem) => void;
@@ -12,6 +13,7 @@ export function usePassportHistory(userId: string | null, options?: {
 
   const latestHistoryRef = useRef<HistoryItem[]>([]);
   const syncTimeoutRef = useRef<any>(null);
+  const lastFetchTimeRef = useRef<number>(0);
 
   useEffect(() => {
     return () => {
@@ -53,16 +55,21 @@ export function usePassportHistory(userId: string | null, options?: {
       return true;
     };
 
-    // Load from Express Proxy API (Neon PostgreSQL)
-    const fetchHistory = async () => {
+    // Load from Express Proxy API (Neon PostgreSQL / Firestore)
+    const fetchHistory = async (force: boolean = false) => {
+      const now = Date.now();
+      if (!force && now - lastFetchTimeRef.current < 5000) {
+        return; // Throttle frequent focus event calls
+      }
+      lastFetchTimeRef.current = now;
+
       try {
-        const response = await fetch(`/api/history?userId=${encodeURIComponent(userId)}`, {
+        const { ok, data: resData } = await safeFetchJson(`/api/history?userId=${encodeURIComponent(userId)}`, {
           headers: {
             'x-user-id': userId
           }
         });
-        const resData = await response.json();
-        if (resData.success && resData.history) {
+        if (ok && resData && resData.success && Array.isArray(resData.history)) {
           const fetchedHistory = resData.history.map((item: any) => {
             let cachedImage = '';
             try {
@@ -89,19 +96,23 @@ export function usePassportHistory(userId: string | null, options?: {
       }
     };
 
-    // Load initial history
-    fetchHistory();
+    // Load initial history with force=true
+    fetchHistory(true);
 
     const handleFocus = () => {
-      fetchHistory();
+      fetchHistory(false);
+    };
+
+    const handleCustomUpdate = () => {
+      fetchHistory(true);
     };
 
     window.addEventListener('focus', handleFocus);
-    window.addEventListener('app_history_updated', fetchHistory);
+    window.addEventListener('app_history_updated', handleCustomUpdate);
 
     return () => {
       window.removeEventListener('focus', handleFocus);
-      window.removeEventListener('app_history_updated', fetchHistory);
+      window.removeEventListener('app_history_updated', handleCustomUpdate);
     };
   }, [userId]);
 
@@ -142,7 +153,7 @@ export function usePassportHistory(userId: string | null, options?: {
           return firestoreData;
         });
 
-        await fetch('/api/history/bulk', {
+        await safeFetchJson('/api/history/bulk', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -234,7 +245,7 @@ export function usePassportHistory(userId: string | null, options?: {
       try {
         // Strip imageBase64 from Firestore payload
         const { imageBase64: _, ...firestoreData } = itemToSave;
-        await fetch('/api/history', {
+        await safeFetchJson('/api/history', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -273,7 +284,7 @@ export function usePassportHistory(userId: string | null, options?: {
 
     if (userId) {
       try {
-        await fetch(`/api/history/${id}?userId=${encodeURIComponent(userId)}`, {
+        await safeFetchJson(`/api/history/${id}?userId=${encodeURIComponent(userId)}`, {
           method: 'DELETE',
           headers: {
             'x-user-id': userId
@@ -305,7 +316,7 @@ export function usePassportHistory(userId: string | null, options?: {
     // Delete all from firestore
     if (userId) {
       try {
-        await fetch(`/api/history/clear?userId=${encodeURIComponent(userId)}`, {
+        await safeFetchJson(`/api/history/clear?userId=${encodeURIComponent(userId)}`, {
           method: 'POST',
           headers: {
             'x-user-id': userId

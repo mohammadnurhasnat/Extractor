@@ -11,6 +11,7 @@ import JSZip from 'jszip';
 
 // Types
 import { PassportData, HistoryItem, QueueItem, UndertakingFormData } from './types';
+import { safeFetchJson } from './utils/api';
 
 // Components
 import { Header } from './components/Header';
@@ -126,10 +127,8 @@ export default function App() {
   // Load and update daily extraction limit status
   const loadLimitStatus = async (userId: string) => {
     try {
-      const res = await fetch(`/api/limit-status/${userId}`);
-      if (!res.ok) return;
-      const result = await res.json();
-      if (result && result.success) {
+      const { ok, data: result } = await safeFetchJson(`/api/limit-status/${userId}`);
+      if (ok && result && result.success) {
         setLimitStatus({ count: result.count, remaining: result.remaining, limit: result.limit });
       }
     } catch (err) {
@@ -156,16 +155,15 @@ export default function App() {
 
       // Step 1: Call server-side /api/login backend endpoint first
       try {
-        const res = await fetch('/api/login', {
+        const { ok, data: result, error } = await safeFetchJson('/api/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ loginIdentifier: trimmedIdentifier, password })
         });
-        const result = await res.json();
-        if (result.success) {
+        if (ok && result && result.success) {
           matchedUser = result.user;
         } else {
-          errorMsg = result.error || errorMsg;
+          errorMsg = result?.error || error || errorMsg;
         }
       } catch (serverErr) {
         console.warn('Backend login endpoint failed, falling back to direct Firestore query:', serverErr);
