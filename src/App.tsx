@@ -520,7 +520,11 @@ ${shareUrl}
     }
   };
 
-  const isUndertakingConfigured = !!(utPurpose || utFromDate || utToDate);
+  const isUndertakingConfigured = !!(
+    (utPurpose && utPurpose !== 'Double Entry' && utPurpose !== 'Tourism') ||
+    utFromDate ||
+    utToDate
+  );
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const visaFileInputRef = useRef<HTMLInputElement>(null);

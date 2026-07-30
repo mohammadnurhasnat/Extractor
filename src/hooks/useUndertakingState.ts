@@ -56,10 +56,14 @@ export function useUndertakingState(data: PassportData | null) {
     }
   }, [undertakingData]);
 
-  const isUndertakingConfigured = !!(utPurpose || utFromDate || utToDate);
+  const isUndertakingConfigured = !!(
+    (utPurpose && utPurpose !== 'Double Entry' && utPurpose !== 'Tourism') ||
+    utFromDate ||
+    utToDate
+  );
 
   useEffect(() => {
-    if (data && isUndertakingConfigured) {
+    if (data && isUndertakingConfigured && utPurpose !== 'Double Entry' && utPurpose !== 'Tourism') {
       let durationStr = '';
       if (utFromDate && utToDate) {
         const from = new Date(utFromDate);

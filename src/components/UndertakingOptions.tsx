@@ -212,15 +212,21 @@ export function UndertakingOptions({
           </div>
         )}
 
-        {utPurpose === 'Tourism' && (
-          <div className="bg-emerald-500/5 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 rounded-lg p-2.5">
-            <p className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-0.5">
-              Duration of Stay (Visa Dependent)
+        {(utPurpose === 'Double Entry' || utPurpose === 'Tourism') && (
+          <motion.div
+            key="no-undertaking-note"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="bg-sky-500/10 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-900/50 rounded-lg p-2.5"
+          >
+            <p className="text-[10px] font-bold text-sky-600 dark:text-sky-400 uppercase tracking-wider mb-0.5">
+              {utPurpose} (No Undertaking Required)
             </p>
-            <p className="text-[11px] text-slate-600 dark:text-zinc-400 leading-normal italic">
-              ভ্রমণের তারিখ ও স্থায়িত্বকাল নির্দিষ্ট নয়। এটি সম্পূর্ণভাবে ভিসা পাওয়ার পর নির্ধারণ করা হবে।
+            <p className="text-[11px] text-slate-600 dark:text-zinc-400 leading-normal">
+              Undertaking form will not be generated for {utPurpose}. Only passport data extraction and Image to PDF are processed.
             </p>
-          </div>
+          </motion.div>
         )}
 
         {/* 3. Return to Home Country */}
