@@ -24,6 +24,21 @@ async function startServer() {
   app.use(express.json({ limit: '50mb' }));
   app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
+  // Custom light cookie-parser middleware
+  app.use((req: any, _res: any, next: any) => {
+    req.cookies = {};
+    const cookieHeader = req.headers.cookie;
+    if (cookieHeader) {
+      cookieHeader.split(';').forEach((cookie: string) => {
+        const parts = cookie.split('=');
+        const name = parts.shift()?.trim();
+        const value = parts.join('=').trim();
+        if (name) req.cookies[name] = decodeURIComponent(value);
+      });
+    }
+    next();
+  });
+
   // API Route Registration
   app.use('/api', authRouter);
   app.use('/api', adminRouter);

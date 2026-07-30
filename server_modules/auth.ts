@@ -6,6 +6,33 @@ import { eq, or } from 'drizzle-orm';
 
 export const authRouter = Router();
 
+// Helper to set SSO Shared Domain Cookie
+function setSSOCookie(res: any, user: any) {
+  const sessionData = {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    timestamp: Date.now()
+  };
+  const token = Buffer.from(JSON.stringify(sessionData)).toString('base64');
+  
+  // Set cookie for parent domain (e.g. .yourdomain.com) so both extractor & padgen subdomains can access it
+  const cookieOptions: any = {
+    path: '/',
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+  };
+
+  if (process.env.COOKIE_DOMAIN) {
+    cookieOptions.domain = process.env.COOKIE_DOMAIN; // e.g. '.yourdomain.com'
+  }
+
+  res.cookie('sso_token', token, cookieOptions);
+  return token;
+}
+
 authRouter.post('/google-login', async (req, res) => {
   try {
     const { email, name, id } = req.body;
@@ -22,7 +49,8 @@ authRouter.post('/google-login', async (req, res) => {
         return res.status(403).json({ success: false, error: 'আপনার অ্যাকাউন্টটি স্থগিত করা হয়েছে। Users have been suspended. Now, contact support.' });
       }
       await appendAuditLog({ userId: existingUser.id, action: 'LOGIN', details: 'Google Login successful' });
-      return res.json({ success: true, user: existingUser });
+      const ssoToken = setSSOCookie(res, existingUser);
+      return res.json({ success: true, user: existingUser, ssoToken });
     } else {
       const newUserId = id || `user_${Date.now()}`;
       const newUser = {
@@ -39,7 +67,8 @@ authRouter.post('/google-login', async (req, res) => {
       await appendAuditLog({ userId: newUserId, action: 'USER_ADDED', details: `New user registered via Google: ${newUserId}` });
       await appendAuditLog({ userId: newUserId, action: 'LOGIN', details: 'Google Login successful (first time)' });
       
-      return res.json({ success: true, user: newUser });
+      const ssoToken = setSSOCookie(res, newUser);
+      return res.json({ success: true, user: newUser, ssoToken });
     }
   } catch (error) {
     console.error('Google Login Error:', error);
@@ -71,11 +100,47 @@ authRouter.post('/login', async (req, res) => {
     }
     
     await appendAuditLog({ userId: user.id, action: 'LOGIN', details: 'User logged in successfully' });
-    res.json({ success: true, user });
+    const ssoToken = setSSOCookie(res, user);
+    res.json({ success: true, user, ssoToken });
   } catch (error) {
     console.error('Login Error:', error);
     res.status(500).json({ success: false, error: 'Internal server error.' });
   }
+});
+
+authRouter.get('/sso/verify', async (req, res) => {
+  try {
+    const ssoToken = req.headers.authorization?.replace('Bearer ', '') || req.cookies?.sso_token;
+    if (!ssoToken) {
+      return res.status(401).json({ success: false, authenticated: false, error: 'No SSO token provided.' });
+    }
+
+    const decoded = JSON.parse(Buffer.from(ssoToken, 'base64').toString('utf-8'));
+    if (!decoded || !decoded.id) {
+      return res.status(401).json({ success: false, authenticated: false, error: 'Invalid token structure.' });
+    }
+
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, decoded.id)
+    });
+
+    if (!user || user.isSuspended) {
+      return res.status(403).json({ success: false, authenticated: false, error: 'User invalid or suspended.' });
+    }
+
+    res.json({ success: true, authenticated: true, user });
+  } catch (error) {
+    res.status(401).json({ success: false, authenticated: false, error: 'Authentication failed.' });
+  }
+});
+
+authRouter.post('/sso/logout', (req, res) => {
+  const cookieOptions: any = { path: '/' };
+  if (process.env.COOKIE_DOMAIN) {
+    cookieOptions.domain = process.env.COOKIE_DOMAIN;
+  }
+  res.clearCookie('sso_token', cookieOptions);
+  res.json({ success: true, message: 'Logged out from SSO session.' });
 });
 
 authRouter.post('/log-action', async (req, res) => {
