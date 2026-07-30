@@ -37,6 +37,7 @@ export const history = pgTable('history', {
   nidName: varchar('nidName', { length: 255 }),
   nidNumber: varchar('nidNumber', { length: 255 }),
   nidDob: varchar('nidDob', { length: 255 }),
+  data: text('data'),
   timestamp: timestamp('timestamp').defaultNow(),
 });
 

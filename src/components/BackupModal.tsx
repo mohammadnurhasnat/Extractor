@@ -29,8 +29,8 @@ export function BackupModal({
   if (!isOpen) return null;
 
   const filteredProfiles = history.filter(item => {
-    const fullName = `${item.data.givenName || ''} ${item.data.surname || ''}`.toLowerCase();
-    const passportNo = (item.data.passportNumber || '').toLowerCase();
+    const fullName = `${item.data?.givenName || ''} ${item.data?.surname || ''}`.toLowerCase();
+    const passportNo = (item.data?.passportNumber || '').toLowerCase();
     const query = searchTerm.toLowerCase().trim();
     return fullName.includes(query) || passportNo.includes(query);
   });
@@ -50,7 +50,7 @@ export function BackupModal({
       const link = document.createElement('a');
       link.href = url;
       
-      const displayName = `${item.data.givenName || 'Profile'} ${item.data.surname || ''}`.trim();
+      const displayName = `${item.data?.givenName || 'Profile'} ${item.data?.surname || ''}`.trim();
       link.download = `${displayName} Backup.pass`;
       
       document.body.appendChild(link);
@@ -59,7 +59,7 @@ export function BackupModal({
       URL.revokeObjectURL(url);
       
       setToast({
-        message: `${item.data.givenName || 'Profile'} backed up successfully.`,
+        message: `${item.data?.givenName || 'Profile'} backed up successfully.`,
         type: 'success'
       });
     } catch (err) {
@@ -228,7 +228,7 @@ export function BackupModal({
           ) : (
             <div className="border border-slate-100 dark:border-zinc-900 rounded-[5px] overflow-hidden divide-y divide-slate-100 dark:divide-zinc-900 bg-white/40 dark:bg-black/10">
               {filteredProfiles.map((item, index) => {
-                const p = item.data;
+                const p = item.data || {} as any;
                 const displayName = `${p.givenName || 'Unnamed'} ${p.surname || ''}`.trim();
                 
                 return (

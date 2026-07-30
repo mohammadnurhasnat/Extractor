@@ -27,7 +27,35 @@ historyRouter.get('/history', async (req, res) => {
 
     const historyItems = await db.select().from(historySchema).where(eq(historySchema.userId, userId)).orderBy(desc(historySchema.timestamp));
     
-    return res.json({ success: true, history: historyItems });
+    const parsedHistory = historyItems.map((hItem: any) => {
+      let itemData = {};
+      if (hItem.data) {
+        try {
+          itemData = JSON.parse(hItem.data);
+        } catch (e) {
+          console.error("Failed to parse history JSON data for item:", hItem.id, e);
+        }
+      } else {
+        // Fallback to separate fields if stored historically
+        itemData = {
+          permanentAddress: hItem.permanentAddress,
+          presentAddress: hItem.presentAddress,
+          businessAddressDhaka: hItem.businessAddressDhaka,
+          businessAddressLocal: hItem.businessAddressLocal,
+          officeAddressDhaka: hItem.officeAddressDhaka,
+          officeAddressLocal: hItem.officeAddressLocal,
+          nidName: hItem.nidName,
+          nidNumber: hItem.nidNumber,
+          nidDob: hItem.nidDob,
+        };
+      }
+      return {
+        ...hItem,
+        data: itemData
+      };
+    });
+    
+    return res.json({ success: true, history: parsedHistory });
   } catch (error: any) {
     console.error('Failed to fetch history:', error);
     res.status(500).json({ success: false, error: error.message || 'Failed to fetch history.' });
@@ -56,15 +84,16 @@ historyRouter.post('/history', async (req, res) => {
     await db.insert(historySchema).values({
       id: item.id,
       userId: userId,
-      permanentAddress: item.permanentAddress,
-      presentAddress: item.presentAddress,
-      businessAddressDhaka: item.businessAddressDhaka,
-      businessAddressLocal: item.businessAddressLocal,
-      officeAddressDhaka: item.officeAddressDhaka,
-      officeAddressLocal: item.officeAddressLocal,
-      nidName: item.nidName,
-      nidNumber: item.nidNumber,
-      nidDob: item.nidDob,
+      permanentAddress: item.data?.permanentAddress || item.permanentAddress || null,
+      presentAddress: item.data?.presentAddress || item.presentAddress || null,
+      businessAddressDhaka: item.data?.businessAddressDhaka || item.businessAddressDhaka || null,
+      businessAddressLocal: item.data?.businessAddressLocal || item.businessAddressLocal || null,
+      officeAddressDhaka: item.data?.officeAddressDhaka || item.officeAddressDhaka || null,
+      officeAddressLocal: item.data?.officeAddressLocal || item.officeAddressLocal || null,
+      nidName: item.data?.nidName || item.nidName || null,
+      nidNumber: item.data?.nidNumber || item.nidNumber || null,
+      nidDob: item.data?.nidDob || item.nidDob || null,
+      data: item.data ? JSON.stringify(item.data) : null,
     });
 
     return res.json({ success: true });
@@ -97,15 +126,16 @@ historyRouter.post('/history/bulk', async (req, res) => {
       const formattedItems = items.map(item => ({
         id: item.id,
         userId: userId,
-        permanentAddress: item.permanentAddress,
-        presentAddress: item.presentAddress,
-        businessAddressDhaka: item.businessAddressDhaka,
-        businessAddressLocal: item.businessAddressLocal,
-        officeAddressDhaka: item.officeAddressDhaka,
-        officeAddressLocal: item.officeAddressLocal,
-        nidName: item.nidName,
-        nidNumber: item.nidNumber,
-        nidDob: item.nidDob,
+        permanentAddress: item.data?.permanentAddress || item.permanentAddress || null,
+        presentAddress: item.data?.presentAddress || item.presentAddress || null,
+        businessAddressDhaka: item.data?.businessAddressDhaka || item.businessAddressDhaka || null,
+        businessAddressLocal: item.data?.businessAddressLocal || item.businessAddressLocal || null,
+        officeAddressDhaka: item.data?.officeAddressDhaka || item.officeAddressDhaka || null,
+        officeAddressLocal: item.data?.officeAddressLocal || item.officeAddressLocal || null,
+        nidName: item.data?.nidName || item.nidName || null,
+        nidNumber: item.data?.nidNumber || item.nidNumber || null,
+        nidDob: item.data?.nidDob || item.nidDob || null,
+        data: item.data ? JSON.stringify(item.data) : null,
       }));
       
       // Batch insert logic is typically .insert(schema).values(array) in Drizzle

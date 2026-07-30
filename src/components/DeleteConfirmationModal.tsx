@@ -75,10 +75,10 @@ export function DeleteConfirmationModal({
                           </span>
                           <div className="truncate">
                             <h5 className="text-[11px] font-bold text-slate-800 dark:text-zinc-200 truncate">
-                              {item.data.givenName} {item.data.surname}
+                              {item.data?.givenName || 'Unnamed'} {item.data?.surname || ''}
                             </h5>
                             <p className="text-[9px] font-mono text-slate-400 dark:text-zinc-500">
-                              {item.data.passportNumber || 'No Passport ID'}
+                              {item.data?.passportNumber || 'No Passport ID'}
                             </p>
                           </div>
                         </div>
@@ -100,10 +100,10 @@ export function DeleteConfirmationModal({
                   </div>
                   <div className="min-w-0">
                     <h5 className="font-extrabold text-xs text-slate-800 dark:text-zinc-100 truncate">
-                      {targetItem.data.givenName} {targetItem.data.surname}
+                      {targetItem.data?.givenName || 'Unnamed'} {targetItem.data?.surname || ''}
                     </h5>
                     <p className="text-[10px] font-mono font-bold text-slate-500 dark:text-zinc-400 mt-0.5">
-                      {targetItem.data.passportNumber || 'N/A'}
+                      {targetItem.data?.passportNumber || 'N/A'}
                     </p>
                   </div>
                 </div>

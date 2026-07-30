@@ -42,8 +42,8 @@ export function HistorySidebar({
 
   // Filter list based on local search input
   const filteredHistory = history.filter(item => {
-    const fullName = `${item.data.givenName || ''} ${item.data.surname || ''}`.toLowerCase();
-    const passportNo = (item.data.passportNumber || '').toLowerCase();
+    const fullName = `${item.data?.givenName || ''} ${item.data?.surname || ''}`.toLowerCase();
+    const passportNo = (item.data?.passportNumber || '').toLowerCase();
     const queryWords = localSearchQuery.toLowerCase().trim().split(/\s+/).filter(Boolean);
     if (queryWords.length === 0) return true;
     return queryWords.every(word => fullName.includes(word) || passportNo.includes(word));
@@ -60,7 +60,7 @@ export function HistorySidebar({
   // Identify Recent, Active, and Last Used items
   const recentItem = history.length > 0 ? history[0] : null;
   const activeItemInHistory = activeData?.passportNumber 
-    ? history.find(h => h.data.passportNumber === activeData.passportNumber) || null
+    ? history.find(h => h.data?.passportNumber === activeData.passportNumber) || null
     : null;
   
   // Currently displayed label on the dropdown trigger button
@@ -168,7 +168,7 @@ export function HistorySidebar({
                 <>
                   <div className="flex items-center gap-1.5">
                     <span className="font-bold text-xs text-slate-800 dark:text-zinc-100 truncate">
-                      {currentDisplayedProfile.data.givenName} {currentDisplayedProfile.data.surname}
+                      {currentDisplayedProfile.data?.givenName || 'Unnamed'} {currentDisplayedProfile.data?.surname || ''}
                     </span>
                     {activeItemInHistory?.id === currentDisplayedProfile.id && (
                       <span className="text-[8px] font-extrabold px-1.5 py-0.2 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded shrink-0">
@@ -177,7 +177,7 @@ export function HistorySidebar({
                     )}
                   </div>
                   <span className="text-[10px] text-slate-500 dark:text-zinc-400 font-mono">
-                    {currentDisplayedProfile.data.passportNumber || 'No Passport No'}
+                    {currentDisplayedProfile.data?.passportNumber || 'No Passport No'}
                   </span>
                 </>
               ) : (
@@ -233,7 +233,7 @@ export function HistorySidebar({
                 </div>
               ) : (
                 filteredHistory.map((item, idx) => {
-                  const isActive = activeData?.passportNumber && item.data.passportNumber === activeData.passportNumber;
+                  const isActive = activeData?.passportNumber && item.data?.passportNumber === activeData.passportNumber;
                   const isLastUsed = lastUsedId === item.id;
                   const isRecent = recentItem?.id === item.id;
 
@@ -254,7 +254,7 @@ export function HistorySidebar({
                         <div className="flex flex-col min-w-0">
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <span className="text-xs font-bold text-slate-800 dark:text-zinc-200 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400">
-                              {item.data.givenName} {item.data.surname}
+                              {item.data?.givenName || 'Unnamed'} {item.data?.surname || ''}
                             </span>
                             
                             {/* Badges */}
@@ -275,7 +275,7 @@ export function HistorySidebar({
                             )}
                           </div>
                           <span className="text-[10px] text-slate-500 dark:text-zinc-400 font-mono">
-                            {item.data.passportNumber || 'N/A'}
+                            {item.data?.passportNumber || 'N/A'}
                           </span>
                         </div>
                       </div>
