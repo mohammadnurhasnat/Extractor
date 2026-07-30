@@ -405,12 +405,9 @@ export default function App() {
 
   const [resultsTab, setResultsTab] = useState<'profile' | 'undertaking' | 'passport-pdf'>(() => {
     const hash = window.location.hash.replace('#', '');
-    if (['profile', 'undertaking', 'passport-pdf'].includes(hash)) {
+    if (['undertaking', 'passport-pdf'].includes(hash)) {
       return hash as any;
     }
-    const saved = localStorage.getItem('passport_active_results_tab');
-    if (saved === 'undertaking') return 'undertaking';
-    if (saved === 'passport-pdf') return 'passport-pdf';
     return 'profile';
   });
 
@@ -443,12 +440,14 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('passport_active_results_tab', resultsTab);
     
-    // Manage browser history for back button support
+    // Manage browser history for back button support and clean URL on default tab
     const currentHash = window.location.hash.replace('#', '');
-    if (currentHash !== resultsTab) {
-      if (!currentHash && resultsTab === 'profile') {
-        window.history.replaceState(null, '', `#${resultsTab}`);
-      } else {
+    if (resultsTab === 'profile') {
+      if (currentHash) {
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+      }
+    } else {
+      if (currentHash !== resultsTab) {
         window.history.pushState(null, '', `#${resultsTab}`);
       }
     }
