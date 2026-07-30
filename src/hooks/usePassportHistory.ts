@@ -1,8 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { HistoryItem, PassportData } from '../types';
 import { encryptData, decryptData } from '../utils/crypto';
-import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
-import { db } from '../lib/firebase';
 
 export function usePassportHistory(userId: string | null, options?: {
   onItemAdded?: (item: HistoryItem) => void;
@@ -55,8 +53,8 @@ export function usePassportHistory(userId: string | null, options?: {
       return true;
     };
 
-    // Load from Express Proxy API as a fallback
-    const fetchHistoryFallback = async () => {
+    // Load from Express Proxy API (Neon PostgreSQL)
+    const fetchHistory = async () => {
       try {
         const response = await fetch(`/api/history?userId=${encodeURIComponent(userId)}`, {
           headers: {
@@ -87,61 +85,23 @@ export function usePassportHistory(userId: string | null, options?: {
           }
         }
       } catch (err) {
-        console.error("Error fetching history fallback from API:", err);
+        console.error("Error fetching history from API:", err);
       }
     };
 
     // Load initial history
-    fetchHistoryFallback();
+    fetchHistory();
 
     const handleFocus = () => {
-      fetchHistoryFallback();
+      fetchHistory();
     };
 
     window.addEventListener('focus', handleFocus);
-    window.addEventListener('app_history_updated', fetchHistoryFallback);
-
-    // Set up a real-time Firestore listener to sync instantly across multiple devices
-    let unsubscribe: (() => void) | null = null;
-    try {
-      const historyColRef = collection(db, 'users', userId, 'history');
-      const q = query(historyColRef, orderBy('timestamp', 'desc'));
-      
-      unsubscribe = onSnapshot(q, (snapshot) => {
-        const fetchedHistory: HistoryItem[] = [];
-        snapshot.forEach((docSnap) => {
-          const item = docSnap.data() as any;
-          let cachedImage = '';
-          try {
-            const stored = localStorage.getItem(`passport_img_${item.id}`);
-            if (stored) {
-              cachedImage = decryptData(stored) || '';
-            }
-          } catch (e) {
-            console.error("Failed to load cached image:", e);
-          }
-          fetchedHistory.push({
-            ...item,
-            imageBase64: cachedImage || item.imageBase64 || ''
-          });
-        });
-        if (!isSameHistory(fetchedHistory, latestHistoryRef.current)) {
-          setInternalHistory(fetchedHistory);
-          latestHistoryRef.current = fetchedHistory;
-        }
-      }, (error) => {
-        console.warn("Real-time Firestore listener failed, using fallbacks:", error);
-      });
-    } catch (err) {
-      console.warn("Could not set up real-time Firestore listener, using fallbacks:", err);
-    }
+    window.addEventListener('app_history_updated', fetchHistory);
 
     return () => {
       window.removeEventListener('focus', handleFocus);
-      window.removeEventListener('app_history_updated', fetchHistoryFallback);
-      if (unsubscribe) {
-        unsubscribe();
-      }
+      window.removeEventListener('app_history_updated', fetchHistory);
     };
   }, [userId]);
 
@@ -286,7 +246,7 @@ export function usePassportHistory(userId: string | null, options?: {
           })
         });
       } catch (err) {
-        console.error("Failed to save history to Firestore:", err);
+        console.error("Failed to save history to database:", err);
       }
     }
 
