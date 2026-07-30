@@ -6,8 +6,36 @@ import { eq, or } from 'drizzle-orm';
 
 export const authRouter = Router();
 
+// Helper to dynamically get cookie domain (resolves .extractor.fun etc.)
+function getCookieDomain(req: any) {
+  if (process.env.COOKIE_DOMAIN) {
+    return process.env.COOKIE_DOMAIN;
+  }
+  const hostHeader = req.headers.host;
+  if (!hostHeader) return undefined;
+  
+  const host = hostHeader.split(':')[0].toLowerCase();
+  
+  // If it's localhost or an IP, do not use domain attribute
+  if (host === 'localhost' || /^(\d{1,3}\.){3}\d{1,3}$/.test(host)) {
+    return undefined;
+  }
+  
+  // Specifically handle extractor.fun and its subdomains
+  if (host.endsWith('extractor.fun')) {
+    return '.extractor.fun';
+  }
+  
+  // General domain parsing fallback (sub.example.com -> .example.com)
+  const parts = host.split('.');
+  if (parts.length >= 2) {
+    return `.${parts.slice(-2).join('.')}`;
+  }
+  return undefined;
+}
+
 // Helper to set SSO Shared Domain Cookie
-function setSSOCookie(res: any, user: any) {
+function setSSOCookie(req: any, res: any, user: any) {
   const sessionData = {
     id: user.id,
     email: user.email,
@@ -16,17 +44,19 @@ function setSSOCookie(res: any, user: any) {
   };
   const token = Buffer.from(JSON.stringify(sessionData)).toString('base64');
   
-  // Set cookie for parent domain (e.g. .yourdomain.com) so both extractor & padgen subdomains can access it
+  const cookieDomain = getCookieDomain(req);
+  
+  // Set cookie for parent domain so both extractor & padgen subdomains can access it
   const cookieOptions: any = {
     path: '/',
-    httpOnly: true,
+    httpOnly: false, // Must be false so frontend JS on subdomains can read the SSO state
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
   };
 
-  if (process.env.COOKIE_DOMAIN) {
-    cookieOptions.domain = process.env.COOKIE_DOMAIN; // e.g. '.yourdomain.com'
+  if (cookieDomain) {
+    cookieOptions.domain = cookieDomain;
   }
 
   res.cookie('sso_token', token, cookieOptions);
@@ -49,7 +79,7 @@ authRouter.post('/google-login', async (req, res) => {
         return res.status(403).json({ success: false, error: 'আপনার অ্যাকাউন্টটি স্থগিত করা হয়েছে। Users have been suspended. Now, contact support.' });
       }
       await appendAuditLog({ userId: existingUser.id, action: 'LOGIN', details: 'Google Login successful' });
-      const ssoToken = setSSOCookie(res, existingUser);
+      const ssoToken = setSSOCookie(req, res, existingUser);
       return res.json({ success: true, user: existingUser, ssoToken });
     } else {
       const newUserId = id || `user_${Date.now()}`;
@@ -64,10 +94,9 @@ authRouter.post('/google-login', async (req, res) => {
       };
       await db.insert(users).values(newUser);
       
-      await appendAuditLog({ userId: newUserId, action: 'USER_ADDED', details: `New user registered via Google: ${newUserId}` });
       await appendAuditLog({ userId: newUserId, action: 'LOGIN', details: 'Google Login successful (first time)' });
       
-      const ssoToken = setSSOCookie(res, newUser);
+      const ssoToken = setSSOCookie(req, res, newUser);
       return res.json({ success: true, user: newUser, ssoToken });
     }
   } catch (error) {
@@ -100,7 +129,7 @@ authRouter.post('/login', async (req, res) => {
     }
     
     await appendAuditLog({ userId: user.id, action: 'LOGIN', details: 'User logged in successfully' });
-    const ssoToken = setSSOCookie(res, user);
+    const ssoToken = setSSOCookie(req, res, user);
     res.json({ success: true, user, ssoToken });
   } catch (error) {
     console.error('Login Error:', error);
@@ -136,8 +165,9 @@ authRouter.get('/sso/verify', async (req, res) => {
 
 authRouter.post('/sso/logout', (req, res) => {
   const cookieOptions: any = { path: '/' };
-  if (process.env.COOKIE_DOMAIN) {
-    cookieOptions.domain = process.env.COOKIE_DOMAIN;
+  const cookieDomain = getCookieDomain(req);
+  if (cookieDomain) {
+    cookieOptions.domain = cookieDomain;
   }
   res.clearCookie('sso_token', cookieOptions);
   res.json({ success: true, message: 'Logged out from SSO session.' });

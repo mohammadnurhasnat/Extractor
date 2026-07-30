@@ -31,6 +31,7 @@ import { LoginGreeting } from './components/LoginGreeting';
 import { BackgroundElements } from './components/layout/BackgroundElements';
 import { AppModals } from './components/AppModals';
 import { BroadcastBanner } from './components/BroadcastBanner';
+import { PadGenWorkspace } from './components/PadGenWorkspace';
 
 // Utilities
 import { generateDataText, getKolkataHotelForPassport, getDelhiHotelForPassport, getKolkataBusinessForPassport, formatIndianVisaAddress } from './utils/addressUtils';
@@ -60,6 +61,44 @@ export default function App() {
       return null;
     }
   });
+
+  // SSO & Subdomain Check (checks if we are on padgen.extractor.fun or localhost testing)
+  const isSubdomainPadgen = window.location.hostname.includes('padgen') || new URLSearchParams(window.location.search).get('app') === 'padgen';
+  const [isSsoChecking, setIsSsoChecking] = useState(isSubdomainPadgen);
+
+  useEffect(() => {
+    const checkSSO = async () => {
+      try {
+        const response = await fetch('/api/sso/verify');
+        const resData = await response.json();
+        if (response.ok && resData.success && resData.authenticated) {
+          setCurrentUser(resData.user);
+          localStorage.setItem('passport_extractor_user', JSON.stringify(resData.user));
+          setIsSsoChecking(false);
+        } else {
+          // If we are on PadGen subdomain and not authenticated, we MUST redirect to Extractor login
+          if (isSubdomainPadgen) {
+            setToast({ message: 'অথরাইজেশন প্রয়োজন। লগইন করার জন্য এক্সট্রাক্টরে রিডাইরেক্ট করা হচ্ছে...', type: 'error' });
+            setTimeout(() => {
+              window.location.href = 'https://extractor.fun/';
+            }, 2000);
+          } else {
+            setIsSsoChecking(false);
+          }
+        }
+      } catch (err) {
+        console.error('SSO verification failed:', err);
+        if (isSubdomainPadgen) {
+          window.location.href = 'https://extractor.fun/';
+        } else {
+          setIsSsoChecking(false);
+        }
+      }
+    };
+    
+    checkSSO();
+  }, [isSubdomainPadgen]);
+
   const [showLoginGreeting, setShowLoginGreeting] = useState(false);
 
   // 🛡️ Safety effect to clear any stuck body scroll lock on login/logout
@@ -231,6 +270,9 @@ export default function App() {
       console.error(e);
     }
     setToast({ message: 'Logged out successfully.', type: 'info' });
+    if (isSubdomainPadgen) {
+      window.location.href = 'https://extractor.fun/';
+    }
   };
 
   // ১. মাউসের রাইট ক্লিক নিষ্ক্রিয় করা এবং ডেভেলপার টুলস প্রতিরোধ করা (Disable copying & inspection)
@@ -632,6 +674,20 @@ ${shareUrl}
     handleDownloadJSON
   } = useExporterHelpers({ data, undertakingData, setToast, currentUser });
 
+  if (isSubdomainPadgen) {
+    if (isSsoChecking) {
+      return (
+        <div className="min-h-screen bg-[#FDFCF7] dark:bg-zinc-950 flex flex-col items-center justify-center gap-4 text-center">
+          <Loader2 className="w-12 h-12 text-indigo-600 animate-spin" />
+          <p className="text-sm font-bold text-slate-700 dark:text-zinc-300 font-sans">সেশন যাচাই করা হচ্ছে... (Verifying SSO Session...)</p>
+        </div>
+      );
+    }
+    return (
+      <PadGenWorkspace currentUser={currentUser} onLogout={executeLogout} />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 font-sans text-slate-900 dark:text-zinc-50 pb-4 selection:bg-red-200 dark:selection:bg-red-900/50 selection:text-red-900 dark:selection:text-red-100 transition-colors relative overflow-x-hidden">
       <BackgroundElements />
@@ -718,8 +774,7 @@ ${shareUrl}
                 
                 <a
                   href="https://padgen.extractor.fun/"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  target="_self"
                   className="relative inline-flex items-center gap-1.5 sm:gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white font-extrabold text-[11px] sm:text-xs border-b-[3px] sm:border-b-4 border-indigo-950/80 shadow-md shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:-translate-y-0.5 active:translate-y-0.5 active:border-b-0 transition-all duration-150 group cursor-pointer shrink-0 mt-0 lg:mt-2"
                   title="PadGen ওয়েবসাইটে যান"
                 >
