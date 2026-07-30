@@ -55,6 +55,23 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
     return { adminCount, userCount };
   }, [users]);
 
+  // Helper to safely parse any timestamp format
+  const safeParseDate = (ts: any): Date => {
+    if (!ts) return new Date(0);
+    if (ts instanceof Date) return isNaN(ts.getTime()) ? new Date(0) : ts;
+    if (typeof ts === 'number') return new Date(ts);
+    if (typeof ts === 'string') {
+      const d = new Date(ts);
+      return isNaN(d.getTime()) ? new Date(0) : d;
+    }
+    if (typeof ts === 'object') {
+      if (typeof ts.seconds === 'number') return new Date(ts.seconds * 1000);
+      if (typeof ts._seconds === 'number') return new Date(ts._seconds * 1000);
+    }
+    const d = new Date(ts);
+    return isNaN(d.getTime()) ? new Date(0) : d;
+  };
+
   // 2. Helper to check dates
   const dates = useMemo(() => {
     const now = new Date();
@@ -84,7 +101,7 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
     };
 
     logs.forEach(log => {
-      const logDate = new Date(log.timestamp);
+      const logDate = safeParseDate(log.timestamp);
       const isToday = dates.isToday(logDate);
       const isThisWeek = dates.isThisWeek(logDate);
       const isThisMonth = dates.isThisMonth(logDate);

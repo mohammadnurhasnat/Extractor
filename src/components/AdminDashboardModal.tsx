@@ -60,44 +60,18 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
         fetchAuditLogs();
       }
 
-      // Real-time Firestore snapshot listeners for zero-reload multi-device sync
-      let unsubUsers: (() => void) | null = null;
-      let unsubLogs: (() => void) | null = null;
-
-      try {
+      // Auto-poll every 10 seconds while modal is open to keep analytics and audit logs in sync with DB
+      const interval = setInterval(() => {
         if (activeTab === 'users' || activeTab === 'analytics') {
-          const usersColRef = collection(db, 'registered_users');
-          unsubUsers = onSnapshot(usersColRef, (snapshot) => {
-            const list: any[] = [];
-            snapshot.forEach((docSnap) => {
-              list.push(docSnap.data());
-            });
-            if (list.length > 0) {
-              setAdminUsersList(list);
-            }
-          }, (err) => console.warn("Users snapshot error:", err));
+          fetchAdminUsers();
         }
-
         if (activeTab === 'audit' || activeTab === 'analytics') {
-          const logsColRef = collection(db, 'audit_logs');
-          const q = query(logsColRef, orderBy('timestamp', 'desc'));
-          unsubLogs = onSnapshot(q, (snapshot) => {
-            const logs: any[] = [];
-            snapshot.forEach((docSnap) => {
-              logs.push(docSnap.data());
-            });
-            if (logs.length > 0) {
-              setAuditLogs(logs);
-            }
-          }, (err) => console.warn("Logs snapshot error:", err));
+          fetchAuditLogs();
         }
-      } catch (e) {
-        console.warn("Could not set up admin snapshots:", e);
-      }
+      }, 10000);
 
       return () => {
-        if (unsubUsers) unsubUsers();
-        if (unsubLogs) unsubLogs();
+        clearInterval(interval);
       };
     }
   }, [isOpen, activeTab, currentUser]);

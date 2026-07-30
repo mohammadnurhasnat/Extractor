@@ -52,7 +52,7 @@ export async function appendAuditLog(log: { userId: string; action: string; deta
 
 export async function getAuditLogs() {
   try {
-    return await db.select().from(schema.auditLogs).orderBy(desc(schema.auditLogs.timestamp)).limit(100);
+    return await db.select().from(schema.auditLogs).orderBy(desc(schema.auditLogs.timestamp)).limit(5000);
   } catch (error) {
     console.error("Error fetching audit logs:", error);
     return [];
