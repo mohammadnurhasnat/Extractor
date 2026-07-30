@@ -29,6 +29,7 @@ interface AppModalsProps {
   handleLogout: () => void;
   profilePicture: string | null;
   onSaveProfilePicture: (dataUrl: string) => void;
+  onUpdateUser: (updatedUser: User) => void;
   toast: { message: string; type: 'success' | 'info' | 'error' } | null;
   setToast: (toast: { message: string; type: 'success' | 'info' | 'error' } | null) => void;
   itemToDelete: string | null;
@@ -66,6 +67,7 @@ export function AppModals({
   handleLogout,
   profilePicture,
   onSaveProfilePicture,
+  onUpdateUser,
   toast,
   setToast,
   itemToDelete,
@@ -108,8 +110,8 @@ export function AppModals({
         isOpen={isProfileOpen}
         onClose={() => setIsProfileOpen(false)}
         currentUser={currentUser}
-        profilePicture={profilePicture}
-        onSaveProfilePicture={onSaveProfilePicture}
+        onUpdateUser={onUpdateUser}
+        showToast={setToast}
       />
 
       {/* Backup Modal */}

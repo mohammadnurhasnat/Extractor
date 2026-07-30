@@ -15,6 +15,35 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false }
 });
 
+// Auto-migrate schema changes (e.g. adding missing columns/tables)
+async function initDbTables() {
+  try {
+    await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS "profilePicture" text;');
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS shared_cards (
+        id VARCHAR(255) PRIMARY KEY,
+        "passportData" TEXT,
+        "undertakingData" TEXT,
+        "createdBy" VARCHAR(255),
+        timestamp TIMESTAMP DEFAULT NOW()
+      );
+    `);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS broadcast_messages (
+        id VARCHAR(255) PRIMARY KEY,
+        message TEXT NOT NULL,
+        type VARCHAR(50) DEFAULT 'info',
+        "isActive" BOOLEAN DEFAULT true,
+        "createdAt" TIMESTAMP DEFAULT NOW()
+      );
+    `);
+    console.log('DB schema checked: profilePicture column & missing tables ensured.');
+  } catch (err) {
+    console.error('DB auto-migration error:', err);
+  }
+}
+initDbTables();
+
 export const db = drizzle(pool, { schema });
 
 

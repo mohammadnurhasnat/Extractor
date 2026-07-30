@@ -8,6 +8,7 @@ export const users = pgTable('users', {
   password: varchar('password', { length: 255 }).notNull(),
   isSuspended: boolean('isSuspended').default(false),
   dailyLimit: integer('dailyLimit').default(5),
+  profilePicture: text('profilePicture'),
   createdAt: timestamp('createdAt').defaultNow(),
 });
 
@@ -39,5 +40,21 @@ export const history = pgTable('history', {
   nidDob: varchar('nidDob', { length: 255 }),
   data: text('data'),
   timestamp: timestamp('timestamp').defaultNow(),
+});
+
+export const sharedCards = pgTable('shared_cards', {
+  id: varchar('id', { length: 255 }).primaryKey(),
+  passportData: text('passportData'),
+  undertakingData: text('undertakingData'),
+  createdBy: varchar('createdBy', { length: 255 }),
+  timestamp: timestamp('timestamp').defaultNow(),
+});
+
+export const broadcastMessages = pgTable('broadcast_messages', {
+  id: varchar('id', { length: 255 }).primaryKey(),
+  message: text('message').notNull(),
+  type: varchar('type', { length: 50 }).default('info'),
+  isActive: boolean('isActive').default(true),
+  createdAt: timestamp('createdAt').defaultNow(),
 });
 

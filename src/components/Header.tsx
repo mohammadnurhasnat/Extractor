@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { flushSync } from 'react-dom';
-import { Sun, Moon, LogOut, User, RefreshCw, Users, ShieldCheck, Cloud, CloudOff, Settings } from 'lucide-react';
+import { Sun, Moon, LogOut, User as UserIcon, RefreshCw, Users, ShieldCheck, Cloud, CloudOff, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { User } from '../types';
 
 interface HeaderProps {
   isDarkMode: boolean;
   onToggleDarkMode: () => void;
-  currentUser?: { id: string; email: string; name: string; mobileNumber: string } | null;
+  currentUser?: User | null;
   onLogout?: () => void;
   limitStatus?: { count: number; remaining: number; limit: number } | null;
   onOpenAdminUsers?: () => void;
@@ -202,22 +203,24 @@ export const Header: React.FC<HeaderProps> = ({
             </h1>
           </div>
         </div>
-        {/* Right column: User Button (bam pase) and Profile Button (dan pase) */}
+        {/* Right column: User Button, Profile/Settings, and Logout in a single bordered group */}
         <div className="flex items-center gap-1 sm:gap-3 lg:gap-4 shrink-0 min-w-0">
-          {isAdmin && (
-            <button
-              onClick={onOpenAdminUsers}
-              className="slide-btn slide-btn-slate px-3 py-1 rounded-full font-bold text-[9px] sm:text-xs flex items-center justify-center gap-1 shrink-0 ripple-btn"
-              title="Manage Registered Users"
-            >
-              <span className="relative z-10 flex items-center justify-center gap-1.5">
-                <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span>Users</span>
-              </span>
-            </button>
-          )}
           {currentUser && (
-            <div className="flex items-center gap-2 sm:gap-4 px-1 py-1 sm:px-2 sm:py-1.5 bg-slate-100/60 dark:bg-zinc-900/60 rounded-[8px] border border-slate-200/50 dark:border-zinc-800/50 min-w-0 shrink-0">
+            <div className="flex items-center gap-1.5 sm:gap-3 px-1.5 py-1 sm:px-2.5 sm:py-1.5 bg-slate-100/60 dark:bg-zinc-900/60 rounded-[8px] border border-slate-200/50 dark:border-zinc-800/50 min-w-0 shrink-0">
+              {/* Users Button (Admin only) - placed to the left of Settings button inside this border */}
+              {isAdmin && (
+                <button
+                  onClick={onOpenAdminUsers}
+                  className="slide-btn slide-btn-slate p-1.5 sm:px-3 sm:py-1 rounded-full font-bold text-[9px] sm:text-xs flex items-center justify-center gap-1 shrink-0 ripple-btn"
+                  title="Manage Registered Users"
+                >
+                  <span className="relative z-10 flex items-center justify-center gap-1">
+                    <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">Users</span>
+                  </span>
+                </button>
+              )}
+
               {/* Daily Limit - strictly hidden for Admin */}
               {!isAdmin && limitStatus && (
                 <span className={`text-[8px] sm:text-[10px] font-extrabold px-1 py-0.5 rounded-[3px] flex items-center gap-0.5 shrink-0 ${
@@ -230,17 +233,25 @@ export const Header: React.FC<HeaderProps> = ({
                 </span>
               )}
 
-              {/* Profile Button - Only icon on ultra-small screens */}
+              {/* Profile/Settings Button */}
               <button
                 onClick={onOpenProfile}
                 className="slide-btn slide-btn-purple px-1.5 sm:px-3 py-1 rounded-full font-bold text-[9px] sm:text-[11px] flex items-center gap-1 sm:gap-1.5 hover:shadow-sm shrink-0 min-w-0"
                 title="Profile Settings"
               >
-                <span className="relative z-10 flex items-center gap-1">
+                <span className="relative z-10 flex items-center gap-1.5">
+                  {(currentUser.profilePicture || profilePicture) ? (
+                    <img 
+                      src={currentUser.profilePicture || profilePicture || ''} 
+                      alt="Avatar" 
+                      className="w-5 h-5 sm:w-6 sm:h-6 object-cover rounded-[8px] border border-white/50 shadow-xs shrink-0" 
+                    />
+                  ) : (
+                    <Settings className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+                  )}
                   <span className="truncate max-w-[50px] xs:max-w-[80px] sm:max-w-[120px] hidden xs:inline-block">
                     {currentUser.name || currentUser.mobileNumber}
                   </span>
-                  <Settings className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 shrink-0 xs:hidden sm:block" />
                 </span>
               </button>
 

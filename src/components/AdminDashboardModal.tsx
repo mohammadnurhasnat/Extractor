@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Users, X, ShieldCheck, History, UserPlus, BarChart3, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
-import { db } from '../lib/firebase';
 import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
 import { UsersTable } from './admin/UsersTable';
 import { AuditLogsTable } from './admin/AuditLogsTable';
@@ -52,32 +50,34 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
   useEffect(() => {
     if (isOpen && currentUser) {
       if (activeTab === 'users') {
-        fetchAdminUsers();
+        fetchAdminUsers(false);
       } else if (activeTab === 'audit') {
-        fetchAuditLogs();
+        fetchAuditLogs(false);
       } else if (activeTab === 'analytics') {
-        fetchAdminUsers();
-        fetchAuditLogs();
+        fetchAdminUsers(false);
+        fetchAuditLogs(false);
       }
 
-      // Auto-poll every 10 seconds while modal is open to keep analytics and audit logs in sync with DB
-      const interval = setInterval(() => {
+      // Silent event listener: Syncs data quietly in background when any user/admin takes action
+      const handleSilentSync = () => {
         if (activeTab === 'users' || activeTab === 'analytics') {
-          fetchAdminUsers();
+          fetchAdminUsers(true);
         }
         if (activeTab === 'audit' || activeTab === 'analytics') {
-          fetchAuditLogs();
+          fetchAuditLogs(true);
         }
-      }, 10000);
+      };
+
+      window.addEventListener('app_action_logged', handleSilentSync);
 
       return () => {
-        clearInterval(interval);
+        window.removeEventListener('app_action_logged', handleSilentSync);
       };
     }
   }, [isOpen, activeTab, currentUser]);
 
-  const fetchAdminUsers = async () => {
-    setIsLoadingUsers(true);
+  const fetchAdminUsers = async (silent = false) => {
+    if (!silent) setIsLoadingUsers(true);
     setAdminUsersError(null);
     try {
       const response = await fetch('/api/admin/users', {
@@ -95,12 +95,12 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
     } catch (err) {
       setAdminUsersError('Network error while fetching registered users.');
     } finally {
-      setIsLoadingUsers(false);
+      if (!silent) setIsLoadingUsers(false);
     }
   };
 
-  const fetchAuditLogs = async () => {
-    setIsLoadingLogs(true);
+  const fetchAuditLogs = async (silent = false) => {
+    if (!silent) setIsLoadingLogs(true);
     try {
       const response = await fetch('/api/admin/audit-logs', {
         headers: { 
@@ -112,12 +112,12 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
       if (response.ok && result.success) {
         setAuditLogs(result.logs);
       } else {
-        setToast({ message: result.error || 'Failed to fetch audit logs.', type: 'error' });
+        if (!silent) setToast({ message: result.error || 'Failed to fetch audit logs.', type: 'error' });
       }
     } catch (err) {
-      setToast({ message: 'Network error fetching logs.', type: 'error' });
+      if (!silent) setToast({ message: 'Network error fetching logs.', type: 'error' });
     } finally {
-      setIsLoadingLogs(false);
+      if (!silent) setIsLoadingLogs(false);
     }
   };
 

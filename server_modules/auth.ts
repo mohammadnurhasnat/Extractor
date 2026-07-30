@@ -90,3 +90,51 @@ authRouter.post('/log-action', async (req, res) => {
     res.status(500).json({ success: false, error: error.message || 'Failed to log action.' });
   }
 });
+
+authRouter.post('/update-profile', async (req, res) => {
+  try {
+    const { userId, name, mobileNumber, password, profilePicture } = req.body;
+    if (!userId) {
+      return res.status(400).json({ success: false, error: 'User ID is required.' });
+    }
+
+    const updateFields: any = {};
+    if (name !== undefined && name !== null && name.trim() !== '') {
+      updateFields.name = name.trim();
+    }
+    if (mobileNumber !== undefined && mobileNumber !== null) {
+      updateFields.mobileNumber = mobileNumber.trim();
+    }
+    if (password && password.trim() !== '') {
+      updateFields.password = password.trim();
+    }
+    if (profilePicture !== undefined) {
+      updateFields.profilePicture = profilePicture;
+    }
+
+    if (Object.keys(updateFields).length === 0) {
+      return res.status(400).json({ success: false, error: 'No fields to update.' });
+    }
+
+    await db.update(users).set(updateFields).where(eq(users.id, userId));
+
+    const updatedUser = await db.query.users.findFirst({
+      where: eq(users.id, userId)
+    });
+
+    if (!updatedUser) {
+      return res.status(404).json({ success: false, error: 'User not found.' });
+    }
+
+    await appendAuditLog({
+      userId,
+      action: 'UPDATE_PROFILE',
+      details: 'Updated profile information (Name, Mobile, Password, or Photo)'
+    });
+
+    res.json({ success: true, user: updatedUser });
+  } catch (error: any) {
+    console.error('Update profile error:', error);
+    res.status(500).json({ success: false, error: error.message || 'Failed to update profile.' });
+  }
+});

@@ -55,7 +55,7 @@ export function useExporterHelpers({ data, undertakingData, setToast, currentUse
           action: 'PDF_DOWNLOAD',
           details: `Downloaded PDF report for ${data.givenName || ''} ${data.surname || ''}`
         })
-      }).catch(err => console.error("Error logging PDF download:", err));
+      }).then(() => window.dispatchEvent(new CustomEvent('app_action_logged'))).catch(err => console.error("Error logging PDF download:", err));
     }
   };
 
@@ -82,7 +82,7 @@ export function useExporterHelpers({ data, undertakingData, setToast, currentUse
             action: 'UNDERTAKING_DOWNLOAD',
             details: `Downloaded undertaking PDF for ${undertakingData.fullName || 'unknown'}`
           })
-        }).catch(err => console.error("Error logging undertaking download:", err));
+        }).then(() => window.dispatchEvent(new CustomEvent('app_action_logged'))).catch(err => console.error("Error logging undertaking download:", err));
       }
     } catch (err: any) {
       setToast({ message: "Error generating the document.", type: "error" });

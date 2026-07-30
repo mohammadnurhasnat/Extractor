@@ -256,6 +256,7 @@ export function usePassportHistory(userId: string | null, options?: {
             item: firestoreData
           })
         });
+        window.dispatchEvent(new CustomEvent('app_action_logged'));
       } catch (err) {
         console.error("Failed to save history to database:", err);
       }

@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Megaphone, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { doc, onSnapshot } from 'firebase/firestore';
-import { db } from '../lib/firebase';
 
 export function BroadcastBanner() {
   const [noticeText, setNoticeText] = useState<string>('');
@@ -35,27 +33,6 @@ export function BroadcastBanner() {
   useEffect(() => {
     fetchLiveSettings();
 
-    // Firestore real-time listener for instant zero-reload announcement sync
-    let unsubscribe: (() => void) | null = null;
-    try {
-      const settingsDocRef = doc(db, 'system_settings', 'global');
-      unsubscribe = onSnapshot(settingsDocRef, (docSnap) => {
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          const notice = data.broadcastNotice || '';
-          const active = !!data.isNoticeActive;
-          setNoticeText(notice);
-          setIsActive(active);
-          localStorage.setItem('app_broadcast_notice', notice);
-          localStorage.setItem('app_broadcast_notice_active', active ? 'true' : 'false');
-        }
-      }, (err) => {
-        console.warn("Firestore settings snapshot listener error:", err);
-      });
-    } catch (e) {
-      console.warn("Could not set up settings snapshot listener:", e);
-    }
-
     const handleStorageChange = () => {
       fetchLiveSettings();
     };
@@ -73,12 +50,12 @@ export function BroadcastBanner() {
     window.addEventListener('focus', handleFocus);
 
     return () => {
-      if (unsubscribe) unsubscribe();
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('app_settings_updated', handleCustomUpdate);
       window.removeEventListener('focus', handleFocus);
     };
   }, []);
+
 
   if (!isActive || !noticeText.trim() || isDismissed) {
     return null;

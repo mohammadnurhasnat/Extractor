@@ -1,10 +1,11 @@
 import { Router } from 'express';
 import { db } from './db';
-import { users, history as historySchema } from './schema';
+import { users, history as historySchema, sharedCards } from './schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { appendAuditLog } from './db';
 
 export const historyRouter = Router();
+
 
 historyRouter.get('/history', async (req, res) => {
   try {
@@ -228,3 +229,47 @@ historyRouter.post('/history/log-download', async (req, res) => {
     res.status(500).json({ success: false, error: error.message || 'Failed to log download.' });
   }
 });
+
+historyRouter.post('/share-card', async (req, res) => {
+  try {
+    const { passportData, undertakingData, createdBy } = req.body;
+    const shareId = 'share_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+
+    await db.insert(sharedCards).values({
+      id: shareId,
+      passportData: passportData ? JSON.stringify(passportData) : null,
+      undertakingData: undertakingData ? JSON.stringify(undertakingData) : null,
+      createdBy: createdBy || 'anonymous',
+    });
+
+    res.json({ success: true, id: shareId });
+  } catch (error: any) {
+    console.error('Share card error:', error);
+    res.status(500).json({ success: false, error: error.message || 'Failed to share card.' });
+  }
+});
+
+historyRouter.get('/share-card/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const card = await db.query.sharedCards.findFirst({ where: eq(sharedCards.id, id) });
+    if (!card) {
+      return res.status(404).json({ success: false, error: 'Shared card not found.' });
+    }
+
+    res.json({
+      success: true,
+      card: {
+        id: card.id,
+        passportData: card.passportData ? JSON.parse(card.passportData) : null,
+        undertakingData: card.undertakingData ? JSON.parse(card.undertakingData) : null,
+        createdBy: card.createdBy,
+        timestamp: card.timestamp
+      }
+    });
+  } catch (error: any) {
+    console.error('Get shared card error:', error);
+    res.status(500).json({ success: false, error: error.message || 'Failed to fetch shared card.' });
+  }
+});
+

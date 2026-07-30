@@ -5,6 +5,8 @@ export interface User {
   email: string;
   name: string;
   mobileNumber: string;
+  profilePicture?: string;
+  password?: string;
 }
 
 export interface PassportData {

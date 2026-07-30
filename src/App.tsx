@@ -10,7 +10,7 @@ import imageCompression from 'browser-image-compression';
 import JSZip from 'jszip';
 
 // Types
-import { PassportData, HistoryItem, QueueItem, UndertakingFormData } from './types';
+import { User, PassportData, HistoryItem, QueueItem, UndertakingFormData } from './types';
 import { safeFetchJson } from './utils/api';
 
 // Components
@@ -35,9 +35,8 @@ import { BroadcastBanner } from './components/BroadcastBanner';
 // Utilities
 import { generateDataText, getKolkataHotelForPassport, getDelhiHotelForPassport, getKolkataBusinessForPassport, formatIndianVisaAddress } from './utils/addressUtils';
 import { generatePDF, getPDFDocument, generateUndertakingPDF } from './utils/pdfGenerator';
-import { logoutGoogle, auth, db } from './lib/firebase';
+import { logoutGoogle, auth } from './lib/firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-import { collection, query, where, getDocs, addDoc, doc, getDoc, onSnapshot } from 'firebase/firestore';
 
 import { useUndertakingState } from './hooks/useUndertakingState';
 import { useSessionQueue } from './hooks/useSessionQueue';
@@ -55,7 +54,7 @@ import { encryptData, decryptData } from './utils/crypto';
 export default function App() {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);
   
-  const [currentUser, setCurrentUser] = useState<{ id: string; email: string; name: string; mobileNumber: string } | null>(() => {
+  const [currentUser, setCurrentUser] = useState<User | null>(() => {
     try {
       const saved = localStorage.getItem('passport_extractor_user');
       return saved ? JSON.parse(saved) : null;
@@ -88,11 +87,22 @@ export default function App() {
   useEffect(() => {
     if (currentUser) {
       const saved = localStorage.getItem(`passport_extractor_avatar_${currentUser.id}`);
-      setProfilePicture(saved);
+      setProfilePicture(saved || currentUser.profilePicture || null);
     } else {
       setProfilePicture(null);
     }
   }, [currentUser]);
+
+  const handleUpdateUser = (updatedUser: User) => {
+    setCurrentUser(updatedUser);
+    if (updatedUser.profilePicture) {
+      setProfilePicture(updatedUser.profilePicture);
+      localStorage.setItem(`passport_extractor_avatar_${updatedUser.id}`, updatedUser.profilePicture);
+    } else {
+      setProfilePicture(null);
+      localStorage.removeItem(`passport_extractor_avatar_${updatedUser.id}`);
+    }
+  };
 
   const handleSaveProfilePicture = (dataUrl: string) => {
     if (currentUser) {
@@ -167,38 +177,6 @@ export default function App() {
         }
       } catch (serverErr) {
         console.warn('Backend login endpoint failed, falling back to direct Firestore query:', serverErr);
-      }
-
-      // Step 1.5: Client-side Firestore fallback if server-side login was not reachable
-      if (!matchedUser) {
-        try {
-          const usersCol = collection(db, 'registered_users');
-          const qEmail = query(usersCol, where('email', '==', trimmedIdentifier));
-          const snapEmail = await getDocs(qEmail);
-          if (!snapEmail.empty) {
-            const potentialUser = snapEmail.docs[0].data();
-            if (potentialUser.password === password) {
-              matchedUser = potentialUser;
-            }
-          } else {
-            const qMobile = query(usersCol, where('mobileNumber', '==', trimmedIdentifier));
-            const snapMobile = await getDocs(qMobile);
-            if (!snapMobile.empty) {
-              const potentialUser = snapMobile.docs[0].data();
-              if (potentialUser.password === password) {
-                matchedUser = potentialUser;
-              }
-            }
-          }
-
-          if (matchedUser && matchedUser.isSuspended) {
-            setLoginError('আপনার অ্যাকাউন্টটি স্থগিত করা হয়েছে। Users have been suspended. Now, contact support.');
-            setIsLoggingIn(false);
-            return;
-          }
-        } catch (dbErr) {
-          console.error('Firestore direct query fallback failed:', dbErr);
-        }
       }
 
       if (!matchedUser) {
@@ -304,32 +282,18 @@ export default function App() {
 
     loadLimitStatus(currentUser.id);
 
-    // Firestore real-time listener on current user doc for instant zero-reload limit sync
-    let unsubscribe: (() => void) | null = null;
-    try {
-      const userDocRef = doc(db, 'registered_users', currentUser.id);
-      unsubscribe = onSnapshot(userDocRef, (docSnap) => {
-        if (docSnap.exists()) {
-          loadLimitStatus(currentUser.id);
-        }
-      }, (err) => {
-        console.warn("User limit snapshot listener error:", err);
-      });
-    } catch (e) {
-      console.warn("Could not set up user limit snapshot listener:", e);
-    }
-
     const handleFocus = () => {
       loadLimitStatus(currentUser.id);
     };
 
     window.addEventListener('focus', handleFocus);
     window.addEventListener('app_limit_updated', handleFocus);
+    window.addEventListener('app_action_logged', handleFocus);
 
     return () => {
-      if (unsubscribe) unsubscribe();
       window.removeEventListener('focus', handleFocus);
       window.removeEventListener('app_limit_updated', handleFocus);
+      window.removeEventListener('app_action_logged', handleFocus);
     };
   }, [currentUser?.id]);
   // 🕒 ৩০ মিনিট নিষ্ক্রিয় থাকার পর অটো-লগআউট করা (Auto-logout on 30 min inactivity)
@@ -479,11 +443,11 @@ export default function App() {
       const loadSharedCard = async () => {
         setToast({ message: 'শেয়ার করা ডাটা লোড করা হচ্ছে... (Loading shared data...)', type: 'info' });
         try {
-          const docRef = doc(db, 'shared_cards', shareId);
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists()) {
-            const sharedData = docSnap.data();
-            if (sharedData && sharedData.passportData) {
+          const res = await fetch(`/api/share-card/${shareId}`);
+          const resData = await res.json();
+          if (res.ok && resData.success && resData.card) {
+            const sharedData = resData.card;
+            if (sharedData.passportData) {
               setData(sharedData.passportData);
               if (sharedData.undertakingData) {
                 setUndertakingData(sharedData.undertakingData);
@@ -508,14 +472,21 @@ export default function App() {
     if (!data) return;
     setIsSharing(true);
     try {
-      const docRef = await addDoc(collection(db, 'shared_cards'), {
-        passportData: data,
-        undertakingData: undertakingData,
-        timestamp: Date.now(),
-        createdBy: currentUser?.id || 'anonymous'
+      const res = await fetch('/api/share-card', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          passportData: data,
+          undertakingData: undertakingData,
+          createdBy: currentUser?.id || 'anonymous'
+        })
       });
+      const resData = await res.json();
+      if (!res.ok || !resData.success) {
+        throw new Error(resData.error || 'Failed to share');
+      }
       
-      const shareUrl = `${window.location.origin}/?share=${docRef.id}`;
+      const shareUrl = `${window.location.origin}/?share=${resData.id}`;
       
       const formattedText = `📋 PASSPORT DATA REPORT (SHARED CARD)
 --------------------------------------
@@ -533,6 +504,7 @@ ${shareUrl}
 --------------------------------------`;
 
       await navigator.clipboard.writeText(formattedText);
+      window.dispatchEvent(new CustomEvent('app_action_logged'));
       setToast({
         message: 'শেয়ার লিংক এবং কার্ডের ডাটা কপি করা হয়েছে! (Share link & card data copied!)',
         type: 'success'
@@ -922,6 +894,7 @@ ${shareUrl}
         handleLogout={executeLogout}
         profilePicture={profilePicture}
         onSaveProfilePicture={handleSaveProfilePicture}
+        onUpdateUser={handleUpdateUser}
         toast={toast}
         setToast={setToast}
         itemToDelete={itemToDelete}
