@@ -87,12 +87,12 @@ export function SystemSettingsTab({ currentUser, onToast, usersCount, logsCount 
       const duration = Math.round(performance.now() - startTime);
       if (res.ok) {
         setDbLatency(duration || 12);
-        onToast({ message: 'সিস্টেম হেলথ চেক সফল! (System response: ' + duration + 'ms)', type: 'success' });
+        onToast({ message: 'System health check successful! (Latency: ' + duration + 'ms)', type: 'success' });
       } else {
-        onToast({ message: 'সিস্টেম হেলথে কোনো সমস্যা দেখা গেছে!', type: 'error' });
+        onToast({ message: 'System health check failed!', type: 'error' });
       }
     } catch (err) {
-      onToast({ message: 'নেটওয়ার্ক সংযোগ ত্রুটি!', type: 'error' });
+      onToast({ message: 'Network connection error!', type: 'error' });
     } finally {
       setIsCheckingHealth(false);
     }
@@ -127,18 +127,18 @@ export function SystemSettingsTab({ currentUser, onToast, usersCount, logsCount 
         window.dispatchEvent(new CustomEvent('app_settings_updated'));
 
         onToast({ 
-          message: 'সিস্টেম সেটিং ও অ্যানাউন্সমেন্ট ব্যানার সফলভাবে সকল ইউজারদের জন্য সেভ করা হয়েছে!', 
+          message: 'System settings & broadcast banner saved successfully!', 
           type: 'success' 
         });
       } else {
         onToast({ 
-          message: data.error || 'সিস্টেম সেটিং সেভ করতে ব্যর্থ হয়েছে!', 
+          message: data.error || 'Failed to save system settings!', 
           type: 'error' 
         });
       }
     } catch (err: any) {
       onToast({ 
-        message: 'নেটওয়ার্ক ত্রুটি! সেটিং সেভ করা যায়নি।', 
+        message: 'Network error! Settings could not be saved.', 
         type: 'error' 
       });
     } finally {
@@ -172,9 +172,9 @@ export function SystemSettingsTab({ currentUser, onToast, usersCount, logsCount 
       downloadAnchor.click();
       downloadAnchor.remove();
 
-      onToast({ message: 'সিস্টেম রিপোর্ট ডাউনলোড করা হয়েছে! (System Report Exported)', type: 'success' });
+      onToast({ message: 'System Report Exported Successfully!', type: 'success' });
     } catch (err) {
-      onToast({ message: 'এক্সপোর্ট ব্যর্থ হয়েছে!', type: 'error' });
+      onToast({ message: 'Export failed!', type: 'error' });
     }
   };
 
@@ -272,7 +272,7 @@ export function SystemSettingsTab({ currentUser, onToast, usersCount, logsCount 
             type="text"
             value={broadcastNotice}
             onChange={(e) => setBroadcastNotice(e.target.value)}
-            placeholder="উদাহরণ: নতুন ইন্ডিয়ান রেফারেন্স হেল্পার যুক্ত করা হয়েছে! বা সিস্টেম অপটিমাইজেশন চলছে..."
+            placeholder="e.g. System maintenance scheduled or New feature update released..."
             className="w-full px-3 py-2 text-xs border rounded-lg bg-white dark:bg-zinc-950 border-slate-200 dark:border-zinc-800 text-slate-800 dark:text-zinc-200 focus:ring-1 focus:ring-indigo-500"
           />
         </div>
@@ -347,7 +347,7 @@ export function SystemSettingsTab({ currentUser, onToast, usersCount, logsCount 
           ) : (
             <Save className="w-3.5 h-3.5" />
           )}
-          <span>{isSavingSettings ? 'সেভ হচ্ছে...' : 'Save System Settings'}</span>
+          <span>{isSavingSettings ? 'Saving...' : 'Save System Settings'}</span>
         </button>
       </div>
     </div>

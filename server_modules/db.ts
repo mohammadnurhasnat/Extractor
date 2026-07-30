@@ -67,6 +67,8 @@ export async function saveUsersStore(userObj: User | User[]) {
   throw new Error("saveUsersStore is deprecated. Use direct Drizzle queries in routers.");
 }
 
+import { broadcastDbEvent } from './events';
+
 export async function appendAuditLog(log: { userId: string; action: string; details: string }) {
   try {
     await db.insert(schema.auditLogs).values({
@@ -74,6 +76,7 @@ export async function appendAuditLog(log: { userId: string; action: string; deta
       action: log.action,
       details: log.details,
     });
+    broadcastDbEvent({ type: 'DB_CHANGE', action: log.action, details: log.details });
   } catch (error) {
     console.error("Error writing audit log:", error);
   }

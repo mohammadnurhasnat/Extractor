@@ -70,8 +70,29 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
 
       window.addEventListener('app_action_logged', handleSilentSync);
 
+      // Connect Real-Time SSE Event Listener directly to backend DB changes
+      let eventSource: EventSource | null = null;
+      try {
+        eventSource = new EventSource('/api/admin/events');
+        eventSource.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (data.type === 'DB_CHANGE' || data.type === 'DATA_UPDATED') {
+              handleSilentSync();
+            }
+          } catch (e) {
+            console.error('Realtime SSE event parse error:', e);
+          }
+        };
+      } catch (err) {
+        console.warn('SSE EventSource setup error:', err);
+      }
+
       return () => {
         window.removeEventListener('app_action_logged', handleSilentSync);
+        if (eventSource) {
+          eventSource.close();
+        }
       };
     }
   }, [isOpen, activeTab, currentUser]);
@@ -135,7 +156,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
       const result = await response.json();
       if (response.ok && result.success) {
         setAdminUsersList(prev => prev.map(u => u.id === userId ? { ...u, dailyLimit: newLimit } : u));
-        setToast({ message: 'ব্যবহারকারীর লিমিট সফলভাবে আপডেট করা হয়েছে! (Limit updated successfully!)', type: 'success' });
+        setToast({ message: 'User limit updated successfully!', type: 'success' });
       } else {
         setToast({ message: result.error || 'Failed to update user limit.', type: 'error' });
       }
@@ -160,8 +181,8 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
         setAdminUsersList(prev => prev.map(u => u.id === userId ? { ...u, isSuspended: !currentStatus } : u));
         setToast({ 
           message: !currentStatus 
-            ? 'ব্যবহারকারীকে সাময়িকভাবে স্থগিত করা হয়েছে! (User suspended successfully!)' 
-            : 'ব্যবহারকারীর স্থগিতাদেশ প্রত্যাহার করা হয়েছে! (User unsuspended successfully!)', 
+            ? 'User suspended successfully!' 
+            : 'User unsuspended successfully!', 
           type: 'success' 
         });
       } else {
@@ -173,7 +194,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
   };
 
   const handleDeleteUser = async (userId: string) => {
-    if (!window.confirm('আপনি কি নিশ্চিত যে এই ব্যবহারকারীকে মুছে ফেলতে চান? (Are you sure you want to delete this user?)')) {
+    if (!window.confirm('Are you sure you want to delete this user?')) {
       return;
     }
     try {
@@ -189,7 +210,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
       const result = await response.json();
       if (response.ok && result.success) {
         setAdminUsersList(prev => prev.filter(u => u.id !== userId));
-        setToast({ message: 'ব্যবহারকারীকে সফলভাবে মুছে ফেলা হয়েছে! (User deleted successfully!)', type: 'success' });
+        setToast({ message: 'User deleted successfully!', type: 'success' });
       } else {
         setToast({ message: result.error || 'Failed to delete user.', type: 'error' });
       }
@@ -201,7 +222,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
   const handleAddUserSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newUserName || !newUserMobileNumber || !newUserPassword) {
-      setToast({ message: 'নাম, মোবাইল নাম্বার এবং পাসওয়ার্ড প্রদান করা আবশ্যক। (Name, Mobile, and Password are required.)', type: 'error' });
+      setToast({ message: 'Name, Mobile Number, and Passcode are required.', type: 'error' });
       return;
     }
 
@@ -224,7 +245,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
       const result = await response.json();
       
       if (response.ok && result.success) {
-        setToast({ message: 'নতুন ব্যবহারকারী সফলভাবে যুক্ত করা হয়েছে! (New user added successfully!)', type: 'success' });
+        setToast({ message: 'New user added successfully!', type: 'success' });
         setNewUserName('');
         setNewUserMobileNumber('');
         setNewUserEmail('');
@@ -276,7 +297,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
       });
       const result = await response.json();
       if (response.ok && result.success) {
-        setToast({ message: 'ব্যবহারকারীর তথ্য সফলভাবে আপডেট করা হয়েছে! (User updated successfully!)', type: 'success' });
+        setToast({ message: 'User updated successfully!', type: 'success' });
         setSelectedUserForModal({
           ...selectedUserForModal,
           name: editUserName,
@@ -318,7 +339,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
       const result = await response.json();
       if (response.ok && result.success) {
         setAdminUsersList(prev => prev.filter(u => u.id !== userId));
-        setToast({ message: 'ব্যবহারকারীকে সফলভাবে মুছে ফেলা হয়েছে! (User deleted successfully!)', type: 'success' });
+        setToast({ message: 'User deleted successfully!', type: 'success' });
         setSelectedUserForModal(null);
         setShowDeleteConfirm(false);
       } else {
@@ -536,7 +557,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
                 ) : showDeleteConfirm ? (
                   <div className="space-y-4 py-4 text-center">
                     <p className="text-xs font-bold text-slate-800 dark:text-zinc-200">
-                      আপনি কি নিশ্চিত যে এই ব্যবহারকারীকে মুছে ফেলতে চান?
+                      Are you sure you want to delete this user?
                     </p>
                     <p className="text-xs text-rose-500 font-extrabold bg-rose-500/10 py-1.5 px-4 rounded-full inline-block">
                       {selectedUserForModal.name}

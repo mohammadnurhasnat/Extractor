@@ -7,6 +7,7 @@ import { authRouter } from './server_modules/auth';
 import { adminRouter } from './server_modules/admin';
 import { historyRouter } from './server_modules/history';
 import { extractionRouter } from './server_modules/extraction';
+import { eventsRouter } from './server_modules/events';
 
 async function startServer() {
   console.log('🔄 Initializing High-Speed Core Synchronization Engine...');
@@ -28,6 +29,7 @@ async function startServer() {
   app.use('/api', adminRouter);
   app.use('/api', historyRouter);
   app.use('/api', extractionRouter);
+  app.use('/api', eventsRouter);
 
   // Health check endpoint
   app.get('/api/health', (req, res) => {

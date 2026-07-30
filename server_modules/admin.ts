@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { db } from './db';
 import { users } from './schema';
 import { getAuditLogs, appendAuditLog } from './db';
+import { broadcastDbEvent } from './events';
 import { eq, or, ne, and } from 'drizzle-orm';
 import fs from 'fs';
 import path from 'path';

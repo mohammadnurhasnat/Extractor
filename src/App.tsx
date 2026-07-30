@@ -225,7 +225,7 @@ export default function App() {
       localStorage.setItem('passport_extractor_user', JSON.stringify(matchedUser));
       setCurrentUser(matchedUser);
       setShowLoginGreeting(true);
-      setToast({ message: 'সফলভাবে লগইন করা হয়েছে! (Logged in successfully!)', type: 'success' });
+      setToast({ message: 'Logged in successfully!', type: 'success' });
     } catch (err: any) {
       console.error('Login process error:', err);
       setLoginError('Authentication process failed. Please try again.');
@@ -323,7 +323,7 @@ export default function App() {
         setCurrentUser(null);
         setLimitStatus(null);
         setToast({ 
-          message: 'নিরাপত্তার স্বার্থে ৩০ মিনিট নিষ্ক্রিয় থাকার কারণে আপনাকে অটো-লগআউট করা হয়েছে। (Logged out due to 30 minutes of inactivity for security.)', 
+          message: 'Logged out due to 30 minutes of inactivity for security.', 
           type: 'info' 
         });
       }
