@@ -1,5 +1,6 @@
 import React, { RefObject } from 'react';
 import { QueueItem, HistoryItem, PassportData } from '../types';
+import { getPdfInfo } from '../utils/pdfInfoHelper';
 
 function dataURLtoFile(dataurl: string, filename: string): File {
   const arr = dataurl.split(',');
@@ -23,45 +24,67 @@ interface UseQueueHandlersProps {
   setPreview: React.Dispatch<React.SetStateAction<string | null>>;
   setData: React.Dispatch<React.SetStateAction<PassportData | null>>;
   setError: React.Dispatch<React.SetStateAction<string | null>>;
+  setToast?: (toast: { message: string; type: 'success' | 'error' | 'info' } | null) => void;
   fileInputRef: RefObject<HTMLInputElement | null>;
 }
 
 export function useQueueHandlers({
   queue, setQueue, activeQueueId, setActiveQueueId,
-  setFile, setPreview, setData, setError, fileInputRef
+  setFile, setPreview, setData, setError, setToast, fileInputRef
 }: UseQueueHandlersProps) {
 
   const processFiles = (fileList: FileList | File[], isVisaApplication: boolean = false) => {
     const filesArray = Array.from(fileList);
     
+    // Check if any file format is unsupported
+    const invalidFiles = filesArray.filter(f => {
+      const isPdf = f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf');
+      const isImage = f.type.startsWith('image/') || /\.(jpg|jpeg|png|webp|gif)$/i.test(f.name);
+      return isVisaApplication ? !isPdf : (!isPdf && !isImage);
+    });
+
+    if (invalidFiles.length > 0) {
+      const msg = isVisaApplication
+        ? 'অসমর্থিত ফাইল ফরম্যাট! কেবল ইন্ডিয়ান ভিসা অ্যাপ্লিকেশন PDF ফাইল সমর্থিত।'
+        : 'অসমর্থিত ফাইল ফরম্যাট! কেবল JPEG, PNG, WEBP এবং PDF ফাইল সমর্থন করে।';
+      setError(msg);
+      if (setToast) {
+        setToast({ message: msg, type: 'error' });
+      }
+    }
+
     // Check if any visa application PDF is 1MB or larger
     if (isVisaApplication) {
-      const oversizedFiles = filesArray.filter(f => f.type === 'application/pdf' && f.size >= 1024 * 1024);
+      const oversizedFiles = filesArray.filter(f => (f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf')) && f.size >= 1024 * 1024);
       if (oversizedFiles.length > 0) {
-        setError('দয়া করে ১ মেগাবাইট (1MB) এর নিচের সাইজের ইন্ডিয়ান ভিসা অ্যাপ্লিকেশন PDF ফাইল আপলোড করুন।');
+        const errorMsg = 'দয়া করে ১ মেগাবাইট (1MB) এর নিচের সাইজের ইন্ডিয়ান ভিসা অ্যাপ্লিকেশন PDF ফাইল আপলোড করুন।';
+        setError(errorMsg);
+        if (setToast) {
+          setToast({ message: errorMsg, type: 'error' });
+        }
         return;
       }
     }
 
-    const validFiles = filesArray.filter(f => 
-      isVisaApplication 
-        ? f.type === 'application/pdf'
-        : (f.type.startsWith('image/') || f.type === 'application/pdf')
-    );
+    const validFiles = filesArray.filter(f => {
+      const isPdf = f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf');
+      const isImage = f.type.startsWith('image/') || /\.(jpg|jpeg|png|webp|gif)$/i.test(f.name);
+      return isVisaApplication ? isPdf : (isPdf || isImage);
+    });
     
     if (validFiles.length === 0) {
       if (isVisaApplication) {
         setError('দয়া করে একটি ইন্ডিয়ান ভিসা অ্যাপ্লিকেশন PDF ফাইল আপলোড করুন।');
       } else {
-        setError('Please upload at least one valid image file (JPEG, PNG) or PDF.');
+        setError('অসমর্থিত ফাইল ফরম্যাট! কেবল JPEG, PNG, WEBP এবং PDF ফাইল গ্রহণযোগ্য।');
       }
       return;
     }
 
     const newQueueItems: QueueItem[] = validFiles.map(file => {
       const id = 'q_' + Date.now().toString() + Math.random().toString(36).substring(2);
-      const isPdf = file.type === 'application/pdf';
-      const docType = (isVisaApplication || isPdf) ? 'visa_application' : 'passport';
+      const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+      const docType = isVisaApplication ? 'visa_application' : 'passport';
       
       return {
         id,
@@ -86,6 +109,15 @@ export function useQueueHandlers({
       }
       return updated;
     });
+
+    // Extract PDF info asynchronously for validation helper
+    newQueueItems.forEach(async (item) => {
+      if (item.file.type === 'application/pdf' || item.file.name.toLowerCase().endsWith('.pdf')) {
+        const info = await getPdfInfo(item.file);
+        setQueue(prev => prev.map(q => q.id === item.id ? { ...q, pdfInfo: info } : q));
+      }
+    });
+
     setError(null);
   };
 

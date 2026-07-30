@@ -1,3 +1,5 @@
+import { PdfInfo } from './utils/pdfInfoHelper';
+
 export interface User {
   id: string;
   email: string;
@@ -109,4 +111,5 @@ export interface QueueItem {
   lastUsedAt?: number;
   compressionRatio?: string;
   documentType?: 'passport' | 'visa_application';
+  pdfInfo?: PdfInfo;
 }

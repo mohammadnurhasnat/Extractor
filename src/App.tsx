@@ -589,7 +589,7 @@ ${shareUrl}
     clearAll
   } = useQueueHandlers({
     queue, setQueue, activeQueueId, setActiveQueueId,
-    setFile, setPreview, setData, setError, fileInputRef
+    setFile, setPreview, setData, setError, setToast, fileInputRef
   });
 
   const activeItem = queue.find(q => q.id === activeQueueId) || null;

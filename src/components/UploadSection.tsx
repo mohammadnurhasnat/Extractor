@@ -1,5 +1,5 @@
 import React from 'react';
-import { UploadCloud, Loader2, ZapOff, FileText, AlertCircle } from 'lucide-react';
+import { UploadCloud, Loader2, ZapOff, FileText, AlertCircle, CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { UndertakingOptions } from './UndertakingOptions';
 import { SessionQueue } from './SessionQueue';
@@ -63,6 +63,11 @@ interface UploadSectionProps {
 export function UploadSection(props: UploadSectionProps) {
   const activeItem = props.queue.find(q => q.id === props.activeQueueId) || null;
   const isPdf = activeItem?.file?.type === 'application/pdf' || activeItem?.documentType === 'visa_application';
+
+  // Unified state for Undertaking Option visibility (triggered by successful image extraction OR PDF metadata verification)
+  const isImageExtracted = Boolean(props.data || activeItem?.data || props.preview || activeItem?.preview);
+  const isPdfVerified = Boolean(isPdf && activeItem?.pdfInfo?.isValid !== false);
+  const isUndertakingVisible = activeItem?.documentType !== 'visa_application' && (isImageExtracted || isPdfVerified);
   const [hoveredSection, setHoveredSection] = React.useState<'passport' | 'pdf' | null>(null);
 
   // States to handle responsive drag-over animations and highlight styles
@@ -329,15 +334,36 @@ export function UploadSection(props: UploadSectionProps) {
                     props.handleVisaDrop(e);
                   }}
                 >
-                  <div className="w-20 h-20 bg-emerald-50 dark:bg-emerald-950/20 rounded-2xl flex items-center justify-center mb-4 border border-emerald-100 dark:border-emerald-900/30 shadow-sm">
+                  <div className="w-20 h-20 bg-emerald-50 dark:bg-emerald-950/20 rounded-2xl flex items-center justify-center mb-3 border border-emerald-100 dark:border-emerald-900/30 shadow-sm">
                     <FileText className="w-10 h-10 text-emerald-500 animate-pulse" />
                   </div>
-                  <h3 className="font-bold text-slate-800 dark:text-zinc-200 text-sm">Indian Visa Application PDF</h3>
+                  <h3 className="font-bold text-slate-800 dark:text-zinc-200 text-sm">
+                    {activeItem?.documentType === 'visa_application' ? 'Indian Visa Application PDF' : 'Passport PDF Document'}
+                  </h3>
                   <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1 max-w-xs break-all font-mono">
-                    {activeItem?.file?.name || 'Submitted_Application.pdf'}
+                    {activeItem?.file?.name || 'Uploaded_Document.pdf'}
                   </p>
-                  <div className="text-[10px] text-emerald-600 dark:text-teal-400 bg-emerald-500/10 dark:bg-emerald-500/20 px-2.5 py-1 rounded-full font-semibold mt-3">
-                    {activeItem?.file?.size ? (activeItem.file.size / (1024 * 1024)).toFixed(2) : '0.00'} MB • PDF Document
+                  
+                  {/* PDF Helper & Info Badges */}
+                  <div className="flex flex-wrap items-center justify-center gap-1.5 mt-3">
+                    <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1 ${
+                      activeItem?.pdfInfo?.isValid !== false
+                        ? 'text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 dark:bg-emerald-500/20 border border-emerald-300/40 dark:border-emerald-700/40'
+                        : 'text-amber-700 dark:text-amber-300 bg-amber-500/10 dark:bg-amber-500/20 border border-amber-300/40 dark:border-amber-700/40'
+                    }`}>
+                      <CheckCircle className="w-3 h-3 text-emerald-500 shrink-0" />
+                      {activeItem?.pdfInfo?.isValid !== false ? 'Valid PDF' : 'PDF Document'}
+                    </span>
+
+                    {activeItem?.pdfInfo?.pageCount ? (
+                      <span className="text-[10px] text-blue-700 dark:text-blue-300 bg-blue-500/10 dark:bg-blue-500/20 border border-blue-300/40 dark:border-blue-700/40 px-2.5 py-0.5 rounded-full font-bold">
+                        {activeItem.pdfInfo.pageCount} {activeItem.pdfInfo.pageCount === 1 ? 'Page' : 'Pages'}
+                      </span>
+                    ) : null}
+
+                    <span className="text-[10px] text-slate-700 dark:text-zinc-300 bg-slate-200/80 dark:bg-zinc-800 border border-slate-300/40 dark:border-zinc-700/40 px-2.5 py-0.5 rounded-full font-mono font-bold">
+                      {activeItem?.pdfInfo?.fileSizeFormatted || (activeItem?.file?.size ? (activeItem.file.size / (1024 * 1024)).toFixed(2) + ' MB' : '0.00 MB')}
+                    </span>
                   </div>
                   
                   {props.loading && (
@@ -437,7 +463,7 @@ export function UploadSection(props: UploadSectionProps) {
               
               {/* Right Column: Undertaking Options */}
               <div className="flex flex-col h-full justify-between">
-                {!isPdf && (
+                {isUndertakingVisible && (
                   <UndertakingOptions
                     utPurpose={props.utPurpose}
                     setUtPurpose={props.setUtPurpose}
