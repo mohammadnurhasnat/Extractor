@@ -1,14 +1,14 @@
 // =========================================================================
-// 🇧🇩 ইউজার ডাটাবেস ফাইল (MANUAL USER CREATION DATABASE)
+// USER DATABASE FILE (MANUAL USER CREATION DATABASE)
 // =========================================================================
-// আপনি খুব সহজেই এই ফাইলে নতুন ইউজার বা গ্রাহক যোগ করতে পারবেন।
-// প্রতিটা ইউজারের জন্য নিচের তথ্যগুলো দেওয়া আবশ্যক:
-// 1. email: ইউজারের ইমেইল এড্রেস (লগইনের জন্য ব্যবহার করা যাবে)
-// 2. mobileNumber: ইউজারের মোবাইল নাম্বার (লগইনের জন্য ব্যবহার করা যাবে)
-// 3. password: ইউজারের গোপন পাসওয়ার্ড
-// 4. name: ইউজারের নাম
+// You can easily add new users or clients to this file.
+// For each user, the following details are required:
+// 1. email: User email address (can be used for login)
+// 2. mobileNumber: User mobile number (can be used for login)
+// 3. password: User secret password
+// 4. name: User full name
 //
-// 💡 আপনি আপনার পছন্দমতো নতুন ইউজার এই তালিকায় যুক্ত করতে পারবেন। নিচের ফরম্যাটটি ফলো করুন।
+// 💡 You can add as many new users as you like. Follow the format below.
 // =========================================================================
 
 export interface User {
@@ -26,7 +26,7 @@ export const USERS_DATABASE: User[] = [
     id: "user_mohammad",
     email: "mohammadnurhasnat@gmail.com",
     mobileNumber: "01861186863",
-    password: "123", // 💡 পাসওয়ার্ড পরিবর্তন করে আপনার পছন্দমতো দিন
+    password: "123", // 💡 Change the password as per your preference
     name: "MOHAMMAD NUR HASNAT"
   },
 
@@ -46,7 +46,7 @@ export const USERS_DATABASE: User[] = [
     password: "",
     name: ""
   }
-  // ➕ নতুন ইউজার যোগ করতে চাইলে নিচের ব্র্যাকেটের ভেতরের অংশটি আন-কমেন্ট করে কপি-পেস্ট করে বসিয়ে দিন:
+  // ➕ To add a new user, uncomment and customize the template below:
   /*
   {
     id: "user_unique_id",

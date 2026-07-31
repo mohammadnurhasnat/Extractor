@@ -78,7 +78,7 @@ export default function App() {
         } else {
           // If we are on PadGen subdomain and not authenticated, we MUST redirect to Extractor login
           if (isSubdomainPadgen) {
-            setToast({ message: 'অথরাইজেশন প্রয়োজন। লগইন করার জন্য এক্সট্রাক্টরে রিডাইরেক্ট করা হচ্ছে...', type: 'error' });
+            setToast({ message: 'Authorization required. Redirecting to Extractor for login...', type: 'error' });
             setTimeout(() => {
               window.location.href = 'https://extractor.fun/';
             }, 2000);
@@ -145,7 +145,7 @@ export default function App() {
     if (currentUser) {
       localStorage.setItem(`passport_extractor_avatar_${currentUser.id}`, dataUrl);
       setProfilePicture(dataUrl);
-      setToast({ message: 'আপনার প্রোফাইল ছবি সফলভাবে আপডেট করা হয়েছে! (Profile picture updated successfully!)', type: 'success' });
+      setToast({ message: 'Profile picture updated successfully!', type: 'success' });
     }
   };
 
@@ -198,7 +198,7 @@ export default function App() {
       }
 
       let matchedUser: any = null;
-      let errorMsg = 'ভুল ইমেইল/মোবাইল নাম্বার অথবা পাসওয়ার্ড দিয়েছেন।';
+      let errorMsg = 'Incorrect email/mobile number or password.';
 
       // Step 1: Call server-side /api/login backend endpoint first
       try {
@@ -223,7 +223,7 @@ export default function App() {
       }
 
       if (matchedUser.isSuspended) {
-        setLoginError('আপনার অ্যাকাউন্টটি স্থগিত করা হয়েছে। Users have been suspended. Now, contact support.');
+        setLoginError('Your account has been suspended. Please contact support.');
         setIsLoggingIn(false);
         return;
       }
@@ -275,7 +275,7 @@ export default function App() {
     }
   };
 
-  // ১. মাউসের রাইট ক্লিক নিষ্ক্রিয় করা এবং ডেভেলপার টুলস প্রতিরোধ করা (Disable copying & inspection)
+  // 1. Disable mouse right click and developer tools prevention
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault();
@@ -320,7 +320,7 @@ export default function App() {
       window.removeEventListener('app_action_logged', handleFocus);
     };
   }, [currentUser?.id]);
-  // 🕒 ৩০ মিনিট নিষ্ক্রিয় থাকার পর অটো-লগআউট করা (Auto-logout on 30 min inactivity)
+  // 🕒 Auto-logout on 30 min inactivity
   useEffect(() => {
     if (!currentUser) return;
 
@@ -465,7 +465,7 @@ export default function App() {
     const shareId = urlParams.get('share');
     if (shareId) {
       const loadSharedCard = async () => {
-        setToast({ message: 'শেয়ার করা ডাটা লোড করা হচ্ছে... (Loading shared data...)', type: 'info' });
+        setToast({ message: 'Loading shared data...', type: 'info' });
         try {
           const res = await fetch(`/api/share-card/${shareId}`);
           const resData = await res.json();
@@ -476,16 +476,16 @@ export default function App() {
               if (sharedData.undertakingData) {
                 setUndertakingData(sharedData.undertakingData);
               }
-              setToast({ message: 'শেয়ার করা ডাটা সফলভাবে লোড হয়েছে! (Shared data loaded successfully!)', type: 'success' });
+              setToast({ message: 'Shared data loaded successfully!', type: 'success' });
             } else {
-              setToast({ message: 'শেয়ার করা ডাটা পাওয়া যায়নি। (Shared data not found.)', type: 'error' });
+              setToast({ message: 'Shared data not found.', type: 'error' });
             }
           } else {
-            setToast({ message: 'শেয়ার করা ডাটা পাওয়া যায়নি। (Shared data not found.)', type: 'error' });
+            setToast({ message: 'Shared data not found.', type: 'error' });
           }
         } catch (err) {
           console.error('Error loading shared card:', err);
-          setToast({ message: 'শেয়ার করা ডাটা লোড করতে ব্যর্থ হয়েছে। (Failed to load shared data.)', type: 'error' });
+          setToast({ message: 'Failed to load shared data.', type: 'error' });
         }
       };
       loadSharedCard();
@@ -530,13 +530,13 @@ ${shareUrl}
       await navigator.clipboard.writeText(formattedText);
       window.dispatchEvent(new CustomEvent('app_action_logged'));
       setToast({
-        message: 'শেয়ার লিংক এবং কার্ডের ডাটা কপি করা হয়েছে! (Share link & card data copied!)',
+        message: 'Share link & card data copied!',
         type: 'success'
       });
     } catch (err) {
       console.error('Error sharing card:', err);
       setToast({
-        message: 'শেয়ার করতে সমস্যা হয়েছে। (Failed to share. Please try again.)',
+        message: 'Failed to share. Please try again.',
         type: 'error'
       });
     } finally {
@@ -679,7 +679,7 @@ ${shareUrl}
       return (
         <div className="min-h-screen bg-[#FDFCF7] dark:bg-zinc-950 flex flex-col items-center justify-center gap-4 text-center">
           <Loader2 className="w-12 h-12 text-indigo-600 animate-spin" />
-          <p className="text-sm font-bold text-slate-700 dark:text-zinc-300 font-sans">সেশন যাচাই করা হচ্ছে... (Verifying SSO Session...)</p>
+          <p className="text-sm font-bold text-slate-700 dark:text-zinc-300 font-sans">Verifying SSO Session...</p>
         </div>
       );
     }
@@ -719,44 +719,44 @@ ${shareUrl}
               {/* Left Side: Features List */}
               <div className="flex-1 min-w-0">
                 <h2 className="text-sm font-bold text-slate-800 dark:text-zinc-100 mb-2.5 tracking-wide">
-                  যে সকল কাজ করতে পারবেন:
+                  Available Features:
                 </h2>
                 <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2 text-xs text-slate-700 dark:text-zinc-300">
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>পাসপোর্টের তথ্য অটোমেটিক এক্সট্রাক্ট করা।</span>
+                    <span>Automatically extract passport details.</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>আন্ডারটেকিং ফর্ম তৈরি ও এডিট করা।</span>
+                    <span>Create and edit undertaking forms.</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>পাসপোর্ট ইমেজ থেকে পিডিএফ তৈরি করা।</span>
+                    <span>Create PDFs from passport images.</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>কোম্পানি/বিজনেস প্যাড তৈরি করা।</span>
+                    <span>Create company/business letterheads.</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>কোম্পানি/বিজনেস ভিজিটিং কার্ড তৈরি করা।</span>
+                    <span>Create company/business visiting cards.</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>কভার লেটার তৈরি ও এডিট করা।</span>
+                    <span>Create and edit cover letters.</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>NOC তৈরি ও এডিট করা।</span>
+                    <span>Create and edit NOCs.</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>অফিস আইডি কার্ড তৈরি করা।</span>
+                    <span>Create office ID cards.</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>সিল তৈরি করা।</span>
+                    <span>Create custom stamps/seals.</span>
                   </li>
                 </ul>
               </div>
@@ -765,10 +765,10 @@ ${shareUrl}
               <div className="lg:w-80 shrink-0 pt-3 lg:pt-0 border-t lg:border-t-0 lg:border-l border-slate-200/60 dark:border-zinc-800/60 lg:pl-5 flex flex-row lg:flex-col items-center lg:items-start justify-between gap-3 bg-slate-50/50 dark:bg-zinc-800/30 lg:bg-transparent lg:dark:bg-transparent p-3 lg:p-0 rounded-xl lg:rounded-none">
                 <div className="flex flex-col">
                   <span className="text-xs sm:text-sm text-slate-800 dark:text-zinc-200 font-bold">
-                    প্যাড, ভিজিটিং কার্ড, NOC, Office ID, Cover Letter, সিল:
+                    Letterhead, Card, NOC, Office ID, Cover Letter, Stamp:
                   </span>
                   <span className="text-[11px] text-slate-500 dark:text-zinc-400 hidden lg:block mt-0.5">
-                    সহজে প্রফেশনাল প্যাড ও কার্ড, NOC, Office ID, Cover Letter, সিল তৈরি করতে PadGen ভিজিট করুন।
+                    Easily create professional letterheads, business cards, NOCs, ID cards, cover letters, and stamps with PadGen.
                   </span>
                 </div>
                 
@@ -776,7 +776,7 @@ ${shareUrl}
                   href="https://padgen.extractor.fun/"
                   target="_self"
                   className="relative inline-flex items-center gap-1.5 sm:gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white font-extrabold text-[11px] sm:text-xs border-b-[3px] sm:border-b-4 border-indigo-950/80 shadow-md shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:-translate-y-0.5 active:translate-y-0.5 active:border-b-0 transition-all duration-150 group cursor-pointer shrink-0 mt-0 lg:mt-2"
-                  title="PadGen ওয়েবসাইটে যান"
+                  title="Go to PadGen Website"
                 >
                   <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:rotate-12 transition-transform" />
                   <span>PadGen</span>

@@ -77,77 +77,71 @@ export function LoginModal({
           </div>
         )}
 
-        <form onSubmit={handleLogin} className="p-4 space-y-2 relative z-10">
-          <div className="mb-2">
-            <label className="block text-[8.5px] font-bold text-slate-600 dark:text-zinc-400 uppercase tracking-wider mb-1 px-0.5">
-              Email or Mobile Number
-            </label>
-            <input
-              type="text"
-              required
-              value={loginIdentifier}
-              onChange={(e) => setLoginIdentifier(e.target.value)}
-              placeholder="e.g. admin@example.com"
-              className="block w-full px-2.5 py-1.5 border border-slate-300 dark:border-zinc-700 rounded-[4px] text-[11px] bg-slate-50 dark:bg-zinc-900 focus:bg-white dark:focus:bg-black focus:outline-none focus:ring-1 focus:ring-blue-600 dark:focus:ring-blue-500 text-slate-900 dark:text-white font-semibold transition-all placeholder-slate-400 dark:placeholder-zinc-500 shadow-sm"
-            />
+        <form onSubmit={handleLogin} className="p-4 space-y-4 relative z-10">
+          {/* 🔑 Upper Credentials block with subtle light-orange theme matching the login button */}
+          <div className="bg-orange-50/70 dark:bg-orange-950/10 border border-orange-100/70 dark:border-orange-900/20 p-3.5 rounded-lg space-y-3 shadow-sm">
+            <div>
+              <label className="block text-[10px] sm:text-xs font-black text-orange-900 dark:text-orange-200 tracking-wide mb-1.5 px-0.5">
+                Email or Mobile
+              </label>
+              <input
+                type="text"
+                required
+                value={loginIdentifier}
+                onChange={(e) => setLoginIdentifier(e.target.value)}
+                placeholder="e.g. admin@example.com"
+                className="block w-full px-2.5 py-1.5 border border-slate-300 dark:border-zinc-700 rounded-[4px] text-[11px] bg-white dark:bg-zinc-900 focus:outline-none focus:ring-1 focus:ring-orange-500 text-slate-900 dark:text-white font-semibold transition-all placeholder-slate-400 dark:placeholder-zinc-500 shadow-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[10px] sm:text-xs font-black text-orange-900 dark:text-orange-200 tracking-wide mb-1.5 px-0.5">
+                Passcode
+              </label>
+              <input
+                type="password"
+                required
+                value={loginPassword}
+                onChange={(e) => setLoginPassword(e.target.value)}
+                placeholder="••••••••"
+                className="block w-full px-2.5 py-1.5 border border-slate-300 dark:border-zinc-700 rounded-[4px] text-[11px] bg-white dark:bg-zinc-900 focus:outline-none focus:ring-1 focus:ring-orange-500 text-slate-900 dark:text-white font-semibold transition-all placeholder-slate-400 dark:placeholder-zinc-500 shadow-sm"
+              />
+            </div>
           </div>
 
-          <div className="mb-2">
-            <label className="block text-[8.5px] font-bold text-slate-600 dark:text-zinc-400 uppercase tracking-wider mb-1 px-0.5">
-              Security Password
-            </label>
-            <input
-              type="password"
-              required
-              value={loginPassword}
-              onChange={(e) => setLoginPassword(e.target.value)}
-              placeholder="••••••••"
-              className="block w-full px-2.5 py-1.5 border border-slate-300 dark:border-zinc-700 rounded-[4px] text-[11px] bg-slate-50 dark:bg-zinc-900 focus:bg-white dark:focus:bg-black focus:outline-none focus:ring-1 focus:ring-blue-600 dark:focus:ring-blue-500 text-slate-900 dark:text-white font-semibold transition-all placeholder-slate-400 dark:placeholder-zinc-500 shadow-sm"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={isLoggingIn}
-            className="slide-btn slide-btn-orange w-full py-2.5 rounded-xl font-bold text-sm min-h-[44px] flex items-center justify-center gap-2 mt-2"
-          >
-            <span className="relative z-10 flex items-center gap-1.5 uppercase tracking-wider">
-              {isLoggingIn ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Verifying...</span>
-                </>
-              ) : (
-                <>
-                  <Key className="w-4 h-4" />
-                  <span>Login</span>
-                </>
-              )}
-            </span>
-          </button>
-          {/* WhatsApp Support Section */}
-          <div className="mt-3.5 text-center flex flex-col items-center justify-center gap-2 border-t border-slate-200 dark:border-zinc-800/80 pt-3">
-            <span className="text-[8.5px] font-bold text-slate-500 dark:text-zinc-400 leading-normal px-1">
-              Need an account? Click WhatsApp for Passcode.
-            </span>
-            <a
-              href="https://wa.me/8801861186863"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full max-w-[200px] py-2 flex items-center justify-center gap-1.5 ripple-btn slide-btn slide-btn-whatsapp"
+          <div className="flex justify-center w-full">
+            <button
+              type="submit"
+              disabled={isLoggingIn}
+              className="slide-btn slide-btn-orange px-8 py-2 rounded-lg font-extrabold text-xs min-h-[36px] flex items-center justify-center cursor-pointer"
             >
-              <span className="relative z-10 flex items-center gap-1">
-                <WhatsAppIcon className="w-3.5 h-3.5" />
-                <span>WhatsApp</span>
+              <span className="relative z-10 tracking-wider">
+                {isLoggingIn ? 'Verifying...' : 'Login'}
               </span>
-            </a>
+            </button>
+          </div>
 
+          {/* 💬 WhatsApp Support Section with beautiful light WhatsApp green theme */}
+          <div className="bg-emerald-50/80 dark:bg-emerald-950/15 border border-emerald-100 dark:border-emerald-900/20 p-3.5 rounded-lg text-center flex flex-col items-center justify-center gap-2.5 shadow-sm">
+            <span className="text-[10px] sm:text-[11px] font-black text-emerald-900 dark:text-emerald-200 leading-snug px-1">
+              Need An Account? Click WhatsApp For Passcode.
+            </span>
+            <div className="flex justify-center w-full">
+              <a
+                href="https://wa.me/8801861186863"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-6 py-1.5 flex items-center justify-center ripple-btn slide-btn slide-btn-whatsapp rounded-lg font-extrabold text-xs cursor-pointer shadow-sm"
+              >
+                <span className="relative z-10">WhatsApp</span>
+              </a>
+            </div>
           </div>
         </form>
 
         {/* Footer */}
-        <div className="px-3 py-2 border-t border-slate-100 dark:border-zinc-900/80 bg-white/60 dark:bg-zinc-950/60 relative z-10 flex items-center justify-center text-[8px] text-slate-400 dark:text-zinc-500 font-bold uppercase tracking-widest">
-          <span>AUTHORIZED ACCESS ONLY</span>
+        <div className="px-3 py-2 border-t border-slate-100 dark:border-zinc-900/80 bg-white/60 dark:bg-zinc-950/60 relative z-10 flex items-center justify-center text-[8.5px] text-slate-500 dark:text-zinc-400 font-extrabold tracking-widest">
+          <span>Authorized Access Only</span>
         </div>
       </motion.div>
     </div>

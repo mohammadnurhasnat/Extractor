@@ -45,8 +45,8 @@ export function useQueueHandlers({
 
     if (invalidFiles.length > 0) {
       const msg = isVisaApplication
-        ? 'অসমর্থিত ফাইল ফরম্যাট! কেবল ইন্ডিয়ান ভিসা অ্যাপ্লিকেশন PDF ফাইল সমর্থিত।'
-        : 'অসমর্থিত ফাইল ফরম্যাট! কেবল JPEG, PNG, WEBP এবং PDF ফাইল সমর্থন করে।';
+        ? 'Unsupported file format! Only Indian Visa Application PDF files are supported.'
+        : 'Unsupported file format! Only JPEG, PNG, WEBP, and PDF files are supported.';
       setError(msg);
       if (setToast) {
         setToast({ message: msg, type: 'error' });
@@ -57,7 +57,7 @@ export function useQueueHandlers({
     if (isVisaApplication) {
       const oversizedFiles = filesArray.filter(f => (f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf')) && f.size >= 1024 * 1024);
       if (oversizedFiles.length > 0) {
-        const errorMsg = 'দয়া করে ১ মেগাবাইট (1MB) এর নিচের সাইজের ইন্ডিয়ান ভিসা অ্যাপ্লিকেশন PDF ফাইল আপলোড করুন।';
+        const errorMsg = 'Please upload an Indian Visa Application PDF file smaller than 1MB.';
         setError(errorMsg);
         if (setToast) {
           setToast({ message: errorMsg, type: 'error' });
@@ -74,9 +74,9 @@ export function useQueueHandlers({
     
     if (validFiles.length === 0) {
       if (isVisaApplication) {
-        setError('দয়া করে একটি ইন্ডিয়ান ভিসা অ্যাপ্লিকেশন PDF ফাইল আপলোড করুন।');
+        setError('Please upload an Indian Visa Application PDF file.');
       } else {
-        setError('অসমর্থিত ফাইল ফরম্যাট! কেবল JPEG, PNG, WEBP এবং PDF ফাইল গ্রহণযোগ্য।');
+        setError('Unsupported file format! Only JPEG, PNG, WEBP, and PDF files are acceptable.');
       }
       return;
     }

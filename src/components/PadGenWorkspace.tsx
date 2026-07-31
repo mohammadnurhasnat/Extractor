@@ -41,21 +41,20 @@ export function PadGenWorkspace({ currentUser, onLogout }: PadGenWorkspaceProps)
   const [padWeb, setPadWeb] = useState('www.globaltrade.com');
   const [padColor, setPadColor] = useState('#2563eb'); // primary color
   const [padTemplate, setPadTemplate] = useState<'modern' | 'classic' | 'minimal'>('modern');
-  const [padBody, setPadBody] = useState(`তারিখ: ৩০ জুলাই, ২০২৬
+  const [padBody, setPadBody] = useState(`Date: 30 July 2026
 
-বরাবর,
-যথাযোগ্য কর্তৃপক্ষ
+To Whom It May Concern,
 
-বিষয়: অনাপত্তি ও সহযোগিতা সংক্রান্ত আবেদনপত্র।
+Subject: No Objection and Cooperation Certificate.
 
-মহোদয়,
-বিনীত নিবেদন এই যে, আমাদের প্রতিষ্ঠানের একজন সম্মানিত গ্রাহক/কর্মকর্তা ওনার পাসপোর্টের ডাটা যাচাই ও পরবর্তী প্রয়োজনীয় প্রক্রিয়াকরণের জন্য আবেদন করেছেন। উক্ত আবেদনের প্রেক্ষিতে ওনার ডাটা সঠিক ও নির্ভুলভাবে বিশ্লেষণ করা হয়েছে।
+Dear Sir/Madam,
+This is to certify that one of our valued clients/officers has applied for passport data verification and subsequent processing. We have verified and analyzed their passport credentials and found them to be accurate and authentic.
 
-আমাদের পক্ষ থেকে ওনার এই কার্যক্রমের উপর কোনো প্রকার দ্বিমত বা আপত্তি নেই। ওনার পরবর্তী সকল দাপ্তরিক প্রক্রিয়ায় যথাযথ সহযোগিতা প্রদানের জন্য বিনীত অনুরোধ করা হলো।
+We have no objection to their activities and request you to extend all necessary cooperation and assistance for their upcoming official and administrative processing.
 
-ধন্যবাদান্তে,
-পরিচালক,
-গ্লোবাল ট্রেড অ্যান্ড টেকনোলজি`);
+Sincerely,
+Director,
+Global Trade & Technology`);
 
   // 2. Visiting Card State
   const [cardName, setCardName] = useState(currentUser?.name || 'Mohammad Nur Hasnat');
@@ -114,7 +113,7 @@ I look forward to the possibility of discussing how my experience can align with
   const handleDownloadPDF = async () => {
     if (!previewRef.current) return;
     setIsExporting(true);
-    setToast({ message: 'পিডিএফ তৈরি হচ্ছে... অনুগ্রহ করে অপেক্ষা করুন।', type: 'success' });
+    setToast({ message: 'Generating PDF... Please wait.', type: 'success' });
     
     try {
       const element = previewRef.current;
@@ -154,10 +153,10 @@ I look forward to the possibility of discussing how my experience can align with
       }
       
       pdf.save(`PadGen_${activeTab}_${Date.now()}.pdf`);
-      setToast({ message: 'পিডিএফ ফাইলটি সফলভাবে ডাউনলোড হয়েছে!', type: 'success' });
+      setToast({ message: 'PDF file downloaded successfully!', type: 'success' });
     } catch (err) {
       console.error(err);
-      setToast({ message: 'পিডিএফ তৈরি করতে ব্যর্থ হয়েছে।', type: 'error' });
+      setToast({ message: 'Failed to generate PDF.', type: 'error' });
     } finally {
       setIsExporting(false);
     }
@@ -193,7 +192,7 @@ I look forward to the possibility of discussing how my experience can align with
               href="https://extractor.fun/" 
               target="_self"
               className="inline-flex items-center justify-center p-2 rounded-xl border border-slate-200 dark:border-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-800 text-slate-600 dark:text-zinc-300 transition-colors"
-              title="Extractor-এ ফিরে যান"
+              title="Return to Extractor"
             >
               <ArrowLeft className="w-4 h-4" />
             </a>
@@ -218,7 +217,7 @@ I look forward to the possibility of discussing how my experience can align with
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-200/50 dark:border-red-900/30 text-red-600 dark:text-red-400 text-xs font-bold hover:bg-red-50 dark:hover:bg-red-950/20 active:scale-95 transition-all"
             >
               <LogOut className="w-3.5 h-3.5" />
-              <span>লগআউট</span>
+              <span>Logout</span>
             </button>
           </div>
 
@@ -233,10 +232,10 @@ I look forward to the possibility of discussing how my experience can align with
               <Sparkles className="w-3 h-3" /> Approved SSO Session
             </div>
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-800 dark:text-zinc-100">
-              প্রফেশনাল প্যাড ও কর্পোরেট ডকুমেন্ট মেকার
+              Professional Pad & Document Creator
             </h1>
             <p className="text-xs sm:text-sm text-slate-600 dark:text-zinc-400 leading-relaxed">
-              আপনার পাসপোর্টের তথ্য এক্সট্রাক্ট করার পর, এই সাবডোমেন থেকে সরাসরি প্রফেশনাল প্যাড, NOC, ভিজিটিং কার্ড এবং সিল ডিজাইন ও প্রিন্ট করতে পারবেন। সম্পূর্ণ ডাটা সিঙ্কড।
+              After extracting your passport details, you can directly design and print professional letterheads, NOCs, visiting cards, and custom stamps from this workspace. All data is fully synced.
             </p>
           </div>
           <div className="shrink-0">
@@ -246,7 +245,7 @@ I look forward to the possibility of discussing how my experience can align with
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-extrabold text-xs shadow-md shadow-slate-900/10 dark:shadow-none hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer"
             >
               <Landmark className="w-4 h-4" />
-              <span>Extractor-এ ফিরে যান</span>
+              <span>Return to Extractor</span>
             </a>
           </div>
         </div>
@@ -262,12 +261,12 @@ I look forward to the possibility of discussing how my experience can align with
             {/* Quick Navigation Tabs */}
             <div className="bg-white dark:bg-zinc-900 p-2 rounded-2xl border border-amber-900/5 dark:border-zinc-800 shadow-sm flex flex-wrap gap-1">
               {[
-                { id: 'pad', label: 'প্যাড (A4)', icon: FileText },
-                { id: 'card', label: 'ভিজিটিং কার্ড', icon: CreditCard },
-                { id: 'noc', label: 'NOC পত্র', icon: Award },
-                { id: 'idcard', label: 'অফিস আইডি', icon: UserSquare2 },
-                { id: 'cover', label: 'কভার লেটার', icon: FileText },
-                { id: 'seal', label: 'অফিস সিল', icon: Stamp },
+                { id: 'pad', label: 'Letterhead (A4)', icon: FileText },
+                { id: 'card', label: 'Business Card', icon: CreditCard },
+                { id: 'noc', label: 'NOC Letter', icon: Award },
+                { id: 'idcard', label: 'Office ID', icon: UserSquare2 },
+                { id: 'cover', label: 'Cover Letter', icon: FileText },
+                { id: 'seal', label: 'Official Stamp', icon: Stamp },
               ].map((tab) => {
                 const Icon = tab.icon;
                 const isSelected = activeTab === tab.id;
@@ -292,13 +291,13 @@ I look forward to the possibility of discussing how my experience can align with
             <div className="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-amber-900/5 dark:border-zinc-800 shadow-sm space-y-5">
               <h3 className="text-sm font-bold text-slate-800 dark:text-zinc-200 border-b border-slate-100 dark:border-zinc-800 pb-3 flex items-center gap-2">
                 <LayoutGrid className="w-4 h-4 text-indigo-500" />
-                <span>তথ্য ও এডিট প্যানেল (Data Editor)</span>
+                <span>Data Editor Panel</span>
               </h3>
 
               {activeTab === 'pad' && (
                 <div className="space-y-4 text-xs sm:text-sm">
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1.5">কোম্পানির নাম (Company Name)</label>
+                    <label className="block text-xs font-bold text-slate-500 mb-1.5">Company Name</label>
                     <input 
                       type="text" 
                       value={padCompany} 
@@ -307,7 +306,7 @@ I look forward to the possibility of discussing how my experience can align with
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1.5">স্লোগান/ট্যাগলাইন (Slogan/Tagline)</label>
+                    <label className="block text-xs font-bold text-slate-500 mb-1.5">Slogan / Tagline</label>
                     <input 
                       type="text" 
                       value={padSlogan} 
@@ -317,7 +316,7 @@ I look forward to the possibility of discussing how my experience can align with
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 mb-1.5">মোবাইল (Mobile)</label>
+                      <label className="block text-xs font-bold text-slate-500 mb-1.5">Mobile</label>
                       <input 
                         type="text" 
                         value={padPhone} 
@@ -326,7 +325,7 @@ I look forward to the possibility of discussing how my experience can align with
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 mb-1.5">ইমেইল (Email)</label>
+                      <label className="block text-xs font-bold text-slate-500 mb-1.5">Email</label>
                       <input 
                         type="text" 
                         value={padEmail} 
@@ -337,7 +336,7 @@ I look forward to the possibility of discussing how my experience can align with
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 mb-1.5">ওয়েবসাইট (Website)</label>
+                      <label className="block text-xs font-bold text-slate-500 mb-1.5">Website</label>
                       <input 
                         type="text" 
                         value={padWeb} 
@@ -346,7 +345,7 @@ I look forward to the possibility of discussing how my experience can align with
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 mb-1.5">রঙ নির্বাচন (Accent Color)</label>
+                      <label className="block text-xs font-bold text-slate-500 mb-1.5">Accent Color</label>
                       <div className="flex gap-1.5 mt-1">
                         {['#2563eb', '#16a34a', '#dc2626', '#4f46e5', '#0f172a'].map((c) => (
                           <button 
@@ -360,7 +359,7 @@ I look forward to the possibility of discussing how my experience can align with
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1.5">পূর্ণ ঠিকানা (Full Address)</label>
+                    <label className="block text-xs font-bold text-slate-500 mb-1.5">Full Address</label>
                     <input 
                       type="text" 
                       value={padAddress} 
@@ -369,7 +368,7 @@ I look forward to the possibility of discussing how my experience can align with
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1.5">প্যাডের বিষয়বস্তু (Letterhead Body Content)</label>
+                    <label className="block text-xs font-bold text-slate-500 mb-1.5">Letterhead Body Content</label>
                     <textarea 
                       rows={5}
                       value={padBody} 
@@ -383,7 +382,7 @@ I look forward to the possibility of discussing how my experience can align with
               {activeTab === 'card' && (
                 <div className="space-y-4 text-xs sm:text-sm">
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1.5">কার্ডের নাম (Name on Card)</label>
+                    <label className="block text-xs font-bold text-slate-500 mb-1.5">Name on Card</label>
                     <input 
                       type="text" 
                       value={cardName} 
@@ -401,7 +400,7 @@ I look forward to the possibility of discussing how my experience can align with
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1.5">কোম্পানির নাম (Company Name)</label>
+                    <label className="block text-xs font-bold text-slate-500 mb-1.5">Company Name</label>
                     <input 
                       type="text" 
                       value={cardCompany} 
@@ -411,7 +410,7 @@ I look forward to the possibility of discussing how my experience can align with
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 mb-1.5">মোবাইল (Phone)</label>
+                      <label className="block text-xs font-bold text-slate-500 mb-1.5">Phone Number</label>
                       <input 
                         type="text" 
                         value={cardPhone} 
@@ -420,7 +419,7 @@ I look forward to the possibility of discussing how my experience can align with
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 mb-1.5">ইমেইল (Email)</label>
+                      <label className="block text-xs font-bold text-slate-500 mb-1.5">Email</label>
                       <input 
                         type="text" 
                         value={cardEmail} 
@@ -431,7 +430,7 @@ I look forward to the possibility of discussing how my experience can align with
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 mb-1.5">ওয়েবসাইট (Website)</label>
+                      <label className="block text-xs font-bold text-slate-500 mb-1.5">Website</label>
                       <input 
                         type="text" 
                         value={cardWeb} 
@@ -440,7 +439,7 @@ I look forward to the possibility of discussing how my experience can align with
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 mb-1.5">কার্ড থিম (Card Color Theme)</label>
+                      <label className="block text-xs font-bold text-slate-500 mb-1.5">Card Color Theme</label>
                       <select 
                         value={cardColor} 
                         onChange={(e) => setCardColor(e.target.value)}
@@ -454,7 +453,7 @@ I look forward to the possibility of discussing how my experience can align with
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1.5">ঠিকানা (Address Line)</label>
+                    <label className="block text-xs font-bold text-slate-500 mb-1.5">Address Line</label>
                     <input 
                       type="text" 
                       value={cardAddress} 
@@ -469,7 +468,7 @@ I look forward to the possibility of discussing how my experience can align with
                 <div className="space-y-4 text-xs sm:text-sm">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 mb-1.5">স্মারক নাম্বার (Ref Number)</label>
+                      <label className="block text-xs font-bold text-slate-500 mb-1.5">Ref Number</label>
                       <input 
                         type="text" 
                         value={nocRef} 
@@ -478,7 +477,7 @@ I look forward to the possibility of discussing how my experience can align with
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 mb-1.5">তারিখ (Date)</label>
+                      <label className="block text-xs font-bold text-slate-500 mb-1.5">Date</label>
                       <input 
                         type="text" 
                         value={nocDate} 
@@ -489,7 +488,7 @@ I look forward to the possibility of discussing how my experience can align with
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 mb-1.5">কর্মকর্তার নাম (Employee Name)</label>
+                      <label className="block text-xs font-bold text-slate-500 mb-1.5">Employee Name</label>
                       <input 
                         type="text" 
                         value={nocEmpName} 
@@ -498,7 +497,7 @@ I look forward to the possibility of discussing how my experience can align with
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 mb-1.5">পাসপোর্ট নং (Passport Number)</label>
+                      <label className="block text-xs font-bold text-slate-500 mb-1.5">Passport Number</label>
                       <input 
                         type="text" 
                         value={nocPassport} 
@@ -509,7 +508,7 @@ I look forward to the possibility of discussing how my experience can align with
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 mb-1.5">পদবী (Designation)</label>
+                      <label className="block text-xs font-bold text-slate-500 mb-1.5">Designation</label>
                       <input 
                         type="text" 
                         value={nocDesg} 
@@ -518,7 +517,7 @@ I look forward to the possibility of discussing how my experience can align with
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 mb-1.5">মাসিক বেতন (Monthly Salary)</label>
+                      <label className="block text-xs font-bold text-slate-500 mb-1.5">Monthly Salary</label>
                       <input 
                         type="text" 
                         value={nocSalary} 
@@ -529,7 +528,7 @@ I look forward to the possibility of discussing how my experience can align with
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 mb-1.5">যোগদানের তারিখ (Joining Date)</label>
+                      <label className="block text-xs font-bold text-slate-500 mb-1.5">Joining Date</label>
                       <input 
                         type="text" 
                         value={nocJoinDate} 
@@ -538,7 +537,7 @@ I look forward to the possibility of discussing how my experience can align with
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 mb-1.5">ভ্রমণের উদ্দেশ্য (Purpose)</label>
+                      <label className="block text-xs font-bold text-slate-500 mb-1.5">Purpose of Travel</label>
                       <input 
                         type="text" 
                         value={nocPurpose} 
@@ -548,7 +547,7 @@ I look forward to the possibility of discussing how my experience can align with
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1.5">ভ্রমণের দেশসমূহ (Destination Countries)</label>
+                    <label className="block text-xs font-bold text-slate-500 mb-1.5">Destination Countries</label>
                     <input 
                       type="text" 
                       value={nocDestination} 
@@ -562,7 +561,7 @@ I look forward to the possibility of discussing how my experience can align with
               {activeTab === 'idcard' && (
                 <div className="space-y-4 text-xs sm:text-sm">
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1.5">আইডি নাম (Employee Name)</label>
+                    <label className="block text-xs font-bold text-slate-500 mb-1.5">Employee Name</label>
                     <input 
                       type="text" 
                       value={idName} 
@@ -572,7 +571,7 @@ I look forward to the possibility of discussing how my experience can align with
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 mb-1.5">আইডি নম্বর (ID Number)</label>
+                      <label className="block text-xs font-bold text-slate-500 mb-1.5">ID Number</label>
                       <input 
                         type="text" 
                         value={idEmpId} 
@@ -581,7 +580,7 @@ I look forward to the possibility of discussing how my experience can align with
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 mb-1.5">রক্তের গ্রুপ (Blood Group)</label>
+                      <label className="block text-xs font-bold text-slate-500 mb-1.5">Blood Group</label>
                       <input 
                         type="text" 
                         value={idBlood} 
@@ -592,7 +591,7 @@ I look forward to the possibility of discussing how my experience can align with
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 mb-1.5">বিভাগ (Department)</label>
+                      <label className="block text-xs font-bold text-slate-500 mb-1.5">Department</label>
                       <input 
                         type="text" 
                         value={idDept} 
@@ -601,7 +600,7 @@ I look forward to the possibility of discussing how my experience can align with
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 mb-1.5">যোগদানের বছর (Joined)</label>
+                      <label className="block text-xs font-bold text-slate-500 mb-1.5">Year Joined</label>
                       <input 
                         type="text" 
                         value={idJoined} 
@@ -612,7 +611,7 @@ I look forward to the possibility of discussing how my experience can align with
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 mb-1.5">মোবাইল (Emergency Phone)</label>
+                      <label className="block text-xs font-bold text-slate-500 mb-1.5">Emergency Phone</label>
                       <input 
                         type="text" 
                         value={idPhone} 
@@ -621,7 +620,7 @@ I look forward to the possibility of discussing how my experience can align with
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 mb-1.5">আইডি কালার (ID Theme Color)</label>
+                      <label className="block text-xs font-bold text-slate-500 mb-1.5">ID Theme Color</label>
                       <input 
                         type="color" 
                         value={idColor} 
@@ -637,7 +636,7 @@ I look forward to the possibility of discussing how my experience can align with
                 <div className="space-y-4 text-xs sm:text-sm">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 mb-1.5">প্রাপক (Recipient)</label>
+                      <label className="block text-xs font-bold text-slate-500 mb-1.5">Recipient</label>
                       <input 
                         type="text" 
                         value={covRecipient} 
@@ -646,7 +645,7 @@ I look forward to the possibility of discussing how my experience can align with
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 mb-1.5">প্রাপক কোম্পানি (Recipient Company)</label>
+                      <label className="block text-xs font-bold text-slate-500 mb-1.5">Recipient Company</label>
                       <input 
                         type="text" 
                         value={covCompany} 
@@ -656,7 +655,7 @@ I look forward to the possibility of discussing how my experience can align with
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1.5">প্রাপকের ঠিকানা (Recipient Address)</label>
+                    <label className="block text-xs font-bold text-slate-500 mb-1.5">Recipient Address</label>
                     <input 
                       type="text" 
                       value={covAddress} 
@@ -665,7 +664,7 @@ I look forward to the possibility of discussing how my experience can align with
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1.5">বিষয় (Subject)</label>
+                    <label className="block text-xs font-bold text-slate-500 mb-1.5">Subject</label>
                     <input 
                       type="text" 
                       value={covSubject} 
@@ -674,7 +673,7 @@ I look forward to the possibility of discussing how my experience can align with
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1.5">সম্বোধন (Salutation)</label>
+                    <label className="block text-xs font-bold text-slate-500 mb-1.5">Salutation</label>
                     <input 
                       type="text" 
                       value={covSalutation} 
@@ -683,7 +682,7 @@ I look forward to the possibility of discussing how my experience can align with
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1.5">কভার লেটার বডি (Cover Letter Body)</label>
+                    <label className="block text-xs font-bold text-slate-500 mb-1.5">Cover Letter Body</label>
                     <textarea 
                       rows={6}
                       value={covBody} 
@@ -697,7 +696,7 @@ I look forward to the possibility of discussing how my experience can align with
               {activeTab === 'seal' && (
                 <div className="space-y-4 text-xs sm:text-sm">
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1.5">বাইরের গোলাকার লেখা (Outer Circular Text)</label>
+                    <label className="block text-xs font-bold text-slate-500 mb-1.5">Outer Circular Text</label>
                     <input 
                       type="text" 
                       value={sealOuterText} 
@@ -706,7 +705,7 @@ I look forward to the possibility of discussing how my experience can align with
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1.5">ভেতরের সোজা লেখা (Inner Straight Text)</label>
+                    <label className="block text-xs font-bold text-slate-500 mb-1.5">Inner Straight Text</label>
                     <input 
                       type="text" 
                       value={sealInnerText} 
@@ -715,7 +714,7 @@ I look forward to the possibility of discussing how my experience can align with
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1.5">সিল কালার (Seal Ink Color)</label>
+                    <label className="block text-xs font-bold text-slate-500 mb-1.5">Seal Ink Color</label>
                     <div className="flex gap-1.5 mt-1">
                       {['#dc2626', '#16a34a', '#2563eb', '#4f46e5', '#0f172a'].map((c) => (
                         <button 
@@ -737,7 +736,7 @@ I look forward to the possibility of discussing how my experience can align with
                   className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-200 text-xs font-bold hover:bg-slate-50 dark:hover:bg-zinc-800 active:scale-95 transition-all cursor-pointer"
                 >
                   <Printer className="w-4 h-4" />
-                  <span>প্রিন্ট করুন</span>
+                  <span>Print Document</span>
                 </button>
                 <button
                   onClick={handleDownloadPDF}
@@ -745,7 +744,7 @@ I look forward to the possibility of discussing how my experience can align with
                   className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-indigo-600 text-white text-xs font-extrabold shadow-md shadow-indigo-600/15 hover:bg-indigo-700 hover:shadow-indigo-600/25 active:scale-95 transition-all disabled:opacity-50 cursor-pointer"
                 >
                   {isExporting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-                  <span>পিডিএফ ডাউনলোড</span>
+                  <span>Download PDF</span>
                 </button>
               </div>
 

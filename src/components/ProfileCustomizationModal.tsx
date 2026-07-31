@@ -53,13 +53,13 @@ export const ProfileCustomizationModal: React.FC<ProfileCustomizationModalProps>
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      setErrorMsg('অনুগ্রহ করে একটি ছবি নির্বাচন করুন (Please select a valid image file).');
+      setErrorMsg('Please select a valid image file.');
       return;
     }
 
     // Limit file size before compression (max 10MB input)
     if (file.size > 10 * 1024 * 1024) {
-      setErrorMsg('ছবি সর্বোচ্চ ১০ মেগাবাইটের মধ্যে হতে হবে।');
+      setErrorMsg('Image size must be less than 10MB.');
       return;
     }
 
@@ -114,17 +114,17 @@ export const ProfileCustomizationModal: React.FC<ProfileCustomizationModalProps>
 
     const trimmedName = name.trim();
     if (!trimmedName) {
-      setErrorMsg('নামের ঘরটি খালি রাখা যাবে না। (Name is required.)');
+      setErrorMsg('Name is required.');
       return;
     }
 
     if (newPassword || confirmPassword) {
       if (newPassword !== confirmPassword) {
-        setErrorMsg('পাসওয়ার্ড এবং কনফার্ম পাসওয়ার্ড মিলছে না! (Passwords do not match.)');
+        setErrorMsg('Passwords do not match.');
         return;
       }
       if (newPassword.length < 4) {
-        setErrorMsg('পাসওয়ার্ড অন্তত ৪ অক্ষরের হতে হবে। (Password must be at least 4 characters.)');
+        setErrorMsg('Password must be at least 4 characters.');
         return;
       }
     }
@@ -151,7 +151,7 @@ export const ProfileCustomizationModal: React.FC<ProfileCustomizationModalProps>
       });
 
       if (!ok || !resData?.success) {
-        throw new Error(resData?.error || error || 'প্রোফাইল আপডেট করতে ব্যর্থ হয়েছে।');
+        throw new Error(resData?.error || error || 'Failed to update profile.');
       }
 
       const updatedUser: User = {
@@ -171,7 +171,7 @@ export const ProfileCustomizationModal: React.FC<ProfileCustomizationModalProps>
 
       if (showToast) {
         showToast({
-          message: 'আপনার প্রোফাইল সফলভাবে আপডেট করা হয়েছে! (Profile updated successfully!)',
+          message: 'Profile updated successfully!',
           type: 'success'
         });
       }
@@ -179,7 +179,7 @@ export const ProfileCustomizationModal: React.FC<ProfileCustomizationModalProps>
       onClose();
     } catch (err: any) {
       console.error('Failed to update profile:', err);
-      setErrorMsg(err.message || 'প্রোফাইল আপডেট করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।');
+      setErrorMsg(err.message || 'Failed to update profile. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -202,7 +202,7 @@ export const ProfileCustomizationModal: React.FC<ProfileCustomizationModalProps>
                 USER PROFILE SETTINGS
               </h3>
               <p className="text-[10px] font-semibold text-slate-500 dark:text-zinc-400">
-                প্রোফাইল ও একাউন্ট তথ্য এডিট করুন
+                Edit Profile and Account Information
               </p>
             </div>
           </div>
@@ -226,7 +226,7 @@ export const ProfileCustomizationModal: React.FC<ProfileCustomizationModalProps>
           {/* Profile Photo Section - Frame radius 10px (rounded-[10px]) */}
           <div className="flex flex-col items-center justify-center p-3 bg-slate-50 dark:bg-zinc-900/40 rounded-[10px] border border-slate-200/60 dark:border-zinc-800/80">
             <span className="text-[10px] font-extrabold text-slate-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
-              PROFILE PHOTO (প্রোফাইল ছবি)
+              PROFILE PHOTO
             </span>
 
             <div className="relative group">
@@ -272,7 +272,7 @@ export const ProfileCustomizationModal: React.FC<ProfileCustomizationModalProps>
                 className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-[8px] transition-colors flex items-center gap-1.5 cursor-pointer shadow-sm"
               >
                 <Camera className="w-3.5 h-3.5" />
-                <span>{profilePicture ? 'ছবি পরিবর্তন করুন' : 'ছবি যোগ করুন'}</span>
+                <span>{profilePicture ? 'Change Photo' : 'Add Photo'}</span>
               </button>
 
               {profilePicture && (
@@ -283,19 +283,19 @@ export const ProfileCustomizationModal: React.FC<ProfileCustomizationModalProps>
                   title="Remove Photo"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
-                  <span>মুছুন</span>
+                  <span>Remove</span>
                 </button>
               )}
             </div>
             <p className="text-[9px] font-semibold text-slate-400 dark:text-zinc-500 mt-1.5 text-center">
-              ফটো যোগ করার পর সেভ করলে ডাটাবেজে স্থায়ীভাবে সংরক্ষিত থাকবে।
+              Photos are saved permanently to the database upon saving.
             </p>
           </div>
 
           {/* Input 1: Name */}
           <div>
             <label className="block text-[10px] font-extrabold text-slate-600 dark:text-zinc-400 uppercase tracking-wider mb-1">
-              Full Name (নাম) <span className="text-rose-500">*</span>
+              Full Name <span className="text-rose-500">*</span>
             </label>
             <div className="relative">
               <UserIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-500" />
@@ -303,7 +303,7 @@ export const ProfileCustomizationModal: React.FC<ProfileCustomizationModalProps>
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="আপনার নাম লিখুন"
+                placeholder="Enter your name"
                 className="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-800 rounded-[8px] text-xs font-bold text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
                 required
               />
@@ -313,7 +313,7 @@ export const ProfileCustomizationModal: React.FC<ProfileCustomizationModalProps>
           {/* Input 2: Mobile Number */}
           <div>
             <label className="block text-[10px] font-extrabold text-slate-600 dark:text-zinc-400 uppercase tracking-wider mb-1">
-              Phone Number (মোবাইল নাম্বার)
+              Phone Number
             </label>
             <div className="relative">
               <Phone className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-500" />
@@ -330,7 +330,7 @@ export const ProfileCustomizationModal: React.FC<ProfileCustomizationModalProps>
           {/* Email Address (Read-only) */}
           <div>
             <label className="block text-[10px] font-extrabold text-slate-500 dark:text-zinc-500 uppercase tracking-wider mb-1">
-              Email Address (ইমেইল ঠিকানা - অপরিবর্তনযোগ্য)
+              Email Address (Read-only)
             </label>
             <div className="relative">
               <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-500" />
@@ -346,12 +346,12 @@ export const ProfileCustomizationModal: React.FC<ProfileCustomizationModalProps>
           {/* Input 3: Change Password */}
           <div className="pt-2 border-t border-slate-100 dark:border-zinc-900 space-y-3">
             <span className="block text-[10px] font-extrabold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
-              CHANGE PASSWORD (পাসওয়ার্ড পরিবর্তন)
+              CHANGE PASSWORD
             </span>
 
             <div>
               <label className="block text-[10px] font-extrabold text-slate-600 dark:text-zinc-400 uppercase tracking-wider mb-1">
-                New Password (নতুন পাসওয়ার্ড)
+                New Password
               </label>
               <div className="relative">
                 <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-500" />
@@ -359,7 +359,7 @@ export const ProfileCustomizationModal: React.FC<ProfileCustomizationModalProps>
                   type={showPassword ? 'text' : 'password'}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="পাসওয়ার্ড পরিবর্তন করতে এখানে লিখুন"
+                  placeholder="Enter new password"
                   className="w-full pl-9 pr-9 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-800 rounded-[8px] text-xs font-mono font-bold text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
                 />
                 <button
@@ -375,7 +375,7 @@ export const ProfileCustomizationModal: React.FC<ProfileCustomizationModalProps>
             {newPassword.length > 0 && (
               <div>
                 <label className="block text-[10px] font-extrabold text-slate-600 dark:text-zinc-400 uppercase tracking-wider mb-1">
-                  Confirm New Password (পাসওয়ার্ড নিশ্চিত করুন)
+                  Confirm New Password
                 </label>
                 <div className="relative">
                   <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-500" />
@@ -383,7 +383,7 @@ export const ProfileCustomizationModal: React.FC<ProfileCustomizationModalProps>
                     type={showPassword ? 'text' : 'password'}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="পাসওয়ার্ড পুনরায় লিখুন"
+                    placeholder="Re-enter password"
                     className="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-800 rounded-[8px] text-xs font-mono font-bold text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
                   />
                 </div>
@@ -399,7 +399,7 @@ export const ProfileCustomizationModal: React.FC<ProfileCustomizationModalProps>
               disabled={isLoading}
               className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 text-xs font-bold rounded-[8px] transition-colors cursor-pointer"
             >
-              বাতিল (Cancel)
+              Cancel
             </button>
 
             <button
@@ -410,12 +410,12 @@ export const ProfileCustomizationModal: React.FC<ProfileCustomizationModalProps>
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>সেভ হচ্ছে...</span>
+                  <span>Saving...</span>
                 </>
               ) : (
                 <>
                   <Check className="w-4 h-4" />
-                  <span>পরিবর্তন সেভ করুন</span>
+                  <span>Save Changes</span>
                 </>
               )}
             </button>
