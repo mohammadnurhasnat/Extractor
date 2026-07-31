@@ -84,41 +84,39 @@ export function HistorySidebar({
           </h3>
           <p className="text-[11px] sm:text-xs text-slate-500 dark:text-zinc-400 mt-0.5 font-sans font-medium">Select passport profile from dropdown.</p>
         </div>
-        <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-stretch sm:items-center justify-end gap-2 sm:gap-2.5 w-full xl:w-auto z-10">
+        <div className="flex flex-row items-center justify-end gap-1.5 sm:gap-2.5 w-full xl:w-auto z-10">
           {history.length > 0 && (
             <button 
               onClick={(e) => onConfirmDelete(e, "ALL")}
-              className="slide-btn slide-btn-slate w-full sm:w-auto px-3.5 py-1.5 rounded-full font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1.5 uppercase ripple-btn cursor-pointer"
+              className="slide-btn slide-btn-slate flex-1 sm:flex-initial w-full sm:w-auto px-2 sm:px-3.5 py-1.5 rounded-full font-bold text-[10px] sm:text-xs flex items-center justify-center gap-1 uppercase ripple-btn cursor-pointer"
               title="Delete All Profiles"
             >
               <span className="relative z-10 flex items-center gap-1">
-                <Trash2 className="w-3.5 h-3.5" />
-                <span className="inline">Delete</span>
+                <Trash2 className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                <span>Delete</span>
               </span>
             </button>
           )}
-          <div className="flex gap-2 w-full sm:w-auto col-span-2 sm:col-span-1">
-            <button 
-              onClick={onOpenBackup}
-              className="slide-btn slide-btn-purple w-full sm:w-auto px-3.5 py-1.5 rounded-full font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1.5 uppercase ripple-btn cursor-pointer"
-              title="Open Cryptographic Profile Backup"
-            >
-              <span className="relative z-10 flex items-center gap-1">
-                <Database className="w-3.5 h-3.5" />
-                <span>Backup</span>
-              </span>
-            </button>
-            <button 
-              onClick={onOpenRestore}
-              className="slide-btn slide-btn-emerald w-full sm:w-auto px-3.5 py-1.5 rounded-xl font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1.5 uppercase ripple-btn cursor-pointer"
-              title="Open Secure Data Restore"
-            >
-              <span className="relative z-10 flex items-center gap-1">
-                <Download className="w-3.5 h-3.5" />
-                <span>Restore</span>
-              </span>
-            </button>
-          </div>
+          <button 
+            onClick={onOpenBackup}
+            className="slide-btn slide-btn-purple flex-1 sm:flex-initial w-full sm:w-auto px-2 sm:px-3.5 py-1.5 rounded-full font-bold text-[10px] sm:text-xs flex items-center justify-center gap-1 uppercase ripple-btn cursor-pointer"
+            title="Open Cryptographic Profile Backup"
+          >
+            <span className="relative z-10 flex items-center gap-1">
+              <Database className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+              <span>Backup</span>
+            </span>
+          </button>
+          <button 
+            onClick={onOpenRestore}
+            className="slide-btn slide-btn-emerald flex-1 sm:flex-initial w-full sm:w-auto px-2 sm:px-3.5 py-1.5 rounded-xl font-bold text-[10px] sm:text-xs flex items-center justify-center gap-1 uppercase ripple-btn cursor-pointer"
+            title="Open Secure Data Restore"
+          >
+            <span className="relative z-10 flex items-center gap-1">
+              <Download className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+              <span>Restore</span>
+            </span>
+          </button>
         </div>
       </div>
 
