@@ -353,18 +353,6 @@ Mother's Name: ${itemData.motherName}
 Spouse's Name: ${itemData.spouseName || "N/A"}
 Mobile Number: ${itemData.mobileNumber ? itemData.mobileNumber.replace(/^\+88\s*/, '') : ''}
 Town/City of birth/BIRTH PLACE: ${itemData.birthPlaceDistrict || itemData.birthPlace || 'N/A'}
-
-=== BUSINESS DETAILS (PROPRIETORSHIP) ===
-Business Name: ${getProprietorBusinessName(itemData)}
-Role: Proprietor
-Business Address (Present): ${itemData.businessAddressDhaka || 'N/A'}
-Business Address (Permanent): ${itemData.businessAddressLocal || 'N/A'}
-
-=== PRIVATE SERVICE / JOB ===
-Company Name: ${getJobCompanyName(itemData)}
-Role: ${getJobRole(itemData)}
-Office Address (Present): ${itemData.officeAddressDhaka || 'N/A'}
-Office Address (Permanent): ${itemData.officeAddressLocal || 'N/A'}
 `;
 
   if (itemData.hotelName) {

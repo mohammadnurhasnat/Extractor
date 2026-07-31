@@ -62,7 +62,7 @@ export function PassportDataTab({
     }
     if (utPurpose === 'Business') {
       return {
-        label: '🏢 Kolkata Businesses (5)',
+        label: 'Kolkata Businesses (5)',
         purpose: 'Business' as const,
         btnClass: 'slide-btn-purple text-white'
       };
@@ -105,22 +105,8 @@ export function PassportDataTab({
               onClick={onOpenRefHelper}
               className={`slide-btn ${helperInfo.purpose === 'Medical' ? 'slide-btn-teal' : 'slide-btn-orange'} flex items-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-extrabold rounded-full cursor-pointer`}
             >
-              <ClipboardList className="w-4.5 h-4.5 relative z-10" />
+              {helperInfo.purpose !== 'Business' && <ClipboardList className="w-4.5 h-4.5 relative z-10" />}
               <span className="relative z-10">{helperInfo.label}</span>
-            </button>
-          )}
-          {onShare && (
-            <button
-              onClick={onShare}
-              disabled={isSharing}
-              className="slide-btn slide-btn-teal flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-extrabold rounded-full cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSharing ? (
-                <Loader2 className="w-4.5 h-4.5 animate-spin relative z-10" />
-              ) : (
-                <Share2 className="w-4.5 h-4.5 relative z-10" />
-              )}
-              <span className="relative z-10">{isSharing ? 'Sharing...' : 'Share'}</span>
             </button>
           )}
           <button 
@@ -206,30 +192,6 @@ export function PassportDataTab({
         <DataField label="Spouse's Name" value={data.spouseName || "N/A"} confidence={data.fieldConfidence?.spouseName} onValueChange={(val) => updateDataField('spouseName', val)} />
         <DataField label="Mobile Number" value={data.mobileNumber ? data.mobileNumber.replace(/^\+88\s*/, '') : ''} confidence={data.fieldConfidence?.mobileNumber} onValueChange={(val) => updateDataField('mobileNumber', val)} />
         <DataField label="District of Birth" value={data.birthPlaceDistrict || data.birthPlace || ''} onValueChange={(val) => updateDataField('birthPlaceDistrict', val)} />
-
-        <div className="col-span-1 sm:col-span-2 pt-3 border-t border-slate-100 dark:border-zinc-800/50 mt-2">
-          <h4 className="text-xs font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider mb-2.5">Business & Profession Details</h4>
-        </div>
-        
-        <div className="col-span-1 sm:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-          {/* Proprietorship */}
-          <div className="space-y-3 bg-slate-50/50 dark:bg-black/30 p-4 rounded-xl border border-slate-100 dark:border-zinc-800/50">
-            <h5 className="text-sm font-semibold text-slate-700 dark:text-zinc-300 border-b border-slate-200 dark:border-zinc-800/50 pb-2 mb-1">Business (Proprietorship)</h5>
-            <DataField label="Business Name" value={getProprietorBusinessName(data)} onValueChange={(val) => updateDataField('proprietorBusinessName', val)} />
-            <DataField label="Designation" value="Proprietor" />
-            <DataField label="Business Address (Present / Dhaka)" value={data.businessAddressDhaka || ''} onValueChange={(val) => updateDataField('businessAddressDhaka', val)} />
-            <DataField label="Business Address (Permanent / Local)" value={data.businessAddressLocal || ''} onValueChange={(val) => updateDataField('businessAddressLocal', val)} />
-          </div>
-
-          {/* Private Service / Job */}
-          <div className="space-y-3 bg-slate-50/50 dark:bg-black/30 p-4 rounded-xl border border-slate-100 dark:border-zinc-800/50">
-            <h5 className="text-sm font-semibold text-slate-700 dark:text-zinc-300 border-b border-slate-200 dark:border-zinc-800/50 pb-2 mb-1">Private Service / Job</h5>
-            <DataField label="Company Name" value={getJobCompanyName(data)} onValueChange={(val) => updateDataField('jobCompanyName', val)} />
-            <DataField label="Designation" value={getJobRole(data)} onValueChange={(val) => updateDataField('jobRole', val)} />
-            <DataField label="Office Address (Present / Dhaka)" value={data.officeAddressDhaka || ''} onValueChange={(val) => updateDataField('officeAddressDhaka', val)} />
-            <DataField label="Office Address (Permanent / Local)" value={data.officeAddressLocal || ''} onValueChange={(val) => updateDataField('officeAddressLocal', val)} />
-          </div>
-        </div>
 
         {data.hospitalName && (
           <>

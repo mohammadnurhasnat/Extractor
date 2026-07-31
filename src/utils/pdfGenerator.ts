@@ -384,32 +384,6 @@ export const getPDFDocument = (data: PassportData): jsPDF => {
   drawFullWidthField('PERMANENT ADDRESS', data.permanentAddress || 'N/A');
   y += 4;
 
-  // SECTION 3: Business & Professional Details
-  drawSectionHeading('3. BUSINESS & PROFESSIONAL DETAILS');
-  
-  // A. Proprietorship Details
-  checkPageBreak(35);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9.5);
-  doc.setTextColor(255, 128, 6); // #FF8006 (Brand Highlights)
-  doc.text('A. BUSINESS (PROPRIETORSHIP)', 15, y);
-  y += 6;
-  drawRow('BUSINESS NAME', getProprietorBusinessName(data), 'DESIGNATION', 'Proprietor');
-  drawFullWidthField('BUSINESS ADDRESS (DHAKA / PRESENT)', data.businessAddressDhaka || 'N/A');
-  drawFullWidthField('BUSINESS ADDRESS (LOCAL / PERMANENT)', data.businessAddressLocal || 'N/A');
-  y += 4;
-
-  // B. Job Details
-  checkPageBreak(35);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9.5);
-  doc.setTextColor(255, 128, 6); // #FF8006 (Brand Highlights)
-  doc.text('B. PRIVATE SERVICE / EMPLOYMENT', 15, y);
-  y += 6;
-  drawRow('COMPANY NAME', getJobCompanyName(data), 'DESIGNATION', getJobRole(data));
-  drawFullWidthField('OFFICE ADDRESS (DHAKA / PRESENT)', data.officeAddressDhaka || 'N/A');
-  drawFullWidthField('OFFICE ADDRESS (LOCAL / PERMANENT)', data.officeAddressLocal || 'N/A');
-
   // Professional Footer decorator loops on all generated pages
   const pageCount = doc.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
