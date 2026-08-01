@@ -67,7 +67,8 @@ interface UploadSectionProps {
 export function UploadSection(props: UploadSectionProps) {
   const activeItem = props.queue.find(q => q.id === props.activeQueueId) || null;
   const pdfTargetFile = activeItem?.originalPdfFile || (activeItem?.file && (activeItem.file.type === 'application/pdf' || activeItem.file.name.toLowerCase().endsWith('.pdf')) ? activeItem.file : null);
-  const isPdf = activeItem?.documentType === 'visa_application' || (activeItem?.file?.type === 'application/pdf' && !activeItem?.originalPdfFile);
+  const isVisaPdf = activeItem?.documentType === 'visa_application';
+  const isPdf = Boolean(pdfTargetFile || isVisaPdf);
 
   const handleSelectPdfPage = (pageIndex: number, pageDataUrl: string, pageFile: File, allPages: PdfPageItem[]) => {
     if (props.setPreview) props.setPreview(pageDataUrl);
@@ -351,7 +352,7 @@ export function UploadSection(props: UploadSectionProps) {
             {/* 2-Column Responsive Layout for Passport Preview and Undertaking Options */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
               {/* Left Column: Passport Preview or PDF layout */}
-              {isPdf ? (
+              {isVisaPdf ? (
                 <div 
                   className={`relative rounded-2xl overflow-hidden border bg-slate-100 dark:bg-black w-full min-h-[220px] md:h-auto flex flex-col items-center justify-center p-6 shadow-inner text-center cursor-pointer transition-all duration-300 ${
                     dragActivePreview 
@@ -373,7 +374,7 @@ export function UploadSection(props: UploadSectionProps) {
                     <FileText className="w-10 h-10 text-emerald-500 animate-pulse" />
                   </div>
                   <h3 className="font-bold text-slate-800 dark:text-zinc-200 text-sm">
-                    {activeItem?.documentType === 'visa_application' ? 'Indian Visa Application PDF' : 'Passport PDF Document'}
+                    Indian Visa Application PDF
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1 max-w-xs break-all font-mono">
                     {activeItem?.file?.name || 'Uploaded_Document.pdf'}
@@ -455,6 +456,11 @@ export function UploadSection(props: UploadSectionProps) {
                 >
                   {props.preview ? (
                     <img src={props.preview} alt="Passport Preview" className="max-w-full max-h-[350px] md:max-h-[420px] object-contain transition-transform duration-500 group-hover/preview:scale-[1.02]" />
+                  ) : pdfTargetFile ? (
+                    <div className="flex flex-col items-center justify-center p-6 gap-2 text-blue-500">
+                      <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                      <span className="text-xs font-bold text-slate-600 dark:text-zinc-400">PDF পাসপোর্ট ছবি লোড হচ্ছে...</span>
+                    </div>
                   ) : (
                     <div className="text-slate-400 text-xs">No preview available</div>
                   )}
