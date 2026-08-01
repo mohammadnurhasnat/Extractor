@@ -71,24 +71,52 @@ export function UploadSection(props: UploadSectionProps) {
   const isVisaPdf = activeItem?.documentType === 'visa_application';
   const isPdf = Boolean(pdfTargetFile || isVisaPdf);
 
-  const handleSelectPdfPage = (pageIndex: number, pageDataUrl: string, pageFile: File, allPages: PdfPageItem[]) => {
-    if (props.setPreview) props.setPreview(pageDataUrl);
-    if (props.setFile) props.setFile(pageFile);
+  const handleSelectPdfPage = (
+    pageIndex: number | null,
+    pageDataUrl: string | null,
+    pageFile: File | null,
+    allPages: PdfPageItem[]
+  ) => {
+    if (pageIndex === null) {
+      // Deselected page -> revert file and preview to original PDF file
+      const origFile = activeItem?.originalPdfFile || pdfTargetFile;
+      if (props.setFile && origFile) props.setFile(origFile);
+      if (props.setPreview) props.setPreview(origFile ? URL.createObjectURL(origFile) : null);
 
-    if (props.setQueue && activeItem) {
-      props.setQueue(prev => prev.map(q => {
-        if (q.id === activeItem.id) {
-          return {
-            ...q,
-            file: pageFile,
-            preview: pageDataUrl,
-            selectedPageIndex: pageIndex,
-            pdfPages: allPages,
-            originalPdfFile: q.originalPdfFile || pdfTargetFile || undefined
-          };
-        }
-        return q;
-      }));
+      if (props.setQueue && activeItem) {
+        props.setQueue(prev => prev.map(q => {
+          if (q.id === activeItem.id) {
+            return {
+              ...q,
+              file: q.originalPdfFile || q.file,
+              preview: q.originalPdfFile ? URL.createObjectURL(q.originalPdfFile) : q.preview,
+              selectedPageIndex: null,
+              pdfPages: allPages,
+            };
+          }
+          return q;
+        }));
+      }
+    } else {
+      // Specific page selected
+      if (props.setPreview && pageDataUrl) props.setPreview(pageDataUrl);
+      if (props.setFile && pageFile) props.setFile(pageFile);
+
+      if (props.setQueue && activeItem) {
+        props.setQueue(prev => prev.map(q => {
+          if (q.id === activeItem.id) {
+            return {
+              ...q,
+              file: pageFile || q.file,
+              preview: pageDataUrl || q.preview,
+              selectedPageIndex: pageIndex,
+              pdfPages: allPages,
+              originalPdfFile: q.originalPdfFile || pdfTargetFile || undefined
+            };
+          }
+          return q;
+        }));
+      }
     }
   };
 
@@ -108,7 +136,8 @@ export function UploadSection(props: UploadSectionProps) {
   const [isCompressingPdf, setIsCompressingPdf] = React.useState(false);
 
   const handleCompressPDF = async () => {
-    const sourceFile = pdfTargetFile || activeItem?.file || props.preview;
+    const origPdf = activeItem?.originalPdfFile || pdfTargetFile;
+    const sourceFile = origPdf || activeItem?.file || props.preview;
     if (!sourceFile) return;
 
     try {
@@ -116,7 +145,11 @@ export function UploadSection(props: UploadSectionProps) {
       await compressPdfFileToUnder350KB(
         sourceFile,
         props.data || activeItem?.data,
-        activeItem?.file?.name ? `${activeItem.file.name.replace(/\.[^/.]+$/, '')}_350kb.pdf` : undefined
+        activeItem?.file?.name ? `${activeItem.file.name.replace(/\.[^/.]+$/, '')}_350kb.pdf` : undefined,
+        {
+          selectedPageIndex: activeItem?.selectedPageIndex ?? null,
+          pdfPages: activeItem?.pdfPages
+        }
       );
     } catch (err) {
       console.error("Failed to compress PDF:", err);

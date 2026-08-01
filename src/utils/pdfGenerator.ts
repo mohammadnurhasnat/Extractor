@@ -145,8 +145,8 @@ export async function renderAllPdfPages(file: File): Promise<{ pageNumber: numbe
     }
     const thumbnailDataUrl = thumbCanvas.toDataURL('image/jpeg', 0.8);
 
-    // Render Full page scale 1.5 (optimized for mobile memory/crash prevention, while remaining extremely high-res and clear)
-    const fullViewport = page.getViewport({ scale: 1.5 });
+    // Render Full page scale 2.0 (high-resolution crisp text for zooming while keeping memory safe)
+    const fullViewport = page.getViewport({ scale: 2.0 });
     const fullCanvas = document.createElement('canvas');
     fullCanvas.width = fullViewport.width;
     fullCanvas.height = fullViewport.height;
@@ -154,7 +154,7 @@ export async function renderAllPdfPages(file: File): Promise<{ pageNumber: numbe
     if (fullCtx) {
       await page.render({ canvasContext: fullCtx, viewport: fullViewport }).promise;
     }
-    const dataUrl = fullCanvas.toDataURL('image/jpeg', 0.9);
+    const dataUrl = fullCanvas.toDataURL('image/jpeg', 0.92);
 
     pages.push({ pageNumber: i, dataUrl, thumbnailDataUrl });
   }
@@ -162,15 +162,16 @@ export async function renderAllPdfPages(file: File): Promise<{ pageNumber: numbe
   return pages;
 }
 
-export async function renderPdfPageToDataUrl(file: File): Promise<string> {
+export async function renderPdfPageToDataUrl(file: File, pageNumber: number = 1): Promise<string> {
   const pdfjsLib = await loadPdfJS();
   const arrayBuffer = await file.arrayBuffer();
   const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
   const pdf = await loadingTask.promise;
-  const page = await pdf.getPage(1);
+  const targetPageNum = Math.min(Math.max(1, pageNumber), pdf.numPages);
+  const page = await pdf.getPage(targetPageNum);
   
-  // Render at highly optimized 1.5x scale to avoid mobile memory issues/freezes
-  const viewport = page.getViewport({ scale: 1.5 });
+  // Render at 2.0x scale for high resolution zoomed clarity
+  const viewport = page.getViewport({ scale: 2.0 });
   const canvas = document.createElement('canvas');
   canvas.width = viewport.width;
   canvas.height = viewport.height;
@@ -185,7 +186,7 @@ export async function renderPdfPageToDataUrl(file: File): Promise<string> {
     viewport: viewport
   }).promise;
   
-  return canvas.toDataURL('image/jpeg', 0.9);
+  return canvas.toDataURL('image/jpeg', 0.92);
 }
 
 export const generatePassportImagePDF = async (imageSource: File | Blob | string, passportData?: PassportData | null): Promise<void> => {
@@ -381,127 +382,160 @@ export const generatePassportImagePDF = async (imageSource: File | Blob | string
 export const compressPdfFileToUnder350KB = async (
   imageSource: File | Blob | string,
   passportData?: PassportData | null,
-  customFilename?: string
+  customFilename?: string,
+  options?: {
+    selectedPageIndex?: number | null;
+    pdfPages?: { pageNumber: number; dataUrl: string; thumbnailDataUrl: string }[];
+  }
 ): Promise<void> => {
   return new Promise(async (resolve, reject) => {
     try {
-      let finalImageSource = imageSource;
       let isPdfFile = false;
+      let pdfFile: File | null = null;
 
       if (imageSource instanceof File && (imageSource.type === 'application/pdf' || imageSource.name.toLowerCase().endsWith('.pdf'))) {
         isPdfFile = true;
+        pdfFile = imageSource;
       } else if (imageSource instanceof Blob && imageSource.type === 'application/pdf') {
         isPdfFile = true;
+        pdfFile = await ensureFileObject(imageSource, 'temp.pdf');
       } else if (typeof imageSource === 'string' && (imageSource.startsWith('data:application/pdf') || imageSource.startsWith('application/pdf'))) {
         isPdfFile = true;
+        pdfFile = await ensureFileObject(imageSource, 'temp.pdf');
       }
 
-      if (isPdfFile) {
-        let pdfFile: File;
-        if (imageSource instanceof File) {
-          pdfFile = imageSource;
-        } else {
-          pdfFile = await ensureFileObject(imageSource, 'temp.pdf');
-        }
-        finalImageSource = await renderPdfPageToDataUrl(pdfFile);
-      }
+      let pageDataUrls: string[] = [];
 
-      const file = await ensureFileObject(finalImageSource, 'source.jpg');
-      const reader = new FileReader();
-
-      reader.onloadend = () => {
-        if (!reader.result) {
-          return reject(new Error('Failed to read file'));
-        }
-        const base64data = reader.result as string;
-
-        const img = new Image();
-        img.onload = async () => {
-          try {
-            const maxTargetBytes = 345 * 1024; // strictly under 350 KB
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-
-            let bestPdfBuffer: ArrayBuffer | null = null;
-            let bestQuality = 0.82;
-            let currentScale = 1.0;
-
-            for (let attempt = 0; attempt < 8; attempt++) {
-              canvas.width = Math.round(img.width * currentScale);
-              canvas.height = Math.round(img.height * currentScale);
-
-              if (ctx) {
-                ctx.fillStyle = '#FFFFFF';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-              }
-
-              const targetJpeg = canvas.toDataURL('image/jpeg', bestQuality);
-
-              const doc = new jsPDF({
-                orientation: 'p',
-                unit: 'mm',
-                format: 'a4',
-                compress: true
-              });
-
-              const pageWidth = doc.internal.pageSize.getWidth();
-              const pageHeight = doc.internal.pageSize.getHeight();
-              const margin = 10;
-              const maxWidth = pageWidth - (margin * 2);
-              const maxHeight = pageHeight - (margin * 2);
-
-              const ratio = Math.min(maxWidth / canvas.width, maxHeight / canvas.height);
-              const finalWidth = canvas.width * ratio;
-              const finalHeight = canvas.height * ratio;
-              const xOffset = (pageWidth - finalWidth) / 2;
-              const yOffset = (pageHeight - finalHeight) / 2;
-
-              doc.addImage(targetJpeg, 'JPEG', xOffset, yOffset, finalWidth, finalHeight);
-
-              const pdfArrayBuffer = doc.output('arraybuffer');
-              bestPdfBuffer = pdfArrayBuffer;
-
-              if (pdfArrayBuffer.byteLength <= maxTargetBytes) {
-                break;
-              }
-
-              if (bestQuality > 0.45) {
-                bestQuality -= 0.15;
-              } else {
-                currentScale *= 0.8;
-              }
-            }
-
-            if (!bestPdfBuffer) {
-              return reject(new Error('Failed to compress PDF below 350KB'));
-            }
-
-            const givenName = passportData?.givenName ? passportData.givenName.replace(/\s+/g, '-') : '';
-            const surname = passportData?.surname ? passportData.surname.replace(/\s+/g, '-') : '';
-            const passportNumber = passportData?.passportNumber ? passportData.passportNumber.toUpperCase().trim() : '';
-            const fullName = [givenName, surname].filter(Boolean).join('-');
-            
-            const filename = customFilename || (fullName || passportNumber 
-              ? `${fullName || 'Passport'}-${passportNumber || 'Doc'}-Compressed-350KB.pdf`
-              : 'Passport-Compressed-350KB.pdf');
-
-            const blob = new Blob([bestPdfBuffer], { type: 'application/pdf' });
-            const blobUrl = window.URL.createObjectURL(blob);
-            await downloadFile(blobUrl, filename);
-            window.URL.revokeObjectURL(blobUrl);
-            resolve();
-          } catch (e) {
-            console.error('Compress PDF error:', e);
-            reject(e);
+      if (isPdfFile && pdfFile) {
+        // If a specific page index is selected, compress only that page
+        if (options?.selectedPageIndex !== undefined && options?.selectedPageIndex !== null) {
+          if (options.pdfPages && options.pdfPages[options.selectedPageIndex]) {
+            pageDataUrls = [options.pdfPages[options.selectedPageIndex].dataUrl];
+          } else {
+            const singleDataUrl = await renderPdfPageToDataUrl(pdfFile, options.selectedPageIndex + 1);
+            pageDataUrls = [singleDataUrl];
           }
-        };
-        img.onerror = () => reject(new Error('Failed to load image for compression'));
-        img.src = base64data;
-      };
+        } else {
+          // No specific page selected (deselected or all pages active) -> Compress entire document / all pages
+          if (options?.pdfPages && options.pdfPages.length > 0) {
+            pageDataUrls = options.pdfPages.map(p => p.dataUrl);
+          } else {
+            const rendered = await renderAllPdfPages(pdfFile);
+            pageDataUrls = rendered.map(p => p.dataUrl);
+          }
+        }
+      } else if (typeof imageSource === 'string' && imageSource.startsWith('data:image/')) {
+        pageDataUrls = [imageSource];
+      } else {
+        const fileObj = await ensureFileObject(imageSource, 'source.jpg');
+        const dataUrl = await new Promise<string>((res, rej) => {
+          const r = new FileReader();
+          r.onloadend = () => res(r.result as string);
+          r.onerror = rej;
+          r.readAsDataURL(fileObj);
+        });
+        pageDataUrls = [dataUrl];
+      }
 
-      reader.onerror = () => reject(new Error('Failed to read file'));
-      reader.readAsDataURL(file);
+      if (pageDataUrls.length === 0) {
+        return reject(new Error('No pages found to compress'));
+      }
+
+      // Preload all page images
+      const loadedImages = await Promise.all(
+        pageDataUrls.map(dataUrl => new Promise<HTMLImageElement>((res, rej) => {
+          const img = new Image();
+          img.onload = () => res(img);
+          img.onerror = () => rej(new Error('Failed to load page image for compression'));
+          img.src = dataUrl;
+        }))
+      );
+
+      // Dynamic maxTargetBytes calculation based on user rules:
+      // Single page: 350KB - 400KB target (approx 390 KB max)
+      // Multi-page: 250 KB per page (e.g. 2 pages = 500 KB, 3 pages = 750 KB)
+      const maxTargetBytes = pageDataUrls.length === 1 
+        ? 390 * 1024 
+        : pageDataUrls.length * 250 * 1024;
+
+      let bestPdfBuffer: ArrayBuffer | null = null;
+      let bestQuality = 0.92;
+      let currentScale = 1.0;
+
+      for (let attempt = 0; attempt < 12; attempt++) {
+        const doc = new jsPDF({
+          orientation: 'p',
+          unit: 'mm',
+          format: 'a4',
+          compress: true
+        });
+
+        for (let pIdx = 0; pIdx < loadedImages.length; pIdx++) {
+          const img = loadedImages[pIdx];
+          if (pIdx > 0) {
+            doc.addPage();
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.round(img.width * currentScale);
+          canvas.height = Math.round(img.height * currentScale);
+          const ctx = canvas.getContext('2d');
+
+          if (ctx) {
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          }
+
+          const targetJpeg = canvas.toDataURL('image/jpeg', bestQuality);
+
+          const pageWidth = doc.internal.pageSize.getWidth();
+          const pageHeight = doc.internal.pageSize.getHeight();
+          const margin = 10;
+          const maxWidth = pageWidth - (margin * 2);
+          const maxHeight = pageHeight - (margin * 2);
+
+          const ratio = Math.min(maxWidth / canvas.width, maxHeight / canvas.height);
+          const finalWidth = canvas.width * ratio;
+          const finalHeight = canvas.height * ratio;
+          const xOffset = (pageWidth - finalWidth) / 2;
+          const yOffset = (pageHeight - finalHeight) / 2;
+
+          doc.addImage(targetJpeg, 'JPEG', xOffset, yOffset, finalWidth, finalHeight);
+        }
+
+        const pdfArrayBuffer = doc.output('arraybuffer');
+        bestPdfBuffer = pdfArrayBuffer;
+
+        if (pdfArrayBuffer.byteLength <= maxTargetBytes) {
+          break;
+        }
+
+        if (bestQuality > 0.55) {
+          bestQuality -= 0.08;
+        } else {
+          currentScale *= 0.88;
+        }
+      }
+
+      if (!bestPdfBuffer) {
+        return reject(new Error('Failed to compress PDF to target size'));
+      }
+
+      const givenName = passportData?.givenName ? passportData.givenName.replace(/\s+/g, '-') : '';
+      const surname = passportData?.surname ? passportData.surname.replace(/\s+/g, '-') : '';
+      const passportNumber = passportData?.passportNumber ? passportData.passportNumber.toUpperCase().trim() : '';
+      const fullName = [givenName, surname].filter(Boolean).join('-');
+
+      const filename = customFilename || (fullName || passportNumber 
+        ? `${fullName || 'Passport'}-${passportNumber || 'Doc'}-Compressed-350KB.pdf`
+        : 'Document-Compressed-350KB.pdf');
+
+      const blob = new Blob([bestPdfBuffer], { type: 'application/pdf' });
+      const blobUrl = window.URL.createObjectURL(blob);
+      await downloadFile(blobUrl, filename);
+      window.URL.revokeObjectURL(blobUrl);
+      resolve();
     } catch (err) {
       console.error('Error compressing PDF:', err);
       reject(err);

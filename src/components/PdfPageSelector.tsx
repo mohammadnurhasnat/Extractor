@@ -6,14 +6,14 @@ import { QueueItem, PdfPageItem } from '../types';
 interface PdfPageSelectorProps {
   file: File;
   activeItem: QueueItem | null;
-  onSelectPage: (pageIndex: number, pageDataUrl: string, pageFile: File, allPages: PdfPageItem[]) => void;
+  onSelectPage: (pageIndex: number | null, pageDataUrl: string | null, pageFile: File | null, allPages: PdfPageItem[]) => void;
 }
 
 export function PdfPageSelector({ file, activeItem, onSelectPage }: PdfPageSelectorProps) {
   const [pages, setPages] = useState<PdfPageItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedIdx, setSelectedIdx] = useState<number>(0);
+  const [selectedIdx, setSelectedIdx] = useState<number | null>(0);
 
   useEffect(() => {
     let isMounted = true;
@@ -23,7 +23,7 @@ export function PdfPageSelector({ file, activeItem, onSelectPage }: PdfPageSelec
     // If activeItem already has rendered pdfPages for this file, use them
     if (activeItem?.pdfPages && activeItem.pdfPages.length > 0) {
       setPages(activeItem.pdfPages);
-      const initialIdx = activeItem.selectedPageIndex ?? 0;
+      const initialIdx = activeItem.selectedPageIndex !== undefined ? activeItem.selectedPageIndex : 0;
       setSelectedIdx(initialIdx);
       setLoading(false);
       return;
@@ -56,11 +56,18 @@ export function PdfPageSelector({ file, activeItem, onSelectPage }: PdfPageSelec
   }, [file, activeItem?.id]);
 
   const handlePageClick = (idx: number) => {
-    if (idx === selectedIdx || !pages[idx]) return;
-    setSelectedIdx(idx);
-    const targetPage = pages[idx];
-    const pageFile = dataURLtoFile(targetPage.dataUrl, `${file.name.replace(/\.pdf$/i, '')}_page_${idx + 1}.jpg`);
-    onSelectPage(idx, targetPage.dataUrl, pageFile, pages);
+    if (!pages[idx]) return;
+    if (idx === selectedIdx) {
+      // Deselect page
+      setSelectedIdx(null);
+      onSelectPage(null, null, null, pages);
+    } else {
+      // Select page
+      setSelectedIdx(idx);
+      const targetPage = pages[idx];
+      const pageFile = dataURLtoFile(targetPage.dataUrl, `${file.name.replace(/\.pdf$/i, '')}_page_${idx + 1}.jpg`);
+      onSelectPage(idx, targetPage.dataUrl, pageFile, pages);
+    }
   };
 
   if (loading) {
