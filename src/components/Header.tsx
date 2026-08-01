@@ -234,15 +234,7 @@ export const Header: React.FC<HeaderProps> = ({
                 title="Profile Settings"
               >
                 <span className="relative z-10 flex items-center gap-1.5">
-                  {(currentUser.profilePicture || profilePicture) ? (
-                    <img 
-                      src={currentUser.profilePicture || profilePicture || ''} 
-                      alt="Avatar" 
-                      className="w-5 h-5 sm:w-6 sm:h-6 object-cover rounded-[8px] border border-white/50 shadow-xs shrink-0" 
-                    />
-                  ) : (
-                    <Settings className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
-                  )}
+                  <Settings className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
                   <span className="truncate max-w-[50px] xs:max-w-[80px] sm:max-w-[120px] hidden xs:inline-block">
                     {currentUser.name || currentUser.mobileNumber}
                   </span>
