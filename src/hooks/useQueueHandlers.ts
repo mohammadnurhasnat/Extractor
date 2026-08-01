@@ -89,6 +89,7 @@ export function useQueueHandlers({
       return {
         id,
         file,
+        originalPdfFile: isPdf ? file : undefined,
         preview: isPdf ? '' : URL.createObjectURL(file),
         loading: false,
         error: null,

@@ -102,6 +102,12 @@ export interface UndertakingFormData {
   embassyDate?: string;
 }
 
+export interface PdfPageItem {
+  pageNumber: number;
+  dataUrl: string;
+  thumbnailDataUrl: string;
+}
+
 export interface QueueItem {
   id: string;
   file: File;
@@ -114,4 +120,7 @@ export interface QueueItem {
   compressionRatio?: string;
   documentType?: 'passport' | 'visa_application';
   pdfInfo?: PdfInfo;
+  originalPdfFile?: File;
+  pdfPages?: PdfPageItem[];
+  selectedPageIndex?: number;
 }

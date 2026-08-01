@@ -97,6 +97,57 @@ export function loadPdfJS(): Promise<any> {
   });
 }
 
+export function dataURLtoFile(dataurl: string, filename: string): File {
+  const arr = dataurl.split(',');
+  const mimeMatch = arr[0].match(/:(.*?);/);
+  const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new File([u8arr], filename, { type: mime });
+}
+
+export async function renderAllPdfPages(file: File): Promise<{ pageNumber: number; dataUrl: string; thumbnailDataUrl: string }[]> {
+  const pdfjsLib = await loadPdfJS();
+  const arrayBuffer = await file.arrayBuffer();
+  const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+  const pdf = await loadingTask.promise;
+  const pages: { pageNumber: number; dataUrl: string; thumbnailDataUrl: string }[] = [];
+
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    
+    // Render Thumbnail scale 0.8
+    const thumbViewport = page.getViewport({ scale: 0.8 });
+    const thumbCanvas = document.createElement('canvas');
+    thumbCanvas.width = thumbViewport.width;
+    thumbCanvas.height = thumbViewport.height;
+    const thumbCtx = thumbCanvas.getContext('2d');
+    if (thumbCtx) {
+      await page.render({ canvasContext: thumbCtx, viewport: thumbViewport }).promise;
+    }
+    const thumbnailDataUrl = thumbCanvas.toDataURL('image/jpeg', 0.8);
+
+    // Render Full high quality scale 2.0
+    const fullViewport = page.getViewport({ scale: 2.0 });
+    const fullCanvas = document.createElement('canvas');
+    fullCanvas.width = fullViewport.width;
+    fullCanvas.height = fullViewport.height;
+    const fullCtx = fullCanvas.getContext('2d');
+    if (fullCtx) {
+      await page.render({ canvasContext: fullCtx, viewport: fullViewport }).promise;
+    }
+    const dataUrl = fullCanvas.toDataURL('image/jpeg', 0.92);
+
+    pages.push({ pageNumber: i, dataUrl, thumbnailDataUrl });
+  }
+
+  return pages;
+}
+
 export async function renderPdfPageToDataUrl(file: File): Promise<string> {
   const pdfjsLib = await loadPdfJS();
   const arrayBuffer = await file.arrayBuffer();
@@ -480,6 +531,69 @@ export const generatePDF = async (data: PassportData): Promise<void> => {
   window.URL.revokeObjectURL(blobUrl);
 };
 
+interface TextSegment {
+  text: string;
+  bold?: boolean;
+}
+
+const renderFormattedParagraph = (
+  doc: jsPDF,
+  segments: TextSegment[],
+  x: number,
+  y: number,
+  maxWidth: number,
+  lineHeight: number = 5.2,
+  fontFamily: string = 'times',
+  fontSize: number = 11
+): number => {
+  interface Token {
+    text: string;
+    bold: boolean;
+    isSpace: boolean;
+  }
+  const tokens: Token[] = [];
+
+  segments.forEach(seg => {
+    if (!seg.text) return;
+    const isBold = !!seg.bold;
+    const parts = seg.text.split(/(\s+)/);
+    parts.forEach(part => {
+      if (!part) return;
+      tokens.push({
+        text: part,
+        bold: isBold,
+        isSpace: /^\s+$/.test(part)
+      });
+    });
+  });
+
+  let currentX = x;
+  let currentY = y;
+  const maxX = x + maxWidth;
+
+  tokens.forEach(token => {
+    doc.setFont(fontFamily, token.bold ? 'bold' : 'normal');
+    doc.setFontSize(fontSize);
+
+    const tokenWidth = doc.getTextWidth(token.text);
+
+    if (token.isSpace && currentX === x) {
+      return;
+    }
+
+    if (currentX + tokenWidth > maxX && currentX > x) {
+      currentX = x;
+      currentY += lineHeight;
+      if (token.isSpace) return;
+    }
+
+    doc.text(token.text, currentX, currentY);
+    currentX += tokenWidth;
+  });
+
+  return currentY + lineHeight;
+};
+
 export const getUndertakingPDFDocument = (formData: UndertakingFormData): jsPDF => {
   const doc = new jsPDF({
     orientation: 'p',
@@ -579,51 +693,86 @@ export const getUndertakingPDFDocument = (formData: UndertakingFormData): jsPDF 
   doc.text('2. Purpose of Visit', leftMargin, y);
   y += 6.0;
 
-  doc.setFont('times', 'normal');
   const purpose = formData.purpose || '';
   const hospital = (formData.hospitalName || '').trim();
   const department = (formData.departmentName || formData.doctorName || '').trim();
   const embassyCity = formData.embassyCity || 'Delhi';
 
-  let purposeText = `My purpose of visit to India is ${purpose || '____________________________________________'}.`;
+  let purposeSegments: TextSegment[] = [];
 
   if (purpose === 'Medical Treatment - Patient') {
     const hasHospital = hospital.length > 0;
     const hasDept = department.length > 0;
     
     if (hasHospital && hasDept) {
-      purposeText = `My purpose of visit to India is Medical Treatment as a Patient. I will be visiting a specific medical facility, namely ${hospital}, and receiving treatment there in the ${department} Department. The appointment was made at that specific hospital, and I will not go to any other hospital.`;
+      purposeSegments = [
+        { text: 'My purpose of visit to India is Medical Treatment as a Patient. I will be visiting a specific medical facility, namely ' },
+        { text: hospital, bold: true },
+        { text: ', and receiving treatment there in the ' },
+        { text: department, bold: true },
+        { text: ' Department. The appointment was made at that specific hospital, and I will not go to any other hospital.' }
+      ];
     } else if (hasHospital) {
-      purposeText = `My purpose of visit to India is Medical Treatment as a Patient. I will be visiting a specific medical facility, namely ${hospital}, and receiving treatment there. The appointment was made at that specific hospital, and I will not go to any other hospital.`;
+      purposeSegments = [
+        { text: 'My purpose of visit to India is Medical Treatment as a Patient. I will be visiting a specific medical facility, namely ' },
+        { text: hospital, bold: true },
+        { text: ', and receiving treatment there. The appointment was made at that specific hospital, and I will not go to any other hospital.' }
+      ];
     } else if (hasDept) {
-      purposeText = `My purpose of visit to India is Medical Treatment as a Patient. I will be receiving medical treatment in the ${department} Department. The appointment was made at that specific department, and I will not go to any other hospital.`;
+      purposeSegments = [
+        { text: 'My purpose of visit to India is Medical Treatment as a Patient. I will be receiving medical treatment in the ' },
+        { text: department, bold: true },
+        { text: ' Department. The appointment was made at that specific department, and I will not go to any other hospital.' }
+      ];
     } else {
-      purposeText = `My purpose of visit to India is Medical Treatment as a Patient.`;
+      purposeSegments = [
+        { text: 'My purpose of visit to India is Medical Treatment as a Patient.' }
+      ];
     }
   } else if (purpose === 'Medical Treatment - Attendance') {
     const hasHospital = hospital.length > 0;
     const hasDept = department.length > 0;
     
     if (hasHospital && hasDept) {
-      purposeText = `My purpose of visit to India is Medical Treatment as an Attendant. I will be visiting a specific medical facility, namely ${hospital}, and attending to a patient receiving treatment there in the ${department} Department. The appointment was made at that specific hospital, and we will not go to any other hospital.`;
+      purposeSegments = [
+        { text: 'My purpose of visit to India is Medical Treatment as an Attendant. I will be visiting a specific medical facility, namely ' },
+        { text: hospital, bold: true },
+        { text: ', and attending to a patient receiving treatment there in the ' },
+        { text: department, bold: true },
+        { text: ' Department. The appointment was made at that specific hospital, and we will not go to any other hospital.' }
+      ];
     } else if (hasHospital) {
-      purposeText = `My purpose of visit to India is Medical Treatment as an Attendant. I will be visiting a specific medical facility, namely ${hospital}, and attending to a patient receiving treatment there. The appointment was made at that specific hospital, and we will not go to any other hospital.`;
+      purposeSegments = [
+        { text: 'My purpose of visit to India is Medical Treatment as an Attendant. I will be visiting a specific medical facility, namely ' },
+        { text: hospital, bold: true },
+        { text: ', and attending to a patient receiving treatment there. The appointment was made at that specific hospital, and we will not go to any other hospital.' }
+      ];
     } else if (hasDept) {
-      purposeText = `My purpose of visit to India is Medical Treatment as an Attendant. I will be attending to a patient receiving medical treatment in the ${department} Department. The appointment was made at that specific department, and we will not go to any other hospital.`;
+      purposeSegments = [
+        { text: 'My purpose of visit to India is Medical Treatment as an Attendant. I will be attending to a patient receiving medical treatment in the ' },
+        { text: department, bold: true },
+        { text: ' Department. The appointment was made at that specific department, and we will not go to any other hospital.' }
+      ];
     } else {
-      purposeText = `My purpose of visit to India is Medical Treatment as an Attendant.`;
+      purposeSegments = [
+        { text: 'My purpose of visit to India is Medical Treatment as an Attendant.' }
+      ];
     }
   } else if (purpose === 'Double Entry') {
-    purposeText = `My purpose of visit to India is to travel to ${embassyCity} in order to present myself and submit my application at the designated Embassy/High Commission for my scheduled consular appointment. `;
+    purposeSegments = [
+      { text: `My purpose of visit to India is to travel to ${embassyCity} in order to present myself and submit my application at the designated Embassy/High Commission for my scheduled consular appointment.` }
+    ];
   } else if (purpose === 'Business') {
-    purposeText = `My purpose of visit to India is Business. I further clarify that my travel is solely intended for executing authorized commercial activities and business operations.`;
+    purposeSegments = [
+      { text: `My purpose of visit to India is Business. I further clarify that my travel is solely intended for executing authorized commercial activities and business operations.` }
+    ];
+  } else {
+    purposeSegments = [
+      { text: `My purpose of visit to India is ${purpose || '____________________________________________'}.` }
+    ];
   }
 
-  const splitPurpose = doc.splitTextToSize(purposeText, contentWidth - 4);
-  splitPurpose.forEach((line: string) => {
-    doc.text(line, leftMargin + 4, y);
-    y += 5.2;
-  });
+  y = renderFormattedParagraph(doc, purposeSegments, leftMargin + 4, y, contentWidth - 4, 5.2, 'times', 11);
   y += 1.5;
 
   // 3. Duration of Stay

@@ -830,6 +830,9 @@ ${shareUrl}
               isOnline={isOnline}
               isBatchProcessing={isBatchProcessing}
               queue={queue}
+              setQueue={setQueue}
+              setFile={setFile}
+              setPreview={setPreview}
               activeQueueId={activeQueueId}
               isZipping={isZipping}
               processEntireQueue={processEntireQueue}

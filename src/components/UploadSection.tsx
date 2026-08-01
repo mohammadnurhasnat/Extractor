@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { UndertakingOptions } from './UndertakingOptions';
 import { SessionQueue } from './SessionQueue';
 import { HistorySidebar } from './HistorySidebar';
-import { PassportData, HistoryItem, QueueItem, UndertakingFormData } from '../types';
+import { PdfPageSelector } from './PdfPageSelector';
+import { PassportData, HistoryItem, QueueItem, UndertakingFormData, PdfPageItem } from '../types';
 
 interface UploadSectionProps {
   preview: string | null;
@@ -39,6 +40,9 @@ interface UploadSectionProps {
   isBatchProcessing: boolean;
 
   queue: QueueItem[];
+  setQueue?: React.Dispatch<React.SetStateAction<QueueItem[]>>;
+  setFile?: React.Dispatch<React.SetStateAction<File | null>>;
+  setPreview?: React.Dispatch<React.SetStateAction<string | null>>;
   activeQueueId: string | null;
   isZipping: boolean;
   processEntireQueue: () => void;
@@ -62,7 +66,29 @@ interface UploadSectionProps {
 
 export function UploadSection(props: UploadSectionProps) {
   const activeItem = props.queue.find(q => q.id === props.activeQueueId) || null;
-  const isPdf = activeItem?.file?.type === 'application/pdf' || activeItem?.documentType === 'visa_application';
+  const pdfTargetFile = activeItem?.originalPdfFile || (activeItem?.file && (activeItem.file.type === 'application/pdf' || activeItem.file.name.toLowerCase().endsWith('.pdf')) ? activeItem.file : null);
+  const isPdf = activeItem?.documentType === 'visa_application' || (activeItem?.file?.type === 'application/pdf' && !activeItem?.originalPdfFile);
+
+  const handleSelectPdfPage = (pageIndex: number, pageDataUrl: string, pageFile: File, allPages: PdfPageItem[]) => {
+    if (props.setPreview) props.setPreview(pageDataUrl);
+    if (props.setFile) props.setFile(pageFile);
+
+    if (props.setQueue && activeItem) {
+      props.setQueue(prev => prev.map(q => {
+        if (q.id === activeItem.id) {
+          return {
+            ...q,
+            file: pageFile,
+            preview: pageDataUrl,
+            selectedPageIndex: pageIndex,
+            pdfPages: allPages,
+            originalPdfFile: q.originalPdfFile || pdfTargetFile || undefined
+          };
+        }
+        return q;
+      }));
+    }
+  };
 
   // Unified state for Undertaking Option visibility (triggered by successful image extraction OR PDF metadata verification)
   const isImageExtracted = Boolean(props.data || activeItem?.data || props.preview || activeItem?.preview);
@@ -312,6 +338,15 @@ export function UploadSection(props: UploadSectionProps) {
                 )}
               </motion.div>
             </div>
+
+            {/* Multi-Page PDF Page Selector */}
+            {pdfTargetFile && activeItem?.documentType !== 'visa_application' && (
+              <PdfPageSelector
+                file={pdfTargetFile}
+                activeItem={activeItem}
+                onSelectPage={handleSelectPdfPage}
+              />
+            )}
 
             {/* 2-Column Responsive Layout for Passport Preview and Undertaking Options */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
