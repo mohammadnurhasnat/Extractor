@@ -75,19 +75,14 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
   // 2. Helper to check dates
   const dates = useMemo(() => {
     const now = new Date();
-    const todayStr = now.toDateString();
-    
-    // Start of this week (7 days rolling)
-    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    
-    // Start of this month (calendar month)
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
+    const startOfTodayMs = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const startOfThisMonthMs = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+    const sevenDaysAgoMs = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6).getTime();
 
     return {
-      isToday: (d: Date) => d.toDateString() === todayStr,
-      isThisWeek: (d: Date) => d >= sevenDaysAgo,
-      isThisMonth: (d: Date) => d.getMonth() === currentMonth && d.getFullYear() === currentYear
+      isToday: (d: Date) => d.getTime() >= startOfTodayMs,
+      isThisWeek: (d: Date) => d.getTime() >= sevenDaysAgoMs,
+      isThisMonth: (d: Date) => d.getTime() >= startOfThisMonthMs
     };
   }, []);
 
@@ -107,7 +102,7 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
       const isThisMonth = dates.isThisMonth(logDate);
 
       // Handle extractions
-      if (log.action === 'EXTRACTION') {
+      if (['EXTRACTION', 'EXTRACTION_SAVED', 'PASSPORT_EXTRACTION'].includes(log.action)) {
         stats.extractions.total++;
         if (isToday) stats.extractions.today++;
         if (isThisWeek) stats.extractions.week++;
@@ -158,7 +153,7 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
         userMap[uId] = { extractions: 0, undertakings: 0, imageToPdf: 0, total: 0 };
       }
 
-      if (log.action === 'EXTRACTION') {
+      if (['EXTRACTION', 'EXTRACTION_SAVED', 'PASSPORT_EXTRACTION'].includes(log.action)) {
         userMap[uId].extractions++;
         userMap[uId].total++;
       } else if (log.action === 'UNDERTAKING_DOWNLOAD') {
@@ -205,9 +200,10 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
     } = {};
 
     logs.forEach(log => {
-      if (!['EXTRACTION', 'UNDERTAKING_DOWNLOAD', 'IMAGE_TO_PDF'].includes(log.action)) return;
+      const isExtraction = ['EXTRACTION', 'EXTRACTION_SAVED', 'PASSPORT_EXTRACTION'].includes(log.action);
+      if (!isExtraction && !['UNDERTAKING_DOWNLOAD', 'IMAGE_TO_PDF'].includes(log.action)) return;
 
-      const d = new Date(log.timestamp);
+      const d = safeParseDate(log.timestamp);
       const dateKey = d.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
       const dayStartTimestamp = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
 
@@ -223,7 +219,7 @@ export function AnalyticsTab({ users, logs, onRefresh, isLoading }: AnalyticsTab
         dailyMap[dateKey].users[userName] = { extractions: 0, undertakings: 0, imageToPdf: 0 };
       }
 
-      if (log.action === 'EXTRACTION') {
+      if (isExtraction) {
         dailyMap[dateKey].total++;
         dailyMap[dateKey].users[userName].extractions++;
       } else if (log.action === 'UNDERTAKING_DOWNLOAD') {

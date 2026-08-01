@@ -3,6 +3,7 @@ import { db } from './db';
 import { users, history as historySchema, sharedCards } from './schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { appendAuditLog } from './db';
+import { broadcastDbEvent } from './events';
 
 export const historyRouter = Router();
 
@@ -82,6 +83,8 @@ historyRouter.post('/history', async (req, res) => {
       return res.status(403).json({ success: false, error: 'Forbidden.' });
     }
 
+    const itemTimestamp = item.timestamp ? new Date(item.timestamp) : new Date();
+
     await db.insert(historySchema).values({
       id: item.id,
       userId: userId,
@@ -95,7 +98,31 @@ historyRouter.post('/history', async (req, res) => {
       nidNumber: item.data?.nidNumber || item.nidNumber || null,
       nidDob: item.data?.nidDob || item.nidDob || null,
       data: item.data ? JSON.stringify(item.data) : null,
+      timestamp: itemTimestamp,
+    }).onConflictDoUpdate({
+      target: historySchema.id,
+      set: {
+        data: item.data ? JSON.stringify(item.data) : null,
+        timestamp: itemTimestamp,
+        permanentAddress: item.data?.permanentAddress || item.permanentAddress || null,
+        presentAddress: item.data?.presentAddress || item.presentAddress || null,
+        businessAddressDhaka: item.data?.businessAddressDhaka || item.businessAddressDhaka || null,
+        businessAddressLocal: item.data?.businessAddressLocal || item.businessAddressLocal || null,
+        officeAddressDhaka: item.data?.officeAddressDhaka || item.officeAddressDhaka || null,
+        officeAddressLocal: item.data?.officeAddressLocal || item.officeAddressLocal || null,
+        nidName: item.data?.nidName || item.nidName || null,
+        nidNumber: item.data?.nidNumber || item.nidNumber || null,
+        nidDob: item.data?.nidDob || item.nidDob || null,
+      }
     });
+
+    await appendAuditLog({ 
+      userId, 
+      action: 'EXTRACTION', 
+      details: `Saved extraction profile ${item.data?.givenName || ''} (${item.data?.passportNumber || item.id})` 
+    });
+
+    broadcastDbEvent({ type: 'DATA_UPDATED' });
 
     return res.json({ success: true });
   } catch (error: any) {
@@ -137,10 +164,12 @@ historyRouter.post('/history/bulk', async (req, res) => {
         nidNumber: item.data?.nidNumber || item.nidNumber || null,
         nidDob: item.data?.nidDob || item.nidDob || null,
         data: item.data ? JSON.stringify(item.data) : null,
+        timestamp: item.timestamp ? new Date(item.timestamp) : new Date(),
       }));
       
       // Batch insert logic is typically .insert(schema).values(array) in Drizzle
-      await db.insert(historySchema).values(formattedItems);
+      await db.insert(historySchema).values(formattedItems).onConflictDoNothing();
+      broadcastDbEvent({ type: 'DATA_UPDATED' });
     }
     
     return res.json({ success: true });
@@ -171,6 +200,7 @@ historyRouter.delete('/history/:id', async (req, res) => {
     }
 
     await db.delete(historySchema).where(and(eq(historySchema.id, id), eq(historySchema.userId, userId)));
+    broadcastDbEvent({ type: 'DATA_UPDATED' });
     return res.json({ success: true });
   } catch (error: any) {
     console.error('Failed to delete history item:', error);
@@ -198,6 +228,7 @@ historyRouter.post('/history/clear', async (req, res) => {
     }
 
     await db.delete(historySchema).where(eq(historySchema.userId, userId));
+    broadcastDbEvent({ type: 'DATA_UPDATED' });
     return res.json({ success: true });
   } catch (error: any) {
     console.error('Failed to clear history:', error);

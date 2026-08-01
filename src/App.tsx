@@ -719,44 +719,44 @@ ${shareUrl}
               {/* Left Side: Features List */}
               <div className="flex-1 min-w-0">
                 <h2 className="text-sm font-bold text-slate-800 dark:text-zinc-100 mb-2.5 tracking-wide">
-                  Available Features:
+                  যেসব সুবিধা পাবেন:
                 </h2>
                 <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2 text-xs text-slate-700 dark:text-zinc-300">
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>Automatically extract passport details.</span>
+                    <span>পাসপোর্টের বিস্তারিত তথ্য স্বয়ংক্রিয়ভাবে এক্সট্রাক্ট।</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>Create and edit undertaking forms.</span>
+                    <span>আন্ডারটেকিং ফর্ম তৈরি ও এডিট করা।</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>Create PDFs from passport images.</span>
+                    <span>পাসপোর্ট ছবি থেকে পিডিএফ তৈরি করা।</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>Create company/business letterheads.</span>
+                    <span>কোম্পানি/ব্যবসার লেটারহেড তৈরি করা।</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>Create company/business visiting cards.</span>
+                    <span>বিজনেস ভিজিটিং কার্ড তৈরি করা।</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>Create and edit cover letters.</span>
+                    <span>কভার লেটার তৈরি ও এডিট করা।</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>Create and edit NOCs.</span>
+                    <span>NOC (অনাপত্তি সনদ) তৈরি ও এডিট করা।</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>Create office ID cards.</span>
+                    <span>অফিস আইডি কার্ড তৈরি করা।</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>Create custom stamps/seals.</span>
+                    <span>কাস্টম স্ট্যাম্প ও সিল তৈরি করা।</span>
                   </li>
                 </ul>
               </div>
@@ -765,10 +765,10 @@ ${shareUrl}
               <div className="lg:w-80 shrink-0 pt-3 lg:pt-0 border-t lg:border-t-0 lg:border-l border-slate-200/60 dark:border-zinc-800/60 lg:pl-5 flex flex-row lg:flex-col items-center lg:items-start justify-between gap-3 bg-slate-50/50 dark:bg-zinc-800/30 lg:bg-transparent lg:dark:bg-transparent p-3 lg:p-0 rounded-xl lg:rounded-none">
                 <div className="flex flex-col">
                   <span className="text-xs sm:text-sm text-slate-800 dark:text-zinc-200 font-bold">
-                    Letterhead, Card, NOC, Office ID, Cover Letter, Stamp:
+                    লেটারহেড, ভিজিটিং কার্ড, NOC, আইডি কার্ড, কভার লেটার, স্ট্যাম্প:
                   </span>
                   <span className="text-[11px] text-slate-500 dark:text-zinc-400 hidden lg:block mt-0.5">
-                    Easily create professional letterheads, business cards, NOCs, ID cards, cover letters, and stamps with PadGen.
+                    PadGen এর সাহায্যে সহজেই প্রফেশনাল লেটারহেড, ভিজিটিং কার্ড, NOC, আইডি কার্ড, কভার লেটার এবং স্ট্যাম্প তৈরি করুন।
                   </span>
                 </div>
                 

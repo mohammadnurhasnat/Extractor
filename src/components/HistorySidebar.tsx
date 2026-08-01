@@ -49,12 +49,27 @@ export function HistorySidebar({
     return queryWords.every(word => fullName.includes(word) || passportNo.includes(word));
   });
 
+  const getTimestampMs = (ts: any): number => {
+    if (!ts) return 0;
+    if (typeof ts === 'number') return ts;
+    if (ts instanceof Date) return ts.getTime();
+    if (typeof ts === 'string') {
+      const parsed = new Date(ts).getTime();
+      return isNaN(parsed) ? 0 : parsed;
+    }
+    if (typeof ts === 'object') {
+      if (typeof ts.seconds === 'number') return ts.seconds * 1000;
+      if (typeof ts._seconds === 'number') return ts._seconds * 1000;
+    }
+    return 0;
+  };
+
   const now = new Date();
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
   const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
 
-  const todayCount = history.filter(item => item.timestamp >= startOfToday).length;
-  const monthCount = history.filter(item => item.timestamp >= startOfThisMonth).length;
+  const todayCount = history.filter(item => getTimestampMs(item.timestamp) >= startOfToday).length;
+  const monthCount = history.filter(item => getTimestampMs(item.timestamp) >= startOfThisMonth).length;
   const totalCount = history.length;
 
   // Identify Recent, Active, and Last Used items
