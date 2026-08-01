@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { FileText } from 'lucide-react';
+import { FileText, Calendar } from 'lucide-react';
 import { PassportDataTab } from './PassportDataTab';
 import { UndertakingFormTab } from './UndertakingFormTab';
 import { PassportImagePdfTab } from './PassportImagePdfTab';
+import { AppointmentModal } from './AppointmentModal';
 import { PassportData, UndertakingFormData, QueueItem } from '../types';
 
 interface ResultsSectionProps {
@@ -59,6 +60,8 @@ export function ResultsSection({
   onShare,
   isSharing = false
 }: ResultsSectionProps) {
+  const [isAppointmentOpen, setIsAppointmentOpen] = useState(false);
+
   // If there's data or active item, show the results card
   const hasContent = !!data || !!activeItem;
 
@@ -128,6 +131,15 @@ export function ResultsSection({
                     <span className="relative z-10">Image to PDF</span>
                   </button>
                 )}
+                {(utPurpose === 'Medical Treatment - Patient' || utPurpose === 'Medical Treatment - Attendance') && data && (
+                  <button
+                    onClick={() => setIsAppointmentOpen(true)}
+                    className="flex-1 min-w-[45%] md:min-w-0 text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer border min-h-[40px] transition-all duration-200 bg-teal-600 hover:bg-teal-700 dark:bg-teal-700 dark:hover:bg-teal-800 text-white border-teal-600 hover:border-teal-700 shadow-md flex items-center justify-center gap-1.5"
+                  >
+                    <Calendar className="w-4 h-4" />
+                    <span className="relative z-10">Appointment</span>
+                  </button>
+                )}
               </div>
             ) : null}
 
@@ -189,6 +201,15 @@ export function ResultsSection({
             </p>
           </motion.div>
         </div>
+      )}
+
+      {isAppointmentOpen && data && (
+        <AppointmentModal
+          isOpen={isAppointmentOpen}
+          onClose={() => setIsAppointmentOpen(false)}
+          data={data}
+          utDoctorName={utDoctorName}
+        />
       )}
     </div>
   );

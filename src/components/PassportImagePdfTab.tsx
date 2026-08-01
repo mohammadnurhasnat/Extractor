@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FileDown, FileImage, Loader2 } from 'lucide-react';
 import { PassportData, QueueItem } from '../types';
-import { generatePassportImagePDF } from '../utils/pdfGenerator';
+import { generatePassportImagePDF, renderPdfPageToDataUrl } from '../utils/pdfGenerator';
 
 interface PassportImagePdfTabProps {
   activeItem: QueueItem | null;
@@ -10,8 +10,29 @@ interface PassportImagePdfTabProps {
 
 export function PassportImagePdfTab({ activeItem, currentUser }: PassportImagePdfTabProps) {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [localPreview, setLocalPreview] = useState<string>('');
+  const [loadingPreview, setLoadingPreview] = useState(false);
 
   const isHistoryMock = activeItem?.file && activeItem.file.size === 0 && !activeItem.preview;
+
+  useEffect(() => {
+    if (activeItem?.preview) {
+      setLocalPreview(activeItem.preview);
+    } else if (activeItem?.file && (activeItem.file.type === 'application/pdf' || activeItem.file.name.toLowerCase().endsWith('.pdf'))) {
+      setLoadingPreview(true);
+      renderPdfPageToDataUrl(activeItem.file)
+        .then(url => {
+          setLocalPreview(url);
+          setLoadingPreview(false);
+        })
+        .catch(err => {
+          console.error("Error rendering PDF preview:", err);
+          setLoadingPreview(false);
+        });
+    } else {
+      setLocalPreview('');
+    }
+  }, [activeItem]);
 
   if (!activeItem || (!activeItem.file && !activeItem.preview) || isHistoryMock) {
     return (
@@ -69,8 +90,15 @@ export function PassportImagePdfTab({ activeItem, currentUser }: PassportImagePd
       </div>
 
       <div className="w-48 h-64 border-2 border-slate-200 dark:border-zinc-800 border-dashed rounded-xl overflow-hidden bg-slate-50 dark:bg-zinc-900 flex items-center justify-center p-2 mt-4 relative group">
-        {activeItem.preview && (
-          <img src={activeItem.preview} alt="Passport Preview" className="w-full h-full object-contain rounded-lg" />
+        {loadingPreview ? (
+          <div className="flex flex-col items-center gap-2">
+            <Loader2 className="w-6 h-6 animate-spin text-teal-600" />
+            <span className="text-xs text-slate-400">Loading PDF...</span>
+          </div>
+        ) : localPreview ? (
+          <img src={localPreview} alt="Passport Preview" className="w-full h-full object-contain rounded-lg" />
+        ) : (
+          <div className="text-slate-400 text-xs">No preview available</div>
         )}
       </div>
 

@@ -76,13 +76,81 @@ async function ensureFileObject(imageSource: File | Blob | string, defaultFilena
   throw new Error('Invalid image source type');
 }
 
+export function loadPdfJS(): Promise<any> {
+  return new Promise((resolve, reject) => {
+    if ((window as any).pdfjsLib) {
+      return resolve((window as any).pdfjsLib);
+    }
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+    script.onload = () => {
+      const pdfjsLib = (window as any).pdfjsLib;
+      if (pdfjsLib) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        resolve(pdfjsLib);
+      } else {
+        reject(new Error('pdfjsLib not found after loading script'));
+      }
+    };
+    script.onerror = () => reject(new Error('Failed to load pdf.js script from CDN'));
+    document.head.appendChild(script);
+  });
+}
+
+export async function renderPdfPageToDataUrl(file: File): Promise<string> {
+  const pdfjsLib = await loadPdfJS();
+  const arrayBuffer = await file.arrayBuffer();
+  const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+  const pdf = await loadingTask.promise;
+  const page = await pdf.getPage(1);
+  
+  // Render at high-quality 2.5x scale
+  const viewport = page.getViewport({ scale: 2.5 });
+  const canvas = document.createElement('canvas');
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+  
+  const ctx = canvas.getContext('2d');
+  if (!ctx) {
+    throw new Error('Failed to get canvas 2d context');
+  }
+  
+  await page.render({
+    canvasContext: ctx,
+    viewport: viewport
+  }).promise;
+  
+  return canvas.toDataURL('image/jpeg', 0.95);
+}
+
 export const generatePassportImagePDF = async (imageSource: File | Blob | string, passportData?: PassportData | null): Promise<void> => {
   return new Promise(async (resolve, reject) => {
     try {
+      let finalImageSource = imageSource;
+      let isPdfFile = false;
+      
+      if (imageSource instanceof File && (imageSource.type === 'application/pdf' || imageSource.name.toLowerCase().endsWith('.pdf'))) {
+        isPdfFile = true;
+      } else if (imageSource instanceof Blob && imageSource.type === 'application/pdf') {
+        isPdfFile = true;
+      } else if (typeof imageSource === 'string' && (imageSource.startsWith('data:application/pdf') || imageSource.startsWith('application/pdf'))) {
+        isPdfFile = true;
+      }
+      
+      if (isPdfFile) {
+        let pdfFile: File;
+        if (imageSource instanceof File) {
+          pdfFile = imageSource;
+        } else {
+          pdfFile = await ensureFileObject(imageSource, 'temp.pdf');
+        }
+        finalImageSource = await renderPdfPageToDataUrl(pdfFile);
+      }
+
       const filename = passportData?.passportNumber 
         ? `Passport_${passportData.passportNumber}.jpg`
         : 'Passport.jpg';
-      const file = await ensureFileObject(imageSource, filename);
+      const file = await ensureFileObject(finalImageSource, filename);
       
       // Read the file as Data URL
       const reader = new FileReader();
