@@ -81,10 +81,10 @@ export function PdfPageSelector({ file, activeItem, onSelectPage }: PdfPageSelec
       <div className="flex items-center justify-between mb-2 pb-1.5 border-b border-slate-200 dark:border-zinc-800">
         <div className="flex items-center gap-1.5 text-xs font-black text-slate-800 dark:text-zinc-200">
           <FileText className="w-3.5 h-3.5 text-blue-500" />
-          <span>পিডিএফ পেজসমূহ (মোট: {pages.length}টি)</span>
+          <span>All Pages (TOTAL: {pages.length})</span>
         </div>
         <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-950/80 px-2 py-0.5 rounded-full">
-          মাউস দিয়ে পেজ সিলেক্ট করুন
+          Select pdf for Extraction
         </span>
       </div>
 
