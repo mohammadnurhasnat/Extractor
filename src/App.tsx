@@ -871,6 +871,7 @@ ${shareUrl}
               isGeneratingAddresses={isGeneratingAddresses}
               onGenerateAddresses={handleGenerateAddresses}
               utPurpose={utPurpose}
+              utDoctorName={utDoctorName}
               onOpenRefHelper={() => setIsRefHelperOpen(true)}
               currentUser={currentUser}
               onShare={handleShare}

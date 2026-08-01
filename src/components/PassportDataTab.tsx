@@ -1,7 +1,8 @@
-import React from 'react';
-import { CheckCircle2, Check, Copy, Download, FileText, Braces, ClipboardList, Share2, Loader2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { CheckCircle2, Check, Copy, Download, FileText, Braces, ClipboardList, Share2, Loader2, Calendar } from 'lucide-react';
 import { PassportData } from '../types';
 import { DataField } from './DataField';
+import { AppointmentModal } from './AppointmentModal';
 import {
   getGeneratedEmail,
   getProprietorBusinessName,
@@ -23,6 +24,7 @@ interface PassportDataTabProps {
   onOpenRefHelper?: () => void;
   onShare?: () => void;
   isSharing?: boolean;
+  utDoctorName?: string;
 }
 
 export function PassportDataTab({
@@ -38,8 +40,11 @@ export function PassportDataTab({
   utPurpose,
   onOpenRefHelper,
   onShare,
-  isSharing = false
+  isSharing = false,
+  utDoctorName
 }: PassportDataTabProps) {
+
+  const [isAppointmentOpen, setIsAppointmentOpen] = useState(false);
 
   const isExpiryWarning = (() => {
     if (!data.expiryDate) return false;
@@ -107,6 +112,15 @@ export function PassportDataTab({
             >
               {helperInfo.purpose !== 'Business' && <ClipboardList className="w-4.5 h-4.5 relative z-10" />}
               <span className="relative z-10">{helperInfo.label}</span>
+            </button>
+          )}
+          {(utPurpose === 'Medical Treatment - Patient' || utPurpose === 'Medical Treatment - Attendance') && (
+            <button
+              onClick={() => setIsAppointmentOpen(true)}
+              className="slide-btn slide-btn-teal flex items-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-extrabold rounded-full cursor-pointer shadow-sm relative overflow-hidden"
+            >
+              <Calendar className="w-4.5 h-4.5 relative z-10" />
+              <span className="relative z-10">Appointment</span>
             </button>
           )}
           <button 
@@ -260,6 +274,13 @@ export function PassportDataTab({
           </>
         )}
       </div>
+
+      <AppointmentModal 
+        isOpen={isAppointmentOpen}
+        onClose={() => setIsAppointmentOpen(false)}
+        data={data}
+        utDoctorName={utDoctorName}
+      />
     </>
   );
 }

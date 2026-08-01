@@ -649,7 +649,8 @@ export const getUndertakingPDFDocument = (formData: UndertakingFormData): jsPDF 
 export const generateUndertakingPDF = async (formData: UndertakingFormData): Promise<void> => {
   const doc = getUndertakingPDFDocument(formData);
   const passportNumber = formData.passportNumber ? formData.passportNumber.toUpperCase().trim() : 'UNKNOWN';
-  const filename = `UnderTaking-${passportNumber}.pdf`;
+  const fullName = formData.fullName ? formData.fullName.trim() : 'UNKNOWN';
+  const filename = `Undertaking-${fullName}-${passportNumber}.pdf`;
   const pdfArrayBuffer = doc.output('arraybuffer');
   const blob = new Blob([pdfArrayBuffer], { type: 'application/octet-stream' });
   const blobUrl = window.URL.createObjectURL(blob);

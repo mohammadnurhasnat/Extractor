@@ -26,6 +26,7 @@ interface ResultsSectionProps {
   isGeneratingAddresses?: boolean;
   onGenerateAddresses?: () => void;
   utPurpose?: string;
+  utDoctorName?: string;
   onOpenRefHelper?: () => void;
   currentUser?: any;
   onShare?: () => void;
@@ -52,6 +53,7 @@ export function ResultsSection({
   isGeneratingAddresses,
   onGenerateAddresses,
   utPurpose,
+  utDoctorName,
   onOpenRefHelper,
   currentUser,
   onShare,
@@ -143,6 +145,7 @@ export function ResultsSection({
                   isGeneratingAddresses={isGeneratingAddresses}
                   onGenerateAddresses={onGenerateAddresses}
                   utPurpose={utPurpose}
+                  utDoctorName={utDoctorName}
                   onOpenRefHelper={onOpenRefHelper}
                   onShare={onShare}
                   isSharing={isSharing}
