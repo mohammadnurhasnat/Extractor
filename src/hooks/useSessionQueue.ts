@@ -131,8 +131,9 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
       const controller = new AbortController();
       abortControllersRef.current.add(controller);
 
-      const endpoint = isPdf ? '/api/extract-application-pdf' : '/api/extract-passport';
-      const requestBody = isPdf
+      const isVisaApp = currentItem.documentType === 'visa_application';
+      const endpoint = isVisaApp ? '/api/extract-application-pdf' : '/api/extract-passport';
+      const requestBody = isVisaApp
         ? JSON.stringify({ pdfBase64: base64String, mimeType: currentItem.file.type })
         : JSON.stringify({ imageBase64: base64String, mimeType: currentItem.file.type });
 
@@ -161,7 +162,7 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
             result.data.gender = normalizeGender(result.data.gender);
           }
           result.data.extractionTime = durationSeconds;
-          result.data.isPdf = isPdf;
+          result.data.isPdf = isVisaApp;
         }
         
         const deduplicatedData = (await addToHistory(result.data, base64String)) || result.data;
