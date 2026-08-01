@@ -724,7 +724,7 @@ ${shareUrl}
                 <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2 text-xs text-slate-700 dark:text-zinc-300">
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>পাসপোর্টের বিস্তারিত তথ্য স্বয়ংক্রিয়ভাবে এক্সট্রাক্ট।</span>
+                    <span>পাসপোর্টের তথ্য স্বয়ংক্রিয়ভাবে এক্সট্রাক্ট করা।</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
@@ -732,15 +732,15 @@ ${shareUrl}
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>পাসপোর্ট ছবি থেকে পিডিএফ তৈরি করা।</span>
+                    <span>ছবি থেকে পিডিএফ তৈরি করা।</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>কোম্পানি/ব্যবসার লেটারহেড তৈরি করা।</span>
+                    <span>কোম্পানি/ব্যবসার প্যাড তৈরি করা।</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>বিজনেস ভিজিটিং কার্ড তৈরি করা।</span>
+                    <span>ভিজিটিং কার্ড তৈরি করা।</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
@@ -752,11 +752,16 @@ ${shareUrl}
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>অফিস আইডি কার্ড তৈরি করা।</span>
+                    <span>JOB ID তৈরি করা।</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>কাস্টম স্ট্যাম্প ও সিল তৈরি করা।</span>
+                    <span>স্ট্যাম্প ও সিল তৈরি করা।</span>
+                  </li>
+
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                    <span>PDF কমপ্রেস করা।</span>
                   </li>
                 </ul>
               </div>

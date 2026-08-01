@@ -62,8 +62,8 @@ export function ResultsSection({
 }: ResultsSectionProps) {
   const [isAppointmentOpen, setIsAppointmentOpen] = useState(false);
 
-  // If there's data or active item, show the results card
-  const hasContent = !!data || !!activeItem;
+  // If there's extracted data or active item on passport-pdf tab, show the results card
+  const hasContent = !!data || (resultsTab === 'passport-pdf' && !!activeItem);
 
   return (
     <div className="lg:col-span-7 print:w-full print:col-span-12 h-[calc(100vh-140px)] lg:h-[calc(100vh-130px)] flex flex-col pr-1.5 scrollbar-none">
@@ -119,7 +119,7 @@ export function ResultsSection({
                     <span className="relative z-10">Undertaking Form</span>
                   </button>
                 )}
-                {activeItem && activeItem?.documentType !== 'visa_application' && (
+                {data && activeItem && activeItem?.documentType !== 'visa_application' && (
                   <button
                     onClick={() => setResultsTab('passport-pdf')}
                     className={`flex-1 min-w-[45%] md:min-w-0 text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer border min-h-[40px] transition-all duration-200 hover:bg-white/40 dark:hover:bg-white/25 hover:text-black dark:hover:text-black hover:backdrop-blur-md hover:border-slate-300/80 hover:shadow-md ${

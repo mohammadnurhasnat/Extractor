@@ -83,10 +83,24 @@ export function loadPdfJS(): Promise<any> {
     }
     const script = document.createElement('script');
     script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-    script.onload = () => {
+    script.onload = async () => {
       const pdfjsLib = (window as any).pdfjsLib;
       if (pdfjsLib) {
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        try {
+          // Bypassing cross-origin worker restrictions in iframes (especially on mobile iOS/Android Safari/Chrome)
+          const workerUrl = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+          const resp = await fetch(workerUrl);
+          if (resp.ok) {
+            const blob = await resp.blob();
+            const blobUrl = URL.createObjectURL(blob);
+            pdfjsLib.GlobalWorkerOptions.workerSrc = blobUrl;
+          } else {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
+          }
+        } catch (e) {
+          console.warn("Failed to load PDF worker as blob, falling back to CDN URL:", e);
+          pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
         resolve(pdfjsLib);
       } else {
         reject(new Error('pdfjsLib not found after loading script'));
@@ -120,8 +134,8 @@ export async function renderAllPdfPages(file: File): Promise<{ pageNumber: numbe
   for (let i = 1; i <= pdf.numPages; i++) {
     const page = await pdf.getPage(i);
     
-    // Render Thumbnail scale 0.8
-    const thumbViewport = page.getViewport({ scale: 0.8 });
+    // Render Thumbnail scale 0.4 (extremely light and fast for mobile/web memory)
+    const thumbViewport = page.getViewport({ scale: 0.4 });
     const thumbCanvas = document.createElement('canvas');
     thumbCanvas.width = thumbViewport.width;
     thumbCanvas.height = thumbViewport.height;
@@ -131,8 +145,8 @@ export async function renderAllPdfPages(file: File): Promise<{ pageNumber: numbe
     }
     const thumbnailDataUrl = thumbCanvas.toDataURL('image/jpeg', 0.8);
 
-    // Render Full high quality scale 2.0
-    const fullViewport = page.getViewport({ scale: 2.0 });
+    // Render Full page scale 1.5 (optimized for mobile memory/crash prevention, while remaining extremely high-res and clear)
+    const fullViewport = page.getViewport({ scale: 1.5 });
     const fullCanvas = document.createElement('canvas');
     fullCanvas.width = fullViewport.width;
     fullCanvas.height = fullViewport.height;
@@ -140,7 +154,7 @@ export async function renderAllPdfPages(file: File): Promise<{ pageNumber: numbe
     if (fullCtx) {
       await page.render({ canvasContext: fullCtx, viewport: fullViewport }).promise;
     }
-    const dataUrl = fullCanvas.toDataURL('image/jpeg', 0.92);
+    const dataUrl = fullCanvas.toDataURL('image/jpeg', 0.9);
 
     pages.push({ pageNumber: i, dataUrl, thumbnailDataUrl });
   }
@@ -155,8 +169,8 @@ export async function renderPdfPageToDataUrl(file: File): Promise<string> {
   const pdf = await loadingTask.promise;
   const page = await pdf.getPage(1);
   
-  // Render at high-quality 2.5x scale
-  const viewport = page.getViewport({ scale: 2.5 });
+  // Render at highly optimized 1.5x scale to avoid mobile memory issues/freezes
+  const viewport = page.getViewport({ scale: 1.5 });
   const canvas = document.createElement('canvas');
   canvas.width = viewport.width;
   canvas.height = viewport.height;
@@ -171,7 +185,7 @@ export async function renderPdfPageToDataUrl(file: File): Promise<string> {
     viewport: viewport
   }).promise;
   
-  return canvas.toDataURL('image/jpeg', 0.95);
+  return canvas.toDataURL('image/jpeg', 0.9);
 }
 
 export const generatePassportImagePDF = async (imageSource: File | Blob | string, passportData?: PassportData | null): Promise<void> => {
@@ -359,6 +373,137 @@ export const generatePassportImagePDF = async (imageSource: File | Blob | string
       reader.readAsDataURL(file);
     } catch (err) {
       console.error('Error generating passport PDF:', err);
+      reject(err);
+    }
+  });
+};
+
+export const compressPdfFileToUnder350KB = async (
+  imageSource: File | Blob | string,
+  passportData?: PassportData | null,
+  customFilename?: string
+): Promise<void> => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let finalImageSource = imageSource;
+      let isPdfFile = false;
+
+      if (imageSource instanceof File && (imageSource.type === 'application/pdf' || imageSource.name.toLowerCase().endsWith('.pdf'))) {
+        isPdfFile = true;
+      } else if (imageSource instanceof Blob && imageSource.type === 'application/pdf') {
+        isPdfFile = true;
+      } else if (typeof imageSource === 'string' && (imageSource.startsWith('data:application/pdf') || imageSource.startsWith('application/pdf'))) {
+        isPdfFile = true;
+      }
+
+      if (isPdfFile) {
+        let pdfFile: File;
+        if (imageSource instanceof File) {
+          pdfFile = imageSource;
+        } else {
+          pdfFile = await ensureFileObject(imageSource, 'temp.pdf');
+        }
+        finalImageSource = await renderPdfPageToDataUrl(pdfFile);
+      }
+
+      const file = await ensureFileObject(finalImageSource, 'source.jpg');
+      const reader = new FileReader();
+
+      reader.onloadend = () => {
+        if (!reader.result) {
+          return reject(new Error('Failed to read file'));
+        }
+        const base64data = reader.result as string;
+
+        const img = new Image();
+        img.onload = async () => {
+          try {
+            const maxTargetBytes = 345 * 1024; // strictly under 350 KB
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            let bestPdfBuffer: ArrayBuffer | null = null;
+            let bestQuality = 0.82;
+            let currentScale = 1.0;
+
+            for (let attempt = 0; attempt < 8; attempt++) {
+              canvas.width = Math.round(img.width * currentScale);
+              canvas.height = Math.round(img.height * currentScale);
+
+              if (ctx) {
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+              }
+
+              const targetJpeg = canvas.toDataURL('image/jpeg', bestQuality);
+
+              const doc = new jsPDF({
+                orientation: 'p',
+                unit: 'mm',
+                format: 'a4',
+                compress: true
+              });
+
+              const pageWidth = doc.internal.pageSize.getWidth();
+              const pageHeight = doc.internal.pageSize.getHeight();
+              const margin = 10;
+              const maxWidth = pageWidth - (margin * 2);
+              const maxHeight = pageHeight - (margin * 2);
+
+              const ratio = Math.min(maxWidth / canvas.width, maxHeight / canvas.height);
+              const finalWidth = canvas.width * ratio;
+              const finalHeight = canvas.height * ratio;
+              const xOffset = (pageWidth - finalWidth) / 2;
+              const yOffset = (pageHeight - finalHeight) / 2;
+
+              doc.addImage(targetJpeg, 'JPEG', xOffset, yOffset, finalWidth, finalHeight);
+
+              const pdfArrayBuffer = doc.output('arraybuffer');
+              bestPdfBuffer = pdfArrayBuffer;
+
+              if (pdfArrayBuffer.byteLength <= maxTargetBytes) {
+                break;
+              }
+
+              if (bestQuality > 0.45) {
+                bestQuality -= 0.15;
+              } else {
+                currentScale *= 0.8;
+              }
+            }
+
+            if (!bestPdfBuffer) {
+              return reject(new Error('Failed to compress PDF below 350KB'));
+            }
+
+            const givenName = passportData?.givenName ? passportData.givenName.replace(/\s+/g, '-') : '';
+            const surname = passportData?.surname ? passportData.surname.replace(/\s+/g, '-') : '';
+            const passportNumber = passportData?.passportNumber ? passportData.passportNumber.toUpperCase().trim() : '';
+            const fullName = [givenName, surname].filter(Boolean).join('-');
+            
+            const filename = customFilename || (fullName || passportNumber 
+              ? `${fullName || 'Passport'}-${passportNumber || 'Doc'}-Compressed-350KB.pdf`
+              : 'Passport-Compressed-350KB.pdf');
+
+            const blob = new Blob([bestPdfBuffer], { type: 'application/pdf' });
+            const blobUrl = window.URL.createObjectURL(blob);
+            await downloadFile(blobUrl, filename);
+            window.URL.revokeObjectURL(blobUrl);
+            resolve();
+          } catch (e) {
+            console.error('Compress PDF error:', e);
+            reject(e);
+          }
+        };
+        img.onerror = () => reject(new Error('Failed to load image for compression'));
+        img.src = base64data;
+      };
+
+      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.readAsDataURL(file);
+    } catch (err) {
+      console.error('Error compressing PDF:', err);
       reject(err);
     }
   });

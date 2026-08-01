@@ -1,11 +1,12 @@
 import React from 'react';
-import { UploadCloud, Loader2, ZapOff, FileText, AlertCircle, CheckCircle } from 'lucide-react';
+import { UploadCloud, Loader2, ZapOff, FileText, AlertCircle, CheckCircle, FileDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { UndertakingOptions } from './UndertakingOptions';
 import { SessionQueue } from './SessionQueue';
 import { HistorySidebar } from './HistorySidebar';
 import { PdfPageSelector } from './PdfPageSelector';
 import { PassportData, HistoryItem, QueueItem, UndertakingFormData, PdfPageItem } from '../types';
+import { compressPdfFileToUnder350KB } from '../utils/pdfGenerator';
 
 interface UploadSectionProps {
   preview: string | null;
@@ -103,6 +104,26 @@ export function UploadSection(props: UploadSectionProps) {
   const [dragActiveAddPassport, setDragActiveAddPassport] = React.useState(false);
   const [dragActiveAddPdf, setDragActiveAddPdf] = React.useState(false);
   const [dragActivePreview, setDragActivePreview] = React.useState(false);
+
+  const [isCompressingPdf, setIsCompressingPdf] = React.useState(false);
+
+  const handleCompressPDF = async () => {
+    const sourceFile = pdfTargetFile || activeItem?.file || props.preview;
+    if (!sourceFile) return;
+
+    try {
+      setIsCompressingPdf(true);
+      await compressPdfFileToUnder350KB(
+        sourceFile,
+        props.data || activeItem?.data,
+        activeItem?.file?.name ? `${activeItem.file.name.replace(/\.[^/.]+$/, '')}_350kb.pdf` : undefined
+      );
+    } catch (err) {
+      console.error("Failed to compress PDF:", err);
+    } finally {
+      setIsCompressingPdf(false);
+    }
+  };
 
   return (
     <div className="lg:col-span-5 flex flex-col gap-6 print:hidden lg:max-h-[calc(100vh-130px)] lg:overflow-y-auto overscroll-contain pr-2.5 scrollbar-thin">
@@ -534,22 +555,42 @@ export function UploadSection(props: UploadSectionProps) {
 
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 mt-2">
               <button 
                 onClick={props.clearAll}
-                disabled={props.loading || props.isBatchProcessing}
-                className="slide-btn slide-btn-purple w-full sm:flex-1 py-3 px-4 rounded-full font-bold text-sm cursor-pointer disabled:opacity-50 min-h-[48px]"
+                disabled={props.loading || props.isBatchProcessing || isCompressingPdf}
+                className="slide-btn slide-btn-purple px-4 py-2 rounded-xl font-extrabold text-xs sm:text-sm cursor-pointer disabled:opacity-50 min-h-[40px] flex-initial"
               >
                 <span className="relative z-10">Clear All</span>
               </button>
+
+              <button
+                onClick={handleCompressPDF}
+                disabled={props.loading || props.isBatchProcessing || isCompressingPdf || (!pdfTargetFile && !activeItem?.file && !props.preview)}
+                className="slide-btn bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-700 shadow-[0_3.5px_0_0_#047857] px-4 py-2 rounded-xl font-extrabold text-xs sm:text-sm inline-flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 min-h-[40px] flex-initial"
+                title="Compress PDF to under 350KB while retaining high clarity"
+              >
+                {isCompressingPdf ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin relative z-10" />
+                    <span className="relative z-10">Compressing...</span>
+                  </>
+                ) : (
+                  <>
+                    <FileDown className="w-3.5 h-3.5 relative z-10" />
+                    <span className="relative z-10">Compress PDF</span>
+                  </>
+                )}
+              </button>
+
               {!props.data && (
-                <div className="w-full sm:flex-[2] flex flex-col gap-2">
+                <div className="flex-1 min-w-[100px] flex flex-col gap-1">
                   <button 
                     onClick={props.loading || props.isBatchProcessing ? props.cancelExtraction : props.extractData}
                     disabled={!props.isOnline && !props.loading && !props.isBatchProcessing}
-                    className={`slide-btn w-full py-3 px-4 rounded-full font-bold text-sm flex items-center justify-center gap-2 cursor-pointer min-h-[48px] ${
+                    className={`slide-btn px-4 py-2 rounded-xl font-extrabold text-xs sm:text-sm inline-flex items-center justify-center gap-1.5 cursor-pointer min-h-[40px] w-full ${
                       props.loading || props.isBatchProcessing
-                        ? 'bg-red-500 hover:bg-red-600 text-white border-red-700 shadow-[0_4.5px_0_0_#991b1b]' 
+                        ? 'bg-red-500 hover:bg-red-600 text-white border-red-700 shadow-[0_3.5px_0_0_#991b1b]' 
                         : !props.isOnline 
                         ? 'bg-slate-200 dark:bg-zinc-800 text-slate-400 dark:text-zinc-500 cursor-not-allowed border-transparent shadow-none' 
                         : 'slide-btn-orange'
@@ -558,9 +599,9 @@ export function UploadSection(props: UploadSectionProps) {
                     {props.loading || props.isBatchProcessing ? (
                       <><div className="w-2.5 h-2.5 rounded-full bg-white relative z-10 animate-ping" /><span className="relative z-10 font-extrabold">STOP EXTRACTION</span></>
                     ) : !props.isOnline ? (
-                      <><ZapOff className="w-4 h-4 text-red-500 relative z-10" /><span className="relative z-10">Offline: Disabled</span></>
+                      <><ZapOff className="w-4 h-4 text-red-500 relative z-10" /><span className="relative z-10">Offline</span></>
                     ) : (
-                      <span className="relative z-10 font-extrabold text-white">Extract Active</span>
+                      <span className="relative z-10 font-extrabold text-white">Extract</span>
                     )}
                   </button>
                   {!props.isOnline && (
