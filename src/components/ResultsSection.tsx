@@ -1,17 +1,17 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'motion/react';
 import { FileText, Calendar } from 'lucide-react';
 import { PassportDataTab } from './PassportDataTab';
 import { UndertakingFormTab } from './UndertakingFormTab';
 import { PassportImagePdfTab } from './PassportImagePdfTab';
-import { AppointmentModal } from './AppointmentModal';
+import { AppointmentTab } from './AppointmentTab';
 import { PassportData, UndertakingFormData, QueueItem } from '../types';
 
 interface ResultsSectionProps {
   data: PassportData | null;
   activeItem: QueueItem | null;
-  resultsTab: 'profile' | 'undertaking' | 'passport-pdf';
-  setResultsTab: (tab: 'profile' | 'undertaking' | 'passport-pdf') => void;
+  resultsTab: 'profile' | 'undertaking' | 'passport-pdf' | 'appointment';
+  setResultsTab: (tab: 'profile' | 'undertaking' | 'passport-pdf' | 'appointment') => void;
   isUndertakingConfigured: boolean;
   undertakingData: UndertakingFormData | null;
   updateDataField: (field: keyof PassportData, value: string) => void;
@@ -60,8 +60,6 @@ export function ResultsSection({
   onShare,
   isSharing = false
 }: ResultsSectionProps) {
-  const [isAppointmentOpen, setIsAppointmentOpen] = useState(false);
-
   // If there's extracted data or active item on passport-pdf tab, show the results card
   const hasContent = !!data || (resultsTab === 'passport-pdf' && !!activeItem);
 
@@ -98,46 +96,78 @@ export function ResultsSection({
                 {data && (
                   <button
                     onClick={() => setResultsTab('profile')}
-                    className={`flex-1 min-w-[45%] md:min-w-0 text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer border min-h-[40px] transition-all duration-200 hover:bg-white/40 dark:hover:bg-white/25 hover:text-black dark:hover:text-black hover:backdrop-blur-md hover:border-slate-300/80 hover:shadow-md ${
+                    className={`group relative overflow-hidden flex-1 min-w-[45%] md:min-w-0 text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer border min-h-[40px] transition-all duration-300 flex items-center justify-center gap-1.5 ${
                       resultsTab === 'profile'
                         ? 'bg-[#0C8493] text-white shadow-md border-[#0C8493]'
-                        : 'bg-slate-200/40 dark:bg-zinc-900/40 text-slate-700 dark:text-zinc-400 border-slate-300/30 dark:border-zinc-800/40'
-                     }`}
+                        : 'bg-slate-200/50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 border-slate-300/40 dark:border-zinc-700/50 shadow-xs'
+                    }`}
                   >
-                    <span className="relative z-10">Passport Profile</span>
+                    <span
+                      className={`absolute inset-0 bg-[#0C8493] transition-transform duration-300 ease-out pointer-events-none ${
+                        resultsTab === 'profile' ? 'translate-y-0' : 'translate-y-full group-hover:translate-y-0'
+                      }`}
+                    />
+                    <span className={`relative z-10 transition-colors duration-200 group-hover:text-white ${resultsTab === 'profile' ? 'text-white' : ''}`}>
+                      Passport Profile
+                    </span>
                   </button>
                 )}
                 {data && isUndertakingConfigured && undertakingData && activeItem?.documentType !== 'visa_application' && (
                   <button
                     onClick={() => setResultsTab('undertaking')}
-                    className={`flex-1 min-w-[45%] md:min-w-0 text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer border min-h-[40px] transition-all duration-200 hover:bg-white/40 dark:hover:bg-white/25 hover:text-black dark:hover:text-black hover:backdrop-blur-md hover:border-slate-300/80 hover:shadow-md ${
+                    className={`group relative overflow-hidden flex-1 min-w-[45%] md:min-w-0 text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer border min-h-[40px] transition-all duration-300 flex items-center justify-center gap-1.5 ${
                       resultsTab === 'undertaking'
                         ? 'bg-[#0C8493] text-white shadow-md border-[#0C8493]'
-                        : 'bg-slate-200/40 dark:bg-zinc-900/40 text-slate-700 dark:text-zinc-400 border-slate-300/30 dark:border-zinc-800/40'
-                     }`}
+                        : 'bg-slate-200/50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 border-slate-300/40 dark:border-zinc-700/50 shadow-xs'
+                    }`}
                   >
-                    <span className="relative z-10">Undertaking Form</span>
+                    <span
+                      className={`absolute inset-0 bg-[#0C8493] transition-transform duration-300 ease-out pointer-events-none ${
+                        resultsTab === 'undertaking' ? 'translate-y-0' : 'translate-y-full group-hover:translate-y-0'
+                      }`}
+                    />
+                    <span className={`relative z-10 transition-colors duration-200 group-hover:text-white ${resultsTab === 'undertaking' ? 'text-white' : ''}`}>
+                      Undertaking Form
+                    </span>
                   </button>
                 )}
                 {data && activeItem && activeItem?.documentType !== 'visa_application' && (
                   <button
                     onClick={() => setResultsTab('passport-pdf')}
-                    className={`flex-1 min-w-[45%] md:min-w-0 text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer border min-h-[40px] transition-all duration-200 hover:bg-white/40 dark:hover:bg-white/25 hover:text-black dark:hover:text-black hover:backdrop-blur-md hover:border-slate-300/80 hover:shadow-md ${
+                    className={`group relative overflow-hidden flex-1 min-w-[45%] md:min-w-0 text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer border min-h-[40px] transition-all duration-300 flex items-center justify-center gap-1.5 ${
                       resultsTab === 'passport-pdf'
                         ? 'bg-[#0C8493] text-white shadow-md border-[#0C8493]'
-                        : 'bg-slate-200/40 dark:bg-zinc-900/40 text-slate-700 dark:text-zinc-400 border-slate-300/30 dark:border-zinc-800/40'
-                     }`}
+                        : 'bg-slate-200/50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 border-slate-300/40 dark:border-zinc-700/50 shadow-xs'
+                    }`}
                   >
-                    <span className="relative z-10">Image to PDF</span>
+                    <span
+                      className={`absolute inset-0 bg-[#0C8493] transition-transform duration-300 ease-out pointer-events-none ${
+                        resultsTab === 'passport-pdf' ? 'translate-y-0' : 'translate-y-full group-hover:translate-y-0'
+                      }`}
+                    />
+                    <span className={`relative z-10 transition-colors duration-200 group-hover:text-white ${resultsTab === 'passport-pdf' ? 'text-white' : ''}`}>
+                      Image to PDF
+                    </span>
                   </button>
                 )}
                 {(utPurpose === 'Medical Treatment - Patient' || utPurpose === 'Medical Treatment - Attendance') && data && (
                   <button
-                    onClick={() => setIsAppointmentOpen(true)}
-                    className="flex-1 min-w-[45%] md:min-w-0 text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer border min-h-[40px] transition-all duration-200 bg-teal-600 hover:bg-teal-700 dark:bg-teal-700 dark:hover:bg-teal-800 text-white border-teal-600 hover:border-teal-700 shadow-md flex items-center justify-center gap-1.5"
+                    onClick={() => setResultsTab('appointment')}
+                    className={`group relative overflow-hidden flex-1 min-w-[45%] md:min-w-0 text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer border min-h-[40px] transition-all duration-300 flex items-center justify-center gap-1.5 ${
+                      resultsTab === 'appointment'
+                        ? 'bg-[#0C8493] text-white shadow-md border-[#0C8493]'
+                        : 'bg-slate-200/50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 border-slate-300/40 dark:border-zinc-700/50 shadow-xs'
+                    }`}
                   >
-                    <Calendar className="w-4 h-4" />
-                    <span className="relative z-10">Appointment</span>
+                    <span
+                      className={`absolute inset-0 bg-[#0C8493] transition-transform duration-300 ease-out pointer-events-none ${
+                        resultsTab === 'appointment' ? 'translate-y-0' : 'translate-y-full group-hover:translate-y-0'
+                      }`}
+                    />
+                    <Calendar className={`w-4 h-4 relative z-10 transition-colors duration-200 group-hover:text-white ${resultsTab === 'appointment' ? 'text-white' : ''}`} />
+                    <span className={`relative z-10 transition-colors duration-200 group-hover:text-white ${resultsTab === 'appointment' ? 'text-white' : ''}`}>
+                      Appointment
+                    </span>
                   </button>
                 )}
               </div>
@@ -172,6 +202,8 @@ export function ResultsSection({
                 />
               ) : resultsTab === 'passport-pdf' && activeItem ? (
                 <PassportImagePdfTab activeItem={activeItem} currentUser={currentUser} />
+              ) : resultsTab === 'appointment' && data ? (
+                <AppointmentTab data={data} utDoctorName={utDoctorName} />
               ) : null}
             </div>
           </div>
@@ -201,15 +233,6 @@ export function ResultsSection({
             </p>
           </motion.div>
         </div>
-      )}
-
-      {isAppointmentOpen && data && (
-        <AppointmentModal
-          isOpen={isAppointmentOpen}
-          onClose={() => setIsAppointmentOpen(false)}
-          data={data}
-          utDoctorName={utDoctorName}
-        />
       )}
     </div>
   );

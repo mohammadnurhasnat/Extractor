@@ -71,14 +71,14 @@ export function PassportDataTab({
     }
     if (utPurpose === 'Medical Treatment - Patient' || utPurpose === 'Medical Treatment - Attendance') {
       return {
-        label: '🏥 Indian Hospitals (12)',
+        label: 'Hospitals (12)',
         purpose: 'Medical' as const,
         btnClass: 'slide-btn-orange text-white'
       };
     }
     if (utPurpose === 'Double Entry') {
       return {
-        label: '🏨 Delhi Hotels (5)',
+        label: 'Delhi Hotels (5)',
         purpose: 'DoubleEntry' as const,
         btnClass: 'slide-btn-orange text-white'
       };
@@ -127,7 +127,7 @@ export function PassportDataTab({
             className="slide-btn slide-btn-slate flex items-center gap-1.5 px-3.5 py-2 text-xs sm:text-sm font-bold rounded-full cursor-pointer"
           >
             <Download className="w-4 h-4 relative z-10" />
-            <span className="relative z-10">Download TXT</span>
+            <span className="relative z-10">TXT</span>
           </button>
           <button 
             onClick={handleDownloadPDF}

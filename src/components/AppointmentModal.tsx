@@ -52,13 +52,13 @@ export function AppointmentModal({
   const getFormattedText = () => {
     return `Patient Details:
 
-* Name: ${name}
-* DOB: ${dob}
-* Passport: ${passport}
-* Address: ${address}
-* Department: ${department}
-* Phone: ${phone}
-* Email: ${email}`;
+* Name:  ${name}
+* DOB:  ${dob}
+* Passport:  ${passport}
+* Address:  ${address}
+* Department:  ${department}
+* Phone:  ${phone}
+* Email:  ${email}`;
   };
 
   const handleCopy = async () => {
@@ -121,8 +121,7 @@ export function AppointmentModal({
           .label {
             font-weight: bold;
             color: #0284c7;
-            display: inline-block;
-            width: 120px;
+            margin-right: 8px;
           }
           .value {
             color: #334155;
@@ -134,13 +133,13 @@ export function AppointmentModal({
           <h2>Patient Details:</h2>
           <div class="meta-info">Generated on: ${formattedDate}</div>
           <ul>
-            <li><span class="label">* Name:</span><span class="value">${name}</span></li>
-            <li><span class="label">* DOB:</span><span class="value">${dob}</span></li>
-            <li><span class="label">* Passport:</span><span class="value">${passport}</span></li>
-            <li><span class="label">* Address:</span><span class="value">${address}</span></li>
-            <li><span class="label">* Department:</span><span class="value">${department}</span></li>
-            <li><span class="label">* Phone:</span><span class="value">${phone}</span></li>
-            <li><span class="label">* Email:</span><span class="value">${email}</span></li>
+            <li><span class="label">* Name:&nbsp;&nbsp;</span><span class="value">${name}</span></li>
+            <li><span class="label">* DOB:&nbsp;&nbsp;</span><span class="value">${dob}</span></li>
+            <li><span class="label">* Passport:&nbsp;&nbsp;</span><span class="value">${passport}</span></li>
+            <li><span class="label">* Address:&nbsp;&nbsp;</span><span class="value">${address}</span></li>
+            <li><span class="label">* Department:&nbsp;&nbsp;</span><span class="value">${department}</span></li>
+            <li><span class="label">* Phone:&nbsp;&nbsp;</span><span class="value">${phone}</span></li>
+            <li><span class="label">* Email:&nbsp;&nbsp;</span><span class="value">${email}</span></li>
           </ul>
         </div>
       </body>
@@ -291,42 +290,33 @@ export function AppointmentModal({
             </div>
           </div>
 
-          {/* Formatted Preview Box */}
-          <div className="space-y-1.5">
-            <span className="text-xs font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">
-              Preview (Plain Text)
-            </span>
-            <pre className="w-full p-4 rounded-xl bg-slate-900 dark:bg-zinc-950 text-slate-100 font-mono text-xs overflow-x-auto border-2 border-zinc-950 shadow-inner select-all leading-relaxed whitespace-pre-wrap">
-              {getFormattedText()}
-            </pre>
-          </div>
         </div>
 
         {/* Footer Actions */}
-        <div className="flex flex-col sm:flex-row gap-2 border-t border-slate-100 dark:border-zinc-800/80 pt-4 mt-4">
+        <div className="flex flex-col sm:flex-row items-center justify-end gap-2.5 border-t border-slate-100 dark:border-zinc-800/80 pt-4 mt-4">
           <button
             onClick={handleCopy}
-            className="flex-1 slide-btn slide-btn-purple py-2.5 px-4 text-xs sm:text-sm font-extrabold rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-sm relative overflow-hidden"
+            className="w-full sm:w-auto slide-btn slide-btn-purple py-2 px-4 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 cursor-pointer shadow-sm relative overflow-hidden"
           >
             {isCopied ? (
               <>
-                <Check className="w-4.5 h-4.5 text-emerald-300 relative z-10 animate-scaleIn" />
-                <span className="relative z-10">Copied to Clipboard!</span>
+                <Check className="w-4 h-4 text-emerald-300 relative z-10 animate-scaleIn" />
+                <span className="relative z-10">Copied!</span>
               </>
             ) : (
               <>
-                <Copy className="w-4.5 h-4.5 relative z-10" />
-                <span className="relative z-10">Copy Formatted Text</span>
+                <Copy className="w-4 h-4 relative z-10" />
+                <span className="relative z-10">Copy Text</span>
               </>
             )}
           </button>
           
           <button
             onClick={handleDownloadDoc}
-            className="flex-1 slide-btn slide-btn-orange py-2.5 px-4 text-xs sm:text-sm font-extrabold rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-sm relative overflow-hidden"
+            className="w-full sm:w-auto slide-btn slide-btn-orange py-2 px-4 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 cursor-pointer shadow-sm relative overflow-hidden"
           >
-            <Download className="w-4.5 h-4.5 relative z-10" />
-            <span className="relative z-10">Download Word File (.doc)</span>
+            <Download className="w-4 h-4 relative z-10" />
+            <span className="relative z-10">Word File(.doc)</span>
           </button>
         </div>
       </motion.div>

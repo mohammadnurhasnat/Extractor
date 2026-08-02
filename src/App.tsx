@@ -389,9 +389,9 @@ export default function App() {
 
 
 
-  const [resultsTab, setResultsTab] = useState<'profile' | 'undertaking' | 'passport-pdf'>(() => {
+  const [resultsTab, setResultsTab] = useState<'profile' | 'undertaking' | 'passport-pdf' | 'appointment'>(() => {
     const hash = window.location.hash.replace('#', '');
-    if (['undertaking', 'passport-pdf'].includes(hash)) {
+    if (['undertaking', 'passport-pdf', 'appointment'].includes(hash)) {
       return hash as any;
     }
     return 'profile';
@@ -442,7 +442,7 @@ export default function App() {
   useEffect(() => {
     const handlePopState = () => {
       const hash = window.location.hash.replace('#', '');
-      if (['profile', 'undertaking', 'passport-pdf'].includes(hash)) {
+      if (['profile', 'undertaking', 'passport-pdf', 'appointment'].includes(hash)) {
         setResultsTab(hash as any);
       } else {
         setResultsTab('profile'); // Default fallback
