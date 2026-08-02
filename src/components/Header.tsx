@@ -210,7 +210,7 @@ export const Header: React.FC<HeaderProps> = ({
                 >
                   <span className="relative z-10 flex items-center justify-center gap-1">
                     <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                    <span className="hidden sm:inline">Users</span>
+                    <span className="hidden sm:inline">Dashboard</span>
                   </span>
                 </button>
               )}
