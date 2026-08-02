@@ -724,7 +724,7 @@ ${shareUrl}
                 <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2 text-xs text-slate-700 dark:text-zinc-300">
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>পাসপোর্টের তথ্য স্বয়ংক্রিয়ভাবে এক্সট্রাক্ট করা।</span>
+                    <span>পাসপোর্টের তথ্য এক্সট্রাক্ট করা।</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
@@ -748,7 +748,7 @@ ${shareUrl}
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>NOC (অনাপত্তি সনদ) তৈরি ও এডিট করা।</span>
+                    <span>NOC তৈরি ও এডিট করা।</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
@@ -770,10 +770,10 @@ ${shareUrl}
               <div className="lg:w-80 shrink-0 pt-3 lg:pt-0 border-t lg:border-t-0 lg:border-l border-slate-200/60 dark:border-zinc-800/60 lg:pl-5 flex flex-row lg:flex-col items-center lg:items-start justify-between gap-3 bg-slate-50/50 dark:bg-zinc-800/30 lg:bg-transparent lg:dark:bg-transparent p-3 lg:p-0 rounded-xl lg:rounded-none">
                 <div className="flex flex-col">
                   <span className="text-xs sm:text-sm text-slate-800 dark:text-zinc-200 font-bold">
-                    লেটারহেড, ভিজিটিং কার্ড, NOC, আইডি কার্ড, কভার লেটার, স্ট্যাম্প:
+                    PAD, ভিজিটিং কার্ড, NOC, JOD ID, কভার লেটার, স্ট্যাম্প:
                   </span>
                   <span className="text-[11px] text-slate-500 dark:text-zinc-400 hidden lg:block mt-0.5">
-                    PadGen এর সাহায্যে সহজেই প্রফেশনাল লেটারহেড, ভিজিটিং কার্ড, NOC, আইডি কার্ড, কভার লেটার এবং স্ট্যাম্প তৈরি করুন।
+                    PadGen এর সাহায্যে সহজেই প্রফেশনাল PAD, ভিজিটিং কার্ড, NOC, JOB ID, কভার লেটার এবং স্ট্যাম্প তৈরি করুন।
                   </span>
                 </div>
                 
