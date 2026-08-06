@@ -117,7 +117,15 @@ export default function App() {
   const [hoverColor, setHoverColor] = useState('#2563eb');
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
 
-  // 👤 User Profile Picture & Modal States
+  // 🌟 Auto-hide Features list after 10 seconds
+  const [showFeatures, setShowFeatures] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowFeatures(false);
+    }, 10000);
+    return () => clearTimeout(timer);
+  }, []);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
 
@@ -713,79 +721,111 @@ ${shareUrl}
         <OfflineBanner isOnline={isOnline} />
 
         <div className="w-full px-4 mt-6">
-          <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm rounded-2xl p-4 sm:p-5 border border-slate-200/60 dark:border-zinc-800/60 shadow-sm relative">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+          <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm rounded-2xl p-4 sm:p-5 border border-slate-200/60 dark:border-zinc-800/60 shadow-sm relative transition-all duration-300">
+            <div className="flex flex-col gap-4">
               
-              {/* Left Side: Features List */}
-              <div className="flex-1 min-w-0">
-                <h2 className="text-sm font-bold text-slate-800 dark:text-zinc-100 mb-2.5 tracking-wide">
-                  যেসব সুবিধা পাবেন:
-                </h2>
-                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2 text-xs text-slate-700 dark:text-zinc-300">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>পাসপোর্টের তথ্য এক্সট্রাক্ট করা।</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>আন্ডারটেকিং ফর্ম তৈরি ও এডিট করা।</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>ছবি থেকে পিডিএফ তৈরি করা।</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>কোম্পানি/ব্যবসার প্যাড তৈরি করা।</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>ভিজিটিং কার্ড তৈরি করা।</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>কভার লেটার তৈরি ও এডিট করা।</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>NOC তৈরি ও এডিট করা।</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>JOB ID তৈরি করা।</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>স্ট্যাম্প ও সিল তৈরি করা।</span>
-                  </li>
+              {/* Left Side: Features List (Auto-hides after 10 seconds) */}
+              <AnimatePresence>
+                {showFeatures && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.4, ease: 'easeInOut' }}
+                    className="overflow-hidden pb-3 border-b border-slate-200/60 dark:border-zinc-800/60"
+                  >
+                    <div className="flex items-center justify-between mb-2.5">
+                      <h2 className="text-sm font-bold text-slate-800 dark:text-zinc-100 tracking-wide flex items-center gap-2">
+                        <span>যেসব সুবিধা পাবেন:</span>
+                        <span className="text-[10px] font-normal text-slate-400 dark:text-zinc-500 bg-slate-100 dark:bg-zinc-800 px-2 py-0.5 rounded-full">
+                          ১০ সেকেন্ড পর হাইড হবে
+                        </span>
+                      </h2>
+                      <button
+                        onClick={() => setShowFeatures(false)}
+                        className="text-[11px] font-semibold text-slate-400 hover:text-slate-600 dark:hover:text-zinc-300 transition-colors cursor-pointer"
+                      >
+                        বন্ধ করুন
+                      </button>
+                    </div>
+                    <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2 text-xs text-slate-700 dark:text-zinc-300">
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <span>পাসপোর্টের তথ্য এক্সট্রাক্ট করা।</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <span>আন্ডারটেকিং ফর্ম তৈরি ও এডিট করা।</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <span>ছবি থেকে পিডিএফ তৈরি করা।</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <span>কোম্পানি/ব্যবসার প্যাড তৈরি করা।</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <span>ভিজিটিং কার্ড তৈরি করা।</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <span>কভার লেটার তৈরি ও এডিট করা।</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <span>NOC তৈরি ও এডিট করা।</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <span>JOB ID তৈরি করা।</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <span>স্ট্যাম্প ও সিল তৈরি করা।</span>
+                      </li>
 
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>PDF কমপ্রেস করা।</span>
-                  </li>
-                </ul>
-              </div>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <span>PDF কমপ্রেস করা।</span>
+                      </li>
+                    </ul>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
-              {/* Right Side Callout Card for PadGen (Desktop) / Bottom Bar (Mobile) */}
-              <div className="lg:w-80 shrink-0 pt-3 lg:pt-0 border-t lg:border-t-0 lg:border-l border-slate-200/60 dark:border-zinc-800/60 lg:pl-5 flex flex-row lg:flex-col items-center lg:items-start justify-between gap-3 bg-slate-50/50 dark:bg-zinc-800/30 lg:bg-transparent lg:dark:bg-transparent p-3 lg:p-0 rounded-xl lg:rounded-none">
+              {/* PadGen Callout Section (Always Visible) */}
+              <div className="flex flex-row items-center justify-between gap-3 bg-slate-50/50 dark:bg-zinc-800/30 p-1 sm:p-2 rounded-xl">
                 <div className="flex flex-col">
                   <span className="text-xs sm:text-sm text-slate-800 dark:text-zinc-200 font-bold">
-                    PAD, ভিজিটিং কার্ড, NOC, JOD ID, কভার লেটার, স্ট্যাম্প:
+                    PAD, ভিজিটিং কার্ড, NOC, JOB ID, কভার লেটার, স্ট্যাম্প:
                   </span>
-                  <span className="text-[11px] text-slate-500 dark:text-zinc-400 hidden lg:block mt-0.5">
+                  <span className="text-[11px] text-slate-500 dark:text-zinc-400 hidden sm:block mt-0.5">
                     PadGen এর সাহায্যে সহজেই প্রফেশনাল PAD, ভিজিটিং কার্ড, NOC, JOB ID, কভার লেটার এবং স্ট্যাম্প তৈরি করুন।
                   </span>
                 </div>
                 
-                <a
-                  href="https://padgen.extractor.fun/"
-                  target="_self"
-                  className="relative inline-flex items-center gap-1.5 sm:gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white font-extrabold text-[11px] sm:text-xs border-b-[3px] sm:border-b-4 border-indigo-950/80 shadow-md shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:-translate-y-0.5 active:translate-y-0.5 active:border-b-0 transition-all duration-150 group cursor-pointer shrink-0 mt-0 lg:mt-2"
-                  title="Go to PadGen Website"
-                >
-                  <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:rotate-12 transition-transform" />
-                  <span>PadGen</span>
-                </a>
+                <div className="flex items-center gap-2 shrink-0">
+                  {!showFeatures && (
+                    <button
+                      onClick={() => setShowFeatures(true)}
+                      className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer hidden md:inline-block"
+                      title="সুবিধাসমূহ দেখতে ক্লিক করুন"
+                    >
+                      সুবিধাসমূহ দেখুন
+                    </button>
+                  )}
+                  <a
+                    href="https://padgen.extractor.fun/"
+                    target="_self"
+                    className="relative inline-flex items-center gap-1.5 sm:gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white font-extrabold text-[11px] sm:text-xs border-b-[3px] sm:border-b-4 border-indigo-950/80 shadow-md shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:-translate-y-0.5 active:translate-y-0.5 active:border-b-0 transition-all duration-150 group cursor-pointer shrink-0"
+                    title="Go to PadGen Website"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:rotate-12 transition-transform" />
+                    <span>PadGen</span>
+                  </a>
+                </div>
               </div>
 
             </div>
