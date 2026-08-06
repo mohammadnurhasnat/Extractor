@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   History, Search, Trash2, Database, Download, 
   ChevronDown, ChevronUp, User, X,
   Sparkles, Clock, UserCheck
 } from 'lucide-react';
 import { HistoryItem, PassportData } from '../types';
+import { getTimestampMs, sortHistoryByNewest } from '../utils/historyUtils';
 
 interface HistorySidebarProps {
   history: HistoryItem[];
@@ -33,6 +34,20 @@ export function HistorySidebar({
     return localStorage.getItem('last_used_profile_id') || null;
   });
 
+  // Always maintain history sorted newest first (most recently extracted first)
+  const sortedHistory = useMemo(() => {
+    return sortHistoryByNewest(history);
+  }, [history]);
+
+  // Keep lastUsedId in sync with localStorage updates
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setLastUsedId(localStorage.getItem('last_used_profile_id'));
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   const toggleDropdown = () => {
     if (!isDropdownOpen) {
       setLocalSearchQuery('');
@@ -40,46 +55,48 @@ export function HistorySidebar({
     setIsDropdownOpen(prev => !prev);
   };
 
-  // Filter list based on local search input
-  const filteredHistory = history.filter(item => {
-    const fullName = `${item.data?.givenName || ''} ${item.data?.surname || ''}`.toLowerCase();
-    const passportNo = (item.data?.passportNumber || '').toLowerCase();
-    const queryWords = localSearchQuery.toLowerCase().trim().split(/\s+/).filter(Boolean);
-    if (queryWords.length === 0) return true;
-    return queryWords.every(word => fullName.includes(word) || passportNo.includes(word));
-  });
-
-  const getTimestampMs = (ts: any): number => {
-    if (!ts) return 0;
-    if (typeof ts === 'number') return ts;
-    if (ts instanceof Date) return ts.getTime();
-    if (typeof ts === 'string') {
-      const parsed = new Date(ts).getTime();
-      return isNaN(parsed) ? 0 : parsed;
-    }
-    if (typeof ts === 'object') {
-      if (typeof ts.seconds === 'number') return ts.seconds * 1000;
-      if (typeof ts._seconds === 'number') return ts._seconds * 1000;
-    }
-    return 0;
-  };
+  // Filter sorted list based on local search input
+  const filteredHistory = useMemo(() => {
+    return sortedHistory.filter(item => {
+      const fullName = `${item.data?.givenName || ''} ${item.data?.surname || ''}`.toLowerCase();
+      const passportNo = (item.data?.passportNumber || '').toLowerCase();
+      const queryWords = localSearchQuery.toLowerCase().trim().split(/\s+/).filter(Boolean);
+      if (queryWords.length === 0) return true;
+      return queryWords.every(word => fullName.includes(word) || passportNo.includes(word));
+    });
+  }, [sortedHistory, localSearchQuery]);
 
   const now = new Date();
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
   const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
 
-  const todayCount = history.filter(item => getTimestampMs(item.timestamp) >= startOfToday).length;
-  const monthCount = history.filter(item => getTimestampMs(item.timestamp) >= startOfThisMonth).length;
-  const totalCount = history.length;
+  const todayCount = sortedHistory.filter(item => getTimestampMs(item.timestamp) >= startOfToday).length;
+  const monthCount = sortedHistory.filter(item => getTimestampMs(item.timestamp) >= startOfThisMonth).length;
+  const totalCount = sortedHistory.length;
 
-  // Identify Recent, Active, and Last Used items
-  const recentItem = history.length > 0 ? history[0] : null;
-  const activeItemInHistory = activeData?.passportNumber 
-    ? history.find(h => h.data?.passportNumber === activeData.passportNumber) || null
-    : null;
-  
-  // Currently displayed label on the dropdown trigger button
-  const currentDisplayedProfile = activeItemInHistory || history.find(h => h.id === lastUsedId) || recentItem;
+  // Identify Recent (most recently extracted), Active, and Last Used items
+  const recentItem = sortedHistory.length > 0 ? sortedHistory[0] : null;
+
+  const activeItemInHistory = useMemo(() => {
+    if (!activeData) return null;
+    return sortedHistory.find(h => {
+      const hPass = (h.data?.passportNumber || '').trim().toUpperCase();
+      const aPass = (activeData.passportNumber || '').trim().toUpperCase();
+      if (hPass && aPass && hPass === aPass) return true;
+
+      const hGiven = (h.data?.givenName || '').trim().toUpperCase();
+      const aGiven = (activeData.givenName || '').trim().toUpperCase();
+      const hSur = (h.data?.surname || '').trim().toUpperCase();
+      const aSur = (activeData.surname || '').trim().toUpperCase();
+      return hGiven && aGiven && hGiven === aGiven && hSur === aSur;
+    }) || null;
+  }, [activeData, sortedHistory]);
+
+  // Default profile priority:
+  // 1) activeItemInHistory (if currently loaded activeData matches a profile)
+  // 2) recentItem (default profile = most recently extracted item)
+  // 3) profile matching lastUsedId
+  const currentDisplayedProfile = activeItemInHistory || recentItem || sortedHistory.find(h => h.id === lastUsedId) || null;
 
   const handleSelectProfile = (item: HistoryItem) => {
     onLoadItem(item);

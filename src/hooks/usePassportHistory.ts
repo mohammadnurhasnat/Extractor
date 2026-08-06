@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { HistoryItem, PassportData } from '../types';
 import { encryptData, decryptData } from '../utils/crypto';
 import { safeFetchJson } from '../utils/api';
+import { sortHistoryByNewest } from '../utils/historyUtils';
 
 export function usePassportHistory(userId: string | null, options?: {
   onItemAdded?: (item: HistoryItem) => void;
@@ -35,8 +36,9 @@ export function usePassportHistory(userId: string | null, options?: {
         if (saved && saved !== 'undefined' && saved.trim() !== '') {
           const decrypted = decryptData(saved);
           const historyArr = Array.isArray(decrypted) ? decrypted : [];
-          setInternalHistory(historyArr);
-          latestHistoryRef.current = historyArr;
+          const sortedHistory = sortHistoryByNewest(historyArr);
+          setInternalHistory(sortedHistory);
+          latestHistoryRef.current = sortedHistory;
         } else {
           setInternalHistory([]);
           latestHistoryRef.current = [];
@@ -86,9 +88,10 @@ export function usePassportHistory(userId: string | null, options?: {
             };
           });
           
-          if (!isSameHistory(fetchedHistory, latestHistoryRef.current)) {
-            setInternalHistory(fetchedHistory);
-            latestHistoryRef.current = fetchedHistory;
+          const sortedHistory = sortHistoryByNewest(fetchedHistory);
+          if (!isSameHistory(sortedHistory, latestHistoryRef.current)) {
+            setInternalHistory(sortedHistory);
+            latestHistoryRef.current = sortedHistory;
           }
         }
       } catch (err) {
@@ -124,16 +127,17 @@ export function usePassportHistory(userId: string | null, options?: {
       resolvedHistory = newHistoryOrUpdater;
     }
 
-    setInternalHistory(resolvedHistory);
-    latestHistoryRef.current = resolvedHistory;
+    const sorted = sortHistoryByNewest(resolvedHistory);
+    setInternalHistory(sorted);
+    latestHistoryRef.current = sorted;
 
     if (!userId) {
-      localStorage.setItem('passport_core_history', encryptData(resolvedHistory));
+      localStorage.setItem('passport_core_history', encryptData(sorted));
       return;
     }
 
     // Cache images locally if present
-    for (const item of resolvedHistory) {
+    for (const item of sorted) {
       if (item.imageBase64) {
         try {
           localStorage.setItem(`passport_img_${item.id}`, encryptData(item.imageBase64));
@@ -148,7 +152,7 @@ export function usePassportHistory(userId: string | null, options?: {
 
     syncTimeoutRef.current = setTimeout(async () => {
       try {
-        const itemsToSync = resolvedHistory.map(item => {
+        const itemsToSync = sorted.map(item => {
           const { imageBase64: _, ...firestoreData } = item;
           return firestoreData;
         });
@@ -195,7 +199,7 @@ export function usePassportHistory(userId: string | null, options?: {
 
     const timestamp = Date.now();
     let itemToSave: HistoryItem;
-    let updatedHistory: HistoryItem[];
+    let rawHistory: HistoryItem[];
 
     if (existingItemIndex >= 0) {
       const existingItem = prevHistory[existingItemIndex];
@@ -214,7 +218,7 @@ export function usePassportHistory(userId: string | null, options?: {
       };
 
       const filtered = prevHistory.filter((_, idx) => idx !== existingItemIndex);
-      updatedHistory = [itemToSave, ...filtered];
+      rawHistory = [itemToSave, ...filtered];
     } else {
       itemToSave = {
         id: 'hist_' + Date.now().toString() + '_' + Math.random().toString(36).substring(2, 7),
@@ -223,8 +227,15 @@ export function usePassportHistory(userId: string | null, options?: {
         extractionTime: data.extractionTime,
         imageBase64: imageBase64
       };
-      updatedHistory = [itemToSave, ...prevHistory];
+      rawHistory = [itemToSave, ...prevHistory];
     }
+
+    const updatedHistory = sortHistoryByNewest(rawHistory);
+
+    // Set as last used profile so UI automatically selects this newest extraction
+    try {
+      localStorage.setItem('last_used_profile_id', itemToSave.id);
+    } catch (e) {}
 
     // Cache the image locally to stay under 1MB Firestore document limit
     if (itemToSave.imageBase64) {

@@ -47,6 +47,7 @@ import { useSavedOptions } from './hooks/useSavedOptions';
 import { useQueueHandlers } from './hooks/useQueueHandlers';
 
 import { encryptData, decryptData } from './utils/crypto';
+import { sortHistoryByNewest } from './utils/historyUtils';
 
 // App main component
 
@@ -394,6 +395,18 @@ export default function App() {
     searchTerm, setSearchTerm,
     itemToDelete, setItemToDelete
   } = usePassportHistory(currentUser?.id || null);
+
+  // Auto-load default profile (most recently extracted profile) if active data is empty on initial load
+  const isInitialDefaultLoadedRef = useRef(false);
+  useEffect(() => {
+    if (!data && history.length > 0 && !isInitialDefaultLoadedRef.current) {
+      const sorted = sortHistoryByNewest(history);
+      if (sorted.length > 0 && sorted[0].data) {
+        setData(sorted[0].data);
+        isInitialDefaultLoadedRef.current = true;
+      }
+    }
+  }, [history, data]);
 
 
 
