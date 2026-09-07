@@ -10,7 +10,7 @@ import { LoginGreeting } from './LoginGreeting';
 import { ToastNotification } from './ToastNotification';
 import { DeleteConfirmationModal } from './DeleteConfirmationModal';
 import { IndianReferenceHelperModal } from './IndianReferenceHelperModal';
-import { User, HistoryItem, PassportData } from '../types';
+import { User, HistoryItem } from '../types';
 
 interface AppModalsProps {
   isAdminOpen: boolean;

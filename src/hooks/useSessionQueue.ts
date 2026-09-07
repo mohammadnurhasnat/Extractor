@@ -123,6 +123,9 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
           if (parsed && parsed.id) {
             headers['x-user-id'] = parsed.id;
           }
+          if (parsed && parsed.email) {
+            headers['x-user-email'] = parsed.email;
+          }
         }
       } catch (e) {
         console.error('Failed to parse user session', e);

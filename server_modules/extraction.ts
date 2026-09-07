@@ -189,13 +189,20 @@ extractionRouter.post('/extract-passport', async (req, res) => {
       return res.status(200).json({ success: false, error: 'আপনার অ্যাকাউন্টটি স্থগিত করা হয়েছে। দয়া করে এডমিনের সাথে যোগাযোগ করুন।' });
     }
 
-    const clientIp = req.headers['x-forwarded-for']?.toString().split(',')[0] || req.socket.remoteAddress || 'unknown';
-    const ipLimitCheck = await checkAndIncrementIPLimit(clientIp);
-    if (!ipLimitCheck.allowed) {
-      return res.status(200).json({ 
-        success: false, 
-        error: 'এই আইপি (IP) এড্রেস থেকে আজকের লিমিট শেষ হয়ে গেছে। দয়া করে কালকে আবার চেষ্টা করুন অথবা এডমিনের সাথে যোগাযোগ করুন।' 
-      });
+    // Check if user is admin or has unlimited/custom limit
+    const isAdmin = user.email?.toLowerCase() === 'mohammadnurhasnat@gmail.com' || user.id === 'user_admin';
+    const isUnlimited = (user.dailyLimit ?? 5) >= 99999;
+
+    // Only apply IP limit guard if user is NOT admin and NOT unlimited
+    if (!isAdmin && !isUnlimited) {
+      const clientIp = req.headers['x-forwarded-for']?.toString().split(',')[0] || req.socket.remoteAddress || 'unknown';
+      const ipLimitCheck = await checkAndIncrementIPLimit(clientIp);
+      if (!ipLimitCheck.allowed) {
+        return res.status(200).json({ 
+          success: false, 
+          error: 'এই আইপি (IP) এড্রেস থেকে আজকের লিমিট শেষ হয়ে গেছে। দয়া করে কালকে আবার চেষ্টা করুন অথবা এডমিনের সাথে যোগাযোগ করুন।' 
+        });
+      }
     }
 
     const limitCheck = await checkAndIncrementLimit(userId);
@@ -508,13 +515,20 @@ extractionRouter.post('/extract-application-pdf', async (req, res) => {
       return res.status(200).json({ success: false, error: 'আপনার অ্যাকাউন্টটি স্থগিত করা হয়েছে। দয়া করে এডমিনের সাথে যোগাযোগ করুন।' });
     }
 
-    const clientIp = req.headers['x-forwarded-for']?.toString().split(',')[0] || req.socket.remoteAddress || 'unknown';
-    const ipLimitCheck = await checkAndIncrementIPLimit(clientIp);
-    if (!ipLimitCheck.allowed) {
-      return res.status(200).json({ 
-        success: false, 
-        error: 'এই আইপি (IP) এড্রেস থেকে আজকের লিমিট শেষ হয়ে গেছে। দয়া করে কালকে আবার চেষ্টা করুন অথবা এডমিনের সাথে যোগাযোগ করুন।' 
-      });
+    // Check if user is admin or has unlimited/custom limit
+    const isAdmin = user.email?.toLowerCase() === 'mohammadnurhasnat@gmail.com' || user.id === 'user_admin';
+    const isUnlimited = (user.dailyLimit ?? 5) >= 99999;
+
+    // Only apply IP limit guard if user is NOT admin and NOT unlimited
+    if (!isAdmin && !isUnlimited) {
+      const clientIp = req.headers['x-forwarded-for']?.toString().split(',')[0] || req.socket.remoteAddress || 'unknown';
+      const ipLimitCheck = await checkAndIncrementIPLimit(clientIp);
+      if (!ipLimitCheck.allowed) {
+        return res.status(200).json({ 
+          success: false, 
+          error: 'এই আইপি (IP) এড্রেস থেকে আজকের লিমিট শেষ হয়ে গেছে। দয়া করে কালকে আবার চেষ্টা করুন অথবা এডমিনের সাথে যোগাযোগ করুন।' 
+        });
+      }
     }
 
     const limitCheck = await checkAndIncrementLimit(userId);
