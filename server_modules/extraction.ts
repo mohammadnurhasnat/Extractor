@@ -2,8 +2,22 @@ import { db } from './db';
 import { users } from './schema';
 import { eq } from 'drizzle-orm';
 import { Router } from 'express';
-import { GoogleGenAI, Type } from '@google/genai';
+import { GoogleGenAI, Type, ThinkingLevel } from '@google/genai';
 import { z } from 'zod';
+
+async function runWithTimeout<T>(promise: Promise<T>, timeoutMs: number, engineName: string): Promise<T> {
+  let timer: NodeJS.Timeout;
+  const timeoutPromise = new Promise<T>((_, reject) => {
+    timer = setTimeout(() => {
+      reject(new Error(`${engineName} timed out after ${timeoutMs / 1000}s`));
+    }, timeoutMs);
+  });
+  try {
+    return await Promise.race([promise, timeoutPromise]);
+  } finally {
+    clearTimeout(timer!);
+  }
+}
 import { 
   getUsersStore, 
   checkAndIncrementLimit, 
@@ -382,42 +396,59 @@ INSTRUCTIONS FOR VALID PASSPORTS:
     };
 
     let pipelineResponse;
+    const PRIMARY_TIMEOUT_MS = 6000;
+    const FALLBACK_TIMEOUT_MS = 6000;
+
     try {
-      console.log('⚡ Running primary engine: gemini-3.1-flash-lite (Target latency: 2-3s)');
-      pipelineResponse = await ai.models.generateContent({
-        model: 'gemini-3.1-flash-lite',
-        contents: [
-          {
-            inlineData: {
-              mimeType: mimeType,
-              data: base64Data,
+      console.log('⚡ Running primary engine: gemini-3.1-flash-lite (Minimal thinking, target: 2-3s)');
+      pipelineResponse = await runWithTimeout(
+        ai.models.generateContent({
+          model: 'gemini-3.1-flash-lite',
+          contents: [
+            {
+              inlineData: {
+                mimeType: mimeType,
+                data: base64Data,
+              }
+            }
+          ],
+          config: {
+            systemInstruction,
+            responseMimeType: 'application/json',
+            responseSchema,
+            thinkingConfig: {
+              thinkingLevel: ThinkingLevel.MINIMAL
             }
           }
-        ],
-        config: {
-          systemInstruction,
-          responseMimeType: 'application/json',
-          responseSchema
-        }
-      });
+        }),
+        PRIMARY_TIMEOUT_MS,
+        'Primary gemini-3.1-flash-lite'
+      );
     } catch (err: any) {
-      console.warn('⚠️ Primary gemini-3.1-flash-lite engine error, attempting fast fallback (gemini-3.5-flash)...', err.message || err);
-      pipelineResponse = await ai.models.generateContent({
-        model: 'gemini-3.5-flash',
-        contents: [
-          {
-            inlineData: {
-              mimeType: mimeType,
-              data: base64Data,
+      console.warn('⚠️ Primary engine error/timeout, attempting fast fallback (gemini-2.5-flash with zero thinking)...', err.message || err);
+      pipelineResponse = await runWithTimeout(
+        ai.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: [
+            {
+              inlineData: {
+                mimeType: mimeType,
+                data: base64Data,
+              }
+            }
+          ],
+          config: {
+            systemInstruction,
+            responseMimeType: 'application/json',
+            responseSchema,
+            thinkingConfig: {
+              thinkingBudget: 0
             }
           }
-        ],
-        config: {
-          systemInstruction,
-          responseMimeType: 'application/json',
-          responseSchema
-        }
-      });
+        }),
+        FALLBACK_TIMEOUT_MS,
+        'Fallback gemini-2.5-flash'
+      );
     }
 
     if (!pipelineResponse.text) {
@@ -470,6 +501,14 @@ INSTRUCTIONS FOR VALID PASSPORTS:
 
   } catch (error: any) {
     console.error('Extraction Error:', error);
+    try {
+      const userId = (req.headers['x-user-id'] || req.body?.userId)?.toString();
+      if (userId) {
+        await decrementLimit(userId);
+      }
+    } catch (refundErr) {
+      console.error('Failed to refund user limit:', refundErr);
+    }
     
     let errorMessage = 'Server error during extraction';
     
@@ -698,42 +737,59 @@ INSTRUCTIONS FOR VALID APPLICATIONS:
     };
 
     let pipelineResponse;
+    const PRIMARY_TIMEOUT_MS = 7000;
+    const FALLBACK_TIMEOUT_MS = 7000;
+
     try {
-      console.log('⚡ Running primary engine: gemini-3.1-flash-lite (Target latency: 2-3s)');
-      pipelineResponse = await ai.models.generateContent({
-        model: 'gemini-3.1-flash-lite',
-        contents: [
-          {
-            inlineData: {
-              mimeType: mimeType,
-              data: base64Data,
+      console.log('⚡ Running primary engine: gemini-3.1-flash-lite for PDF (Minimal thinking, target: 2-3s)');
+      pipelineResponse = await runWithTimeout(
+        ai.models.generateContent({
+          model: 'gemini-3.1-flash-lite',
+          contents: [
+            {
+              inlineData: {
+                mimeType: mimeType,
+                data: base64Data,
+              }
+            }
+          ],
+          config: {
+            systemInstruction,
+            responseMimeType: 'application/json',
+            responseSchema,
+            thinkingConfig: {
+              thinkingLevel: ThinkingLevel.MINIMAL
             }
           }
-        ],
-        config: {
-          systemInstruction,
-          responseMimeType: 'application/json',
-          responseSchema
-        }
-      });
+        }),
+        PRIMARY_TIMEOUT_MS,
+        'Primary gemini-3.1-flash-lite PDF'
+      );
     } catch (err: any) {
-      console.warn('⚠️ Primary gemini-3.1-flash-lite engine error, attempting fast fallback (gemini-3.5-flash)...', err.message || err);
-      pipelineResponse = await ai.models.generateContent({
-        model: 'gemini-3.5-flash',
-        contents: [
-          {
-            inlineData: {
-              mimeType: mimeType,
-              data: base64Data,
+      console.warn('⚠️ Primary engine error/timeout for PDF, attempting fast fallback (gemini-2.5-flash with zero thinking)...', err.message || err);
+      pipelineResponse = await runWithTimeout(
+        ai.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: [
+            {
+              inlineData: {
+                mimeType: mimeType,
+                data: base64Data,
+              }
+            }
+          ],
+          config: {
+            systemInstruction,
+            responseMimeType: 'application/json',
+            responseSchema,
+            thinkingConfig: {
+              thinkingBudget: 0
             }
           }
-        ],
-        config: {
-          systemInstruction,
-          responseMimeType: 'application/json',
-          responseSchema
-        }
-      });
+        }),
+        FALLBACK_TIMEOUT_MS,
+        'Fallback gemini-2.5-flash PDF'
+      );
     }
 
     if (!pipelineResponse.text) {
@@ -778,6 +834,14 @@ INSTRUCTIONS FOR VALID APPLICATIONS:
 
   } catch (error: any) {
     console.error('Visa PDF Extraction Error:', error);
+    try {
+      const userId = (req.headers['x-user-id'] || req.body?.userId)?.toString();
+      if (userId) {
+        await decrementLimit(userId);
+      }
+    } catch (refundErr) {
+      console.error('Failed to refund user limit:', refundErr);
+    }
     
     let errorMessage = 'Server error during PDF extraction';
     
@@ -881,6 +945,9 @@ CRITICAL ADDRESS FORMATTING & DIVERSITY MANDATES:
       }
     ],
     config: {
+      thinkingConfig: {
+        thinkingBudget: 0
+      },
       responseMimeType: 'application/json',
       responseSchema: {
         type: Type.OBJECT,

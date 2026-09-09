@@ -133,6 +133,9 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
 
       const controller = new AbortController();
       abortControllersRef.current.add(controller);
+      const timeoutId = setTimeout(() => {
+        controller.abort(new Error('REQUEST_TIMEOUT'));
+      }, 20000);
 
       const isVisaApp = currentItem.documentType === 'visa_application';
       const endpoint = isVisaApp ? '/api/extract-application-pdf' : '/api/extract-passport';
@@ -140,14 +143,18 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
         ? JSON.stringify({ pdfBase64: base64String, mimeType: currentItem.file.type })
         : JSON.stringify({ imageBase64: base64String, mimeType: currentItem.file.type });
 
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers,
-        body: requestBody,
-        signal: controller.signal,
-      });
-      
-      abortControllersRef.current.delete(controller);
+      let res: Response;
+      try {
+        res = await fetch(endpoint, {
+          method: 'POST',
+          headers,
+          body: requestBody,
+          signal: controller.signal,
+        });
+      } finally {
+        clearTimeout(timeoutId);
+        abortControllersRef.current.delete(controller);
+      }
       
       const responseText = await res.text();
       let result: any;
@@ -174,26 +181,26 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
         
         if (activeQueueId === itemId) {
           onSelectData(deduplicatedData);
-          setLoading(false);
         }
+        setLoading(false);
         return deduplicatedData;
       } else {
         const errMsg = result.error || 'Failed to extract data.';
         setQueue(prev => prev.map(q => q.id === itemId ? { ...q, loading: false, status: 'failed', error: errMsg } : q));
+        setLoading(false);
         if (activeQueueId === itemId) {
           onError(errMsg);
-          setLoading(false);
         }
         return null;
       }
     } catch (err: any) {
       console.error('Extraction flow error details:', err);
-      if (err.name === 'AbortError') {
-        const errMsg = 'Extraction cancelled.';
+      setLoading(false);
+      if (err.name === 'AbortError' || err.message === 'REQUEST_TIMEOUT') {
+        const errMsg = 'সার্ভার রেসপন্স করতে দেরি হয়েছে অথবা প্রসেস বাতিল করা হয়েছে। দয়া করে আবার চেষ্টা করুন।';
         setQueue(prev => prev.map(q => q.id === itemId ? { ...q, loading: false, status: 'failed', error: errMsg } : q));
         if (activeQueueId === itemId) {
           onError(errMsg);
-          setLoading(false);
         }
         return null;
       }
@@ -201,7 +208,6 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
       setQueue(prev => prev.map(q => q.id === itemId ? { ...q, loading: false, status: 'failed', error: errMsg } : q));
       if (activeQueueId === itemId) {
         onError(errMsg);
-        setLoading(false);
       }
       return null;
     }
