@@ -88,133 +88,129 @@ export function PassportDataTab({
 
   return (
     <>
-      <div className="flex flex-col xl:flex-row xl:items-center justify-between mb-5 pb-4 border-b border-slate-100 dark:border-zinc-800/50 gap-4 print:hidden">
-        <div>
-          <h2 className="text-xl font-bold flex flex-wrap items-center gap-2 text-slate-800 dark:text-zinc-100">
-            <CheckCircle2 className="w-6 h-6 text-emerald-500" />
+      <div className="flex flex-wrap items-center justify-between mb-2.5 pb-1.5 border-b border-slate-100 dark:border-zinc-800/50 gap-2 print:hidden">
+        <div className="flex items-center gap-2 flex-wrap">
+          <h2 className="text-base sm:text-lg font-bold flex items-center gap-1.5 text-slate-800 dark:text-zinc-100">
+            <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
             <span>Passport Data</span>
-            {data.extractionTime ? (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-blue-50/80 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 border border-blue-100/60 dark:border-blue-900/40 shadow-sm font-sans">
-                ⚡ Processed in {data.extractionTime.toFixed(2)}s
-              </span>
-            ) : null}
           </h2>
-          <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1">Verified extracted elements from passport page scan.</p>
+          {data.extractionTime ? (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-blue-50/80 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 border border-blue-100/60 dark:border-blue-900/40 shadow-xs font-sans">
+              ⚡ {data.extractionTime.toFixed(2)}s
+            </span>
+          ) : null}
         </div>
-        <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto xl:justify-end">
+        <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto sm:justify-end">
           {helperInfo && onOpenRefHelper && (
             <button
               onClick={onOpenRefHelper}
-              className={`slide-btn ${helperInfo.purpose === 'Medical' ? 'slide-btn-teal' : 'slide-btn-orange'} flex items-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-extrabold rounded-full cursor-pointer`}
+              className={`slide-btn ${helperInfo.purpose === 'Medical' ? 'slide-btn-teal' : 'slide-btn-orange'} flex items-center gap-1 px-2.5 py-1 text-xs font-extrabold rounded-full cursor-pointer`}
             >
-              {helperInfo.purpose !== 'Business' && <ClipboardList className="w-4.5 h-4.5 relative z-10" />}
+              {helperInfo.purpose !== 'Business' && <ClipboardList className="w-3.5 h-3.5 relative z-10" />}
               <span className="relative z-10">{helperInfo.label}</span>
             </button>
           )}
           <button 
             onClick={handleCopyAll}
-            className="slide-btn slide-btn-purple flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-extrabold rounded-full cursor-pointer shadow-sm"
+            className="slide-btn slide-btn-purple flex items-center gap-1 px-2.5 py-1 text-xs font-extrabold rounded-full cursor-pointer shadow-xs"
           >
             {isCopied ? (
-              <Check className="w-4.5 h-4.5 text-emerald-300 relative z-10 font-black animate-scaleIn" />
+              <Check className="w-3.5 h-3.5 text-emerald-300 relative z-10 font-black animate-scaleIn" />
             ) : (
-              <Copy className="w-4.5 h-4.5 relative z-10" />
+              <Copy className="w-3.5 h-3.5 relative z-10" />
             )}
             <span className="relative z-10">{isCopied ? "Copied!" : "Copy All"}</span>
           </button>
           <button 
             onClick={handleDownloadText}
-            className="slide-btn slide-btn-slate flex items-center gap-1.5 px-3.5 py-2 text-xs sm:text-sm font-bold rounded-full cursor-pointer"
+            className="slide-btn slide-btn-slate flex items-center gap-1 px-2 py-1 text-xs font-bold rounded-full cursor-pointer"
           >
-            <Download className="w-4 h-4 relative z-10" />
+            <Download className="w-3.5 h-3.5 relative z-10" />
             <span className="relative z-10">TXT</span>
           </button>
           <button 
             onClick={handleDownloadPDF}
-            className="slide-btn slide-btn-orange flex items-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-extrabold rounded-full cursor-pointer"
+            className="slide-btn slide-btn-orange flex items-center gap-1 px-2.5 py-1 text-xs font-extrabold rounded-full cursor-pointer"
           >
-            <FileText className="w-4 h-4 relative z-10" />
-            <span className="relative z-10">Download</span>
+            <FileText className="w-3.5 h-3.5 relative z-10" />
+            <span className="relative z-10">PDF</span>
           </button>
           <button 
             onClick={handleDownloadJSON}
-            className="slide-btn slide-btn-blue flex items-center gap-1.5 px-3.5 py-2 text-xs sm:text-sm font-bold rounded-full cursor-pointer"
+            className="slide-btn slide-btn-blue flex items-center gap-1 px-2 py-1 text-xs font-bold rounded-full cursor-pointer"
           >
-            <Braces className="w-4 h-4 relative z-10" />
+            <Braces className="w-3.5 h-3.5 relative z-10" />
             <span className="relative z-10">JSON</span>
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-2.5 gap-y-1">
+        {/* Row 1: Email & Mobile */}
         <DataField label="EMAIL" value={getGeneratedEmail(data)} highlight onValueChange={(val) => updateDataField('email', val)} />
+        <DataField label="Mobile Number" value={data.mobileNumber ? data.mobileNumber.replace(/^\+88\s*/, '') : ''} confidence={data.fieldConfidence?.mobileNumber} onValueChange={(val) => updateDataField('mobileNumber', val)} />
+        
+        {/* Row 2: DOB & Gender */}
         <DataField label="DOB" value={data.dob} confidence={data.fieldConfidence?.dob} onValueChange={(val) => updateDataField('dob', val)} />
-        
         <DataField label="Gender" value={data.gender || ''} confidence={data.fieldConfidence?.gender} onValueChange={(val) => updateDataField('gender', val)} />
-        <div className="hidden sm:block"></div>
         
+        {/* Row 3: Surname & Given Name */}
         <DataField label="Surname" value={data.surname} confidence={data.fieldConfidence?.surname} onValueChange={(val) => updateDataField('surname', val)} />
         <DataField label="Given Name" value={data.givenName} confidence={data.fieldConfidence?.givenName} onValueChange={(val) => updateDataField('givenName', val)} />
         
-        <DataField label="Town/City of birth/BIRTH PLACE" value={data.birthPlace} confidence={data.fieldConfidence?.birthPlace} onValueChange={(val) => updateDataField('birthPlace', val)} />
-        <DataField label="National Id No/BIRTH CERTIFICATE NO" value={data.nidOrBirthCertNumber} confidence={data.fieldConfidence?.nidOrBirthCertNumber} onValueChange={(val) => updateDataField('nidOrBirthCertNumber', val)} />
+        {/* Row 4: Passport Number & Place of Issue */}
         <DataField label="Passport Number" value={data.passportNumber} highlight confidence={data.fieldConfidence?.passportNumber} onValueChange={(val) => updateDataField('passportNumber', val)} />
         <DataField label="Place of Issue" value={data.placeOfIssue || "DHAKA"} onValueChange={(val) => updateDataField('placeOfIssue', val)} />
+        
+        {/* Row 5: Dates */}
         <DataField label="Date of Issue" value={data.issueDate} confidence={data.fieldConfidence?.issueDate} onValueChange={(val) => updateDataField('issueDate', val)} />
         <DataField label="Date of Expiry" value={data.expiryDate} warning={isExpiryWarning} confidence={data.fieldConfidence?.expiryDate} onValueChange={(val) => updateDataField('expiryDate', val)} />
-        
-        <div className="col-span-1 sm:col-span-2 pt-2 border-t border-slate-100 dark:border-zinc-800/50"></div>
-        
-        <div className="col-span-1 sm:col-span-2 flex justify-between items-center pb-1">
-          <h4 className="text-xs font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">Address Profile</h4>
-        </div>
 
-        <div className="col-span-1 sm:col-span-2 space-y-3">
-          <DataField 
-            label="Present Address" 
-            value={data.presentAddress || ''} 
-            onValueChange={(val) => updateDataField('presentAddress', val)} 
-          />
-          <DataField 
-            label="Permanent Address (Extracted from Passport)" 
-            value={data.permanentAddress || ''} 
-            confidence={data.fieldConfidence?.permanentAddress}
-            onValueChange={(val) => updateDataField('permanentAddress', val)} 
-          />
-        </div>
+        {/* Row 6: Birth Place & NID */}
+        <DataField label="Town/City of birth/BIRTH PLACE" value={data.birthPlace} confidence={data.fieldConfidence?.birthPlace} onValueChange={(val) => updateDataField('birthPlace', val)} />
+        <DataField label="National Id No/BIRTH CERTIFICATE NO" value={data.nidOrBirthCertNumber} confidence={data.fieldConfidence?.nidOrBirthCertNumber} onValueChange={(val) => updateDataField('nidOrBirthCertNumber', val)} />
         
-        <div className="col-span-1 sm:col-span-2 pt-2 border-t border-slate-100 dark:border-zinc-800/50"></div>
-        
-        <div className="col-span-1 sm:col-span-2">
-          <h4 className="text-xs font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider mb-2.5">Additional Information</h4>
-        </div>
-        
+        {/* Row 7: District & Spouse */}
+        <DataField label="District of Birth" value={data.birthPlaceDistrict || data.birthPlace || ''} onValueChange={(val) => updateDataField('birthPlaceDistrict', val)} />
+        <DataField label="Spouse's Name" value={data.spouseName || "N/A"} confidence={data.fieldConfidence?.spouseName} onValueChange={(val) => updateDataField('spouseName', val)} />
+
+        {/* Row 8: Parents */}
         <DataField label="Father's Name" value={data.fatherName} confidence={data.fieldConfidence?.fatherName} onValueChange={(val) => updateDataField('fatherName', val)} />
         <DataField label="Mother's Name" value={data.motherName} confidence={data.fieldConfidence?.motherName} onValueChange={(val) => updateDataField('motherName', val)} />
-        <DataField label="Spouse's Name" value={data.spouseName || "N/A"} confidence={data.fieldConfidence?.spouseName} onValueChange={(val) => updateDataField('spouseName', val)} />
-        <DataField label="Mobile Number" value={data.mobileNumber ? data.mobileNumber.replace(/^\+88\s*/, '') : ''} confidence={data.fieldConfidence?.mobileNumber} onValueChange={(val) => updateDataField('mobileNumber', val)} />
-        <DataField label="District of Birth" value={data.birthPlaceDistrict || data.birthPlace || ''} onValueChange={(val) => updateDataField('birthPlaceDistrict', val)} />
+
+        {/* Row 9: Addresses side-by-side in 2 columns */}
+        <DataField 
+          label="Present Address" 
+          value={data.presentAddress || ''} 
+          onValueChange={(val) => updateDataField('presentAddress', val)} 
+        />
+        <DataField 
+          label="Permanent Address (From Passport)" 
+          value={data.permanentAddress || ''} 
+          confidence={data.fieldConfidence?.permanentAddress}
+          onValueChange={(val) => updateDataField('permanentAddress', val)} 
+        />
 
         {data.hospitalName && (
           <>
-            <div className="col-span-1 sm:col-span-2 pt-3 border-t border-slate-100 dark:border-zinc-800/50 mt-4">
-              <h4 className="text-xs font-bold text-rose-500 dark:text-rose-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+            <div className="col-span-1 sm:col-span-2 pt-2 border-t border-slate-100 dark:border-zinc-800/50 mt-1">
+              <h4 className="text-[11px] font-bold text-rose-500 dark:text-rose-400 uppercase tracking-wider mb-1 flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
                 Medical / Hospital Details
               </h4>
             </div>
             
-            <div className="col-span-1 sm:col-span-2 bg-gradient-to-br from-rose-500/10 via-rose-500/5 to-pink-500/5 dark:from-rose-950/30 dark:via-rose-950/20 dark:to-pink-950/10 p-5 rounded-2xl border-2 border-rose-500/30 dark:border-rose-500/40 shadow-sm space-y-3.5 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 bg-gradient-to-r from-rose-500 to-pink-500 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-bl-xl shadow-sm z-10 flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
-                MEDICAL DETAILS
+            <div className="col-span-1 sm:col-span-2 bg-gradient-to-br from-rose-500/10 via-rose-500/5 to-pink-500/5 dark:from-rose-950/30 dark:via-rose-950/20 dark:to-pink-950/10 p-3 rounded-xl border border-rose-500/30 dark:border-rose-500/40 shadow-xs space-y-2 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 bg-gradient-to-r from-rose-500 to-pink-500 text-white text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-bl-lg shadow-xs z-10 flex items-center gap-1">
+                <span className="w-1 h-1 rounded-full bg-white animate-ping"></span>
+                MEDICAL
               </div>
-              <h5 className="text-sm font-extrabold text-slate-800 dark:text-zinc-100 border-b border-rose-200/50 dark:border-zinc-800 pb-2 mb-1 flex items-center gap-1.5 pr-20">
-                <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse shadow-sm shadow-rose-500/50"></span>
+              <h5 className="text-xs font-extrabold text-slate-800 dark:text-zinc-100 border-b border-rose-200/50 dark:border-zinc-800 pb-1 mb-1 flex items-center gap-1 pr-16">
+                <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
                 Hospital Details in India
               </h5>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 <div className="col-span-1 md:col-span-2">
                   <DataField label="Hospital Name" value={data.hospitalName || ''} highlight onValueChange={(val) => updateDataField('hospitalName', val)} />
                 </div>
@@ -228,26 +224,25 @@ export function PassportDataTab({
 
         {data.hotelName && (
           <>
-            <div className="col-span-1 sm:col-span-2 pt-3 border-t border-slate-100 dark:border-zinc-800/50 mt-4">
-              <h4 className="text-xs font-bold text-amber-650 dark:text-amber-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+            <div className="col-span-1 sm:col-span-2 pt-2 border-t border-slate-100 dark:border-zinc-800/50 mt-1">
+              <h4 className="text-[11px] font-bold text-amber-650 dark:text-amber-400 uppercase tracking-wider mb-1 flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
                 Indian Reference ({utPurpose === 'Business' ? 'Kolkata Business' : utPurpose === 'Double Entry' ? 'Delhi Hotel' : 'Kolkata Hotel'} Details)
               </h4>
             </div>
             
-            <div className="col-span-1 sm:col-span-2 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-orange-500/5 dark:from-amber-950/30 dark:via-amber-950/20 dark:to-orange-950/10 p-5 rounded-2xl border-2 border-amber-500 dark:border-amber-500/60 shadow-[0_4px_25px_rgba(245,158,11,0.12)] space-y-3.5 relative overflow-hidden group">
-              {/* Highlight badge tag */}
-              <div className="absolute top-0 right-0 bg-gradient-to-r from-amber-500 to-orange-500 dark:from-amber-600 dark:to-orange-600 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-bl-xl shadow-sm z-10 flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
-                {utPurpose === 'Business' ? 'BUSINESS DETAILS' : utPurpose === 'Double Entry' ? 'DELHI HOTEL' : 'KOLKATA HOTEL'}
+            <div className="col-span-1 sm:col-span-2 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-orange-500/5 dark:from-amber-950/30 dark:via-amber-950/20 dark:to-orange-950/10 p-3 rounded-xl border border-amber-500/40 dark:border-amber-500/50 shadow-xs space-y-2 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 bg-gradient-to-r from-amber-500 to-orange-500 dark:from-amber-600 dark:to-orange-600 text-white text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-bl-lg shadow-xs z-10 flex items-center gap-1">
+                <span className="w-1 h-1 rounded-full bg-white animate-ping"></span>
+                {utPurpose === 'Business' ? 'BUSINESS' : utPurpose === 'Double Entry' ? 'DELHI HOTEL' : 'KOLKATA HOTEL'}
               </div>
 
-              <h5 className="text-sm font-extrabold text-slate-800 dark:text-zinc-100 border-b border-amber-200/50 dark:border-zinc-800 pb-2 mb-1 flex items-center gap-1.5 pr-20">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse shadow-sm shadow-amber-500/50"></span>
-                {utPurpose === 'Business' ? 'Kolkata Business Details' : `${utPurpose === 'Double Entry' ? 'Delhi' : 'Kolkata'} Hotel Details`} (Reference Name in India)
+              <h5 className="text-xs font-extrabold text-slate-800 dark:text-zinc-100 border-b border-amber-200/50 dark:border-zinc-800 pb-1 mb-1 flex items-center gap-1 pr-16">
+                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                {utPurpose === 'Business' ? 'Kolkata Business Details' : `${utPurpose === 'Double Entry' ? 'Delhi' : 'Kolkata'} Hotel Details`} (Reference in India)
               </h5>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 <div className="col-span-1 md:col-span-2">
                   <DataField label="Reference Name in India" value={data.hotelName || ''} highlight onValueChange={(val) => updateDataField('hotelName', val)} />
                 </div>

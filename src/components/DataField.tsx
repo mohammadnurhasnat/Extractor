@@ -107,53 +107,53 @@ export function DataField({ label, value, highlight = false, warning = false, co
   const hasValue = !!(value && value.trim().length > 0);
 
   return (
-    <div className="flex flex-col group/field">
-      <div className="flex items-center justify-between mb-1.5 px-0.5">
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+    <div className="flex flex-col group/field min-w-0">
+      <div className="flex items-center justify-between mb-0.5 px-0.5 min-w-0">
+        <div className="flex items-center gap-1 flex-wrap min-w-0">
+          <span className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-tight flex items-center gap-1 truncate max-w-full">
             {label}
             {label === 'EMAIL' && (
-              <span className="text-[9px] font-black lowercase text-blue-500 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 px-1.5 py-0.5 rounded border border-blue-100 dark:border-blue-900/40">
-                Auto-Generated
+              <span className="text-[8.5px] font-bold lowercase text-blue-500 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 px-1 py-0 rounded border border-blue-100 dark:border-blue-900/40">
+                auto
               </span>
             )}
           </span>
           {typeof confidence === 'number' && (
-            <span className={`inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
+            <span className={`inline-flex items-center gap-0.5 text-[8.5px] font-bold px-1 py-0 rounded ${
               confidence >= 85
-                ? 'text-emerald-650 dark:text-emerald-450 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100/50 dark:border-emerald-900/30'
+                ? 'text-emerald-650 dark:text-emerald-450 bg-emerald-50/80 dark:bg-emerald-950/20 border border-emerald-100/50 dark:border-emerald-900/30'
                 : confidence >= 70
-                  ? 'text-amber-650 dark:text-amber-450 bg-amber-50 dark:bg-amber-950/20 border border-amber-100/50 dark:border-amber-900/30'
-                  : 'text-rose-650 dark:text-rose-450 bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/30 animate-pulse'
+                  ? 'text-amber-650 dark:text-amber-450 bg-amber-50/80 dark:bg-amber-950/20 border border-amber-100/50 dark:border-amber-900/30'
+                  : 'text-rose-650 dark:text-rose-450 bg-rose-50/80 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/30 animate-pulse'
             }`}>
               {confidence >= 85 ? (
                 <>
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                  {confidence}% Match
+                  <span className="w-1 h-1 rounded-full bg-emerald-500 shrink-0" />
+                  {confidence}%
                 </>
               ) : confidence >= 70 ? (
                 <>
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
-                  {confidence}% Match
+                  <span className="w-1 h-1 rounded-full bg-amber-500 shrink-0" />
+                  {confidence}%
                 </>
               ) : (
                 <>
-                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0 animate-ping" />
-                  {confidence}% - Verify
+                  <span className="w-1 h-1 rounded-full bg-rose-500 shrink-0 animate-ping" />
+                  {confidence}%
                 </>
               )}
             </span>
           )}
         </div>
         {onValueChange && !isEditing && value && (
-          <span className="text-[9px] text-blue-500 font-semibold opacity-0 group-hover/field:opacity-100 transition-opacity whitespace-nowrap hidden sm:inline-flex items-center gap-1">
-            <span className="w-1 h-1 rounded-full bg-blue-500 animate-pulse" /> Editable field
+          <span className="text-[8.5px] text-blue-500 font-semibold opacity-0 group-hover/field:opacity-100 transition-opacity whitespace-nowrap hidden sm:inline-flex items-center gap-0.5">
+            <span className="w-1 h-1 rounded-full bg-blue-500 animate-pulse" /> Edit
           </span>
         )}
       </div>
 
       <div className={`
-        relative rounded-xl text-sm font-medium border transition-all duration-300 flex items-stretch overflow-hidden min-h-[25px] shadow-sm hover:shadow-md
+        relative rounded-lg text-xs sm:text-[13px] font-medium border transition-all duration-200 flex items-stretch overflow-hidden min-h-[28px] shadow-2xs hover:shadow-xs
         ${copied || persistentCopied
           ? 'bg-emerald-500/10 dark:bg-emerald-550/10 border-emerald-500 dark:border-emerald-500 text-emerald-950 dark:text-emerald-250 ring-1 ring-emerald-500/20'
           : warning
@@ -176,7 +176,7 @@ export function DataField({ label, value, highlight = false, warning = false, co
                 onChange={(e) => setEditValue(e.target.value)}
                 onKeyDown={handleKeyDown}
                 rows={2}
-                className="flex-1 w-full min-w-0 px-3 py-0.5 text-xs sm:text-sm font-medium bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-600 focus:outline-none resize-none align-middle"
+                className="flex-1 w-full min-w-0 px-2 py-0.5 text-xs font-medium bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-600 focus:outline-none resize-none align-middle"
               />
             ) : (
               <input
@@ -185,32 +185,32 @@ export function DataField({ label, value, highlight = false, warning = false, co
                 value={editValue}
                 onChange={(e) => setEditValue(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="flex-1 w-full min-w-0 px-3 py-0.5 text-xs sm:text-sm font-medium bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-600 focus:outline-none self-center"
+                className="flex-1 w-full min-w-0 px-2 py-0.5 text-xs sm:text-[13px] font-medium bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-600 focus:outline-none self-center"
               />
             )}
             
-            <div className="flex items-center gap-1.5 px-3 bg-slate-50 dark:bg-zinc-900 border-l border-slate-200 dark:border-zinc-850 shrink-0 self-stretch h-full">
+            <div className="flex items-center gap-1 px-1.5 bg-slate-50 dark:bg-zinc-900 border-l border-slate-200 dark:border-zinc-850 shrink-0 self-stretch h-full">
               <button
                 type="button"
                 onClick={handleSave}
-                className="p-1 rounded bg-emerald-500 text-white hover:bg-emerald-600 transition-all hover:scale-105 active:scale-95 cursor-pointer shrink-0 animate-in fade-in duration-100"
+                className="p-0.5 rounded bg-emerald-500 text-white hover:bg-emerald-600 transition-all cursor-pointer shrink-0"
                 title="Save changes"
               >
-                <Check className="w-4 h-4" />
+                <Check className="w-3.5 h-3.5" />
               </button>
               <button
                 type="button"
                 onClick={handleCancel}
-                className="p-1 rounded bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 hover:bg-slate-305 dark:hover:bg-zinc-700 transition-all hover:scale-105 active:scale-95 cursor-pointer shrink-0 animate-in fade-in duration-100"
+                className="p-0.5 rounded bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 hover:bg-slate-300 dark:hover:bg-zinc-700 transition-all cursor-pointer shrink-0"
                 title="Cancel edit"
               >
-                <X className="w-4 h-4" />
+                <X className="w-3.5 h-3.5" />
               </button>
             </div>
           </form>
          ) : (
           <div 
-            className={`flex-1 flex items-center justify-between gap-2 px-3 py-0.5 w-full min-w-0 ${hasValue ? 'cursor-pointer hover:bg-slate-50/50 dark:hover:bg-zinc-900/30 transition-all duration-150' : 'cursor-default'}`}
+            className={`flex-1 flex items-center justify-between gap-1.5 px-2.5 py-0.5 w-full min-w-0 ${hasValue ? 'cursor-pointer hover:bg-slate-50/50 dark:hover:bg-zinc-900/30 transition-all duration-150' : 'cursor-default'}`}
             onDoubleClick={(e) => {
               if (isEditing || !hasValue) return;
               
@@ -243,44 +243,44 @@ export function DataField({ label, value, highlight = false, warning = false, co
             }}
           >
             {/* The Text Value Block */}
-            <div className="flex-1 flex items-center min-w-0">
-              <span className={`break-all whitespace-normal text-left flex-1 min-w-0 w-full text-xs sm:text-sm ${hasValidationError ? 'text-red-800 dark:text-red-400 font-semibold' : 'font-semibold text-slate-750 dark:text-zinc-200'} ${!hasValue ? 'italic opacity-50 text-slate-400 dark:text-zinc-500' : ''}`} title={value || ''}>
+            <div className="flex-1 flex items-center min-w-0 py-0.5">
+              <span className={`break-words whitespace-normal text-left flex-1 min-w-0 w-full text-xs sm:text-[13px] leading-snug ${hasValidationError ? 'text-red-800 dark:text-red-400 font-semibold' : 'font-semibold text-slate-750 dark:text-zinc-200'} ${!hasValue ? 'italic opacity-50 text-slate-400 dark:text-zinc-500' : ''}`} title={value || ''}>
                 {value || 'Not Found'}
               </span>
             </div>
             
-            <div className="flex items-center gap-1.5 self-center shrink-0 action-button-no-copy" onMouseUp={(e) => e.stopPropagation()}>
+            <div className="flex items-center gap-0.5 self-center shrink-0 action-button-no-copy" onMouseUp={(e) => e.stopPropagation()}>
               {onValueChange && (
                 <button
                   onClick={handleStartEdit}
-                  className="p-1.5 rounded-lg transition-all text-slate-400 opacity-100 sm:opacity-0 group-hover/field:opacity-100 hover:text-blue-650 hover:bg-blue-50/80 dark:hover:text-blue-400 dark:hover:bg-blue-950/40 cursor-pointer"
+                  className="p-1 rounded transition-all text-slate-400 opacity-100 sm:opacity-0 group-hover/field:opacity-100 hover:text-blue-600 hover:bg-blue-50/80 dark:hover:text-blue-400 dark:hover:bg-blue-950/40 cursor-pointer"
                   title="Edit Field"
                 >
-                  <Pencil className="w-4 h-4" />
+                  <Pencil className="w-3.5 h-3.5" />
                 </button>
               )}
               {hasValue && (
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-0.5">
                   {(copied || persistentCopied) && (
-                    <span className="text-[10px] font-black text-emerald-500 dark:text-emerald-300 bg-gradient-to-r from-emerald-50 via-white to-emerald-50 dark:from-emerald-950/40 dark:via-zinc-900/60 dark:to-emerald-950/40 px-2.5 pt-1.5 pb-1 rounded-[4px] border border-emerald-500/30 dark:border-emerald-400/20 whitespace-nowrap transition-all duration-300 animate-in fade-in duration-100">
+                    <span className="text-[9px] font-black text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-500/30 dark:border-emerald-400/20 whitespace-nowrap">
                       কপি হয়েছে
                     </span>
                   )}
                   <button
                     onClick={handleCopy}
                     className={`
-                      p-1.5 md:p-2 rounded-lg transition-all cursor-pointer
+                      p-1 rounded transition-all cursor-pointer
                       ${copied || persistentCopied
                         ? 'text-emerald-700 bg-emerald-100/50 dark:text-white dark:bg-emerald-950/30' 
                         : 'text-slate-400 opacity-100 sm:opacity-0 group-hover/field:opacity-100 hover:text-slate-600 hover:bg-slate-100 dark:text-white dark:hover:bg-zinc-800'}
                     `}
                     title="Copy"
                   >
-                    <Copy className="w-4.5 h-4.5 transition-all" />
+                    <Copy className="w-3.5 h-3.5 transition-all" />
                   </button>
                   {copied && (
-                    <span className="text-emerald-650 dark:text-white animate-in fade-in zoom-in duration-100 shrink-0" title="Copied!">
-                      <Check className="w-4.5 h-4.5 font-bold transition-all" />
+                    <span className="text-emerald-650 dark:text-white shrink-0" title="Copied!">
+                      <Check className="w-3.5 h-3.5 font-bold transition-all" />
                     </span>
                   )}
                 </div>

@@ -131,37 +131,63 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
         console.error('Failed to parse user session', e);
       }
 
-      const controller = new AbortController();
-      abortControllersRef.current.add(controller);
-      const timeoutId = setTimeout(() => {
-        controller.abort(new Error('REQUEST_TIMEOUT'));
-      }, 50000);
-
       const isVisaApp = currentItem.documentType === 'visa_application';
       const endpoint = isVisaApp ? '/api/extract-application-pdf' : '/api/extract-passport';
       const requestBody = isVisaApp
         ? JSON.stringify({ pdfBase64: base64String, mimeType: currentItem.file.type })
         : JSON.stringify({ imageBase64: base64String, mimeType: currentItem.file.type });
 
-      let res: Response;
-      try {
-        res = await fetch(endpoint, {
-          method: 'POST',
-          headers,
-          body: requestBody,
-          signal: controller.signal,
-        });
-      } finally {
-        clearTimeout(timeoutId);
-        abortControllersRef.current.delete(controller);
+      let res: Response | null = null;
+      let responseText = '';
+      const maxRetries = 2;
+
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        const controller = new AbortController();
+        abortControllersRef.current.add(controller);
+        const timeoutId = setTimeout(() => {
+          controller.abort(new Error('REQUEST_TIMEOUT'));
+        }, 50000);
+
+        try {
+          res = await fetch(endpoint, {
+            method: 'POST',
+            headers,
+            body: requestBody,
+            signal: controller.signal,
+          });
+          responseText = await res.text();
+          
+          // If status is 502, 503, or 504 (server temporarily reloading / gateway unavailable), retry
+          if ((res.status === 502 || res.status === 503 || res.status === 504) && attempt < maxRetries) {
+            console.warn(`Extraction request hit status ${res.status}. Retrying attempt ${attempt + 2}...`);
+            await new Promise((r) => setTimeout(r, 1500));
+            continue;
+          }
+          break;
+        } catch (fetchErr: any) {
+          if (fetchErr?.name === 'AbortError' || fetchErr?.message === 'REQUEST_TIMEOUT') {
+            throw fetchErr;
+          }
+          if (attempt < maxRetries) {
+            console.warn(`Extraction request failed (${fetchErr.message}). Retrying in 1.5s...`);
+            await new Promise((r) => setTimeout(r, 1500));
+            continue;
+          }
+          throw fetchErr;
+        } finally {
+          clearTimeout(timeoutId);
+          abortControllersRef.current.delete(controller);
+        }
       }
       
-      const responseText = await res.text();
       let result: any;
       try {
         result = JSON.parse(responseText);
       } catch (parseErr) {
-        throw new Error(`Server returned invalid response (Status ${res.status}): ${responseText.slice(0, 120)}`);
+        if (res && (res.status === 502 || res.status === 503 || res.status === 504)) {
+          throw new Error('সার্ভারটি সাময়িকভাবে রিলোড হচ্ছিল (Status 502)। দয়া করে পুনরায় Extract এ ক্লিক করুন।');
+        }
+        throw new Error(`সার্ভার থেকে অপ্রত্যাশিত রেসপন্স এসেছে (Status ${res?.status || 'Unknown'})। দয়া করে আবার চেষ্টা করুন।`);
       }
       
       const durationSeconds = parseFloat(((Date.now() - startTime) / 1000).toFixed(2));

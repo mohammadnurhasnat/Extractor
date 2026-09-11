@@ -71,7 +71,7 @@ export function ResultsSection({
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, ease: 'easeOut' }}
-          className="bg-gradient-to-br from-white/95 to-emerald-50/40 dark:from-zinc-900/95 dark:to-zinc-950/40 backdrop-blur-md p-3 sm:p-5 rounded-2xl shadow-[0_12px_40px_rgba(16,185,129,0.04)] border-t-[3px] border-t-emerald-500 border-x border-b border-slate-200/80 dark:border-zinc-800/60 sticky top-6 print:relative print:top-0 print:border-none print:shadow-none print:bg-transparent print:p-0 print:m-0 w-full h-full flex flex-col overflow-hidden min-h-[500px]"
+          className="bg-gradient-to-br from-white/95 to-emerald-50/40 dark:from-zinc-900/95 dark:to-zinc-950/40 backdrop-blur-md p-2.5 sm:p-3.5 rounded-xl shadow-[0_12px_40px_rgba(16,185,129,0.04)] border-t-[3px] border-t-emerald-500 border-x border-b border-slate-200/80 dark:border-zinc-800/60 sticky top-6 print:relative print:top-0 print:border-none print:shadow-none print:bg-transparent print:p-0 print:m-0 w-full h-full flex flex-col overflow-hidden min-h-[500px]"
         >
           <div className="w-full h-full flex flex-col overflow-hidden">
             {/* PRINT-ONLY PROFESSIONAL HEADER/LETTERHEAD */}
@@ -92,14 +92,14 @@ export function ResultsSection({
 
             {/* TABS SELECTOR (STATIONARY AT THE TOP) */}
             {(data && isUndertakingConfigured && undertakingData) || activeItem ? (
-              <div className="flex flex-wrap md:flex-nowrap bg-slate-100/60 dark:bg-zinc-950/65 p-1.5 rounded-2xl mb-3 print:hidden gap-1.5 w-full items-center shrink-0">
+              <div className="flex flex-wrap md:flex-nowrap bg-slate-100/70 dark:bg-zinc-950/70 p-1 rounded-xl mb-2 print:hidden gap-1 w-full items-center shrink-0">
                 {data && (
                   <button
                     onClick={() => setResultsTab('profile')}
-                    className={`group relative overflow-hidden flex-1 min-w-[45%] md:min-w-0 text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer border min-h-[40px] transition-all duration-300 flex items-center justify-center gap-1.5 ${
+                    className={`group relative overflow-hidden flex-1 min-w-[45%] md:min-w-0 text-center py-1.5 px-2.5 rounded-lg text-xs font-extrabold cursor-pointer border min-h-[34px] transition-all duration-300 flex items-center justify-center gap-1.5 ${
                       resultsTab === 'profile'
-                        ? 'bg-[#0C8493] text-white shadow-md border-[#0C8493]'
-                        : 'bg-slate-200/50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 border-slate-300/40 dark:border-zinc-700/50 shadow-xs'
+                        ? 'bg-[#0C8493] text-white shadow-xs border-[#0C8493]'
+                        : 'bg-slate-200/50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 border-slate-300/40 dark:border-zinc-700/50 shadow-2xs'
                     }`}
                   >
                     <span
@@ -115,10 +115,10 @@ export function ResultsSection({
                 {data && isUndertakingConfigured && undertakingData && activeItem?.documentType !== 'visa_application' && (
                   <button
                     onClick={() => setResultsTab('undertaking')}
-                    className={`group relative overflow-hidden flex-1 min-w-[45%] md:min-w-0 text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer border min-h-[40px] transition-all duration-300 flex items-center justify-center gap-1.5 ${
+                    className={`group relative overflow-hidden flex-1 min-w-[45%] md:min-w-0 text-center py-1.5 px-2.5 rounded-lg text-xs font-extrabold cursor-pointer border min-h-[34px] transition-all duration-300 flex items-center justify-center gap-1.5 ${
                       resultsTab === 'undertaking'
-                        ? 'bg-[#0C8493] text-white shadow-md border-[#0C8493]'
-                        : 'bg-slate-200/50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 border-slate-300/40 dark:border-zinc-700/50 shadow-xs'
+                        ? 'bg-[#0C8493] text-white shadow-xs border-[#0C8493]'
+                        : 'bg-slate-200/50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 border-slate-300/40 dark:border-zinc-700/50 shadow-2xs'
                     }`}
                   >
                     <span
@@ -134,10 +134,10 @@ export function ResultsSection({
                 {data && activeItem && activeItem?.documentType !== 'visa_application' && (
                   <button
                     onClick={() => setResultsTab('passport-pdf')}
-                    className={`group relative overflow-hidden flex-1 min-w-[45%] md:min-w-0 text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer border min-h-[40px] transition-all duration-300 flex items-center justify-center gap-1.5 ${
+                    className={`group relative overflow-hidden flex-1 min-w-[45%] md:min-w-0 text-center py-1.5 px-2.5 rounded-lg text-xs font-extrabold cursor-pointer border min-h-[34px] transition-all duration-300 flex items-center justify-center gap-1.5 ${
                       resultsTab === 'passport-pdf'
-                        ? 'bg-[#0C8493] text-white shadow-md border-[#0C8493]'
-                        : 'bg-slate-200/50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 border-slate-300/40 dark:border-zinc-700/50 shadow-xs'
+                        ? 'bg-[#0C8493] text-white shadow-xs border-[#0C8493]'
+                        : 'bg-slate-200/50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 border-slate-300/40 dark:border-zinc-700/50 shadow-2xs'
                     }`}
                   >
                     <span
@@ -153,10 +153,10 @@ export function ResultsSection({
                 {(utPurpose === 'Medical Treatment - Patient' || utPurpose === 'Medical Treatment - Attendance') && data && (
                   <button
                     onClick={() => setResultsTab('appointment')}
-                    className={`group relative overflow-hidden flex-1 min-w-[45%] md:min-w-0 text-center py-2 px-3 rounded-lg text-xs font-extrabold cursor-pointer border min-h-[40px] transition-all duration-300 flex items-center justify-center gap-1.5 ${
+                    className={`group relative overflow-hidden flex-1 min-w-[45%] md:min-w-0 text-center py-1.5 px-2.5 rounded-lg text-xs font-extrabold cursor-pointer border min-h-[34px] transition-all duration-300 flex items-center justify-center gap-1.5 ${
                       resultsTab === 'appointment'
-                        ? 'bg-[#0C8493] text-white shadow-md border-[#0C8493]'
-                        : 'bg-slate-200/50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 border-slate-300/40 dark:border-zinc-700/50 shadow-xs'
+                        ? 'bg-[#0C8493] text-white shadow-xs border-[#0C8493]'
+                        : 'bg-slate-200/50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 border-slate-300/40 dark:border-zinc-700/50 shadow-2xs'
                     }`}
                   >
                     <span
@@ -164,7 +164,7 @@ export function ResultsSection({
                         resultsTab === 'appointment' ? 'translate-y-0' : 'translate-y-full group-hover:translate-y-0'
                       }`}
                     />
-                    <Calendar className={`w-4 h-4 relative z-10 transition-colors duration-200 group-hover:text-white ${resultsTab === 'appointment' ? 'text-white' : ''}`} />
+                    <Calendar className={`w-3.5 h-3.5 relative z-10 transition-colors duration-200 group-hover:text-white ${resultsTab === 'appointment' ? 'text-white' : ''}`} />
                     <span className={`relative z-10 transition-colors duration-200 group-hover:text-white ${resultsTab === 'appointment' ? 'text-white' : ''}`}>
                       Appointment
                     </span>
