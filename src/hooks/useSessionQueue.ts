@@ -135,7 +135,7 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
       abortControllersRef.current.add(controller);
       const timeoutId = setTimeout(() => {
         controller.abort(new Error('REQUEST_TIMEOUT'));
-      }, 20000);
+      }, 50000);
 
       const isVisaApp = currentItem.documentType === 'visa_application';
       const endpoint = isVisaApp ? '/api/extract-application-pdf' : '/api/extract-passport';

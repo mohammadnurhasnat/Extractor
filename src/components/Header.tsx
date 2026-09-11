@@ -215,8 +215,8 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
               )}
 
-              {/* Daily Limit - strictly hidden for Admin */}
-              {!isAdmin && limitStatus && (
+              {/* Daily Limit - strictly hidden when limits are disabled */}
+              {!isAdmin && limitStatus && limitStatus.limit < 99999 && (
                 <span className={`text-[8px] sm:text-[10px] font-extrabold px-1 py-0.5 rounded-[3px] flex items-center gap-0.5 shrink-0 ${
                   limitStatus.remaining > 0 
                     ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400" 

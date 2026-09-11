@@ -203,30 +203,6 @@ extractionRouter.post('/extract-passport', async (req, res) => {
       return res.status(200).json({ success: false, error: 'আপনার অ্যাকাউন্টটি স্থগিত করা হয়েছে। দয়া করে এডমিনের সাথে যোগাযোগ করুন।' });
     }
 
-    // Check if user is admin or has unlimited/custom limit
-    const isAdmin = user.email?.toLowerCase() === 'mohammadnurhasnat@gmail.com' || user.id === 'user_admin';
-    const isUnlimited = (user.dailyLimit ?? 5) >= 99999;
-
-    // Only apply IP limit guard if user is NOT admin and NOT unlimited
-    if (!isAdmin && !isUnlimited) {
-      const clientIp = req.headers['x-forwarded-for']?.toString().split(',')[0] || req.socket.remoteAddress || 'unknown';
-      const ipLimitCheck = await checkAndIncrementIPLimit(clientIp);
-      if (!ipLimitCheck.allowed) {
-        return res.status(200).json({ 
-          success: false, 
-          error: 'এই আইপি (IP) এড্রেস থেকে আজকের লিমিট শেষ হয়ে গেছে। দয়া করে কালকে আবার চেষ্টা করুন অথবা এডমিনের সাথে যোগাযোগ করুন।' 
-        });
-      }
-    }
-
-    const limitCheck = await checkAndIncrementLimit(userId);
-    if (!limitCheck.allowed) {
-      return res.status(200).json({ 
-        success: false, 
-        error: 'আপনার দৈনিক ফ্রী লিমিট (৫টি এক্সট্রাকশন) শেষ হয়ে গেছে। দয়া করে ২৪ ঘণ্টা পর আবার ফ্রী ট্রাই করতে পারবেন।' 
-      });
-    }
-
     appendAuditLog({ userId: userId, action: 'EXTRACTION', details: 'Extracted a passport' });
 
     const parsedBody = ExtractPassportSchema.safeParse(req.body);
@@ -396,36 +372,11 @@ INSTRUCTIONS FOR VALID PASSPORTS:
     };
 
     let pipelineResponse;
-    const PRIMARY_TIMEOUT_MS = 6000;
-    const FALLBACK_TIMEOUT_MS = 6000;
+    const PRIMARY_TIMEOUT_MS = 15000;
+    const FALLBACK_TIMEOUT_MS = 20000;
 
     try {
-      console.log('⚡ Running primary engine: gemini-3.1-flash-lite (Minimal thinking, target: 2-3s)');
-      pipelineResponse = await runWithTimeout(
-        ai.models.generateContent({
-          model: 'gemini-3.1-flash-lite',
-          contents: [
-            {
-              inlineData: {
-                mimeType: mimeType,
-                data: base64Data,
-              }
-            }
-          ],
-          config: {
-            systemInstruction,
-            responseMimeType: 'application/json',
-            responseSchema,
-            thinkingConfig: {
-              thinkingLevel: ThinkingLevel.MINIMAL
-            }
-          }
-        }),
-        PRIMARY_TIMEOUT_MS,
-        'Primary gemini-3.1-flash-lite'
-      );
-    } catch (err: any) {
-      console.warn('⚠️ Primary engine error/timeout, attempting fast fallback (gemini-2.5-flash with zero thinking)...', err.message || err);
+      console.log('⚡ Running primary engine: gemini-2.5-flash (Zero thinking, ultra-fast)');
       pipelineResponse = await runWithTimeout(
         ai.models.generateContent({
           model: 'gemini-2.5-flash',
@@ -446,8 +397,33 @@ INSTRUCTIONS FOR VALID PASSPORTS:
             }
           }
         }),
+        PRIMARY_TIMEOUT_MS,
+        'Primary gemini-2.5-flash'
+      );
+    } catch (err: any) {
+      console.warn('⚠️ Primary engine error/timeout, attempting fast fallback (gemini-3.1-flash-lite)...', err.message || err);
+      pipelineResponse = await runWithTimeout(
+        ai.models.generateContent({
+          model: 'gemini-3.1-flash-lite',
+          contents: [
+            {
+              inlineData: {
+                mimeType: mimeType,
+                data: base64Data,
+              }
+            }
+          ],
+          config: {
+            systemInstruction,
+            responseMimeType: 'application/json',
+            responseSchema,
+            thinkingConfig: {
+              thinkingLevel: ThinkingLevel.MINIMAL
+            }
+          }
+        }),
         FALLBACK_TIMEOUT_MS,
-        'Fallback gemini-2.5-flash'
+        'Fallback gemini-3.1-flash-lite'
       );
     }
 
@@ -552,30 +528,6 @@ extractionRouter.post('/extract-application-pdf', async (req, res) => {
 
     if (user.isSuspended) {
       return res.status(200).json({ success: false, error: 'আপনার অ্যাকাউন্টটি স্থগিত করা হয়েছে। দয়া করে এডমিনের সাথে যোগাযোগ করুন।' });
-    }
-
-    // Check if user is admin or has unlimited/custom limit
-    const isAdmin = user.email?.toLowerCase() === 'mohammadnurhasnat@gmail.com' || user.id === 'user_admin';
-    const isUnlimited = (user.dailyLimit ?? 5) >= 99999;
-
-    // Only apply IP limit guard if user is NOT admin and NOT unlimited
-    if (!isAdmin && !isUnlimited) {
-      const clientIp = req.headers['x-forwarded-for']?.toString().split(',')[0] || req.socket.remoteAddress || 'unknown';
-      const ipLimitCheck = await checkAndIncrementIPLimit(clientIp);
-      if (!ipLimitCheck.allowed) {
-        return res.status(200).json({ 
-          success: false, 
-          error: 'এই আইপি (IP) এড্রেস থেকে আজকের লিমিট শেষ হয়ে গেছে। দয়া করে কালকে আবার চেষ্টা করুন অথবা এডমিনের সাথে যোগাযোগ করুন।' 
-        });
-      }
-    }
-
-    const limitCheck = await checkAndIncrementLimit(userId);
-    if (!limitCheck.allowed) {
-      return res.status(200).json({ 
-        success: false, 
-        error: 'আপনার দৈনিক ফ্রী লিমিট (৫টি এক্সট্রাকশন) শেষ হয়ে গেছে। দয়া করে ২৪ ঘণ্টা পর আবার ফ্রী ট্রাই করতে পারবেন।' 
-      });
     }
 
     appendAuditLog({ userId: userId, action: 'EXTRACTION', details: 'Extracted an Indian Visa Application PDF' });
@@ -737,36 +689,11 @@ INSTRUCTIONS FOR VALID APPLICATIONS:
     };
 
     let pipelineResponse;
-    const PRIMARY_TIMEOUT_MS = 7000;
-    const FALLBACK_TIMEOUT_MS = 7000;
+    const PRIMARY_TIMEOUT_MS = 18000;
+    const FALLBACK_TIMEOUT_MS = 25000;
 
     try {
-      console.log('⚡ Running primary engine: gemini-3.1-flash-lite for PDF (Minimal thinking, target: 2-3s)');
-      pipelineResponse = await runWithTimeout(
-        ai.models.generateContent({
-          model: 'gemini-3.1-flash-lite',
-          contents: [
-            {
-              inlineData: {
-                mimeType: mimeType,
-                data: base64Data,
-              }
-            }
-          ],
-          config: {
-            systemInstruction,
-            responseMimeType: 'application/json',
-            responseSchema,
-            thinkingConfig: {
-              thinkingLevel: ThinkingLevel.MINIMAL
-            }
-          }
-        }),
-        PRIMARY_TIMEOUT_MS,
-        'Primary gemini-3.1-flash-lite PDF'
-      );
-    } catch (err: any) {
-      console.warn('⚠️ Primary engine error/timeout for PDF, attempting fast fallback (gemini-2.5-flash with zero thinking)...', err.message || err);
+      console.log('⚡ Running primary engine: gemini-2.5-flash for PDF (Zero thinking, ultra-fast)');
       pipelineResponse = await runWithTimeout(
         ai.models.generateContent({
           model: 'gemini-2.5-flash',
@@ -787,8 +714,33 @@ INSTRUCTIONS FOR VALID APPLICATIONS:
             }
           }
         }),
+        PRIMARY_TIMEOUT_MS,
+        'Primary gemini-2.5-flash PDF'
+      );
+    } catch (err: any) {
+      console.warn('⚠️ Primary engine error/timeout for PDF, attempting fast fallback (gemini-3.1-flash-lite)...', err.message || err);
+      pipelineResponse = await runWithTimeout(
+        ai.models.generateContent({
+          model: 'gemini-3.1-flash-lite',
+          contents: [
+            {
+              inlineData: {
+                mimeType: mimeType,
+                data: base64Data,
+              }
+            }
+          ],
+          config: {
+            systemInstruction,
+            responseMimeType: 'application/json',
+            responseSchema,
+            thinkingConfig: {
+              thinkingLevel: ThinkingLevel.MINIMAL
+            }
+          }
+        }),
         FALLBACK_TIMEOUT_MS,
-        'Fallback gemini-2.5-flash PDF'
+        'Fallback gemini-3.1-flash-lite PDF'
       );
     }
 

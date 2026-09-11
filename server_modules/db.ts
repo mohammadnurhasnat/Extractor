@@ -92,96 +92,19 @@ export async function getAuditLogs() {
 }
 
 export async function checkAndIncrementLimit(userId: string): Promise<{ allowed: boolean; remaining: number; count: number }> {
-  try {
-    const today = new Date().toISOString().split('T')[0];
-    const user = await db.query.users.findFirst({ where: eq(schema.users.id, userId) });
-    const userLimit = user?.dailyLimit ?? 5;
-
-    let limitRecord = await db.query.dailyLimits.findFirst({ where: eq(schema.dailyLimits.id, userId) });
-    
-    if (!limitRecord || limitRecord.date !== today) {
-      if (limitRecord) {
-        await db.update(schema.dailyLimits).set({ date: today, count: 0 }).where(eq(schema.dailyLimits.id, userId));
-      } else {
-        await db.insert(schema.dailyLimits).values({ id: userId, date: today, count: 0 });
-      }
-      limitRecord = { id: userId, date: today, count: 0 };
-    }
-
-    if (limitRecord.count >= userLimit) {
-      return { allowed: false, remaining: 0, count: limitRecord.count };
-    }
-
-    const newCount = limitRecord.count + 1;
-    await db.update(schema.dailyLimits).set({ count: newCount }).where(eq(schema.dailyLimits.id, userId));
-
-    return { allowed: true, remaining: userLimit - newCount, count: newCount };
-  } catch (error) {
-    console.error("Error in checkAndIncrementLimit:", error);
-    return { allowed: false, remaining: 0, count: 0 };
-  }
+  return { allowed: true, remaining: 999999, count: 0 };
 }
 
 export async function checkAndIncrementIPLimit(ip: string): Promise<{ allowed: boolean; count: number }> {
-  if (!ip) return { allowed: true, count: 0 };
-  try {
-    const today = new Date().toISOString().split('T')[0];
-    const ipKey = `ip_${ip}`;
-    
-    let limitRecord = await db.query.dailyLimits.findFirst({ where: eq(schema.dailyLimits.id, ipKey) });
-    
-    if (!limitRecord || limitRecord.date !== today) {
-      if (limitRecord) {
-        await db.update(schema.dailyLimits).set({ date: today, count: 0 }).where(eq(schema.dailyLimits.id, ipKey));
-      } else {
-        await db.insert(schema.dailyLimits).values({ id: ipKey, date: today, count: 0 });
-      }
-      limitRecord = { id: ipKey, date: today, count: 0 };
-    }
-
-    const IP_MAX_LIMIT = 10;
-    if (limitRecord.count >= IP_MAX_LIMIT) {
-      return { allowed: false, count: limitRecord.count };
-    }
-    
-    const newCount = limitRecord.count + 1;
-    await db.update(schema.dailyLimits).set({ count: newCount }).where(eq(schema.dailyLimits.id, ipKey));
-    return { allowed: true, count: newCount };
-  } catch (error) {
-    console.error("Error in checkAndIncrementIPLimit:", error);
-    return { allowed: true, count: 0 }; // Fail open for IP limit issues
-  }
+  return { allowed: true, count: 0 };
 }
 
 export async function decrementLimit(userId: string) {
-  try {
-    const today = new Date().toISOString().split('T')[0];
-    const limitRecord = await db.query.dailyLimits.findFirst({ where: eq(schema.dailyLimits.id, userId) });
-    if (limitRecord && limitRecord.date === today && limitRecord.count > 0) {
-      await db.update(schema.dailyLimits).set({ count: limitRecord.count - 1 }).where(eq(schema.dailyLimits.id, userId));
-    }
-  } catch (error) {
-    console.error("Error decrementing limit:", error);
-  }
+  // No-op since limits are disabled
 }
 
 export async function getLimitStatus(userId: string): Promise<{ count: number; remaining: number; limit: number }> {
-  try {
-    const today = new Date().toISOString().split('T')[0];
-    const user = await db.query.users.findFirst({ where: eq(schema.users.id, userId) });
-    const userLimit = user?.dailyLimit ?? 5;
-    
-    const limitRecord = await db.query.dailyLimits.findFirst({ where: eq(schema.dailyLimits.id, userId) });
-    
-    if (!limitRecord || limitRecord.date !== today) {
-      return { count: 0, remaining: userLimit, limit: userLimit };
-    }
-    
-    return { count: limitRecord.count, remaining: Math.max(0, userLimit - limitRecord.count), limit: userLimit };
-  } catch (error) {
-    console.error("Error getting limit status:", error);
-    return { count: 0, remaining: 5, limit: 5 };
-  }
+  return { count: 0, remaining: 999999, limit: 999999 };
 }
 
 export function getDb() {
