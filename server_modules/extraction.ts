@@ -372,36 +372,11 @@ INSTRUCTIONS FOR VALID PASSPORTS:
     };
 
     let pipelineResponse;
-    const PRIMARY_TIMEOUT_MS = 15000;
-    const FALLBACK_TIMEOUT_MS = 20000;
+    const PRIMARY_TIMEOUT_MS = 6000;
+    const FALLBACK_TIMEOUT_MS = 8000;
 
     try {
-      console.log('⚡ Running primary engine: gemini-2.5-flash (Zero thinking, ultra-fast)');
-      pipelineResponse = await runWithTimeout(
-        ai.models.generateContent({
-          model: 'gemini-2.5-flash',
-          contents: [
-            {
-              inlineData: {
-                mimeType: mimeType,
-                data: base64Data,
-              }
-            }
-          ],
-          config: {
-            systemInstruction,
-            responseMimeType: 'application/json',
-            responseSchema,
-            thinkingConfig: {
-              thinkingBudget: 0
-            }
-          }
-        }),
-        PRIMARY_TIMEOUT_MS,
-        'Primary gemini-2.5-flash'
-      );
-    } catch (err: any) {
-      console.warn('⚠️ Primary engine error/timeout, attempting fast fallback (gemini-3.1-flash-lite)...', err.message || err);
+      console.log('⚡ Running primary engine: gemini-3.1-flash-lite (Ultra-fast, ~1.5s latency)');
       pipelineResponse = await runWithTimeout(
         ai.models.generateContent({
           model: 'gemini-3.1-flash-lite',
@@ -417,13 +392,32 @@ INSTRUCTIONS FOR VALID PASSPORTS:
             systemInstruction,
             responseMimeType: 'application/json',
             responseSchema,
-            thinkingConfig: {
-              thinkingLevel: ThinkingLevel.MINIMAL
+          }
+        }),
+        PRIMARY_TIMEOUT_MS,
+        'Primary gemini-3.1-flash-lite'
+      );
+    } catch (err: any) {
+      console.warn('⚠️ Primary engine error/timeout, attempting fallback (gemini-3.8-flash)...', err.message || err);
+      pipelineResponse = await runWithTimeout(
+        ai.models.generateContent({
+          model: 'gemini-3.8-flash',
+          contents: [
+            {
+              inlineData: {
+                mimeType: mimeType,
+                data: base64Data,
+              }
             }
+          ],
+          config: {
+            systemInstruction,
+            responseMimeType: 'application/json',
+            responseSchema,
           }
         }),
         FALLBACK_TIMEOUT_MS,
-        'Fallback gemini-3.1-flash-lite'
+        'Fallback gemini-3.8-flash'
       );
     }
 
@@ -689,36 +683,11 @@ INSTRUCTIONS FOR VALID APPLICATIONS:
     };
 
     let pipelineResponse;
-    const PRIMARY_TIMEOUT_MS = 18000;
-    const FALLBACK_TIMEOUT_MS = 25000;
+    const PRIMARY_TIMEOUT_MS = 7000;
+    const FALLBACK_TIMEOUT_MS = 10000;
 
     try {
-      console.log('⚡ Running primary engine: gemini-2.5-flash for PDF (Zero thinking, ultra-fast)');
-      pipelineResponse = await runWithTimeout(
-        ai.models.generateContent({
-          model: 'gemini-2.5-flash',
-          contents: [
-            {
-              inlineData: {
-                mimeType: mimeType,
-                data: base64Data,
-              }
-            }
-          ],
-          config: {
-            systemInstruction,
-            responseMimeType: 'application/json',
-            responseSchema,
-            thinkingConfig: {
-              thinkingBudget: 0
-            }
-          }
-        }),
-        PRIMARY_TIMEOUT_MS,
-        'Primary gemini-2.5-flash PDF'
-      );
-    } catch (err: any) {
-      console.warn('⚠️ Primary engine error/timeout for PDF, attempting fast fallback (gemini-3.1-flash-lite)...', err.message || err);
+      console.log('⚡ Running primary engine: gemini-3.1-flash-lite for PDF (Ultra-fast)');
       pipelineResponse = await runWithTimeout(
         ai.models.generateContent({
           model: 'gemini-3.1-flash-lite',
@@ -734,13 +703,32 @@ INSTRUCTIONS FOR VALID APPLICATIONS:
             systemInstruction,
             responseMimeType: 'application/json',
             responseSchema,
-            thinkingConfig: {
-              thinkingLevel: ThinkingLevel.MINIMAL
+          }
+        }),
+        PRIMARY_TIMEOUT_MS,
+        'Primary gemini-3.1-flash-lite PDF'
+      );
+    } catch (err: any) {
+      console.warn('⚠️ Primary engine error/timeout for PDF, attempting fallback (gemini-3.8-flash)...', err.message || err);
+      pipelineResponse = await runWithTimeout(
+        ai.models.generateContent({
+          model: 'gemini-3.8-flash',
+          contents: [
+            {
+              inlineData: {
+                mimeType: mimeType,
+                data: base64Data,
+              }
             }
+          ],
+          config: {
+            systemInstruction,
+            responseMimeType: 'application/json',
+            responseSchema,
           }
         }),
         FALLBACK_TIMEOUT_MS,
-        'Fallback gemini-3.1-flash-lite PDF'
+        'Fallback gemini-3.8-flash PDF'
       );
     }
 
@@ -836,7 +824,7 @@ async function generateAddressesUsingGemini(ai: GoogleGenAI, permanentAddress: s
   }
 
   const response = await ai.models.generateContent({
-    model: 'gemini-2.5-flash',
+    model: 'gemini-3.1-flash-lite',
     contents: [
       {
         text: `You are an expert Bangladeshi address generator.
