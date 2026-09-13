@@ -4,20 +4,6 @@ import { eq } from 'drizzle-orm';
 import { Router } from 'express';
 import { GoogleGenAI, Type, ThinkingLevel } from '@google/genai';
 import { z } from 'zod';
-
-async function runWithTimeout<T>(promise: Promise<T>, timeoutMs: number, engineName: string): Promise<T> {
-  let timer: NodeJS.Timeout;
-  const timeoutPromise = new Promise<T>((_, reject) => {
-    timer = setTimeout(() => {
-      reject(new Error(`${engineName} timed out after ${timeoutMs / 1000}s`));
-    }, timeoutMs);
-  });
-  try {
-    return await Promise.race([promise, timeoutPromise]);
-  } finally {
-    clearTimeout(timer!);
-  }
-}
 import { 
   getUsersStore, 
   checkAndIncrementLimit, 
@@ -371,55 +357,26 @@ INSTRUCTIONS FOR VALID PASSPORTS:
       required: ["isValidPassport", "validationError", "finalData", "fieldConfidence", "mrzValidation", "discrepancies", "confidenceScore", "customUndertakingDraft", "generatedAddresses"]
     };
 
-    let pipelineResponse;
-    const PRIMARY_TIMEOUT_MS = 6000;
-    const FALLBACK_TIMEOUT_MS = 8000;
-
-    try {
-      console.log('⚡ Running primary engine: gemini-3.1-flash-lite (Ultra-fast, ~1.5s latency)');
-      pipelineResponse = await runWithTimeout(
-        ai.models.generateContent({
-          model: 'gemini-3.1-flash-lite',
-          contents: [
-            {
-              inlineData: {
-                mimeType: mimeType,
-                data: base64Data,
-              }
-            }
-          ],
-          config: {
-            systemInstruction,
-            responseMimeType: 'application/json',
-            responseSchema,
+    console.log('⚡ Running direct extraction engine: gemini-2.5-flash');
+    const pipelineResponse = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: [
+        {
+          inlineData: {
+            mimeType: mimeType,
+            data: base64Data,
           }
-        }),
-        PRIMARY_TIMEOUT_MS,
-        'Primary gemini-3.1-flash-lite'
-      );
-    } catch (err: any) {
-      console.warn('⚠️ Primary engine error/timeout, attempting fallback (gemini-3.8-flash)...', err.message || err);
-      pipelineResponse = await runWithTimeout(
-        ai.models.generateContent({
-          model: 'gemini-3.8-flash',
-          contents: [
-            {
-              inlineData: {
-                mimeType: mimeType,
-                data: base64Data,
-              }
-            }
-          ],
-          config: {
-            systemInstruction,
-            responseMimeType: 'application/json',
-            responseSchema,
-          }
-        }),
-        FALLBACK_TIMEOUT_MS,
-        'Fallback gemini-3.8-flash'
-      );
-    }
+        }
+      ],
+      config: {
+        systemInstruction,
+        responseMimeType: 'application/json',
+        responseSchema,
+        thinkingConfig: {
+          thinkingBudget: 0
+        }
+      }
+    });
 
     if (!pipelineResponse.text) {
       throw new Error('Passport extraction failed to return response data.');
@@ -682,55 +639,26 @@ INSTRUCTIONS FOR VALID APPLICATIONS:
       required: ["isValidApplication", "validationError", "finalData", "fieldConfidence", "discrepancies", "confidenceScore", "customUndertakingDraft", "generatedAddresses"]
     };
 
-    let pipelineResponse;
-    const PRIMARY_TIMEOUT_MS = 7000;
-    const FALLBACK_TIMEOUT_MS = 10000;
-
-    try {
-      console.log('⚡ Running primary engine: gemini-3.1-flash-lite for PDF (Ultra-fast)');
-      pipelineResponse = await runWithTimeout(
-        ai.models.generateContent({
-          model: 'gemini-3.1-flash-lite',
-          contents: [
-            {
-              inlineData: {
-                mimeType: mimeType,
-                data: base64Data,
-              }
-            }
-          ],
-          config: {
-            systemInstruction,
-            responseMimeType: 'application/json',
-            responseSchema,
+    console.log('⚡ Running direct PDF extraction engine: gemini-2.5-flash');
+    const pipelineResponse = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: [
+        {
+          inlineData: {
+            mimeType: mimeType,
+            data: base64Data,
           }
-        }),
-        PRIMARY_TIMEOUT_MS,
-        'Primary gemini-3.1-flash-lite PDF'
-      );
-    } catch (err: any) {
-      console.warn('⚠️ Primary engine error/timeout for PDF, attempting fallback (gemini-3.8-flash)...', err.message || err);
-      pipelineResponse = await runWithTimeout(
-        ai.models.generateContent({
-          model: 'gemini-3.8-flash',
-          contents: [
-            {
-              inlineData: {
-                mimeType: mimeType,
-                data: base64Data,
-              }
-            }
-          ],
-          config: {
-            systemInstruction,
-            responseMimeType: 'application/json',
-            responseSchema,
-          }
-        }),
-        FALLBACK_TIMEOUT_MS,
-        'Fallback gemini-3.8-flash PDF'
-      );
-    }
+        }
+      ],
+      config: {
+        systemInstruction,
+        responseMimeType: 'application/json',
+        responseSchema,
+        thinkingConfig: {
+          thinkingBudget: 0
+        }
+      }
+    });
 
     if (!pipelineResponse.text) {
       throw new Error('Visa application PDF extraction failed to return response data.');
@@ -824,7 +752,7 @@ async function generateAddressesUsingGemini(ai: GoogleGenAI, permanentAddress: s
   }
 
   const response = await ai.models.generateContent({
-    model: 'gemini-3.1-flash-lite',
+    model: 'gemini-2.5-flash',
     contents: [
       {
         text: `You are an expert Bangladeshi address generator.
