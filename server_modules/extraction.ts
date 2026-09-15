@@ -30,12 +30,12 @@ extractionRouter.get('/limit-status/:userId', async (req, res) => {
 
 const ExtractPassportSchema = z.object({
   imageBase64: z.string().min(1, 'Image base64 data is required'),
-  mimeType: z.string().regex(/^(image\/(jpeg|jpg|png|webp)|application\/pdf)$/i, 'Only JPEG, PNG, WEBP images and PDF files are supported'),
+  mimeType: z.string().optional().default('image/jpeg'),
 });
 
 const ExtractApplicationPdfSchema = z.object({
   pdfBase64: z.string().min(1, 'PDF base64 data is required'),
-  mimeType: z.string().regex(/^application\/pdf$/i, 'Only PDF files are supported'),
+  mimeType: z.string().optional().default('application/pdf'),
 });
 
 const GenerateAddressesSchema = z.object({

@@ -52,6 +52,7 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
   }, []);
 
   const extractSingleItem = useCallback(async (itemId: string): Promise<PassportData | null> => {
+    isCancelledRef.current = false;
     // Retrieve current item using queueRef to guarantee synchronous availability
     const currentItem = queueRef.current.find(q => q.id === itemId);
 
@@ -61,14 +62,14 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
       return prev.map(q => q.id === itemId ? { ...q, loading: true, status: 'extracting', error: null } : q);
     });
 
-    if (activeQueueId === itemId) {
-      setLoading(true);
-      onError(null);
-    }
+    setLoading(true);
+    onError(null);
 
     const startTime = Date.now();
     try {
-      const isPdf = currentItem.file.type === 'application/pdf' || currentItem.documentType === 'visa_application';
+      const isPdf = currentItem.file.type === 'application/pdf' || 
+                    currentItem.file.name.toLowerCase().endsWith('.pdf') || 
+                    currentItem.documentType === 'visa_application';
       let base64String = '';
 
       if (isPdf) {
@@ -82,13 +83,13 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
         let compressedFile = currentItem.file;
         
         // Aggressive compression to keep backup sizes minimal while preserving OCR-compatible quality.
-        // We compress if file is over 150 KB. Target is ~150 KB with max 1000px resolution.
+        // We compress if file is over 150 KB. Target is ~150 KB with max 1200px resolution.
         if (currentItem.file.size > 150 * 1024) {
           const options = {
-            maxSizeMB: 0.15,
-            maxWidthOrHeight: 1000,
+            maxSizeMB: 0.25,
+            maxWidthOrHeight: 1200,
             useWebWorker: true,
-            initialQuality: 0.8
+            initialQuality: 0.85
           };
           try {
             compressedFile = await imageCompression(currentItem.file, options);
@@ -131,11 +132,16 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
         console.error('Failed to parse user session', e);
       }
 
+      const fileMimeType = currentItem.file.type || 
+        (currentItem.file.name.toLowerCase().endsWith('.png') ? 'image/png' :
+         currentItem.file.name.toLowerCase().endsWith('.webp') ? 'image/webp' :
+         currentItem.file.name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg');
+
       const isVisaApp = currentItem.documentType === 'visa_application';
       const endpoint = isVisaApp ? '/api/extract-application-pdf' : '/api/extract-passport';
       const requestBody = isVisaApp
-        ? JSON.stringify({ pdfBase64: base64String, mimeType: currentItem.file.type })
-        : JSON.stringify({ imageBase64: base64String, mimeType: currentItem.file.type });
+        ? JSON.stringify({ pdfBase64: base64String, mimeType: fileMimeType })
+        : JSON.stringify({ imageBase64: base64String, mimeType: fileMimeType });
 
       let res: Response | null = null;
       let responseText = '';
@@ -146,7 +152,7 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
         abortControllersRef.current.add(controller);
         const timeoutId = setTimeout(() => {
           controller.abort(new Error('REQUEST_TIMEOUT'));
-        }, 50000);
+        }, 60000);
 
         try {
           res = await fetch(endpoint, {
@@ -166,7 +172,9 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
           break;
         } catch (fetchErr: any) {
           if (fetchErr?.name === 'AbortError' || fetchErr?.message === 'REQUEST_TIMEOUT') {
-            throw fetchErr;
+            if (isCancelledRef.current) {
+              throw fetchErr;
+            }
           }
           if (attempt < maxRetries) {
             console.warn(`Extraction request failed (${fetchErr.message}). Retrying in 1.5s...`);
@@ -214,27 +222,23 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
         const errMsg = result.error || 'Failed to extract data.';
         setQueue(prev => prev.map(q => q.id === itemId ? { ...q, loading: false, status: 'failed', error: errMsg } : q));
         setLoading(false);
-        if (activeQueueId === itemId) {
-          onError(errMsg);
-        }
+        onError(errMsg);
         return null;
       }
     } catch (err: any) {
       console.error('Extraction flow error details:', err);
       setLoading(false);
       if (err.name === 'AbortError' || err.message === 'REQUEST_TIMEOUT') {
-        const errMsg = 'সার্ভার রেসপন্স করতে দেরি হয়েছে অথবা প্রসেস বাতিল করা হয়েছে। দয়া করে আবার চেষ্টা করুন।';
+        const errMsg = isCancelledRef.current 
+          ? 'এক্সট্রাকশন প্রসেসটি বাতিল করা হয়েছে।'
+          : 'সার্ভার রেসপন্স করতে দেরি হয়েছে। দয়া করে আবার চেষ্টা করুন।';
         setQueue(prev => prev.map(q => q.id === itemId ? { ...q, loading: false, status: 'failed', error: errMsg } : q));
-        if (activeQueueId === itemId) {
-          onError(errMsg);
-        }
+        onError(errMsg);
         return null;
       }
       const errMsg = err.message || 'Network error: Could not reach the server.';
       setQueue(prev => prev.map(q => q.id === itemId ? { ...q, loading: false, status: 'failed', error: errMsg } : q));
-      if (activeQueueId === itemId) {
-        onError(errMsg);
-      }
+      onError(errMsg);
       return null;
     }
   }, [activeQueueId, userApiKey, addToHistory, onSelectData, onError]);
