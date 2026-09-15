@@ -82,14 +82,14 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
       } else {
         let compressedFile = currentItem.file;
         
-        // Aggressive compression to keep backup sizes minimal while preserving OCR-compatible quality.
-        // We compress if file is over 150 KB. Target is ~150 KB with max 1200px resolution.
-        if (currentItem.file.size > 150 * 1024) {
+        // High-fidelity image preservation for crystal-clear OCR reading
+        // We only compress if file is over 2.5 MB to keep upload snappy without degrading text sharpness
+        if (currentItem.file.size > 2.5 * 1024 * 1024) {
           const options = {
-            maxSizeMB: 0.25,
-            maxWidthOrHeight: 1200,
+            maxSizeMB: 2.0,
+            maxWidthOrHeight: 2400,
             useWebWorker: true,
-            initialQuality: 0.85
+            initialQuality: 0.95
           };
           try {
             compressedFile = await imageCompression(currentItem.file, options);
@@ -100,7 +100,7 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
             
             setQueue(prev => prev.map(q => q.id === itemId ? { ...q, compressionRatio } : q));
           } catch (compressErr) {
-            console.warn('Image compression failed, falling back to original:', compressErr);
+            console.warn('Image compression failed, using original file:', compressErr);
             compressedFile = currentItem.file;
           }
         }
