@@ -174,6 +174,15 @@ export function UploadSection(props: UploadSectionProps) {
         {!props.preview && !isPdf ? (
             <div className="grid grid-cols-2 gap-2.5 sm:gap-4 relative">
               {/* Passport Dropzone (Matte Slate) */}
+              <input 
+                 type="file" 
+                 ref={props.fileInputRef} 
+                 style={{ display: 'none' }}
+                 className="hidden" 
+                 accept="image/jpeg, image/png, image/webp, application/pdf" 
+                 onChange={props.handleFileChange}
+                 multiple
+              />
               <motion.div 
                 layout
                 onMouseEnter={() => setHoveredSection('passport')}
@@ -197,14 +206,6 @@ export function UploadSection(props: UploadSectionProps) {
                 }`} 
                 onClick={() => props.fileInputRef.current?.click()}
               >
-                <input 
-                   type="file" 
-                   ref={props.fileInputRef} 
-                   className="hidden" 
-                   accept="image/jpeg, image/png, image/webp, application/pdf" 
-                   onChange={props.handleFileChange}
-                   multiple
-                />
                 
                 {/* Premium Glassmorphic Overlay triggered when the adjacent section is hovered */}
                 <div className={`glass-overlay-shield ${hoveredSection === 'pdf' ? 'active' : ''}`} />
@@ -244,6 +245,14 @@ export function UploadSection(props: UploadSectionProps) {
               </motion.div>
 
               {/* Visa Application PDF Dropzone (Matte Zinc) */}
+              <input 
+                 type="file" 
+                 ref={props.visaFileInputRef} 
+                 style={{ display: 'none' }}
+                 className="hidden" 
+                 accept="application/pdf" 
+                 onChange={props.handleVisaFileChange}
+              />
               <motion.div 
                 layout
                 onMouseEnter={() => setHoveredSection('pdf')}
@@ -267,13 +276,6 @@ export function UploadSection(props: UploadSectionProps) {
                 }`} 
                 onClick={() => props.visaFileInputRef.current?.click()}
               >
-                <input 
-                   type="file" 
-                   ref={props.visaFileInputRef} 
-                   className="hidden" 
-                   accept="application/pdf" 
-                   onChange={props.handleVisaFileChange}
-                />
                 
                 {/* Premium Glassmorphic Overlay triggered when the adjacent section is hovered */}
                 <div className={`glass-overlay-shield ${hoveredSection === 'passport' ? 'active' : ''}`} />
@@ -314,15 +316,24 @@ export function UploadSection(props: UploadSectionProps) {
             </div>
         ) : (
           <div className="flex flex-col gap-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
               {/* Add more passports button */}
+              <input 
+                type="file" 
+                ref={props.fileInputRef} 
+                style={{ display: 'none' }}
+                className="hidden" 
+                accept="image/jpeg, image/png, image/webp, application/pdf" 
+                onChange={props.handleFileChange} 
+                multiple 
+              />
               <motion.div 
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
-                className={`border border-dashed rounded-xl transition-all duration-300 group flex items-center gap-3 p-3 cursor-pointer relative ${
+                className={`border-2 border-dashed rounded-xl transition-all duration-300 group flex items-center gap-2.5 p-2.5 sm:p-3 cursor-pointer relative overflow-hidden ${
                   dragActiveAddPassport 
-                    ? 'border-blue-500 bg-blue-50/40 dark:bg-blue-950/20 ring-2 ring-blue-500/20 shadow-sm' 
-                    : 'border-slate-205 dark:border-zinc-800 bg-slate-50/55 dark:bg-black/25 hover:bg-slate-100/60 dark:hover:bg-zinc-850/40 hover:border-blue-405 dark:hover:border-blue-500/30'
+                    ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-950/30 ring-2 ring-blue-500/20 shadow-sm' 
+                    : 'border-slate-200 dark:border-zinc-800 bg-slate-50/70 dark:bg-zinc-900/40 hover:bg-blue-50/40 dark:hover:bg-zinc-800/50 hover:border-blue-400 dark:hover:border-blue-500/40'
                 }`}
                 onClick={() => props.fileInputRef.current?.click()}
                 onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setDragActiveAddPassport(true); }}
@@ -335,33 +346,40 @@ export function UploadSection(props: UploadSectionProps) {
                   props.handleDrop(e);
                 }}
               >
-                <input type="file" ref={props.fileInputRef} className="hidden" accept="image/jpeg, image/png, image/webp, application/pdf" onChange={props.handleFileChange} multiple />
-                <div className="w-9 h-9 bg-white dark:bg-zinc-900 rounded-xl shadow-sm flex items-center justify-center shrink-0 border border-slate-100 dark:border-zinc-800 group-hover:scale-105 transition-transform">
-                  <UploadCloud className="w-4.5 h-4.5 text-blue-500 dark:text-blue-400" />
+                <div className="w-8 h-8 sm:w-9 sm:h-9 bg-white dark:bg-zinc-800 rounded-lg sm:rounded-xl shadow-xs flex items-center justify-center shrink-0 border border-slate-200/80 dark:border-zinc-700/80 group-hover:scale-105 group-hover:border-blue-300 transition-all">
+                  <UploadCloud className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div className="text-left min-w-0 flex-1">
-                  <p className="text-xs font-bold text-slate-700 dark:text-zinc-200">Add passports...</p>
-                  <p className="text-[10px] text-slate-400 dark:text-zinc-500 font-medium">Select passport image or PDF files</p>
+                  <p className="text-xs font-bold text-slate-800 dark:text-zinc-100 truncate">Add Passports</p>
+                  <p className="text-[10px] text-slate-500 dark:text-zinc-400 font-medium truncate">Images or PDF</p>
                 </div>
                 
                 {/* Micro drag overlay */}
                 {dragActiveAddPassport && (
-                  <div className="absolute inset-0 bg-blue-50/90 dark:bg-zinc-900/90 backdrop-blur-xs rounded-xl flex items-center justify-center z-20">
-                    <p className="text-[11px] font-black text-blue-600 dark:text-blue-400 animate-pulse flex items-center gap-1">
-                      <UploadCloud className="w-3.5 h-3.5" /> পাসপোর্ট বা পিডিএফ এখানে ড্রপ করুন
+                  <div className="absolute inset-0 bg-blue-50/95 dark:bg-zinc-900/95 backdrop-blur-xs rounded-xl flex items-center justify-center z-20 px-2">
+                    <p className="text-[10px] sm:text-[11px] font-black text-blue-600 dark:text-blue-400 animate-pulse flex items-center gap-1 truncate">
+                      <UploadCloud className="w-3.5 h-3.5 shrink-0" /> পাসপোর্ট ড্রপ করুন
                     </p>
                   </div>
                 )}
               </motion.div>
 
               {/* Add more visa applications button */}
+              <input 
+                type="file" 
+                ref={props.visaFileInputRef} 
+                style={{ display: 'none' }}
+                className="hidden" 
+                accept="application/pdf" 
+                onChange={props.handleVisaFileChange} 
+              />
               <motion.div 
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
-                className={`border border-dashed rounded-xl transition-all duration-300 group flex items-center gap-3 p-3 cursor-pointer relative ${
+                className={`border-2 border-dashed rounded-xl transition-all duration-300 group flex items-center gap-2.5 p-2.5 sm:p-3 cursor-pointer relative overflow-hidden ${
                   dragActiveAddPdf 
-                    ? 'border-emerald-500 bg-emerald-50/40 dark:bg-emerald-950/20 ring-2 ring-emerald-500/20 shadow-sm' 
-                    : 'border-slate-205 dark:border-zinc-800 bg-slate-50/55 dark:bg-black/25 hover:bg-slate-100/60 dark:hover:bg-zinc-850/40 hover:border-emerald-405 dark:hover:border-emerald-500/30'
+                    ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/30 ring-2 ring-emerald-500/20 shadow-sm' 
+                    : 'border-slate-200 dark:border-zinc-800 bg-slate-50/70 dark:bg-zinc-900/40 hover:bg-emerald-50/40 dark:hover:bg-zinc-800/50 hover:border-emerald-400 dark:hover:border-emerald-500/40'
                 }`}
                 onClick={() => props.visaFileInputRef.current?.click()}
                 onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setDragActiveAddPdf(true); }}
@@ -374,20 +392,19 @@ export function UploadSection(props: UploadSectionProps) {
                   props.handleVisaDrop(e);
                 }}
               >
-                <input type="file" ref={props.visaFileInputRef} className="hidden" accept="application/pdf" onChange={props.handleVisaFileChange} />
-                <div className="w-9 h-9 bg-white dark:bg-zinc-900 rounded-xl shadow-sm flex items-center justify-center shrink-0 border border-slate-100 dark:border-zinc-800 group-hover:scale-105 transition-transform">
-                  <FileText className="w-4.5 h-4.5 text-emerald-500 dark:text-emerald-400" />
+                <div className="w-8 h-8 sm:w-9 sm:h-9 bg-white dark:bg-zinc-800 rounded-lg sm:rounded-xl shadow-xs flex items-center justify-center shrink-0 border border-slate-200/80 dark:border-zinc-700/80 group-hover:scale-105 group-hover:border-emerald-300 transition-all">
+                  <FileText className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <div className="text-left min-w-0 flex-1">
-                  <p className="text-xs font-bold text-slate-700 dark:text-zinc-200">Add visa application PDF...</p>
-                  <p className="text-[10px] text-slate-400 dark:text-zinc-500 font-medium">Select Indian Visa PDF files</p>
+                  <p className="text-xs font-bold text-slate-800 dark:text-zinc-100 truncate">Add Visa Form</p>
+                  <p className="text-[10px] text-slate-500 dark:text-zinc-400 font-medium truncate">Indian Visa PDF</p>
                 </div>
 
                 {/* Micro drag overlay */}
                 {dragActiveAddPdf && (
-                  <div className="absolute inset-0 bg-emerald-50/90 dark:bg-zinc-900/90 backdrop-blur-xs rounded-xl flex items-center justify-center z-20">
-                    <p className="text-[11px] font-black text-emerald-600 dark:text-emerald-400 animate-pulse flex items-center gap-1">
-                      <FileText className="w-3.5 h-3.5" /> PDF এখানে ড্রপ করুন
+                  <div className="absolute inset-0 bg-emerald-50/95 dark:bg-zinc-900/95 backdrop-blur-xs rounded-xl flex items-center justify-center z-20 px-2">
+                    <p className="text-[10px] sm:text-[11px] font-black text-emerald-600 dark:text-emerald-400 animate-pulse flex items-center gap-1 truncate">
+                      <FileText className="w-3.5 h-3.5 shrink-0" /> PDF ড্রপ করুন
                     </p>
                   </div>
                 )}
