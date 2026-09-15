@@ -160,6 +160,25 @@ export function UploadSection(props: UploadSectionProps) {
 
   return (
     <div className="lg:col-span-5 flex flex-col gap-6 print:hidden lg:max-h-[calc(100vh-130px)] lg:overflow-y-auto overscroll-contain pr-2.5 scrollbar-thin">
+      {/* Hidden file inputs placed outside any grid layout */}
+      <input 
+        type="file" 
+        ref={props.fileInputRef} 
+        style={{ display: 'none' }}
+        className="hidden" 
+        accept="image/jpeg, image/png, image/webp, application/pdf" 
+        onChange={props.handleFileChange}
+        multiple
+      />
+      <input 
+        type="file" 
+        ref={props.visaFileInputRef} 
+        style={{ display: 'none' }}
+        className="hidden" 
+        accept="application/pdf" 
+        onChange={props.handleVisaFileChange}
+      />
+
       <div className="shrink-0 bg-gradient-to-br from-white/95 to-blue-50/40 dark:from-zinc-900/95 dark:to-zinc-950/40 backdrop-blur-xl p-3.5 sm:p-6 rounded-2xl shadow-[0_12px_40px_rgba(59,130,246,0.04)] border-t-[3px] border-t-blue-500 border-x border-b border-slate-200/80 dark:border-zinc-800/80 transition-all duration-300">
         <div className="flex items-start justify-between mb-3">
           <div>
@@ -174,15 +193,6 @@ export function UploadSection(props: UploadSectionProps) {
         {!props.preview && !isPdf ? (
             <div className="grid grid-cols-2 gap-2.5 sm:gap-4 relative">
               {/* Passport Dropzone (Matte Slate) */}
-              <input 
-                 type="file" 
-                 ref={props.fileInputRef} 
-                 style={{ display: 'none' }}
-                 className="hidden" 
-                 accept="image/jpeg, image/png, image/webp, application/pdf" 
-                 onChange={props.handleFileChange}
-                 multiple
-              />
               <motion.div 
                 layout
                 onMouseEnter={() => setHoveredSection('passport')}
@@ -245,14 +255,6 @@ export function UploadSection(props: UploadSectionProps) {
               </motion.div>
 
               {/* Visa Application PDF Dropzone (Matte Zinc) */}
-              <input 
-                 type="file" 
-                 ref={props.visaFileInputRef} 
-                 style={{ display: 'none' }}
-                 className="hidden" 
-                 accept="application/pdf" 
-                 onChange={props.handleVisaFileChange}
-              />
               <motion.div 
                 layout
                 onMouseEnter={() => setHoveredSection('pdf')}
@@ -318,15 +320,6 @@ export function UploadSection(props: UploadSectionProps) {
           <div className="flex flex-col gap-4">
             <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
               {/* Add more passports button */}
-              <input 
-                type="file" 
-                ref={props.fileInputRef} 
-                style={{ display: 'none' }}
-                className="hidden" 
-                accept="image/jpeg, image/png, image/webp, application/pdf" 
-                onChange={props.handleFileChange} 
-                multiple 
-              />
               <motion.div 
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
@@ -365,14 +358,6 @@ export function UploadSection(props: UploadSectionProps) {
               </motion.div>
 
               {/* Add more visa applications button */}
-              <input 
-                type="file" 
-                ref={props.visaFileInputRef} 
-                style={{ display: 'none' }}
-                className="hidden" 
-                accept="application/pdf" 
-                onChange={props.handleVisaFileChange} 
-              />
               <motion.div 
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
