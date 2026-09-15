@@ -362,7 +362,10 @@ INSTRUCTIONS:
       config: {
         systemInstruction,
         responseMimeType: 'application/json',
-        responseSchema
+        responseSchema,
+        thinkingConfig: {
+          thinkingBudget: 0
+        }
       }
     });
 
@@ -645,7 +648,10 @@ INSTRUCTIONS:
       config: {
         systemInstruction,
         responseMimeType: 'application/json',
-        responseSchema
+        responseSchema,
+        thinkingConfig: {
+          thinkingBudget: 0
+        }
       }
     });
 

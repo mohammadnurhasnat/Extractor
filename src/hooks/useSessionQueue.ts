@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { QueueItem, PassportData } from '../types';
-import imageCompression from 'browser-image-compression';
 import JSZip from 'jszip';
 import { generateDataText, normalizeGender } from '../utils/addressUtils';
 import { getPDFDocument } from '../utils/pdfGenerator';
@@ -72,46 +71,12 @@ export function useSessionQueue({ isOnline, userApiKey, addToHistory, onSelectDa
                     currentItem.documentType === 'visa_application';
       let base64String = '';
 
-      if (isPdf) {
-        base64String = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.readAsDataURL(currentItem.file);
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = () => reject(new Error('Failed to read PDF file'));
-        });
-      } else {
-        let compressedFile = currentItem.file;
-        
-        // High-fidelity image preservation for crystal-clear OCR reading
-        // We only compress if file is over 2.5 MB to keep upload snappy without degrading text sharpness
-        if (currentItem.file.size > 2.5 * 1024 * 1024) {
-          const options = {
-            maxSizeMB: 2.0,
-            maxWidthOrHeight: 2400,
-            useWebWorker: true,
-            initialQuality: 0.95
-          };
-          try {
-            compressedFile = await imageCompression(currentItem.file, options);
-            const originalMB = currentItem.file.size / (1024 * 1024);
-            const compressedMB = compressedFile.size / (1024 * 1024);
-            const reduction = Math.round((1 - compressedMB / originalMB) * 100);
-            const compressionRatio = `-${reduction}% (${compressedMB.toFixed(2)}MB)`;
-            
-            setQueue(prev => prev.map(q => q.id === itemId ? { ...q, compressionRatio } : q));
-          } catch (compressErr) {
-            console.warn('Image compression failed, using original file:', compressErr);
-            compressedFile = currentItem.file;
-          }
-        }
-
-        base64String = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.readAsDataURL(compressedFile);
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = () => reject(new Error('Failed to read file'));
-        });
-      }
+      base64String = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(currentItem.file);
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = () => reject(new Error('Failed to read file'));
+      });
 
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (userApiKey) {

@@ -6,7 +6,6 @@ import {
   MessageCircle, LogOut, Plus, Users, ExternalLink
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import imageCompression from 'browser-image-compression';
 import JSZip from 'jszip';
 
 // Types
